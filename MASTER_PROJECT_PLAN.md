@@ -700,20 +700,34 @@ flowchart TB
 - Service worker caches static application shell/assets only by default. It must not indiscriminately cache authenticated API responses or session endpoints.
 - No Redux is needed initially. Do not duplicate server state in a second global store.
 
-## 7.4 Backend module boundaries
+## 7.4 Naming & Module Organization
 
-Each module should have a consistent internal structure:
+- Follow **Package by Feature (domain-oriented organization)** rather than Package by Layer.
+- Organize application modules by business domain, not by technical responsibility.
+- Use kebab-case for all directory and file names.
+- Name domain directories using clear, consistent singular or plural domain names.
+- Name role-specific files using `[feature-name].[role].ts`, for example:
+  - `user-profiles.controller.ts`
+  - `user-profiles.service.ts`
+  - `user-profiles.repository.ts`
+  - `user-profiles.routes.ts`
+  - `user-profiles.schema.ts`
+- Keep controllers, services, repositories, schemas, routes and domain-specific tests within their respective feature directories.
+- Put code in shared or infrastructure modules only when it is genuinely cross-domain.
+- Avoid global technical-layer directories such as `controllers/`, `services/` and `repositories/`.
+
+Each feature module should have a consistent internal structure:
 
 ```text
-modules/<domain>/
-  <domain>.routes.ts       # HTTP endpoint registration
-  <domain>.controller.ts   # HTTP input/output only
-  <domain>.schema.ts       # Zod request/response schemas
-  <domain>.service.ts      # business orchestration and transaction boundaries
-  <domain>.repository.ts   # Prisma/SQL persistence
-  <domain>.policy.ts       # resource-level authorization where needed
-  <domain>.types.ts        # local domain types
-  <domain>.test.ts         # unit/integration tests
+modules/<feature-name>/
+  <feature-name>.routes.ts       # HTTP endpoint registration
+  <feature-name>.controller.ts   # HTTP input/output only
+  <feature-name>.schema.ts       # Zod request/response schemas
+  <feature-name>.service.ts      # business orchestration and transaction boundaries
+  <feature-name>.repository.ts   # Prisma/SQL persistence
+  <feature-name>.policy.ts       # resource-level authorization where needed
+  <feature-name>.types.ts        # local domain types
+  <feature-name>.test.ts         # unit/integration tests
 ```
 
 Do not create every file if a module is tiny; consistency matters more than ceremony. Domain services must be callable from tests without an Express request object.
@@ -1891,7 +1905,7 @@ factory-erp/
 ├── shared/
 │   └── src/                      # API schemas, enums, contracts only
 ├── docs/
-│   ├── MASTER_PROJECT_PLAN.md
+│   ├── master-project-plan.md
 │   ├── product-requirements.md
 │   ├── business-rules.md
 │   ├── data-model.md
@@ -1919,7 +1933,7 @@ Do not turn every module into its own package. `shared` should contain contracts
 
 | Document | Owns |
 |---|---|
-| `MASTER_PROJECT_PLAN.md` | Overall scope, architecture, milestones and release gates |
+| `master-project-plan.md` | Overall scope, architecture, milestones and release gates |
 | `product-requirements.md` | Requirement IDs and acceptance criteria |
 | `business-rules.md` | Stock, BOM, variance, invoice, payment, costing and state rules |
 | `data-model.md` | ERD, tables, constraints and migration decisions |
