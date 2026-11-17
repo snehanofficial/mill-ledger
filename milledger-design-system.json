@@ -1,0 +1,1689 @@
+{
+  "metadata": {
+    "name": "MillLedger Design System",
+    "workingName": true,
+    "version": "1.0.0",
+    "status": "proposed-foundation",
+    "created": "2026-11-18",
+    "productType": "responsive operations, inventory, purchasing, production and sales PWA",
+    "platforms": [
+      "desktop web",
+      "tablet web",
+      "mobile web/PWA"
+    ],
+    "defaultAppearance": "light",
+    "language": "en-IN",
+    "currency": "INR",
+    "numberLocale": "en-IN",
+    "measurementPolicy": "Always display the unit beside a quantity; never leave a number dimensionally ambiguous.",
+    "purpose": "A concrete, implementation-oriented visual and interaction system for the CDI NITT internship selection assignment. The system is designed to make operational work legible, verifiable and calm."
+  },
+  "designIntent": {
+    "visualConcept": "Pine & Paper",
+    "oneSentence": "A quiet, dependable workshop ledger: warm paper surfaces, deep evergreen actions, crisp data typography and explicit operational state.",
+    "personality": [
+      "grounded",
+      "precise",
+      "calm",
+      "practical",
+      "trustworthy",
+      "unshowy"
+    ],
+    "visualMetaphor": "A well-kept production ledger translated into a modern, responsive interface.",
+    "informationPriority": [
+      "What needs attention now",
+      "The current record and its state",
+      "The next safe action",
+      "Supporting history, evidence and detail"
+    ],
+    "visualHierarchy": {
+      "pageTitle": "One clear page title, with a short purpose line where it adds context.",
+      "primaryAction": "One visually dominant action per work area; secondary actions use quieter styles.",
+      "operationalData": "Tables and ledger rows are first-class content, not content hidden inside decorative cards.",
+      "status": "A readable status label plus icon or shape; color is a supporting signal only.",
+      "supportingVisuals": "Use small, labelled process diagrams, timelines, measured charts and purposeful empty-state illustrations when they reduce explanation time."
+    },
+    "avoid": [
+      "Purple-first or rainbow gradients",
+      "AI sparkles, robot motifs, glows or generative-looking decoration",
+      "Large hero typography inside operational portals",
+      "A grid of identical KPI cards on every page",
+      "Cards nested inside cards without a clear grouping purpose",
+      "Decorative glass, blur, parallax, floating blobs or excessive shadows",
+      "Bouncy motion, staggered page-load choreography or count-up numbers",
+      "Color-only statuses, unlabeled icon controls and placeholder-only form labels",
+      "Fake charts, fake percentages, ambiguous units or unexplained abbreviations",
+      "Using modals for routine information or toast notifications for field errors"
+    ]
+  },
+  "principles": [
+    {
+      "id": "intent-before-decoration",
+      "rule": "Start each screen from the user's task, the record being changed and the worst plausible mistake.",
+      "implementation": "Define the primary task, consequence, data needed, permission and recovery path before styling the screen."
+    },
+    {
+      "id": "ledger-over-dashboard",
+      "rule": "Prefer clear tables, record details, timelines and task queues over a wall of generic metric cards.",
+      "implementation": "Use cards only to group genuinely related content or isolate a consequential summary."
+    },
+    {
+      "id": "state-is-visible",
+      "rule": "Every consequential action must show whether it is draft, saving, posted, failed, queued or awaiting review.",
+      "implementation": "Show feedback near the action and preserve the resulting state in the record itself."
+    },
+    {
+      "id": "one-meaning-per-color",
+      "rule": "A color has a stable semantic meaning across all portals.",
+      "implementation": "Pine means primary action/selected navigation; green means successful state; amber means attention; red means destructive or blocking; blue means informational."
+    },
+    {
+      "id": "prevent-before-recover",
+      "rule": "Prevent invalid quantities, duplicate actions, accidental posting and irreversible mistakes before they happen.",
+      "implementation": "Use input constraints, inline validation, review summaries, clear permissions and server-confirmed commit states."
+    },
+    {
+      "id": "motion-earns-its-place",
+      "rule": "Motion must explain a state change, preserve spatial context or confirm an action.",
+      "implementation": "Prefer short opacity and small-position transitions. Remove motion when it adds no information."
+    },
+    {
+      "id": "accessible-by-default",
+      "rule": "Keyboard, touch, zoom, contrast and reduced-motion support are baseline requirements.",
+      "implementation": "Design to WCAG 2.2 AA; voluntarily use 44px touch targets and reduced-motion behavior as stronger product defaults."
+    },
+    {
+      "id": "honest-feedback",
+      "rule": "Never show a committed financial or inventory result before the server confirms it.",
+      "implementation": "Optimistic updates are restricted to reversible, low-risk UI preferences; transactions wait for the authoritative response."
+    }
+  ],
+  "researchBasis": [
+    {
+      "source": "Nielsen Norman Group",
+      "type": "usability heuristics and form-error guidance",
+      "application": [
+        "visibility of system status",
+        "match the user's real-world vocabulary",
+        "user control and freedom",
+        "consistency",
+        "error prevention and recovery",
+        "recognition rather than recall",
+        "inline, actionable form errors"
+      ],
+      "sourceNature": "Heuristics are broad rules of thumb, not a substitute for user testing or task-specific requirements.",
+      "urls": [
+        "https://www.nngroup.com/articles/ten-usability-heuristics/",
+        "https://www.nngroup.com/articles/errors-forms-design-guidelines/",
+        "https://www.nngroup.com/articles/animation-duration/",
+        "https://www.nngroup.com/articles/animation-usability/"
+      ]
+    },
+    {
+      "source": "Apple Human Interface Guidelines",
+      "type": "platform design guidance",
+      "application": [
+        "use color consistently and do not rely on color alone",
+        "make custom control states explicit",
+        "use motion purposefully and briefly",
+        "preserve context and predictable behavior",
+        "provide a clear press state and generous target areas"
+      ],
+      "sourceNature": "Apple's HIG is platform guidance; MillLedger borrows the underlying interaction principles rather than copying iOS visual styling.",
+      "urls": [
+        "https://developer.apple.com/design/human-interface-guidelines/color",
+        "https://developer.apple.com/design/human-interface-guidelines/motion",
+        "https://developer.apple.com/design/human-interface-guidelines/buttons",
+        "https://developer.apple.com/design/human-interface-guidelines/design-principles"
+      ]
+    },
+    {
+      "source": "DesignMotion HQ",
+      "type": "independent practical UX pattern library",
+      "application": [
+        "explicit field-state inventory",
+        "loading patterns selected by wait type and duration",
+        "toast/banner/modal/badge notification hierarchy",
+        "data-table numeric alignment, sticky context and density",
+        "consistent easing and short feedback motion",
+        "optimistic updates restricted to reversible, low-stakes actions"
+      ],
+      "sourceNature": "A useful practitioner resource, not a normative accessibility or usability standard. Individual recommendations are treated as hypotheses and adapted to MillLedger's operational risk.",
+      "urls": [
+        "https://designmotionhq.com/patterns",
+        "https://designmotionhq.com/patterns/animation-timing",
+        "https://designmotionhq.com/patterns/easing-curves",
+        "https://designmotionhq.com/patterns/form-field-states",
+        "https://designmotionhq.com/patterns/loading-states-system",
+        "https://designmotionhq.com/patterns/notification-system",
+        "https://designmotionhq.com/patterns/toast-notifications",
+        "https://designmotionhq.com/patterns/data-table",
+        "https://designmotionhq.com/patterns/optimistic-ui",
+        "https://designmotionhq.com/patterns/form-validation-timing",
+        "https://designmotionhq.com/patterns/color-accessibility"
+      ]
+    },
+    {
+      "source": "W3C Web Content Accessibility Guidelines 2.2",
+      "type": "W3C Recommendation",
+      "application": [
+        "4.5:1 normal text contrast and 3:1 large text contrast",
+        "3:1 non-text contrast for meaningful controls and graphics",
+        "keyboard access and visible focus",
+        "reflow at 320 CSS px without loss of information or functionality",
+        "minimum pointer target size of 24 by 24 CSS px, subject to stated exceptions",
+        "dragging alternatives",
+        "error identification and suggestions",
+        "review/confirmation or reversibility for financial and data-changing actions"
+      ],
+      "sourceNature": "Normative accessibility success criteria. The product must still be tested in rendered components and workflows; token values alone do not prove conformance.",
+      "urls": [
+        "https://www.w3.org/TR/WCAG22/",
+        "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+        "https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html",
+        "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html",
+        "https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements.html",
+        "https://www.w3.org/WAI/WCAG22/Understanding/error-prevention-legal-financial-data.html"
+      ]
+    }
+  ],
+  "tokens": {
+    "color": {
+      "palette": {
+        "light": {
+          "paper-50": "#F4F3EE",
+          "paper-100": "#ECEFE9",
+          "paper-150": "#E8EBE5",
+          "white": "#FFFFFF",
+          "pine-950": "#18231E",
+          "pine-900": "#243129",
+          "pine-800": "#34443A",
+          "pine-700": "#4C5A52",
+          "pine-600": "#5D6B63",
+          "pine-500": "#7B897F",
+          "pine-400": "#AAB5AC",
+          "pine-300": "#D8DED8",
+          "pine-200": "#E5EAE5",
+          "pine-100": "#EFF3EF",
+          "pine-700-action": "#176B54",
+          "pine-800-hover": "#135540",
+          "pine-900-pressed": "#0F4637",
+          "success-700": "#206B4C",
+          "success-100": "#E8F3EC",
+          "success-300": "#A4CDB4",
+          "warning-800": "#805000",
+          "warning-100": "#FFF2D6",
+          "warning-300": "#E8C77B",
+          "danger-700": "#A12D2A",
+          "danger-100": "#FBEAE8",
+          "danger-300": "#E2B4AF",
+          "info-800": "#285A7A",
+          "info-100": "#E9F1F7",
+          "info-300": "#AFC8DB",
+          "neutral-700": "#53615A",
+          "neutral-100": "#EDF0ED",
+          "neutral-300": "#CAD2CC"
+        },
+        "dark": {
+          "night-950": "#141B17",
+          "night-900": "#1B2520",
+          "night-850": "#202D26",
+          "night-800": "#26342D",
+          "night-1000": "#101713",
+          "text-strong": "#EDF3EE",
+          "text-secondary": "#C1CDC4",
+          "text-muted": "#A2B0A7",
+          "pine-primary": "#83C7AD",
+          "pine-hover": "#A0DDC5",
+          "pine-pressed": "#61AD90",
+          "pine-control-border": "#72857A",
+          "success-foreground": "#8BC9A5",
+          "success-background": "#1D3328",
+          "success-border": "#386047",
+          "warning-foreground": "#E6BE72",
+          "warning-background": "#382E1A",
+          "warning-border": "#6C572D",
+          "danger-foreground": "#F0A29A",
+          "danger-background": "#3B2423",
+          "danger-border": "#70403D",
+          "info-foreground": "#9BC5E0",
+          "info-background": "#1E2D39",
+          "info-border": "#3D5A70",
+          "neutral-foreground": "#C1CDC4",
+          "neutral-background": "#28332C",
+          "neutral-border": "#536259"
+        }
+      },
+      "semantic": {
+        "light": {
+          "background": {
+            "canvas": "#F4F3EE",
+            "surface": "#FFFFFF",
+            "surface-muted": "#ECEFE9",
+            "surface-sunken": "#E8EBE5",
+            "overlay": "#FFFFFF"
+          },
+          "text": {
+            "primary": "#18231E",
+            "secondary": "#4C5A52",
+            "muted": "#5D6B63",
+            "inverse": "#FFFFFF",
+            "link": "#176B54"
+          },
+          "border": {
+            "subtle": "#D8DED8",
+            "default": "#C8D0C8",
+            "control": "#7B897F",
+            "strong": "#65736A",
+            "focus": "#176B54"
+          },
+          "action": {
+            "primary": {
+              "background": "#176B54",
+              "foreground": "#FFFFFF",
+              "hover": "#135540",
+              "pressed": "#0F4637"
+            },
+            "secondary": {
+              "background": "#FFFFFF",
+              "foreground": "#18231E",
+              "border": "#7B897F",
+              "hover": "#EFF3EF"
+            },
+            "tertiary": {
+              "background": "transparent",
+              "foreground": "#176B54",
+              "hover": "#E5F0EB"
+            },
+            "destructive": {
+              "background": "#A12D2A",
+              "foreground": "#FFFFFF",
+              "hover": "#862522",
+              "pressed": "#6F1E1C"
+            }
+          },
+          "status": {
+            "success": {
+              "foreground": "#206B4C",
+              "background": "#E8F3EC",
+              "border": "#A4CDB4",
+              "icon": "check-circle"
+            },
+            "warning": {
+              "foreground": "#805000",
+              "background": "#FFF2D6",
+              "border": "#E8C77B",
+              "icon": "alert-triangle"
+            },
+            "danger": {
+              "foreground": "#A12D2A",
+              "background": "#FBEAE8",
+              "border": "#E2B4AF",
+              "icon": "alert-circle"
+            },
+            "info": {
+              "foreground": "#285A7A",
+              "background": "#E9F1F7",
+              "border": "#AFC8DB",
+              "icon": "info"
+            },
+            "neutral": {
+              "foreground": "#53615A",
+              "background": "#EDF0ED",
+              "border": "#CAD2CC",
+              "icon": "minus-circle"
+            }
+          },
+          "selection": {
+            "background": "#E5F0EB",
+            "foreground": "#18231E",
+            "indicator": "#176B54"
+          },
+          "focusRing": {
+            "color": "#176B54",
+            "width": "3px",
+            "offset": "2px"
+          }
+        },
+        "dark": {
+          "background": {
+            "canvas": "#141B17",
+            "surface": "#1B2520",
+            "surface-muted": "#202D26",
+            "surface-sunken": "#101713",
+            "overlay": "#202D26"
+          },
+          "text": {
+            "primary": "#EDF3EE",
+            "secondary": "#C1CDC4",
+            "muted": "#A2B0A7",
+            "inverse": "#10251A",
+            "link": "#A0DDC5"
+          },
+          "border": {
+            "subtle": "#35443B",
+            "default": "#45564B",
+            "control": "#72857A",
+            "strong": "#8C9A90",
+            "focus": "#83C7AD"
+          },
+          "action": {
+            "primary": {
+              "background": "#83C7AD",
+              "foreground": "#10251A",
+              "hover": "#A0DDC5",
+              "pressed": "#61AD90"
+            },
+            "secondary": {
+              "background": "#1B2520",
+              "foreground": "#EDF3EE",
+              "border": "#72857A",
+              "hover": "#26342D"
+            },
+            "tertiary": {
+              "background": "transparent",
+              "foreground": "#A0DDC5",
+              "hover": "#26342D"
+            },
+            "destructive": {
+              "background": "#F0A29A",
+              "foreground": "#321B1A",
+              "hover": "#F5B6AF",
+              "pressed": "#D98780"
+            }
+          },
+          "status": {
+            "success": {
+              "foreground": "#8BC9A5",
+              "background": "#1D3328",
+              "border": "#386047",
+              "icon": "check-circle"
+            },
+            "warning": {
+              "foreground": "#E6BE72",
+              "background": "#382E1A",
+              "border": "#6C572D",
+              "icon": "alert-triangle"
+            },
+            "danger": {
+              "foreground": "#F0A29A",
+              "background": "#3B2423",
+              "border": "#70403D",
+              "icon": "alert-circle"
+            },
+            "info": {
+              "foreground": "#9BC5E0",
+              "background": "#1E2D39",
+              "border": "#3D5A70",
+              "icon": "info"
+            },
+            "neutral": {
+              "foreground": "#C1CDC4",
+              "background": "#28332C",
+              "border": "#536259",
+              "icon": "minus-circle"
+            }
+          },
+          "selection": {
+            "background": "#263B31",
+            "foreground": "#EDF3EE",
+            "indicator": "#83C7AD"
+          },
+          "focusRing": {
+            "color": "#83C7AD",
+            "width": "3px",
+            "offset": "2px"
+          }
+        },
+        "usageRules": [
+          "Never use status colors as brand decoration.",
+          "Never rely on color alone; pair status color with a text label and an icon or shape.",
+          "Never use muted text for essential instructions unless its contrast is checked on the actual adjacent surface.",
+          "Use control-border tokens for input and interactive boundaries; subtle separators are not a substitute for a visible control boundary.",
+          "Do not place text on low-contrast backgrounds merely because the palette swatch looks attractive.",
+          "Use the same semantic state color in every portal and table."
+        ]
+      }
+    },
+    "typography": {
+      "family": {
+        "primary": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "monospace": "ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', monospace",
+        "delivery": "If Inter is selected, self-host a variable WOFF2 file in the application. Do not depend on a third-party font CDN for core UI rendering. System UI remains the fallback."
+      },
+      "weights": {
+        "regular": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700
+      },
+      "scale": {
+        "display": {
+          "fontSize": "32px",
+          "lineHeight": "1.2",
+          "weight": 600,
+          "letterSpacing": "-0.025em"
+        },
+        "page-title": {
+          "fontSize": "28px",
+          "lineHeight": "1.22",
+          "weight": 600,
+          "letterSpacing": "-0.02em"
+        },
+        "section-title": {
+          "fontSize": "22px",
+          "lineHeight": "1.3",
+          "weight": 600,
+          "letterSpacing": "-0.015em"
+        },
+        "subsection-title": {
+          "fontSize": "18px",
+          "lineHeight": "1.35",
+          "weight": 600
+        },
+        "body-large": {
+          "fontSize": "16px",
+          "lineHeight": "1.5",
+          "weight": 400
+        },
+        "body": {
+          "fontSize": "14px",
+          "lineHeight": "1.45",
+          "weight": 400
+        },
+        "body-medium": {
+          "fontSize": "14px",
+          "lineHeight": "1.45",
+          "weight": 500
+        },
+        "label": {
+          "fontSize": "13px",
+          "lineHeight": "1.4",
+          "weight": 600
+        },
+        "caption": {
+          "fontSize": "12px",
+          "lineHeight": "1.4",
+          "weight": 500
+        },
+        "micro": {
+          "fontSize": "11px",
+          "lineHeight": "1.35",
+          "weight": 600,
+          "letterSpacing": "0.035em"
+        }
+      },
+      "numeric": {
+        "css": "font-variant-numeric: tabular-nums lining-nums;",
+        "applyTo": [
+          "quantities",
+          "currency",
+          "rates",
+          "dates",
+          "invoice numbers",
+          "stock codes where comparison matters"
+        ],
+        "alignment": "Right-align numeric table columns; align units consistently and keep unit labels visible."
+      },
+      "contentRules": [
+        "Use sentence case for headings, buttons and statuses.",
+        "Do not use all-caps for long labels or navigation.",
+        "Use bold for hierarchy, not for decoration.",
+        "Keep body text at 14px or larger for routine operational content.",
+        "Use 16px or larger form-control text on mobile to avoid browser zoom behavior and improve legibility.",
+        "Do not use text inside images when live text can provide the same information."
+      ]
+    },
+    "spacing": {
+      "baseUnit": "4px",
+      "scale": {
+        "0": "0px",
+        "1": "4px",
+        "2": "8px",
+        "3": "12px",
+        "4": "16px",
+        "5": "20px",
+        "6": "24px",
+        "8": "32px",
+        "10": "40px",
+        "12": "48px",
+        "16": "64px",
+        "20": "80px"
+      },
+      "semantic": {
+        "control-gap": "8px",
+        "field-gap": "6px",
+        "form-section-gap": "24px",
+        "inline-group-gap": "8px",
+        "page-section-gap": "32px",
+        "page-gutter-desktop": "28px",
+        "page-gutter-tablet": "20px",
+        "page-gutter-mobile": "16px",
+        "card-padding": "20px",
+        "table-cell-x": "12px",
+        "table-cell-y": "12px"
+      }
+    },
+    "shape": {
+      "radius": {
+        "none": "0px",
+        "small": "4px",
+        "control": "6px",
+        "medium": "8px",
+        "large": "10px",
+        "panel": "12px",
+        "pill": "999px"
+      },
+      "rules": [
+        "Use 6px for inputs and buttons, 8px for compact status pills and menus, 10-12px for panels where the grouping needs a container.",
+        "Avoid rounding every nested element.",
+        "Avoid oversized pill buttons except for compact chips or segmented controls."
+      ]
+    },
+    "borders": {
+      "width": {
+        "hairline": "1px",
+        "emphasis": "2px",
+        "focus": "3px"
+      },
+      "style": "Use one-pixel separators for grouping; use higher-contrast control borders for inputs and interactive boundaries.",
+      "defaultSeparator": "1px solid #D8DED8",
+      "controlBorder": "1px solid #7B897F",
+      "focusRing": "3px solid #176B54 with 2px offset in light mode; use theme semantic token in dark mode."
+    },
+    "elevation": {
+      "level-0": "none",
+      "level-1": "0 1px 2px rgba(24, 35, 30, 0.06)",
+      "level-2": "0 8px 24px rgba(24, 35, 30, 0.12)",
+      "level-3": "0 16px 40px rgba(24, 35, 30, 0.16)",
+      "usage": {
+        "content-panels": "Prefer borders and surface tone; no default card shadow.",
+        "menus-popovers": "level-2",
+        "modal-drawer": "level-3",
+        "sticky-table-header": "separator line; shadow only where scrolling requires depth cue"
+      }
+    },
+    "layout": {
+      "breakpoints": {
+        "mobile": "0-639px",
+        "tablet": "640-1023px",
+        "desktop": "1024-1279px",
+        "wide": "1280px and above"
+      },
+      "shell": {
+        "desktopSidebarWidth": "248px",
+        "collapsedSidebarWidth": "72px",
+        "topbarHeight": "64px",
+        "contentMaxWidth": "1600px",
+        "desktopGutter": "28px",
+        "mobileGutter": "16px"
+      },
+      "grid": {
+        "desktop": "12 columns",
+        "tablet": "8 columns",
+        "mobile": "4 columns",
+        "gutter": "24px desktop; 16px mobile"
+      },
+      "density": {
+        "compact": {
+          "tableRowMinHeight": "40px",
+          "useWhen": "Dense operational datasets on desktop; preserve at least 44px interactive hit areas for controls inside rows."
+        },
+        "comfortable": {
+          "tableRowMinHeight": "48px",
+          "useWhen": "Default density and mixed pointer/touch environments."
+        },
+        "touch": {
+          "tableRowMinHeight": "56px",
+          "useWhen": "Touch-first/mobile lists."
+        },
+        "default": "comfortable"
+      }
+    },
+    "motion": {
+      "principle": "Motion clarifies cause, location or state. It must not delay the user's next action.",
+      "durationMs": {
+        "instant": 0,
+        "press": 80,
+        "micro": 100,
+        "fast": 120,
+        "standard": 160,
+        "panel-enter": 220,
+        "overlay-enter": 240,
+        "overlay-exit": 140,
+        "toast-enter": 160,
+        "toast-exit": 120
+      },
+      "easing": {
+        "standard": "cubic-bezier(0.2, 0, 0, 1)",
+        "enter": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "exit": "cubic-bezier(0.4, 0, 1, 1)",
+        "linear": "linear"
+      },
+      "semantic": {
+        "button-press": {
+          "duration": "press",
+          "easing": "standard",
+          "properties": [
+            "background-color",
+            "border-color",
+            "transform"
+          ],
+          "transform": "scale(0.985)"
+        },
+        "hover": {
+          "duration": "micro",
+          "easing": "standard",
+          "properties": [
+            "background-color",
+            "border-color",
+            "color"
+          ]
+        },
+        "checkbox-toggle": {
+          "duration": "micro",
+          "easing": "standard",
+          "properties": [
+            "background-color",
+            "border-color",
+            "opacity"
+          ]
+        },
+        "tooltip": {
+          "duration": "fast",
+          "easing": "enter",
+          "properties": [
+            "opacity",
+            "transform"
+          ],
+          "offset": "2px"
+        },
+        "menu-popover": {
+          "duration": "standard",
+          "easing": "enter",
+          "properties": [
+            "opacity",
+            "transform"
+          ],
+          "offset": "4px"
+        },
+        "drawer-modal-enter": {
+          "duration": "overlay-enter",
+          "easing": "enter",
+          "properties": [
+            "opacity",
+            "transform"
+          ],
+          "offset": "8px"
+        },
+        "drawer-modal-exit": {
+          "duration": "overlay-exit",
+          "easing": "exit",
+          "properties": [
+            "opacity",
+            "transform"
+          ],
+          "offset": "4px"
+        },
+        "toast-enter": {
+          "duration": "toast-enter",
+          "easing": "enter",
+          "properties": [
+            "opacity",
+            "transform"
+          ],
+          "offset": "6px"
+        },
+        "toast-exit": {
+          "duration": "toast-exit",
+          "easing": "exit",
+          "properties": [
+            "opacity",
+            "transform"
+          ]
+        },
+        "accordion": {
+          "duration": "standard",
+          "easing": "standard",
+          "properties": [
+            "grid-template-rows",
+            "opacity"
+          ]
+        },
+        "progress": {
+          "duration": "standard",
+          "easing": "standard",
+          "properties": [
+            "transform"
+          ]
+        }
+      },
+      "rules": [
+        "Do not animate every page load, dashboard metric or table row.",
+        "Do not use bounce, elastic overshoot, spring effects or scroll-driven animation in routine workflows.",
+        "Do not animate numeric values to create excitement; update values directly and provide textual context.",
+        "Do not animate layout geometry in ways that cause content to jump or shift.",
+        "Do not use motion as the only indication that a save, error or selection occurred.",
+        "Do not use a 50ms stagger for ordinary table rows; render operational data immediately.",
+        "Use linear easing only for continuous progress/spinner rotation, not for entrance or state transitions.",
+        "Motion should start on the user's action, never after an arbitrary delay."
+      ],
+      "reducedMotion": {
+        "mediaQuery": "(prefers-reduced-motion: reduce)",
+        "policy": "Remove nonessential transforms, sliding and animated progression. Use immediate state replacement or a brief opacity change. Keep progress/status information available without animation.",
+        "css": "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"
+      }
+    }
+  },
+  "components": {
+    "button": {
+      "height": "44px",
+      "minWidth": "44px for icon-only controls; label-first for primary actions",
+      "radius": "6px",
+      "variants": {
+        "primary": "One key action per view, e.g. Add item, Create purchase, Record payment.",
+        "secondary": "Useful supporting action, e.g. Export, Save draft.",
+        "tertiary": "Low-emphasis action such as Cancel or View details.",
+        "destructive": "Delete, void or irreversible action; use only when action is genuinely destructive."
+      },
+      "states": [
+        "default",
+        "hover",
+        "pressed",
+        "keyboard-focus",
+        "disabled",
+        "loading"
+      ],
+      "loadingBehavior": "Keep the button width stable, prevent duplicate submission, show a small spinner and action-specific text such as 'Saving…' or 'Posting…'.",
+      "labelRule": "Use a verb plus object. Avoid vague labels such as Submit, Proceed or OK when the outcome can be named."
+    },
+    "formField": {
+      "labelPosition": "Visible label above the control; never rely on placeholder text as the only label.",
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "filled",
+        "invalid",
+        "valid",
+        "disabled",
+        "read-only",
+        "loading"
+      ],
+      "height": "44px minimum",
+      "border": "1px solid semantic.border.control",
+      "focus": "3px focus ring with 2px offset; keep visible for keyboard navigation.",
+      "helperText": "Place persistent instructions immediately below the field.",
+      "validation": {
+        "initial": "Do not show a red error before the user has interacted with the field or attempted submission.",
+        "timing": "Validate on blur and on submit; after an error appears, revalidate as the user corrects that field.",
+        "error": "Place a short, actionable message next to the field and link it programmatically with aria-describedby.",
+        "success": "Only show a positive field state when the check adds meaningful certainty; avoid a green check on every ordinary text input."
+      },
+      "required": "Use explicit required indication and explain the meaning once per form."
+    },
+    "quantityInput": {
+      "behavior": "Numeric input with visible unit, decimal precision and allowed range.",
+      "layout": "Keep the unit outside the editable value where possible, e.g. [ 125.50 ] [ kg ].",
+      "validation": [
+        "Reject negative quantity where the domain does not allow it.",
+        "Show available stock or production limit in nearby helper text when relevant.",
+        "Do not silently round entered values.",
+        "Display the allowed precision and unit before submission."
+      ]
+    },
+    "currencyInput": {
+      "locale": "en-IN",
+      "currency": "INR",
+      "display": "₹ 1,25,000.00",
+      "rules": [
+        "Use decimal-safe arithmetic in the data layer; formatting must not alter stored precision.",
+        "Keep currency visible in labels or values.",
+        "Do not hide tax, discount or total calculation assumptions.",
+        "Show subtotal, adjustments, tax and grand total in a review summary before posting."
+      ]
+    },
+    "statusBadge": {
+      "height": "24px minimum",
+      "radius": "4px",
+      "content": "Icon or shape plus explicit text label.",
+      "variants": [
+        "success",
+        "warning",
+        "danger",
+        "info",
+        "neutral"
+      ],
+      "never": [
+        "color-only dot as the only status indication",
+        "ambiguous labels such as Active when a domain-specific state is available"
+      ]
+    },
+    "dataTable": {
+      "implementation": "Use semantic table markup for tabular data. Do not simulate a table with generic divs.",
+      "header": "Sticky when vertical scrolling requires it; preserve column labels.",
+      "numericColumns": "Right-aligned with tabular figures; include the unit in the header or value.",
+      "sorting": "Expose current sort field and direction; provide a deterministic return to default order.",
+      "selection": "Use a visible selected-row treatment and a usable checkbox target. Expose indeterminate select-all state.",
+      "density": "Use compact, comfortable and touch density tokens consistently.",
+      "filters": "Show active filters as removable chips and provide a clear-all action.",
+      "empty": "Explain why the table is empty and the next useful action; distinguish no records from no search matches.",
+      "loading": "Use skeleton rows only when the expected row structure is known; preserve header and layout.",
+      "error": "Keep the table context, explain the failure and offer Retry without wiping active filters.",
+      "mobile": "Avoid page-wide horizontal overflow. Reflow nonessential columns into record details; when a genuine multi-column table must scroll, keep the scroll region explicit and the identifying column anchored."
+    },
+    "dialog": {
+      "useFor": [
+        "Reviewing and confirming a high-impact action",
+        "A blocking decision that cannot safely proceed in the current context"
+      ],
+      "avoidFor": [
+        "Routine informational messages",
+        "Ordinary form errors",
+        "Every low-risk delete or reversible action"
+      ],
+      "behavior": "Move focus into the dialog, contain focus while open, support Escape when safe, and return focus to the invoking control on close.",
+      "transactionReview": "Show the record, amount/quantity, affected stock or balances, and consequence before final commit."
+    },
+    "toast": {
+      "position": "Bottom-right desktop; top edge on mobile, away from critical controls.",
+      "maxVisible": 3,
+      "successDurationSeconds": 4,
+      "infoDurationSeconds": 4,
+      "warningDurationSeconds": 7,
+      "criticalError": "Persistent until acknowledged or resolved.",
+      "rules": [
+        "Never use a toast as the only place where a field error appears.",
+        "Never move keyboard focus to a routine toast.",
+        "Pause auto-dismiss while hovered or keyboard-focused.",
+        "Provide Undo only when a real, safe undo operation exists.",
+        "Do not use a toast to claim a server transaction succeeded before commit."
+      ]
+    },
+    "banner": {
+      "useFor": [
+        "Offline or degraded service state",
+        "Persistent permission or configuration issue",
+        "Stock discrepancy or unresolved operational exception",
+        "Important sync state that affects several records"
+      ],
+      "behavior": "Persistent until resolved or explicitly dismissed where dismissal is safe; include an action when the user can resolve it."
+    },
+    "emptyState": {
+      "visual": "Small, purposeful line illustration or process pictogram accompanied by clear text.",
+      "contentOrder": [
+        "short title",
+        "one-sentence explanation",
+        "single next action"
+      ],
+      "example": {
+        "title": "No stock items yet",
+        "description": "Add the materials your team buys, stores or uses in production.",
+        "action": "Add first item"
+      },
+      "avoid": "Large generic illustration, decorative gradients or an empty panel with only a vague sentence."
+    },
+    "processTimeline": {
+      "useFor": [
+        "purchase receiving",
+        "production batch progression",
+        "sales dispatch",
+        "payment and reconciliation history"
+      ],
+      "visual": "Connected steps with status, timestamp, actor and record link.",
+      "rule": "Show completed, current, blocked and future steps with both icon/shape and text."
+    },
+    "chart": {
+      "default": "Prefer horizontal bar comparisons or a clearly labelled line chart when trend is meaningful.",
+      "requirements": [
+        "Every chart has a title, period, units and a short plain-language summary.",
+        "Provide an accessible data table or equivalent text summary.",
+        "Use marker/line-style differences as well as color where series must be distinguished.",
+        "Do not truncate axes in a way that exaggerates change without making the scale explicit.",
+        "Do not use a chart when a small table is faster to compare."
+      ]
+    }
+  },
+  "interactionPatterns": {
+    "navigation": {
+      "desktop": "Persistent left navigation with clear current location; keep high-frequency work areas near the top.",
+      "tablet": "Collapsible navigation rail or drawer.",
+      "mobile": "Compact top bar plus drawer; use bottom navigation only for a small, stable set of the most-used destinations.",
+      "rule": "Keep route changes predictable, preserve filters and table context when returning from a record."
+    },
+    "pageHeader": {
+      "structure": [
+        "breadcrumb where useful",
+        "page title",
+        "brief purpose or scope",
+        "one primary action",
+        "secondary actions grouped separately"
+      ],
+      "rule": "The page title must name the work area, not a marketing phrase."
+    },
+    "forms": {
+      "grouping": "Group fields by the user's task and real-world document structure, not by database tables.",
+      "sequence": "Identity and date → line items/details → calculations → notes/attachments → review.",
+      "saveDraft": "Use explicit Save draft when a record can remain incomplete.",
+      "unsavedChanges": "Warn before leaving only when unsaved data would actually be lost; keep entered values on validation failure.",
+      "reviewStep": "For high-impact records, show a review step with a clear edit path before final posting."
+    },
+    "inventory": {
+      "recordDetail": "Show current quantity, unit, reorder threshold, storage location, latest movement and full movement history.",
+      "stockAdjustment": "Require adjustment reason; show quantity before, change and quantity after before commit.",
+      "lowStock": "Show numeric threshold and shortfall, not only a warning badge.",
+      "negativeStock": "Do not communicate negative stock as an ordinary success state; show a blocking validation or explicit policy exception path."
+    },
+    "purchasing": {
+      "purchaseLifecycle": [
+        "Draft",
+        "Submitted or approved where configured",
+        "Partially received",
+        "Received",
+        "Closed or reversed by an auditable correction"
+      ],
+      "receiving": "Show ordered, received, remaining and accepted/rejected quantities per line.",
+      "feedback": "Explain how posting the receipt changes available stock."
+    },
+    "production": {
+      "batchDetail": "Use a process timeline: planned inputs → issued materials → production output → quality/acceptance → finished-goods stock.",
+      "quantityReview": "Show planned, actual, rejected/scrap and accepted output with units before completion.",
+      "variance": "Show the variance as a value and explain whether it is within configured tolerance."
+    },
+    "salesAndPayments": {
+      "financialReview": "Display party, reference, line items, totals, payment status and remaining balance before final action.",
+      "posting": "Wait for server confirmation. Do not optimistically display a posted invoice, completed payment or settled balance.",
+      "correction": "Use an auditable reversal/correction flow with a reason rather than silently editing a posted record."
+    },
+    "searchAndFilters": {
+      "search": "Search by the identifiers users actually know: item name/code, party, invoice/reference or batch number.",
+      "filters": "Keep filter state visible and removable; preserve it in the URL when practical.",
+      "results": "Show result count and the active scope; distinguish no matches from no records."
+    },
+    "bulkActions": {
+      "behavior": "Only reveal actions valid for the selected records and the user's permissions.",
+      "review": "Show selected count and summarize affected records before applying high-impact changes.",
+      "keyboard": "Support keyboard selection and bulk action invocation."
+    },
+    "dragAndDrop": {
+      "policy": "Never make dragging the only way to perform an action.",
+      "alternative": "Provide Move up/down, reorder menu, numeric position field or explicit destination control."
+    }
+  },
+  "feedbackSystem": {
+    "principle": "Feedback is a truthful statement about the system state, not decoration.",
+    "loading": [
+      {
+        "condition": "Expected completion below 300ms",
+        "pattern": "No loading indicator; avoid a flash."
+      },
+      {
+        "condition": "Initial content load above 300ms and the content silhouette is known",
+        "pattern": "Skeleton for the affected table/list region; retain headings and surrounding layout."
+      },
+      {
+        "condition": "Short action with unknown duration, typically below 3 seconds",
+        "pattern": "Inline spinner in the initiating control plus action text such as Saving…; block duplicate submit."
+      },
+      {
+        "condition": "Long operation with known progress",
+        "pattern": "Determinate progress bar with percentage and meaningful stage/remaining-time context."
+      },
+      {
+        "condition": "Long operation with unknown progress",
+        "pattern": "Indeterminate progress plus a truthful stage label; never invent a percentage."
+      },
+      {
+        "condition": "Refresh while valid previous data exists",
+        "pattern": "Keep the previous result visible, mark it as refreshing and prevent stale data from appearing freshly committed."
+      }
+    ],
+    "success": {
+      "messagePattern": "[Record type] [reference] [completed action].",
+      "examples": [
+        "Purchase PUR-1042 posted. Stock balances have been updated.",
+        "Payment PAY-208 recorded. Remaining balance: ₹12,500.00."
+      ],
+      "requirements": [
+        "Only report success after authoritative server confirmation.",
+        "Update the record's persistent status and activity history.",
+        "Use a concise toast as secondary feedback, not as the only record of success."
+      ]
+    },
+    "error": {
+      "messagePattern": "What failed + what remains unchanged + the next safe action.",
+      "examples": [
+        "Payment was not recorded. No balance was changed. Check the payment details and try again.",
+        "This receipt exceeds the remaining purchase quantity by 12 kg. Reduce the received quantity or review the purchase."
+      ],
+      "requirements": [
+        "Use plain language; avoid raw stack traces and unexplained codes.",
+        "Keep the user's input and context.",
+        "Place field errors beside the fields; provide a summary for multi-field submit failures.",
+        "Give a recovery action when one is known.",
+        "Announce important asynchronous status changes to assistive technology."
+      ]
+    },
+    "offlineAndSync": {
+      "offline": "Persistent banner: Offline. You can continue with actions supported on this device.",
+      "queued": "Explicit label: Saved on this device · Waiting to sync.",
+      "syncing": "Syncing 3 queued changes…",
+      "synced": "Synced · 2 minutes ago.",
+      "conflict": "Needs review · This change conflicts with newer server data.",
+      "failed": "Sync failed · Your local draft is still available. Retry or review the conflict.",
+      "rules": [
+        "Do not describe a local queue entry as server-saved.",
+        "Do not reserve or decrement server stock optimistically while offline.",
+        "Keep a visible queue count and per-record sync state.",
+        "Never silently discard a queued action or overwrite server data after a conflict."
+      ]
+    },
+    "destructiveAndHighImpact": {
+      "lowRiskReversible": "Perform the action and offer a meaningful Undo where an actual reversal is supported.",
+      "irreversibleOrHighImpact": "Require a review/confirmation step that states the consequence and identifies the affected record.",
+      "postedRecords": "Use append-only correction or reversal with reason and actor; do not silently mutate posted financial or stock records.",
+      "duplicateSubmission": "Disable repeat submit while pending and use server-side idempotency; the UI must still show the final authoritative result."
+    },
+    "notificationSurface": {
+      "toast": "Transient, non-blocking, low-to-medium priority feedback.",
+      "inline": "Field-specific validation or a status tied to a specific record.",
+      "banner": "Persistent system-level condition or operational exception.",
+      "dialog": "A decision or confirmation that must be resolved before continuing.",
+      "badge": "A quiet count or flag attached to a navigation item; never the only explanation."
+    }
+  },
+  "dataVisualization": {
+    "purpose": "Help an operator spot a condition or compare values, not decorate a dashboard.",
+    "preferredForms": [
+      "horizontal bars for category or threshold comparisons",
+      "line charts for time-based trends",
+      "stacked bars only where components of a whole matter",
+      "process timelines for workflow progression",
+      "tables for exact-value lookup"
+    ],
+    "chartRules": [
+      "Display units, period and baseline.",
+      "Use direct labels and meaningful tick marks.",
+      "Provide data table or text summary equivalent.",
+      "Do not rely on green/red to distinguish series; add markers, dashes or labels.",
+      "Do not show percentages without a denominator or definition.",
+      "Do not use 3D charts, decorative pie charts or animated chart reveals.",
+      "Keep data density proportional to the decision being supported."
+    ],
+    "recommendedOperationalVisuals": [
+      {
+        "name": "stockThreshold",
+        "visual": "Horizontal quantity bar with a visible reorder marker and textual quantity",
+        "textCompanion": "On hand 420 kg · Reorder point 500 kg · Short by 80 kg",
+        "use": "Identify material below reorder point."
+      },
+      {
+        "name": "productionFlow",
+        "visual": "Connected sequence: Raw materials → Work order → Finished goods → Dispatch",
+        "textCompanion": "Each stage shows state, timestamp, quantity and responsible person.",
+        "use": "Explain where a batch currently sits and what is blocking progress."
+      },
+      {
+        "name": "movementHistory",
+        "visual": "Vertical ledger timeline with incoming/outgoing markers and linked references",
+        "textCompanion": "Date · Movement type · Reference · Quantity · Balance after movement",
+        "use": "Audit a stock balance."
+      },
+      {
+        "name": "paymentProgress",
+        "visual": "Paid / outstanding split bar with amount labels",
+        "textCompanion": "Invoice total ₹50,000 · Paid ₹35,000 · Balance ₹15,000",
+        "use": "Understand a receivable or payable balance."
+      }
+    ]
+  },
+  "contentAndMicrocopy": {
+    "voice": [
+      "direct",
+      "respectful",
+      "specific",
+      "non-technical unless required"
+    ],
+    "rules": [
+      "Name the real-world object: item, purchase, batch, invoice, payment, stock adjustment.",
+      "Use action verbs that describe the result: Save draft, Post purchase, Record payment, Receive goods, Reverse entry.",
+      "Use units in every quantity context.",
+      "Use dates and currency consistently across all pages.",
+      "Do not use celebratory or vague messages for routine recordkeeping.",
+      "Do not expose database terms such as row, entity, payload or mutation to end users."
+    ],
+    "goodExamples": [
+      {
+        "context": "reorder",
+        "copy": "Below reorder point by 80 kg",
+        "why": "Shows a measurable gap and unit."
+      },
+      {
+        "context": "posting",
+        "copy": "Post purchase",
+        "why": "Names the irreversible business action."
+      },
+      {
+        "context": "offline",
+        "copy": "Saved on this device · Waiting to sync",
+        "why": "Does not falsely imply server persistence."
+      },
+      {
+        "context": "error",
+        "copy": "Received quantity is 12 kg above the remaining purchase quantity.",
+        "why": "Identifies the mismatch and its unit."
+      }
+    ],
+    "avoidExamples": [
+      "Yay! Everything is awesome!",
+      "Oops, something went wrong.",
+      "Success!",
+      "Submit",
+      "Active",
+      "100% complete (when the system cannot substantiate the percentage)"
+    ]
+  },
+  "accessibility": {
+    "conformanceTarget": "WCAG 2.2 AA",
+    "productDefaultsBeyondMinimum": [
+      "44 by 44 CSS px target areas for primary touch controls",
+      "3px visible focus ring with 2px offset",
+      "reduced-motion preference honored for all nonessential animation",
+      "all statuses communicated through text and icon/shape as well as color"
+    ],
+    "successCriteria": [
+      {
+        "id": "1.4.1",
+        "name": "Use of Color",
+        "level": "A",
+        "implementation": "Never encode error, success, selection, trend or status using color alone."
+      },
+      {
+        "id": "1.4.3",
+        "name": "Contrast (Minimum)",
+        "level": "AA",
+        "implementation": "At least 4.5:1 for normal text and 3:1 for large text."
+      },
+      {
+        "id": "1.4.4",
+        "name": "Resize Text",
+        "level": "AA",
+        "implementation": "Support 200% text resize without loss of content or functionality."
+      },
+      {
+        "id": "1.4.10",
+        "name": "Reflow",
+        "level": "AA",
+        "implementation": "At 320 CSS px, preserve content and functionality without page-level two-dimensional scrolling; exempt only genuinely two-dimensional data where its use requires it."
+      },
+      {
+        "id": "1.4.11",
+        "name": "Non-text Contrast",
+        "level": "AA",
+        "implementation": "Meaningful component boundaries, controls and graphical objects need 3:1 contrast against adjacent colors."
+      },
+      {
+        "id": "1.4.12",
+        "name": "Text Spacing",
+        "level": "AA",
+        "implementation": "Allow user text-spacing overrides without loss of content or functionality."
+      },
+      {
+        "id": "2.1.1",
+        "name": "Keyboard",
+        "level": "A",
+        "implementation": "All functionality is operable without a pointer."
+      },
+      {
+        "id": "2.4.3",
+        "name": "Focus Order",
+        "level": "A",
+        "implementation": "DOM and visual order are coherent; focus follows the task sequence."
+      },
+      {
+        "id": "2.4.6",
+        "name": "Headings and Labels",
+        "level": "AA",
+        "implementation": "Labels describe the purpose of each field and action."
+      },
+      {
+        "id": "2.4.7",
+        "name": "Focus Visible",
+        "level": "AA",
+        "implementation": "Every keyboard-operated component has a visible focus state."
+      },
+      {
+        "id": "2.4.11",
+        "name": "Focus Not Obscured (Minimum)",
+        "level": "AA",
+        "implementation": "Sticky headers, drawers and floating layers must not fully hide the focused control."
+      },
+      {
+        "id": "2.5.7",
+        "name": "Dragging Movements",
+        "level": "AA",
+        "implementation": "Provide a click/tap alternative for reorder, drag and drop operations."
+      },
+      {
+        "id": "2.5.8",
+        "name": "Target Size (Minimum)",
+        "level": "AA",
+        "implementation": "Meet 24 by 24 CSS px minimum or an applicable exception; the product design target is 44 by 44 CSS px."
+      },
+      {
+        "id": "3.3.1",
+        "name": "Error Identification",
+        "level": "A",
+        "implementation": "Identify the field and describe the error in text."
+      },
+      {
+        "id": "3.3.3",
+        "name": "Error Suggestion",
+        "level": "AA",
+        "implementation": "Provide a correction suggestion when it is known and safe."
+      },
+      {
+        "id": "3.3.4",
+        "name": "Error Prevention (Legal, Financial, Data)",
+        "level": "AA",
+        "implementation": "For financial and data-changing actions, provide reversibility, input checking with correction, or a review/confirmation mechanism."
+      }
+    ],
+    "additionalGoodPractice": [
+      "Use semantic landmarks, headings, labels, table headers and live regions.",
+      "Use aria-live='polite' for routine asynchronous status; use assertive announcements only for urgent blocking errors.",
+      "Do not put essential instructions only in tooltips or hover states.",
+      "Keep error messages visible until corrected or clearly superseded.",
+      "Test with keyboard-only navigation, screen reader, browser zoom, high contrast and touch input.",
+      "Avoid auto-focusing a destructive action or moving focus after routine success."
+    ],
+    "motion": {
+      "policy": "Honor prefers-reduced-motion. Motion animation triggered by interaction can be disabled; this also aligns with WCAG 2.2 AAA 2.3.3.",
+      "flashPolicy": "Never create flashing attention effects; comply with WCAG 2.3.1.",
+      "autoUpdatePolicy": "For auto-updating regions, preserve user control and do not unexpectedly move focus."
+    },
+    "auditWarning": "The color pairs in this file are programmatically checked token pairings only. Full WCAG conformance requires testing rendered components, text, hover/focus states, charts, keyboard flows, content reflow and assistive-technology behavior.",
+    "colorContrastAudit": {
+      "method": "WCAG relative luminance contrast ratio calculation",
+      "scope": "Selected semantic token combinations only, not a full UI conformance audit",
+      "checks": [
+        {
+          "theme": "light",
+          "pair": "text.primary on canvas",
+          "foreground": "#18231E",
+          "background": "#F4F3EE",
+          "ratio": 14.56,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "light",
+          "pair": "text.secondary on surface",
+          "foreground": "#4C5A52",
+          "background": "#FFFFFF",
+          "ratio": 7.26,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "light",
+          "pair": "text.muted on canvas",
+          "foreground": "#5D6B63",
+          "background": "#F4F3EE",
+          "ratio": 5.04,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "light",
+          "pair": "primary button label",
+          "foreground": "#FFFFFF",
+          "background": "#176B54",
+          "ratio": 6.43,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "light",
+          "pair": "destructive button label",
+          "foreground": "#FFFFFF",
+          "background": "#A12D2A",
+          "ratio": 7.18,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "light",
+          "pair": "success badge text",
+          "foreground": "#206B4C",
+          "background": "#E8F3EC",
+          "ratio": 5.65,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "light",
+          "pair": "warning badge text",
+          "foreground": "#805000",
+          "background": "#FFF2D6",
+          "ratio": 6.17,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "light",
+          "pair": "danger badge text",
+          "foreground": "#A12D2A",
+          "background": "#FBEAE8",
+          "ratio": 6.17,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "light",
+          "pair": "info badge text",
+          "foreground": "#285A7A",
+          "background": "#E9F1F7",
+          "ratio": 6.49,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "light",
+          "pair": "neutral badge text",
+          "foreground": "#53615A",
+          "background": "#EDF0ED",
+          "ratio": 5.67,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "light",
+          "pair": "control border against canvas",
+          "foreground": "#7B897F",
+          "background": "#F4F3EE",
+          "ratio": 3.3,
+          "minimum": 3.0,
+          "pass": true
+        },
+        {
+          "theme": "light",
+          "pair": "focus ring against canvas",
+          "foreground": "#176B54",
+          "background": "#F4F3EE",
+          "ratio": 5.78,
+          "minimum": 3.0,
+          "pass": true
+        },
+        {
+          "theme": "light",
+          "pair": "focus ring against white",
+          "foreground": "#176B54",
+          "background": "#FFFFFF",
+          "ratio": 6.43,
+          "minimum": 3.0,
+          "pass": true
+        },
+        {
+          "theme": "dark",
+          "pair": "primary text on canvas",
+          "foreground": "#EDF3EE",
+          "background": "#141B17",
+          "ratio": 15.56,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "dark",
+          "pair": "secondary text on surface",
+          "foreground": "#C1CDC4",
+          "background": "#1B2520",
+          "ratio": 9.61,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "dark",
+          "pair": "muted text on canvas",
+          "foreground": "#A2B0A7",
+          "background": "#141B17",
+          "ratio": 7.76,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "dark",
+          "pair": "primary button label",
+          "foreground": "#10251A",
+          "background": "#83C7AD",
+          "ratio": 8.25,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "dark",
+          "pair": "success badge text",
+          "foreground": "#8BC9A5",
+          "background": "#1D3328",
+          "ratio": 7.06,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "dark",
+          "pair": "warning badge text",
+          "foreground": "#E6BE72",
+          "background": "#382E1A",
+          "ratio": 7.61,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "dark",
+          "pair": "danger badge text",
+          "foreground": "#F0A29A",
+          "background": "#3B2423",
+          "ratio": 7.07,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "dark",
+          "pair": "info badge text",
+          "foreground": "#9BC5E0",
+          "background": "#1E2D39",
+          "ratio": 7.69,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "dark",
+          "pair": "neutral badge text",
+          "foreground": "#C1CDC4",
+          "background": "#28332C",
+          "ratio": 8.0,
+          "minimum": 4.5,
+          "pass": true
+        },
+        {
+          "theme": "dark",
+          "pair": "control border against surface",
+          "foreground": "#72857A",
+          "background": "#1B2520",
+          "ratio": 4.02,
+          "minimum": 3.0,
+          "pass": true
+        },
+        {
+          "theme": "dark",
+          "pair": "focus ring against canvas",
+          "foreground": "#83C7AD",
+          "background": "#141B17",
+          "ratio": 8.96,
+          "minimum": 3.0,
+          "pass": true
+        },
+        {
+          "theme": "dark",
+          "pair": "focus ring against raised surface",
+          "foreground": "#83C7AD",
+          "background": "#202D26",
+          "ratio": 7.33,
+          "minimum": 3.0,
+          "pass": true
+        }
+      ],
+      "allSelectedPairsPass": true
+    }
+  },
+  "visualExamples": {
+    "inventoryPage": {
+      "pageTitle": "Inventory",
+      "purposeLine": "Raw materials, finished goods and stock movement history.",
+      "primaryAction": "Add item",
+      "summaryStrip": [
+        {
+          "label": "Below reorder point",
+          "value": "03 items",
+          "status": "warning"
+        },
+        {
+          "label": "Stock on hand",
+          "value": "1,248 kg",
+          "status": "neutral"
+        },
+        {
+          "label": "Pending receipts",
+          "value": "02",
+          "status": "info"
+        }
+      ],
+      "tableColumns": [
+        "Item / code",
+        "Location",
+        "On hand",
+        "Reorder point",
+        "Status",
+        "Last movement"
+      ],
+      "illustrativeRowsOnly": [
+        {
+          "item": "Cotton yarn · RM-014",
+          "location": "Store A",
+          "onHand": "420 kg",
+          "reorder": "500 kg",
+          "status": "Below reorder",
+          "movement": "Goods received · 17 Nov"
+        },
+        {
+          "item": "Packing carton · PK-021",
+          "location": "Store B",
+          "onHand": "860 pcs",
+          "reorder": "300 pcs",
+          "status": "In stock",
+          "movement": "Issued to production · 17 Nov"
+        }
+      ],
+      "note": "All quantities above are visual examples only, not source requirements or actual MillLedger data."
+    },
+    "processDiagram": {
+      "title": "Production trace",
+      "steps": [
+        {
+          "label": "Raw materials",
+          "detail": "Issued quantities",
+          "state": "complete"
+        },
+        {
+          "label": "Work order",
+          "detail": "Batch in progress",
+          "state": "current"
+        },
+        {
+          "label": "Finished goods",
+          "detail": "Accepted output",
+          "state": "upcoming"
+        },
+        {
+          "label": "Dispatch",
+          "detail": "Sales fulfilment",
+          "state": "upcoming"
+        }
+      ],
+      "rule": "Use a connected visual sequence with readable labels and stage details; do not replace the explanation with icons alone."
+    },
+    "statusExamples": [
+      {
+        "label": "Posted",
+        "type": "success",
+        "icon": "check-circle"
+      },
+      {
+        "label": "Needs review",
+        "type": "warning",
+        "icon": "alert-triangle"
+      },
+      {
+        "label": "Blocked",
+        "type": "danger",
+        "icon": "alert-circle"
+      },
+      {
+        "label": "Waiting to sync",
+        "type": "info",
+        "icon": "cloud-upload"
+      },
+      {
+        "label": "Draft",
+        "type": "neutral",
+        "icon": "file-edit"
+      }
+    ]
+  },
+  "implementation": {
+    "tokenConsumption": "Components must consume semantic tokens. Avoid one-off hex values inside individual components.",
+    "cssNaming": "Use stable CSS custom properties such as --ml-color-bg-canvas, --ml-color-text-primary, --ml-color-action-primary-bg, --ml-radius-control and --ml-motion-overlay-enter.",
+    "themeStrategy": "Use semantic light/dark tokens behind a single theme attribute or class. Do not invert colors mechanically.",
+    "iconography": {
+      "library": "Lucide",
+      "strokeWidth": "1.75-2",
+      "sizes": [
+        "16px",
+        "18px",
+        "20px",
+        "24px"
+      ],
+      "rules": [
+        "Keep icon style consistent.",
+        "Do not use emoji as interface icons.",
+        "Icon-only controls require an accessible name and a sufficiently large hit area.",
+        "Pair status icons with words."
+      ]
+    },
+    "responsiveRules": [
+      "Do not scale the desktop sidebar down into an unusable mobile rail.",
+      "Keep primary actions reachable without relying on hover.",
+      "Reflow page sections and forms at narrow widths.",
+      "Keep important identifiers visible when a table scrolls horizontally.",
+      "Avoid cumulative layout shift when loading, filtering or showing validation."
+    ],
+    "performanceRules": [
+      "Prefer opacity and transform for transitions.",
+      "Do not animate width/height/position in ways that trigger repeated layout unless the interaction requires it.",
+      "Do not delay navigation or submission to finish an animation.",
+      "Reserve space for loading and validation feedback to prevent layout shift."
+    ],
+    "qualityGates": [
+      "Run contrast checks for every text/background pair and every interactive boundary.",
+      "Check primary, secondary, disabled, hover, selected, error and focus component states.",
+      "Test 320px, 375px, 768px, 1024px and 1440px viewports.",
+      "Test browser zoom at 200% and text spacing overrides.",
+      "Test keyboard navigation and modal focus return.",
+      "Test prefers-reduced-motion.",
+      "Test offline, queued, syncing, conflict and retry states.",
+      "Verify success feedback appears only after authoritative commit.",
+      "Verify transaction review and correction/reversal behavior.",
+      "Review a real inventory table with large datasets and long labels; do not approve based only on a landing page."
+    ]
+  }
+}
