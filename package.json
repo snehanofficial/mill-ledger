@@ -1,0 +1,26 @@
+{
+  "name": "mill-ledger",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.18.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter client --filter server dev",
+    "dev:client": "pnpm --filter client dev",
+    "dev:server": "pnpm --filter server dev",
+    "build": "pnpm -r run build",
+    "lint": "oxlint .",
+    "typecheck": "pnpm -r run typecheck",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.0",
+    "oxlint": "^1.90.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.7"
+  }
+}

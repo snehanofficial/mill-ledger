@@ -1,0 +1,11 @@
+packages:
+  - 'client'
+  - 'server'
+  - 'shared'
+
+onlyBuiltDependencies:
+  - '@oxlint/binding-linux-x64-gnu'
+  - '@prisma/engines'
+  - '@rolldown/binding-linux-x64-gnu'
+  - 'esbuild'
+  - 'prisma'
