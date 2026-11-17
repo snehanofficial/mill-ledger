@@ -1,0 +1,41 @@
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./lib/auth.js";
+import { env } from "./config/env.js";
+import { healthRouter } from "./modules/health/health.routes.js";
+import { salesRouter } from "./modules/sales/sales.routes.js";
+import { productionRouter } from "./modules/production/production.routes.js";
+import { inventoryRouter } from "./modules/inventory/inventory.routes.js";
+import { financeRouter } from "./modules/finance/finance.routes.js";
+import { errorHandler } from "./middleware/error.middleware.js";
+
+export function createApp() {
+  const app = express();
+
+  app.use(helmet());
+  app.use(
+    cors({
+      origin: env.CORS_ORIGIN,
+      credentials: true,
+    }),
+  );
+
+  // Better Auth handler
+  app.all("/api/auth/*", toNodeHandler(auth));
+
+  app.use(express.json());
+
+  // API routes
+  app.use("/api/health", healthRouter);
+  app.use("/api/sales", salesRouter);
+  app.use("/api/production", productionRouter);
+  app.use("/api/inventory", inventoryRouter);
+  app.use("/api/finance", financeRouter);
+
+  // Centralized error handler
+  app.use(errorHandler);
+
+  return app;
+}
