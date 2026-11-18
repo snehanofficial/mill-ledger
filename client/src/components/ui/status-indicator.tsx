@@ -13,7 +13,7 @@ const statusConfig = {
   warning: { Icon: AlertTriangleIcon, className: "text-warning" },
   danger: { Icon: AlertCircleIcon, className: "text-destructive" },
   info: { Icon: InfoIcon, className: "text-info" },
-  neutral: { Icon: MinusCircleIcon, className: "text-neutral" },
+  neutral: { Icon: MinusCircleIcon, className: "text-muted-foreground" },
 };
 
 function StatusIndicator({
@@ -29,11 +29,14 @@ function StatusIndicator({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-2 text-body-medium font-medium",
+        "inline-flex items-center gap-1.5 text-xs font-medium text-foreground",
         className,
       )}
     >
-      <Icon className={cn("size-4", statusClassName)} aria-hidden="true" />
+      <Icon
+        className={cn("size-3.5 shrink-0", statusClassName)}
+        aria-hidden="true"
+      />
       <span>{label}</span>
     </span>
   );

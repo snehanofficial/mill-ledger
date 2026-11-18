@@ -8,9 +8,9 @@ function DatePicker({ className, ...props }: React.ComponentProps<"input">) {
       type="date"
       data-slot="date-picker"
       className={cn(
-        "h-11 w-full min-w-0 rounded-control border border-control bg-background px-3 numeric text-body text-foreground outline-none",
-        "hover:border-foreground focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-ring/30",
-        "disabled:cursor-not-allowed disabled:bg-surface-muted disabled:opacity-60",
+        "flex h-10 w-full min-w-0 rounded-control border border-input bg-background px-3 py-2 numeric text-sm text-foreground shadow-xs outline-none transition-colors",
+        "hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30",
+        "disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50",
         className,
       )}
       {...props}

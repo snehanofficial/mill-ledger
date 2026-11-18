@@ -4,28 +4,28 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-control border px-4 text-body-medium font-semibold whitespace-nowrap transition-colors outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.985]",
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-control border px-4 text-sm font-medium whitespace-nowrap transition-colors outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.985]",
   {
     variants: {
       variant: {
         primary:
-          "border-primary bg-primary text-primary-foreground shadow-none hover:bg-primary-hover active:bg-primary-pressed",
+          "border-primary bg-primary text-primary-foreground shadow-xs hover:bg-primary-hover active:bg-primary-pressed",
         secondary:
-          "border-control bg-background text-foreground hover:bg-accent",
+          "border-border bg-background text-foreground shadow-xs hover:bg-accent hover:text-foreground",
         outline:
           "border-border bg-background shadow-xs hover:bg-accent hover:text-foreground text-foreground",
         ghost:
           "border-transparent bg-transparent hover:bg-accent hover:text-foreground text-muted-foreground",
         tertiary:
-          "border-transparent bg-transparent text-primary hover:bg-selection",
+          "border-transparent bg-transparent text-primary hover:bg-primary/10",
         destructive:
-          "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive-hover active:bg-destructive-pressed",
+          "border-destructive bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive-hover active:bg-destructive-pressed",
       },
       size: {
-        default: "h-11",
-        sm: "h-9 px-3 text-xs",
-        lg: "h-12 px-5",
-        icon: "size-9 p-0",
+        default: "h-10 px-4 py-2",
+        sm: "h-8 px-3 text-xs rounded-control",
+        lg: "h-11 px-6 rounded-control text-base",
+        icon: "size-10 p-0",
       },
     },
     defaultVariants: {
@@ -52,4 +52,4 @@ function Button({
   );
 }
 
-export { Button };
+export { Button, buttonVariants };

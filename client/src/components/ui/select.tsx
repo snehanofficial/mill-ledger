@@ -16,14 +16,16 @@ function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        "flex h-11 w-full items-center justify-between gap-2 rounded-control border border-control bg-background px-3 text-body outline-none hover:border-foreground focus-visible:ring-3 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-10 w-full items-center justify-between gap-2 rounded-control border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-colors",
+        "hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30",
+        "disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50",
         className,
       )}
       {...props}
     >
       {children}
-      <SelectPrimitive.Icon>
-        <ChevronDownIcon className="size-4" />
+      <SelectPrimitive.Icon asChild>
+        <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
@@ -47,7 +49,9 @@ function SelectContent({
         data-slot="select-content"
         position={position}
         className={cn(
-          "z-50 max-h-72 min-w-32 overflow-hidden rounded-medium border border-border bg-popover text-popover-foreground shadow-menu",
+          "z-50 max-h-72 min-w-32 overflow-hidden rounded-control border border-border bg-popover text-popover-foreground shadow-menu",
+          position === "popper" &&
+            "data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1",
           className,
         )}
         {...props}
@@ -69,14 +73,16 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex min-h-11 items-center rounded-small pr-8 pl-3 text-body outline-none data-[highlighted]:bg-selection data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "relative flex h-9 cursor-pointer items-center rounded-small pr-8 pl-3 text-sm outline-none transition-colors select-none",
+        "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className,
       )}
       {...props}
     >
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-      <SelectPrimitive.ItemIndicator className="absolute right-2">
-        <CheckIcon className="size-4" />
+      <SelectPrimitive.ItemIndicator className="absolute right-2 flex items-center justify-center">
+        <CheckIcon className="size-4 text-primary" />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   );
