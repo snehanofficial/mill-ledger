@@ -197,7 +197,7 @@ export function SidebarProvider({
             } as CSSProperties
           }
           className={cn(
-            "group/sidebar-wrapper flex min-h-svh w-full",
+            "group/sidebar-wrapper flex h-svh max-h-svh w-full overflow-hidden",
             className,
           )}
         >
@@ -372,7 +372,7 @@ export function SidebarInset({ className, ...props }: ComponentProps<"main">) {
     <main
       data-slot="sidebar-inset"
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background overflow-hidden min-w-0",
+        "relative flex h-svh max-h-svh flex-1 flex-col bg-background overflow-hidden min-w-0",
         className,
       )}
       {...props}

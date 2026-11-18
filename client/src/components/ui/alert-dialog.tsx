@@ -22,11 +22,14 @@ function AlertDialogContent({
 }: React.ComponentProps<typeof AlertDialogPrimitive.Content>) {
   return (
     <AlertDialogPrimitive.Portal>
-      <AlertDialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/45" />
+      <AlertDialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
       <AlertDialogPrimitive.Content
         data-slot="alert-dialog-content"
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 w-[calc(100%-32px)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-panel border border-border bg-surface p-5 shadow-modal",
+          "fixed inset-0 m-auto z-50 h-fit max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md origin-center gap-4 rounded-xl border border-border bg-card p-6 shadow-2xl duration-200",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           className,
         )}
         {...props}
@@ -47,7 +50,7 @@ function AlertDialogTitle(
 ) {
   return (
     <AlertDialogPrimitive.Title
-      className="text-section-title font-semibold"
+      className="text-section-title font-semibold text-foreground"
       {...props}
     />
   );
@@ -58,24 +61,17 @@ function AlertDialogDescription(
 ) {
   return (
     <AlertDialogPrimitive.Description
-      className="text-body text-muted"
+      className="text-sm text-muted-foreground"
       {...props}
     />
   );
 }
 
-function AlertDialogFooter({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function AlertDialogAction(
+  props: React.ComponentProps<typeof AlertDialogPrimitive.Action>,
+) {
   return (
-    <div
-      className={cn(
-        "mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-        className,
-      )}
-      {...props}
-    />
+    <AlertDialogPrimitive.Action data-slot="alert-dialog-action" {...props} />
   );
 }
 
@@ -87,11 +83,18 @@ function AlertDialogCancel(
   );
 }
 
-function AlertDialogAction(
-  props: React.ComponentProps<typeof AlertDialogPrimitive.Action>,
-) {
+function AlertDialogFooter({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
-    <AlertDialogPrimitive.Action data-slot="alert-dialog-action" {...props} />
+    <div
+      className={cn(
+        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+        className,
+      )}
+      {...props}
+    />
   );
 }
 

@@ -101,6 +101,7 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 
 import {
   type NavSection,
@@ -973,12 +974,15 @@ export function AuthenticatedShell({
 
           <main
             id="main-content"
-            className="flex flex-1 flex-col min-h-0"
+            className="flex flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden"
             tabIndex={-1}
           >
             {children}
           </main>
         </SidebarInset>
+
+        {/* Global Toast Notifications */}
+        <Toaster />
 
         {/* Global search palette */}
         <GlobalSearch

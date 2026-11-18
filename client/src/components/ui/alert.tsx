@@ -11,27 +11,27 @@ const variants = {
   success: {
     icon: CheckCircle2Icon,
     className:
-      "border-success-border bg-success-bg text-success dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
+      "border-emerald-300 bg-emerald-50 text-emerald-950 dark:border-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200 [&>svg]:text-emerald-700",
   },
   warning: {
     icon: AlertTriangleIcon,
     className:
-      "border-warning-border bg-warning-bg text-warning dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+      "border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-200 [&>svg]:text-amber-700",
   },
   danger: {
     icon: AlertCircleIcon,
     className:
-      "border-destructive/30 bg-danger-bg text-destructive dark:border-red-800 dark:bg-red-950/40 dark:text-red-300",
+      "border-red-300 bg-red-50 text-red-950 dark:border-red-700 dark:bg-red-950/60 dark:text-red-200 [&>svg]:text-red-700",
   },
   info: {
     icon: InfoIcon,
     className:
-      "border-info-border bg-info-bg text-info dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300",
+      "border-blue-300 bg-blue-50 text-blue-950 dark:border-blue-700 dark:bg-blue-950/60 dark:text-blue-200 [&>svg]:text-blue-700",
   },
   neutral: {
     icon: InfoIcon,
     className:
-      "border-neutral-border bg-neutral-bg text-neutral dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300",
+      "border-zinc-300 bg-zinc-50 text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200 [&>svg]:text-zinc-700",
   },
 };
 
@@ -52,7 +52,7 @@ function Alert({
       role={variant === "danger" || variant === "warning" ? "alert" : "status"}
       data-slot="alert"
       className={cn(
-        "flex gap-3 rounded-control border p-3.5 text-sm transition-colors",
+        "flex gap-3 rounded-control border p-4 text-sm transition-colors shadow-xs",
         config.className,
         className,
       )}

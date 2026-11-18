@@ -114,7 +114,6 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {
   Tooltip,
@@ -797,8 +796,6 @@ function ShowcasePage() {
             </CardContent>
           </Card>
         </section>
-
-        <Toaster />
       </div>
     </TooltipProvider>
   );
