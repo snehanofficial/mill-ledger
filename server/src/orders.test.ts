@@ -11,6 +11,7 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
 
   beforeAll(async () => {
     // 1. Reset orders, reservations, runs, receipts and restore seed
+    await prisma.auditLog.deleteMany();
     await prisma.paymentAllocation.deleteMany();
     await prisma.payment.deleteMany();
     await prisma.creditNote.deleteMany();

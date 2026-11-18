@@ -11,17 +11,19 @@ import { OrdersPage } from "@/pages/orders-page";
 import { InvoicesPage } from "@/pages/invoices-page";
 import { DispatchPage } from "@/pages/dispatch-page";
 import { PaymentsPage } from "@/pages/payments-page";
+import { DashboardPage } from "@/pages/dashboard-page";
 import {
-  DashboardPage,
-  NewOrderPage,
-  PurchasesPage,
-  CustomersPage,
   ReportsSalesPage,
   ReportsStockPage,
   ReportsProductionPage,
   ReportsReceivablesPage,
   ReportsGSTPage,
   ReportsAuditPage,
+} from "@/pages/reports-page";
+import {
+  NewOrderPage,
+  PurchasesPage,
+  CustomersPage,
   ExportsPage,
   SettingsPage,
   LoginPage,

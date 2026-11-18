@@ -11,6 +11,7 @@ import { productionRouter } from "./modules/production/production.routes.js";
 import { inventoryRouter } from "./modules/inventory/inventory.routes.js";
 import { financeRouter } from "./modules/finance/finance.routes.js";
 import { paymentRouter } from "./modules/finance/payment.routes.js";
+import { reportingRouter } from "./modules/reporting/reporting.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 
 export function createApp() {
@@ -42,6 +43,8 @@ export function createApp() {
   app.use("/api/v1/finance", financeRouter);
   app.use("/api/v1/invoices", financeRouter);
   app.use("/api/v1/payments", paymentRouter);
+  app.use("/api/v1/reports", reportingRouter);
+  app.use("/api/v1/dashboard", reportingRouter);
 
   // Backward compatibility alias for health check
   app.use("/api/health", healthRouter);

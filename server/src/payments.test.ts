@@ -11,6 +11,7 @@ describe("M7: Payments, customer ledger, allocations, and costing", () => {
 
   beforeAll(async () => {
     // 1. Reset all operational data in correct order
+    await prisma.auditLog.deleteMany();
     await prisma.paymentAllocation.deleteMany();
     await prisma.payment.deleteMany();
     await prisma.creditNote.deleteMany();

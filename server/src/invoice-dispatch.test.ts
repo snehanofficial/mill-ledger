@@ -11,6 +11,7 @@ describe("M6: Invoice generation, physical dispatch, reservation release, and cr
 
   beforeAll(async () => {
     // 1. Reset all operational data and restore opening benchmark state
+    await prisma.auditLog.deleteMany();
     await prisma.paymentAllocation.deleteMany();
     await prisma.payment.deleteMany();
     await prisma.creditNote.deleteMany();

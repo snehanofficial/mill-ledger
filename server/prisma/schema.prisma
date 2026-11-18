@@ -95,6 +95,7 @@ model Organization {
   dispatches     Dispatch[]
   creditNotes    CreditNote[]
   payments       Payment[]
+  auditLogs      AuditLog[]
 
   @@map("organization")
 }
@@ -871,4 +872,25 @@ model PaymentAllocation {
   @@index([salesInvoiceId])
   @@map("payment_allocation")
 }
+
+model AuditLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String?
+  userEmail      String?
+  action         String
+  entity         String
+  entityId       String?
+  details        String?
+  reason         String?
+  requestId      String?
+  ipAddress      String?
+  timestamp      DateTime     @default(now())
+
+  @@index([organizationId, entity])
+  @@index([organizationId, timestamp])
+  @@map("audit_log")
+}
+
 

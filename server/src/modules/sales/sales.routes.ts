@@ -66,6 +66,38 @@ const createDispatchSchema = z.object({
     .optional(),
 });
 
+// GET /api/v1/sales/customers - List accessible customers (Salesman assigned or Admin all)
+salesRouter.get(
+  "/customers",
+  requireAuth,
+  authorize("customer", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = (req.query.organizationId as string) || "MILL";
+      const customers = await salesService.getCustomers(orgId, req.user!);
+      res.json({ customers });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /api/v1/sales/products - Product snapshot and price list for offline cache
+salesRouter.get(
+  "/products",
+  requireAuth,
+  authorize("order", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = (req.query.organizationId as string) || "MILL";
+      const products = await salesService.getProducts(orgId);
+      res.json({ products });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /api/v1/sales/orders - List orders (ABAC enforced)
 salesRouter.get(
   "/orders",

@@ -110,7 +110,9 @@ import {
   getAllLinks,
 } from "./nav-config";
 import { useBreadcrumbs } from "./use-breadcrumbs";
-import { useConnectionStatus, type SyncState } from "./use-connection-status";
+import { type SyncState } from "./use-connection-status";
+import { useSyncManager } from "@/offline/use-offline";
+import { DeviceOutboxSheet } from "./device-outbox-sheet";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -149,7 +151,15 @@ function getInitials(name: string): string {
 // ─── SyncIndicator ────────────────────────────────────────────────────────────
 // Fixed-width container so sync state changes never shift surrounding elements.
 
-function SyncIndicator({ state }: { state: SyncState }) {
+function SyncIndicator({
+  state,
+  onClick,
+  pendingCount,
+}: {
+  state: SyncState;
+  onClick?: () => void;
+  pendingCount?: number;
+}) {
   const configs: Record<
     SyncState,
     { icon: ReactNode; label: string; color: string }
@@ -202,17 +212,25 @@ function SyncIndicator({ state }: { state: SyncState }) {
 
   const config = configs[state];
   return (
-    <span
+    <button
+      type="button"
+      onClick={onClick}
       role="status"
       aria-live="polite"
+      aria-label={`Sync state: ${config.label}`}
       className={cn(
-        "flex items-center gap-1.5 text-xs font-medium",
+        "flex items-center gap-1.5 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity focus:outline-hidden",
         config.color,
       )}
     >
       {config.icon}
       <span className="hidden sm:inline">{config.label}</span>
-    </span>
+      {pendingCount !== undefined && pendingCount > 0 && (
+        <span className="ml-1 rounded-full bg-amber-500/20 px-1.5 py-0.2 text-2xs font-bold text-amber-700 dark:text-amber-400">
+          {pendingCount}
+        </span>
+      )}
+    </button>
   );
 }
 
@@ -791,6 +809,8 @@ interface StickyHeaderProps {
   onNotificationsClick: () => void;
   onSignOut?: () => void;
   syncState: SyncState;
+  onOpenOutbox?: () => void;
+  pendingCount?: number;
 }
 
 function StickyHeader({
@@ -800,6 +820,8 @@ function StickyHeader({
   onNotificationsClick,
   onSignOut,
   syncState,
+  onOpenOutbox,
+  pendingCount,
 }: StickyHeaderProps) {
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
 
@@ -837,8 +859,12 @@ function StickyHeader({
       {/* Right-side tools: sync, search, notifications, account menu */}
       <div className="flex shrink-0 items-center gap-2">
         {/* Sync status: fixed-width area to prevent layout shift */}
-        <div className="w-20 flex justify-end">
-          <SyncIndicator state={syncState} />
+        <div className="min-w-20 flex justify-end">
+          <SyncIndicator
+            state={syncState}
+            onClick={onOpenOutbox}
+            pendingCount={pendingCount}
+          />
         </div>
 
         <HeaderSearchButton onOpen={onSearchOpen} />
@@ -921,7 +947,19 @@ export function AuthenticatedShell({
   const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const { syncState } = useConnectionStatus();
+  const [outboxOpen, setOutboxOpen] = useState(false);
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
+
+  const syncManager = useSyncManager(user.id);
+  const { syncState, isOnline, pendingCount, conflictCount } = syncManager;
+
+  const handleSafeSignOut = () => {
+    if (pendingCount > 0) {
+      setConfirmLogoutOpen(true);
+    } else {
+      onSignOut?.();
+    }
+  };
 
   const sections = getNavSections(user.role);
 
@@ -957,7 +995,7 @@ export function AuthenticatedShell({
 
           <SidebarFooter>
             <SidebarCollapseToggle />
-            <SidebarUserMenu user={user} onSignOut={onSignOut} />
+            <SidebarUserMenu user={user} onSignOut={handleSafeSignOut} />
           </SidebarFooter>
           <SidebarRail />
         </Sidebar>
@@ -968,9 +1006,66 @@ export function AuthenticatedShell({
             notificationCount={notificationCount}
             onSearchOpen={() => setSearchOpen(true)}
             onNotificationsClick={() => setNotificationsOpen(true)}
-            onSignOut={onSignOut}
+            onSignOut={handleSafeSignOut}
             syncState={syncState}
+            onOpenOutbox={() => setOutboxOpen(true)}
+            pendingCount={pendingCount}
           />
+
+          {/* Offline / Pending Outbox Notification Banner */}
+          {(!isOnline || pendingCount > 0 || conflictCount > 0) && (
+            <div
+              role="status"
+              className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 text-xs flex items-center justify-between text-amber-800 dark:text-amber-300 shrink-0"
+            >
+              <div className="flex items-center gap-2">
+                {!isOnline ? (
+                  <WifiOffIcon
+                    className="size-4 shrink-0 text-amber-600"
+                    aria-hidden
+                  />
+                ) : conflictCount > 0 ? (
+                  <AlertCircleIcon
+                    className="size-4 shrink-0 text-destructive"
+                    aria-hidden
+                  />
+                ) : (
+                  <RefreshCwIcon
+                    className="size-4 shrink-0 animate-spin text-amber-600"
+                    aria-hidden
+                  />
+                )}
+                <span>
+                  {!isOnline
+                    ? "Working offline. Orders created are stored securely on this device and will sync when reconnected."
+                    : conflictCount > 0
+                      ? `${conflictCount} order(s) encountered conflicts during synchronization. Click to resolve.`
+                      : `${pendingCount} order(s) waiting to sync.`}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {isOnline && pendingCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={syncManager.syncNow}
+                    disabled={syncManager.syncing}
+                    className="h-7 text-xs font-medium cursor-pointer"
+                  >
+                    Sync now
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOutboxOpen(true)}
+                  className="h-7 text-xs cursor-pointer"
+                >
+                  View outbox
+                </Button>
+              </div>
+            </div>
+          )}
 
           <main
             id="main-content"
@@ -990,6 +1085,44 @@ export function AuthenticatedShell({
           onOpenChange={setSearchOpen}
           sections={sections}
         />
+
+        {/* Device Outbox Sheet */}
+        <DeviceOutboxSheet
+          open={outboxOpen}
+          onOpenChange={setOutboxOpen}
+          userId={user.id}
+        />
+
+        {/* Confirm Logout Dialog if unsynced orders exist */}
+        <Dialog open={confirmLogoutOpen} onOpenChange={setConfirmLogoutOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogTitle>Pending orders stored locally</DialogTitle>
+            <p className="text-sm text-muted-foreground mt-2">
+              You have {pendingCount} unsynced order(s) stored on this device.
+              They are preserved securely for your account and will sync when
+              you sign back in. Do you still wish to sign out?
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmLogoutOpen(false)}
+              >
+                Stay signed in
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  setConfirmLogoutOpen(false);
+                  onSignOut?.();
+                }}
+              >
+                Sign out anyway
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Notifications sheet */}
         <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>

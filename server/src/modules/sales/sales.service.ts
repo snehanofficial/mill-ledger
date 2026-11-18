@@ -36,6 +36,16 @@ export interface RejectOrderInput {
 }
 
 export class SalesService {
+  private async resolveOrgId(orgIdOrCode?: string): Promise<string> {
+    if (!orgIdOrCode) return "MILL";
+    const org = await prisma.organization.findFirst({
+      where: {
+        OR: [{ id: orgIdOrCode }, { code: orgIdOrCode }],
+      },
+    });
+    return org ? org.id : orgIdOrCode;
+  }
+
   /**
    * Helper to compute available stock for an inventory item in a warehouse
    * available = onHand - activeReservations
@@ -97,13 +107,15 @@ export class SalesService {
           },
         });
         if (existing) {
-          return existing;
+          return { order: existing, shortages: [] };
         }
       }
 
       // 2. Validate customer and assignment
-      const customer = await tx.customer.findUnique({
-        where: { id: input.customerId },
+      const customer = await tx.customer.findFirst({
+        where: {
+          OR: [{ id: input.customerId }, { code: input.customerId }],
+        },
       });
       if (!customer) {
         throw new AppError(`Customer ${input.customerId} not found`, 404);
@@ -176,8 +188,10 @@ export class SalesService {
           throw new AppError("Line quantity must be greater than zero", 400);
         }
 
-        const variant = await tx.productVariant.findUnique({
-          where: { id: line.productVariantId },
+        const variant = await tx.productVariant.findFirst({
+          where: {
+            OR: [{ id: line.productVariantId }, { sku: line.productVariantId }],
+          },
           include: {
             product: true,
             priceLines: {
@@ -574,8 +588,9 @@ export class SalesService {
     user: UserContext,
     status?: OrderStatus,
   ) {
+    const orgId = await this.resolveOrgId(organizationId);
     const where: Prisma.SalesOrderWhereInput = {
-      organizationId,
+      organizationId: orgId,
     };
 
     if (status) {
@@ -740,6 +755,72 @@ export class SalesService {
       include: {
         lines: true,
       },
+    });
+  }
+
+  /**
+   * Get customers accessible by user (ABAC: salesman gets assigned customers only)
+   */
+  async getCustomers(organizationId: string, user: UserContext) {
+    const org = await this.resolveOrgId(organizationId);
+    if (user.role === "SALESMAN") {
+      const assignments = await prisma.salesmanCustomerAssignment.findMany({
+        where: { salesmanId: user.id },
+        include: {
+          customer: true,
+        },
+      });
+      return assignments.map((a) => a.customer);
+    }
+
+    return await prisma.customer.findMany({
+      where: { organizationId: org },
+      orderBy: { name: "asc" },
+    });
+  }
+
+  /**
+   * Get sellable products and default price list snapshot for offline cache
+   */
+  async getProducts(organizationId: string) {
+    const org = await this.resolveOrgId(organizationId);
+    const variants = await prisma.productVariant.findMany({
+      where: {
+        product: {
+          organizationId: org,
+          isActive: true,
+        },
+      },
+      include: {
+        product: true,
+        uom: true,
+        priceLines: {
+          where: {
+            priceList: {
+              isDefault: true,
+            },
+          },
+        },
+      },
+      orderBy: {
+        sku: "asc",
+      },
+    });
+
+    return variants.map((v) => {
+      const defaultPrice = v.priceLines[0]?.price
+        ? Number(v.priceLines[0].price)
+        : 50.0;
+      return {
+        id: v.id,
+        sku: v.sku,
+        name: v.name,
+        productName: v.product.name,
+        taxRate: Number(v.product.taxRate),
+        hsnCode: v.product.hsnCode,
+        uom: v.uom.code,
+        defaultPrice,
+      };
     });
   }
 }

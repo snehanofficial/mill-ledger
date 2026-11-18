@@ -20,7 +20,14 @@ import {
   XCircleIcon,
   ShieldCheckIcon,
   IndianRupeeIcon,
+  DatabaseIcon,
+  WifiOffIcon,
+  RotateCcwIcon,
+  Trash2Icon,
 } from "lucide-react";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useSyncManager } from "@/offline/use-offline";
+import { toast } from "sonner";
 
 interface SalesOrderLine {
   id: string;
@@ -75,6 +82,19 @@ interface SalesOrder {
 
 export function OrdersPage() {
   const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+  const syncManager = useSyncManager(user?.id);
+  const {
+    isOnline,
+    outboxOrders,
+    pendingCount,
+    queueOrder,
+    retryOrder,
+    removeOrder,
+  } = syncManager;
+
+  const [activeTab, setActiveTab] = useState<"stream" | "outbox">("stream");
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [showNewOrderModal, setShowNewOrderModal] = useState(false);
   const [selectedOrderForAction, setSelectedOrderForAction] =
     useState<SalesOrder | null>(null);
@@ -158,6 +178,66 @@ export function OrdersPage() {
       setShowNewOrderModal(false);
     },
   });
+
+  const handleCreateOrder = async () => {
+    const customerId = isRetailerA ? "CUST-RET-A" : "CUST-DIST-B";
+    const customerName = isRetailerA ? "Retailer A" : "Distributor B";
+    const items = [
+      {
+        productVariantId: "VAR-MURUKKU-200G",
+        sku: "VAR-MURUKKU-200G",
+        name: "Murukku 200 g",
+        quantity: orderQuantity,
+        quotedUnitPrice: unitPrice,
+      },
+    ];
+
+    if (!isOnline) {
+      await queueOrder(
+        {
+          customerId,
+          customerName,
+          customerState,
+          notes: orderNotes,
+          items,
+        },
+        user?.id || "guest",
+      );
+      toast.info(
+        "Offline: Order saved locally in device outbox. No stock reserved until synced.",
+      );
+      setShowNewOrderModal(false);
+      return;
+    }
+
+    setIsSubmittingOrder(true);
+    try {
+      await createOrderMutation.mutateAsync();
+      toast.success("Sales order created successfully.");
+    } catch (err: any) {
+      if (!err.response) {
+        // Network drop during submit: queue into outbox
+        await queueOrder(
+          {
+            customerId,
+            customerName,
+            customerState,
+            notes: orderNotes,
+            items,
+          },
+          user?.id || "guest",
+        );
+        toast.warning(
+          "Network connection lost. Order queued locally in device outbox.",
+        );
+        setShowNewOrderModal(false);
+      } else {
+        toast.error(err.response?.data?.message || "Failed to create order");
+      }
+    } finally {
+      setIsSubmittingOrder(false);
+    }
+  };
 
   // Approve order mutation
   const approveMutation = useMutation({
@@ -316,11 +396,34 @@ export function OrdersPage() {
       {/* Orders Table */}
       <div className="rounded-xl border bg-card shadow-xs">
         <div className="flex items-center justify-between border-b px-4 py-3">
-          <h2 className="text-base font-semibold text-foreground">
-            Sales orders stream
-          </h2>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={activeTab === "stream" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab("stream")}
+              className="text-xs h-7 font-medium cursor-pointer"
+            >
+              All orders ({orders.length})
+            </Button>
+            <Button
+              variant={activeTab === "outbox" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab("outbox")}
+              className="text-xs h-7 font-medium flex items-center gap-1.5 cursor-pointer"
+            >
+              <DatabaseIcon className="size-3" />
+              Device outbox
+              {pendingCount > 0 && (
+                <span className="rounded-full bg-amber-500/20 px-1.5 py-0.2 text-2xs font-bold text-amber-700 dark:text-amber-400">
+                  {pendingCount}
+                </span>
+              )}
+            </Button>
+          </div>
           <span className="text-xs text-muted-foreground">
-            {orders.length} orders recorded
+            {activeTab === "stream"
+              ? `${orders.length} server orders`
+              : `${outboxOrders.length} local outbox orders`}
           </span>
         </div>
 
@@ -337,7 +440,9 @@ export function OrdersPage() {
               Retry
             </Button>
           </div>
-        ) : orders.length === 0 ? (
+        ) : activeTab === "stream" &&
+          orders.length === 0 &&
+          outboxOrders.filter((o) => o.status !== "synced").length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 p-12 text-center text-sm text-muted-foreground">
             <ShoppingCartIcon className="h-8 w-8 stroke-1 text-muted-foreground/60" />
             <p>No sales orders created yet.</p>
@@ -368,123 +473,246 @@ export function OrdersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orders.map((o) => {
-                  const line = o.lines[0];
-                  const qty = Number(line?.quotedQuantity ?? 0);
-                  const shortage = o.totalShortage ?? 0;
+                {/* Local outbox items shown at the top of stream or in outbox tab */}
+                {(activeTab === "outbox"
+                  ? outboxOrders
+                  : outboxOrders.filter((o) => o.status !== "synced")
+                ).map((ord) => {
+                  const qty = ord.items.reduce((s, it) => s + it.quantity, 0);
+                  const taxable = ord.items.reduce(
+                    (s, it) => s + it.quantity * it.quotedUnitPrice,
+                    0,
+                  );
+                  const gst = taxable * 0.05;
+                  const total = taxable + gst;
 
                   return (
-                    <TableRow key={o.id}>
+                    <TableRow key={ord.id} className="bg-amber-500/5">
                       <TableCell className="font-mono font-medium">
-                        {o.orderNumber}
+                        <div className="flex items-center gap-1.5">
+                          <DatabaseIcon className="size-3.5 text-amber-600 shrink-0" />
+                          <span>Local: {ord.id.slice(-6).toUpperCase()}</span>
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={
-                            o.status === "APPROVED"
-                              ? "success"
-                              : o.status === "REJECTED"
-                                ? "danger"
-                                : o.status === "SUBMITTED"
-                                  ? "warning"
-                                  : "neutral"
-                          }
-                        >
-                          {o.status}
-                        </Badge>
+                        {ord.status === "queued" && (
+                          <Badge
+                            variant="outline"
+                            className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                          >
+                            Waiting to sync
+                          </Badge>
+                        )}
+                        {ord.status === "syncing" && (
+                          <Badge
+                            variant="outline"
+                            className="animate-pulse bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
+                          >
+                            Syncing...
+                          </Badge>
+                        )}
+                        {ord.status === "conflict" && (
+                          <Badge variant="danger">
+                            Conflict: {ord.lastErrorCode ?? "Error"}
+                          </Badge>
+                        )}
+                        {ord.status === "synced" && (
+                          <Badge variant="success">
+                            Synced: {ord.serverOrderNumber ?? "OK"}
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
                           <span className="font-medium text-foreground">
-                            {o.customer.name}
+                            {ord.customerName}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            {o.deliveryState}
+                            {ord.customerState}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {o.salesman.name}
+                        You (Device outbox)
                       </TableCell>
                       <TableCell className="text-right font-medium">
                         {qty.toLocaleString()} pkts
                       </TableCell>
                       <TableCell className="text-right">
-                        ₹
-                        {Number(o.taxableAmount).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                        ₹{taxable.toFixed(2)}
                       </TableCell>
                       <TableCell className="text-right text-xs">
-                        {Number(o.igstAmount) > 0 ? (
-                          <span>IGST: ₹{Number(o.igstAmount).toFixed(2)}</span>
-                        ) : (
-                          <span>
-                            CGST/SGST: ₹
-                            {(
-                              Number(o.cgstAmount) + Number(o.sgstAmount)
-                            ).toFixed(2)}
-                          </span>
-                        )}
+                        ₹{gst.toFixed(2)}
                       </TableCell>
-                      <TableCell className="text-right font-bold text-foreground">
-                        ₹
-                        {Number(o.totalAmount).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                      <TableCell className="text-right font-bold">
+                        ₹{total.toFixed(2)}
                       </TableCell>
                       <TableCell>
-                        {shortage > 0 ? (
-                          <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
-                            <AlertTriangleIcon className="h-3.5 w-3.5" />
-                            <span>Shortage: {shortage} pkts</span>
-                          </div>
-                        ) : o.status === "APPROVED" ? (
-                          <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-                            <CheckCircle2Icon className="h-3.5 w-3.5" />
-                            <span>Reserved ({qty})</span>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">
-                            Stock ready
-                          </span>
-                        )}
+                        <span className="text-2xs text-amber-700 dark:text-amber-400 font-medium">
+                          Awaiting server acceptance
+                        </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        {o.status === "SUBMITTED" ? (
-                          <div className="flex items-center justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-1">
+                          {ord.status === "conflict" && (
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                setSelectedOrderForAction(o);
-                                setActionType("APPROVE");
-                              }}
-                              className="h-7 text-xs text-emerald-600 hover:text-emerald-700"
+                              onClick={() => retryOrder(ord.id)}
+                              className="h-6 px-2 text-2xs gap-1"
                             >
-                              Approve
+                              <RotateCcwIcon className="size-3" />
+                              Retry
                             </Button>
+                          )}
+                          {ord.status === "queued" && isOnline && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => retryOrder(ord.id)}
+                              className="h-6 px-2 text-2xs gap-1"
+                            >
+                              <RefreshCwIcon className="size-3" />
+                              Sync
+                            </Button>
+                          )}
+                          {ord.status !== "syncing" && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => {
-                                setSelectedOrderForAction(o);
-                                setActionType("REJECT");
-                              }}
-                              className="h-7 text-xs text-destructive hover:bg-destructive/10"
+                              onClick={() => removeOrder(ord.id)}
+                              className="h-6 px-2 text-2xs text-muted-foreground hover:text-destructive"
                             >
-                              Reject
+                              <Trash2Icon className="size-3" />
                             </Button>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground italic">
-                            Completed
-                          </span>
-                        )}
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
                 })}
+
+                {/* Server orders stream */}
+                {activeTab === "stream" &&
+                  orders.map((o) => {
+                    const line = o.lines[0];
+                    const qty = Number(line?.quotedQuantity ?? 0);
+                    const shortage = o.totalShortage ?? 0;
+
+                    return (
+                      <TableRow key={o.id}>
+                        <TableCell className="font-mono font-medium">
+                          {o.orderNumber}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              o.status === "APPROVED"
+                                ? "success"
+                                : o.status === "REJECTED"
+                                  ? "danger"
+                                  : o.status === "SUBMITTED"
+                                    ? "warning"
+                                    : "neutral"
+                            }
+                          >
+                            {o.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-foreground">
+                              {o.customer.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {o.deliveryState}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {o.salesman.name}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {qty.toLocaleString()} pkts
+                        </TableCell>
+                        <TableCell className="text-right">
+                          ₹
+                          {Number(o.taxableAmount).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {Number(o.igstAmount) > 0 ? (
+                            <span>
+                              IGST: ₹{Number(o.igstAmount).toFixed(2)}
+                            </span>
+                          ) : (
+                            <span>
+                              CGST/SGST: ₹
+                              {(
+                                Number(o.cgstAmount) + Number(o.sgstAmount)
+                              ).toFixed(2)}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-bold text-foreground">
+                          ₹
+                          {Number(o.totalAmount).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })}
+                        </TableCell>
+                        <TableCell>
+                          {shortage > 0 ? (
+                            <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                              <AlertTriangleIcon className="h-3.5 w-3.5" />
+                              <span>Shortage: {shortage} pkts</span>
+                            </div>
+                          ) : o.status === "APPROVED" ? (
+                            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                              <CheckCircle2Icon className="h-3.5 w-3.5" />
+                              <span>Reserved ({qty})</span>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              Stock ready
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {o.status === "SUBMITTED" ? (
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedOrderForAction(o);
+                                  setActionType("APPROVE");
+                                }}
+                                className="h-7 text-xs text-emerald-600 hover:text-emerald-700"
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedOrderForAction(o);
+                                  setActionType("REJECT");
+                                }}
+                                className="h-7 text-xs text-destructive hover:bg-destructive/10"
+                              >
+                                Reject
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground italic">
+                              Completed
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
               </TableBody>
             </Table>
           </div>
@@ -514,6 +742,17 @@ export function OrdersPage() {
             </div>
 
             <div className="mt-4 flex flex-col gap-4">
+              {/* Offline mode banner */}
+              {!isOnline && (
+                <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                  <WifiOffIcon className="size-4 shrink-0 text-amber-600" />
+                  <span>
+                    Offline mode active: Order will be saved locally in device
+                    outbox. No stock reserved until synchronized.
+                  </span>
+                </div>
+              )}
+
               {/* Customer selection */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">
@@ -628,19 +867,19 @@ export function OrdersPage() {
               </Button>
               <Button
                 size="sm"
-                onClick={() => createOrderMutation.mutate()}
-                disabled={createOrderMutation.isPending}
-                className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={handleCreateOrder}
+                disabled={isSubmittingOrder || createOrderMutation.isPending}
+                className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
               >
-                {createOrderMutation.isPending ? (
+                {isSubmittingOrder || createOrderMutation.isPending ? (
                   <>
                     <RefreshCwIcon className="h-4 w-4 animate-spin" />
-                    Submitting order...
+                    {isOnline ? "Submitting order..." : "Saving locally..."}
                   </>
                 ) : (
                   <>
                     <CheckCircle2Icon className="h-4 w-4" />
-                    Submit sales order
+                    {isOnline ? "Submit sales order" : "Save to device outbox"}
                   </>
                 )}
               </Button>
