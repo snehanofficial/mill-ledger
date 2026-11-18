@@ -19,6 +19,7 @@ model User {
   sessions            Session[]
   accounts            Account[]
   customerAssignments SalesmanCustomerAssignment[]
+  salesOrders         SalesOrder[]
 
   @@map("user")
 }
@@ -89,6 +90,7 @@ model Organization {
   taxRates       TaxRate[]
   purchaseReceipts PurchaseReceipt[]
   productionRuns ProductionRun[]
+  salesOrders    SalesOrder[]
 
   @@map("organization")
 }
@@ -121,6 +123,8 @@ model Warehouse {
   stockMovements StockMovement[]
   purchaseReceipts PurchaseReceipt[]
   productionRuns ProductionRun[]
+  salesOrders    SalesOrder[]
+  stockReservations StockReservation[]
 
   @@unique([facilityId, code])
   @@map("warehouse")
@@ -143,6 +147,7 @@ model Customer {
   updatedAt      DateTime     @updatedAt
 
   assignments SalesmanCustomerAssignment[]
+  salesOrders SalesOrder[]
 
   @@unique([organizationId, code])
   @@map("customer")
@@ -248,6 +253,8 @@ model InventoryItem {
   stockMovements  StockMovement[]
   purchaseReceiptLines PurchaseReceiptLine[]
   productionRunMaterials ProductionRunMaterial[]
+  salesOrderLines SalesOrderLine[]
+  stockReservations StockReservation[]
 
   @@unique([organizationId, sku])
   @@map("inventory_item")
@@ -322,6 +329,7 @@ model ProductVariant {
   inventoryItem InventoryItem? @relation(fields: [inventoryItemId], references: [id], onDelete: SetNull)
   recipes       Recipe[]
   priceLines    PriceListLine[]
+  salesOrderLines SalesOrderLine[]
 
   @@unique([productId, sku])
   @@map("product_variant")
@@ -549,4 +557,111 @@ model ProductionRunReversal {
   createdAt          DateTime      @default(now())
 
   @@map("production_run_reversal")
+}
+
+// ─── Sales Orders & Stock Reservations ─────────────────────────────
+
+enum OrderStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  CLOSED
+}
+
+enum FulfilmentStatus {
+  UNFULFILLED
+  PARTIALLY_FULFILLED
+  FULFILLED
+}
+
+enum ReservationStatus {
+  ACTIVE
+  RELEASED
+  CANCELLED
+}
+
+model SalesOrder {
+  id               String           @id @default(cuid())
+  organizationId   String
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  orderNumber      String
+  customerId       String
+  customer         Customer         @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  salesmanId       String
+  salesman         User             @relation(fields: [salesmanId], references: [id], onDelete: Restrict)
+  warehouseId      String
+  warehouse        Warehouse        @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  status           OrderStatus      @default(DRAFT)
+  fulfilmentStatus FulfilmentStatus @default(UNFULFILLED)
+  deliveryState    String           @default("Tamil Nadu")
+  notes            String?
+  rejectionReason  String?
+  overrideReason   String?
+  taxableAmount    Decimal          @default(0) @db.Decimal(18, 2)
+  cgstAmount       Decimal          @default(0) @db.Decimal(18, 2)
+  sgstAmount       Decimal          @default(0) @db.Decimal(18, 2)
+  igstAmount       Decimal          @default(0) @db.Decimal(18, 2)
+  totalTaxAmount   Decimal          @default(0) @db.Decimal(18, 2)
+  totalAmount      Decimal          @default(0) @db.Decimal(18, 2)
+  idempotencyKey   String?          @unique
+  submittedAt      DateTime?
+  approvedAt       DateTime?
+  approvedByUserId String?
+  rejectedAt       DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  lines        SalesOrderLine[]
+  reservations StockReservation[]
+
+  @@unique([organizationId, orderNumber])
+  @@index([salesmanId, status])
+  @@map("sales_order")
+}
+
+model SalesOrderLine {
+  id                 String         @id @default(cuid())
+  salesOrderId       String
+  salesOrder         SalesOrder     @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  productVariantId   String
+  productVariant     ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+  inventoryItemId    String?
+  inventoryItem      InventoryItem? @relation(fields: [inventoryItemId], references: [id], onDelete: SetNull)
+  quotedQuantity     Decimal        @db.Decimal(18, 6)
+  approvedQuantity   Decimal        @db.Decimal(18, 6)
+  dispatchedQuantity Decimal        @default(0) @db.Decimal(18, 6)
+  quotedUnitPrice    Decimal        @db.Decimal(18, 2)
+  approvedUnitPrice  Decimal        @db.Decimal(18, 2)
+  taxRate            Decimal        @db.Decimal(5, 2)
+  taxableAmount      Decimal        @db.Decimal(18, 2)
+  taxAmount          Decimal        @db.Decimal(18, 2)
+  lineTotal          Decimal        @db.Decimal(18, 2)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  reservations StockReservation[]
+
+  @@map("sales_order_line")
+}
+
+model StockReservation {
+  id               String            @id @default(cuid())
+  salesOrderId     String
+  salesOrder       SalesOrder        @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  salesOrderLineId String
+  salesOrderLine   SalesOrderLine    @relation(fields: [salesOrderLineId], references: [id], onDelete: Cascade)
+  inventoryItemId  String
+  inventoryItem    InventoryItem     @relation(fields: [inventoryItemId], references: [id], onDelete: Restrict)
+  warehouseId      String
+  warehouse        Warehouse         @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  reservedQuantity Decimal           @db.Decimal(18, 6)
+  releasedQuantity Decimal           @default(0) @db.Decimal(18, 6)
+  status           ReservationStatus @default(ACTIVE)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([inventoryItemId, warehouseId, status])
+  @@map("stock_reservation")
 }

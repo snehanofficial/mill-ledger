@@ -7,9 +7,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthenticatedLayout } from "@/layouts/authenticated-layout";
 import { StockPage } from "@/pages/stock-page";
 import { ProductionPage } from "@/pages/production-page";
+import { OrdersPage } from "@/pages/orders-page";
 import {
   DashboardPage,
-  OrdersPage,
   NewOrderPage,
   InvoicesPage,
   DispatchPage,

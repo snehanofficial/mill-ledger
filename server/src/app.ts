@@ -32,6 +32,7 @@ export function createApp() {
   app.use("/api/v1", authRouter);
   app.use("/api/v1/health", healthRouter);
   app.use("/api/v1/sales", salesRouter);
+  app.use("/api/v1/orders", salesRouter);
   app.use("/api/v1/production", productionRouter);
   app.use("/api/v1/production-runs", productionRouter);
   app.use("/api/v1/inventory", inventoryRouter);

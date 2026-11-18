@@ -25,7 +25,11 @@ const rules: PolicyRule[] = [
       action === "update"
     ) {
       const isOwner = resourceAttributes?.creatorId === user.id;
-      const isDraft = resourceAttributes?.status === "draft";
+      const statusStr =
+        typeof resourceAttributes?.status === "string"
+          ? resourceAttributes.status.toUpperCase()
+          : "";
+      const isDraft = statusStr === "DRAFT";
       return Boolean(isOwner && isDraft);
     }
     return true;
@@ -61,9 +65,15 @@ const rules: PolicyRule[] = [
   ({ action, resourceAttributes }) => {
     if (
       (action === "update" || action === "delete") &&
-      resourceAttributes?.status === "posted"
+      resourceAttributes?.status
     ) {
-      return false;
+      const statusStr =
+        typeof resourceAttributes.status === "string"
+          ? resourceAttributes.status.toUpperCase()
+          : "";
+      if (statusStr === "POSTED") {
+        return false;
+      }
     }
     return true;
   },

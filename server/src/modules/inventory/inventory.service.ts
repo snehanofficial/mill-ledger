@@ -234,8 +234,28 @@ export class InventoryService {
 
       const ledgerSum = Number(movementAgg._sum.quantity ?? 0);
       const onHand = Number(item.currentStock);
-      const reserved = 0; // Will be connected in M5 reservations
-      const available = onHand - reserved;
+
+      // Sum active stock reservations
+      const reservationWhere: Prisma.StockReservationWhereInput = {
+        inventoryItemId: item.id,
+        status: "ACTIVE",
+      };
+      if (warehouseId) {
+        reservationWhere.warehouseId = warehouseId;
+      }
+
+      const reservationAgg = await prisma.stockReservation.aggregate({
+        where: reservationWhere,
+        _sum: {
+          reservedQuantity: true,
+          releasedQuantity: true,
+        },
+      });
+
+      const reservedGross = Number(reservationAgg._sum.reservedQuantity ?? 0);
+      const releasedQty = Number(reservationAgg._sum.releasedQuantity ?? 0);
+      const reserved = Math.max(0, reservedGross - releasedQty);
+      const available = Math.max(0, onHand - reserved);
       const reconciled = Math.abs(onHand - ledgerSum) < 0.000001;
 
       balances.push({
