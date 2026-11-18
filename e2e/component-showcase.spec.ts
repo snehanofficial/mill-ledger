@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("shows the routed component inventory", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/showcase");
 
   await expect(
     page.getByRole("heading", { name: "Component inventory" }),
@@ -11,7 +11,7 @@ test("shows the routed component inventory", async ({ page }) => {
 });
 
 test("command menu opens and closes with Escape", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/showcase");
 
   await page.getByRole("button", { name: "Open command menu" }).click();
   await expect(
@@ -22,7 +22,7 @@ test("command menu opens and closes with Escape", async ({ page }) => {
 });
 
 test("confirmation dialog traps the consequential action", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/showcase");
 
   await page.getByRole("button", { name: "Void record" }).click();
   await expect(
@@ -37,7 +37,7 @@ test("confirmation dialog traps the consequential action", async ({ page }) => {
 
 test("shows feedback toast and reflows at 320px", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
-  await page.goto("/");
+  await page.goto("/showcase");
 
   await page.getByRole("button", { name: "Success toast" }).click();
   await expect(page.getByText("Changes saved")).toBeVisible();
