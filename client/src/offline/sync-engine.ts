@@ -141,11 +141,37 @@ export async function queueOfflineOrder(
 export async function processOutbox(
   userId: string,
 ): Promise<{ processed: number; succeeded: number; conflicts: number }> {
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    return { processed: 0, succeeded: 0, conflicts: 0 };
+  }
+
+  // Cross-tab Web Locks Mutex (MLD-015)
+  if (typeof navigator !== "undefined" && "locks" in navigator) {
+    return await navigator.locks.request(
+      "mill-ledger-outbox-sync",
+      { ifAvailable: true },
+      async (lock) => {
+        if (!lock) {
+          // Another tab is actively processing the outbox
+          return { processed: 0, succeeded: 0, conflicts: 0 };
+        }
+        return await executeSyncLoop(userId);
+      },
+    );
+  }
+
+  // Fallback for environments without navigator.locks (e.g. Node tests, older browsers)
   if (isSyncing) {
     return { processed: 0, succeeded: 0, conflicts: 0 };
   }
 
-  if (typeof navigator !== "undefined" && !navigator.onLine) {
+  return await executeSyncLoop(userId);
+}
+
+async function executeSyncLoop(
+  userId: string,
+): Promise<{ processed: number; succeeded: number; conflicts: number }> {
+  if (isSyncing) {
     return { processed: 0, succeeded: 0, conflicts: 0 };
   }
 
@@ -207,6 +233,25 @@ export async function processOutbox(
           err.response?.data?.message ||
           err.message ||
           "Failed to sync order";
+
+        // If duplicate conflict error occurred (e.g. another concurrent tab landed the order),
+        // resolve cleanly as synced
+        if (
+          status === 409 &&
+          (errorMessage.toLowerCase().includes("idempotency") ||
+            errorMessage.toLowerCase().includes("already") ||
+            errorMessage.toLowerCase().includes("unique"))
+        ) {
+          succeeded += 1;
+          await offlineDb.outbox.update(order.id, {
+            status: "synced",
+            lastErrorCode: undefined,
+            lastErrorMessage: undefined,
+            updatedAt: new Date().toISOString(),
+          });
+          notifyListeners();
+          continue;
+        }
 
         if (
           status === 400 ||

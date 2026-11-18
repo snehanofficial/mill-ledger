@@ -57,6 +57,17 @@ const SEED_USERS: SeedUser[] = [
 export async function seedUsers() {
   console.log("Seeding test users for M1...");
 
+  const org = await prisma.organization.upsert({
+    where: { code: "MILL" },
+    update: {},
+    create: {
+      code: "MILL",
+      name: "MillLedger Foods Pvt Ltd",
+      state: "Tamil Nadu",
+      gstin: "33AABCM1234F1Z1",
+    },
+  });
+
   for (const user of SEED_USERS) {
     const existing = await prisma.user.findUnique({
       where: { email: user.email },
@@ -69,6 +80,7 @@ export async function seedUsers() {
           role: user.role,
           name: user.name,
           isActive: true,
+          organizationId: org.id,
         },
       });
       continue;
@@ -87,6 +99,7 @@ export async function seedUsers() {
       data: {
         role: user.role,
         isActive: true,
+        organizationId: org.id,
       },
     });
 

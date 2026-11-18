@@ -15,8 +15,8 @@ export default defineConfig({
         name: "MillLedger ERP",
         short_name: "MillLedger",
         description: "Order-to-Audit System for a Small Food Manufacturer",
-        theme_color: "#18181b",
-        background_color: "#ffffff",
+        theme_color: "#176b54",
+        background_color: "#fcfdfc",
         display: "standalone",
         start_url: "/",
         icons: [
@@ -59,6 +59,34 @@ export default defineConfig({
       "/api": {
         target: "http://localhost:4000",
         changeOrigin: true,
+      },
+    },
+  },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (
+            id.includes("node_modules/react/") ||
+            id.includes("node_modules/react-dom/") ||
+            id.includes("node_modules/react-router")
+          ) {
+            return "vendor-react";
+          }
+          if (id.includes("node_modules/@tanstack/react-query")) {
+            return "vendor-query";
+          }
+          if (id.includes("node_modules/lucide-react")) {
+            return "vendor-icons";
+          }
+          if (
+            id.includes("node_modules/@radix-ui") ||
+            id.includes("node_modules/cmdk")
+          ) {
+            return "vendor-ui";
+          }
+        },
       },
     },
   },

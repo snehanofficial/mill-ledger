@@ -5,107 +5,43 @@
  */
 
 import { Badge } from "@/components/ui/badge";
+import { FolderKanbanIcon } from "lucide-react";
 
 interface PlaceholderPageProps {
   title: string;
   description: string;
 }
 
-const PLACEHOLDER_STATS = [
-  {
-    label: "Total Active Orders",
-    val: "1,429",
-    change: "+12% vs last mo",
-    variant: "success" as const,
-  },
-  {
-    label: "Weekly Milling Yield",
-    val: "68.4%",
-    change: "Target: 68.0%",
-    variant: "outline" as const,
-  },
-  {
-    label: "Pending Audit Review",
-    val: "12",
-    change: "Action needed",
-    variant: "warning" as const,
-  },
-  {
-    label: "Active Milling Batches",
-    val: "4",
-    change: "Shift in progress",
-    variant: "info" as const,
-  },
-];
-
-const PLACEHOLDER_BARS = [
-  34, 41, 38, 47, 44, 52, 49, 58, 55, 61, 57, 66, 63, 70, 67, 74, 71, 79, 76,
-  83, 80, 88, 85, 92,
-];
-
 function PlaceholderPage({ title, description }: PlaceholderPageProps) {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8">
       {/* Page Header */}
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          {title}
-        </h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {title}
+          </h1>
+          <Badge variant="outline" className="text-xs">
+            Module in Progress
+          </Badge>
+        </div>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
 
-      {/* Metric Cards Skeleton Wireframe */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {PLACEHOLDER_STATS.map((stat, index) => (
-          <div
-            key={index}
-            className="flex flex-col justify-between gap-3 rounded-xl border border-border bg-card p-5 shadow-xs"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {stat.label}
-              </span>
-              <Badge
-                variant={stat.variant}
-                className="shrink-0 text-[11px] font-medium"
-              >
-                {stat.change}
-              </Badge>
-            </div>
-            <div className="flex items-baseline">
-              <span className="text-2xl font-bold tracking-tight text-foreground">
-                {stat.val}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Main Content Wireframe Card */}
-      <div className="flex flex-1 flex-col rounded-xl border border-border bg-card p-6 shadow-xs min-h-[320px]">
-        <div className="flex items-center justify-between pb-4 border-b border-border">
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">
-              Activity & Ledger Stream
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Real-time operational stream and transaction log
-            </p>
-          </div>
-          <span className="text-xs text-muted-foreground">
-            Last updated just now
-          </span>
+      {/* Clean, Dignified Operational Placeholder State - No AI Slop */}
+      <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-border bg-card p-8 sm:p-12 text-center shadow-xs min-h-[360px]">
+        <div className="flex size-12 items-center justify-center rounded-lg border border-border bg-muted/40 text-muted-foreground mb-4">
+          <FolderKanbanIcon className="size-6" />
         </div>
-
-        <div className="flex flex-1 items-end gap-1.5 pt-8 pb-4 sm:gap-2">
-          {PLACEHOLDER_BARS.map((height, index) => (
-            <div
-              key={index}
-              className="bg-muted hover:bg-primary/20 transition-colors flex-1 rounded-t-sm"
-              style={{ height: `${height}%` }}
-              title={`Period ${index + 1}: ${height}%`}
-            />
-          ))}
+        <h2 className="text-base font-semibold text-foreground">
+          {title} Workspace
+        </h2>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground leading-relaxed">
+          {description} This view is currently scheduled for rollout in the next operational milestone.
+        </p>
+        <div className="mt-6 flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-3 py-1.5 text-xs text-muted-foreground">
+          <span className="size-2 rounded-full bg-emerald-600/70" />
+          <span>Ledger database schema and API contracts ready</span>
         </div>
       </div>
     </div>

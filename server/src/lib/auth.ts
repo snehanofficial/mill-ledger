@@ -6,6 +6,7 @@ import { env } from "../config/env.js";
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
+  trustedOrigins: [env.CORS_ORIGIN, env.BETTER_AUTH_URL].filter(Boolean),
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
@@ -23,6 +24,10 @@ export const auth = betterAuth({
         type: "boolean",
         required: false,
         defaultValue: true,
+      },
+      organizationId: {
+        type: "string",
+        required: false,
       },
     },
   },

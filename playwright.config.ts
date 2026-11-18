@@ -9,9 +9,18 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   projects: [{ name: "desktop", use: { ...devices["Desktop Chrome"] } }],
-  webServer: {
-    command: "pnpm --filter client exec vite --host 127.0.0.1 --port 4173",
-    url: "http://127.0.0.1:4173",
-    reuseExistingServer: true,
-  },
+  webServer: [
+    {
+      command: "pnpm --filter server dev",
+      url: "http://127.0.0.1:4000/api/v1/health",
+      reuseExistingServer: !process.env.CI,
+      timeout: 30000,
+    },
+    {
+      command: "pnpm --filter client exec vite --host 127.0.0.1 --port 4173",
+      url: "http://127.0.0.1:4173",
+      reuseExistingServer: !process.env.CI,
+      timeout: 30000,
+    },
+  ],
 });

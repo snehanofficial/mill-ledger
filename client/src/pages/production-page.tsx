@@ -78,6 +78,7 @@ export function ProductionPage() {
   const [selectedRun, setSelectedRun] = useState<ProductionRun | null>(null);
 
   // Form states for benchmark Murukku batch
+  const [selectedRecipeId, setSelectedRecipeId] = useState("");
   const [actualGoodQty, setActualGoodQty] = useState(188);
   const [damagedPouches, setDamagedPouches] = useState(6);
   const [oilConsumed, setOilConsumed] = useState(10.5);
@@ -97,6 +98,36 @@ export function ProductionPage() {
     },
   });
 
+  // Fetch active BOM recipes dynamically (MLD-010)
+  const { data: recipesData } = useQuery<{
+    recipes: Array<{
+      id: string;
+      name: string;
+      expectedOutputQty: number;
+      productVariant: { sku: string; name: string };
+      items: Array<{
+        id: string;
+        inventoryItemId: string;
+        plannedQty: number;
+        tolerancePct: number;
+        itemType: string;
+        inventoryItem: { id: string; sku: string; name: string };
+      }>;
+    }>;
+  }>({
+    queryKey: ["production-recipes"],
+    queryFn: async () => {
+      const res = await apiClient.get(
+        "/production-runs/recipes?organizationId=MILL",
+      );
+      return res.data;
+    },
+  });
+
+  const activeRecipe =
+    recipesData?.recipes.find((r) => r.id === selectedRecipeId) ||
+    recipesData?.recipes[0];
+
   // Post production batch mutation
   const postMutation = useMutation({
     mutationFn: async () => {
@@ -111,20 +142,19 @@ export function ProductionPage() {
       const pouchItem = items.find((i) => i.sku === "PKG-POUCH-200G");
       const cartonItem = items.find((i) => i.sku === "PKG-CARTON");
 
-      if (!flourItem || !oilItem || !spiceItem || !pouchItem || !cartonItem) {
-        throw new Error("Required benchmark BOM items not found");
-      }
+      const isMurukkuBOM =
+        !activeRecipe ||
+        activeRecipe.name?.includes("Murukku") ||
+        activeRecipe.productVariant?.sku?.includes("MURUKKU");
 
-      const payload = {
-        organizationId: "MILL",
-        warehouseId: "WH-1",
-        runNumber: `RUN-2026-${Date.now().toString().slice(-4)}`,
-        batchCount: 1,
-        actualGoodQty,
-        directLaborCost: laborCost,
-        utilityCost,
-        notes,
-        consumedMaterials: [
+      let consumedMaterials: Array<{
+        inventoryItemId: string;
+        actualQty: number;
+        damagedQty?: number;
+      }> = [];
+
+      if (isMurukkuBOM && flourItem && oilItem && spiceItem && pouchItem && cartonItem) {
+        consumedMaterials = [
           { inventoryItemId: flourItem.id, actualQty: 40 },
           { inventoryItemId: oilItem.id, actualQty: oilConsumed },
           { inventoryItemId: spiceItem.id, actualQty: 1.2 },
@@ -134,7 +164,27 @@ export function ProductionPage() {
             damagedQty: damagedPouches,
           },
           { inventoryItemId: cartonItem.id, actualQty: cartonsConsumed },
-        ],
+        ];
+      } else if (activeRecipe && activeRecipe.items.length > 0) {
+        consumedMaterials = activeRecipe.items.map((item) => ({
+          inventoryItemId: item.inventoryItemId,
+          actualQty: Number(item.plannedQty),
+        }));
+      } else {
+        throw new Error("Required BOM items not found");
+      }
+
+      const payload = {
+        organizationId: "MILL",
+        warehouseId: "WH-1",
+        recipeId: activeRecipe?.id,
+        runNumber: `RUN-2026-${Date.now().toString().slice(-4)}`,
+        batchCount: 1,
+        actualGoodQty,
+        directLaborCost: laborCost,
+        utilityCost,
+        notes,
+        consumedMaterials,
       };
 
       const res = await apiClient.post("/production-runs", payload);
@@ -224,7 +274,7 @@ export function ProductionPage() {
           <Button
             size="sm"
             onClick={() => setShowNewBatchModal(true)}
-            className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="gap-2"
           >
             <PlusCircleIcon className="h-4 w-4" />
             Record production batch
@@ -468,6 +518,27 @@ export function ProductionPage() {
             </div>
 
             <div className="mt-4 flex flex-col gap-4">
+              {/* Recipe BOM selection (MLD-010) */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Bill of Materials (BOM) Recipe
+                </label>
+                <select
+                  value={selectedRecipeId}
+                  onChange={(e) => setSelectedRecipeId(e.target.value)}
+                  className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+                >
+                  {(recipesData?.recipes || []).map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name} — Target: {r.expectedOutputQty} pkts
+                    </option>
+                  ))}
+                  {(!recipesData?.recipes || recipesData.recipes.length === 0) && (
+                    <option value="">Murukku 200 g (Standard BOM)</option>
+                  )}
+                </select>
+              </div>
+
               {/* Output inputs */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
@@ -665,7 +736,7 @@ export function ProductionPage() {
                 size="sm"
                 onClick={() => postMutation.mutate()}
                 disabled={postMutation.isPending}
-                className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="gap-2"
               >
                 {postMutation.isPending ? (
                   <>

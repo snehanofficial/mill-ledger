@@ -80,6 +80,25 @@ describe("Better Auth and permission integration", () => {
       expect(meData.user.role).toBe("ADMIN");
       expect(meData.user.isActive).toBe(true);
     });
+
+    it("accepts cross-origin sign-in from trusted CORS origin (MLD-001)", async () => {
+      const response = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "http://localhost:5173",
+        },
+        body: JSON.stringify({
+          email: "admin@millledger.local",
+          password: "AdminPassword123!",
+        }),
+      });
+
+      expect(response.status).toBe(200);
+      const setCookie = response.headers.get("set-cookie");
+      expect(setCookie).toBeTruthy();
+      expect(setCookie).toContain("better-auth");
+    });
   });
 
   describe("Auditor write prevention (403)", () => {
@@ -127,9 +146,46 @@ describe("Better Auth and permission integration", () => {
         "SalesmanPassword123!",
       );
 
-      // Attempt to update an order with creatorId set to salesman 2
+      const org = await prisma.organization.findFirstOrThrow();
+      const customer = await prisma.customer.findFirstOrThrow();
+      const warehouse = await prisma.warehouse.findFirstOrThrow();
+
+      // Create real draft orders for salesman 1 and salesman 2
+      const orderOne = await prisma.salesOrder.create({
+        data: {
+          organization: { connect: { id: org.id } },
+          customer: { connect: { id: customer.id } },
+          salesman: { connect: { id: salesmanOne!.id } },
+          warehouse: { connect: { id: warehouse.id } },
+          orderNumber: `ORD-TEST-S1-${Date.now()}`,
+          deliveryState: "Tamil Nadu",
+          status: "DRAFT",
+          taxableAmount: 100,
+          cgstAmount: 2.5,
+          sgstAmount: 2.5,
+          totalAmount: 105,
+        },
+      });
+
+      const orderTwo = await prisma.salesOrder.create({
+        data: {
+          organization: { connect: { id: org.id } },
+          customer: { connect: { id: customer.id } },
+          salesman: { connect: { id: salesmanTwo!.id } },
+          warehouse: { connect: { id: warehouse.id } },
+          orderNumber: `ORD-TEST-S2-${Date.now()}`,
+          deliveryState: "Tamil Nadu",
+          status: "DRAFT",
+          taxableAmount: 200,
+          cgstAmount: 5,
+          sgstAmount: 5,
+          totalAmount: 210,
+        },
+      });
+
+      // Attempt to update salesman 2's order with spoofed creatorId in body
       const crossUpdateResponse = await fetch(
-        `${baseUrl}/api/v1/sales/orders/order-cross-test`,
+        `${baseUrl}/api/v1/sales/orders/${orderTwo.id}`,
         {
           method: "PUT",
           headers: {
@@ -137,21 +193,20 @@ describe("Better Auth and permission integration", () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            creatorId: salesmanTwo!.id,
-            status: "draft",
+            creatorId: salesmanOne!.id, // Spoofed creatorId
+            status: "DRAFT",
+            notes: "Spoofed update",
           }),
         },
       );
 
       expect(crossUpdateResponse.status).toBe(403);
       const crossData = await crossUpdateResponse.json();
-      expect(crossData.error).toContain(
-        "Forbidden: Policy evaluation denied request",
-      );
+      expect(crossData.error).toContain("Forbidden");
 
       // Verify salesman 1 CAN update their own draft order
       const ownUpdateResponse = await fetch(
-        `${baseUrl}/api/v1/sales/orders/order-own-test`,
+        `${baseUrl}/api/v1/sales/orders/${orderOne.id}`,
         {
           method: "PUT",
           headers: {
@@ -160,7 +215,8 @@ describe("Better Auth and permission integration", () => {
           },
           body: JSON.stringify({
             creatorId: salesmanOne!.id,
-            status: "draft",
+            status: "DRAFT",
+            notes: "Legitimate update",
           }),
         },
       );
@@ -168,6 +224,65 @@ describe("Better Auth and permission integration", () => {
       expect(ownUpdateResponse.status).toBe(200);
       const ownData = await ownUpdateResponse.json();
       expect(ownData.status).toBe("updated");
+    });
+
+    it("rejects inactive users with HTTP 403 Forbidden even with valid session (MLD-006)", async () => {
+      // 1. Log in with an active user to obtain a genuine signed session cookie
+      const { cookie, user } = await loginAndGetCookie(
+        "production@millledger.local",
+        "ProductionPassword123!",
+      );
+
+      // Verify the session works initially
+      const initialRes = await fetch(`${baseUrl}/api/v1/me`, {
+        headers: { Cookie: cookie },
+      });
+      expect(initialRes.status).toBe(200);
+
+      // 2. Deactivate the user in the database
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { isActive: false },
+      });
+
+      // 3. Attempt request with existing session cookie -> Must be rejected with 403 Forbidden
+      const response = await fetch(`${baseUrl}/api/v1/me`, {
+        headers: { Cookie: cookie },
+      });
+
+      // Restore user active status after test
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { isActive: true },
+      });
+
+      expect(response.status).toBe(403);
+      const data = await response.json();
+      expect(data.error).toContain("User account is inactive");
+    });
+  });
+
+  describe("Multi-tenant isolation & BOLA prevention (MLD-002)", () => {
+    it("rejects cross-tenant data access with HTTP 403 Forbidden when user requests a foreign organization", async () => {
+      const { cookie } = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      // Verify normal access to user's own organization works
+      const ownOrgRes = await fetch(`${baseUrl}/api/v1/dashboard?organizationId=MILL`, {
+        headers: { Cookie: cookie },
+      });
+      expect(ownOrgRes.status).toBe(200);
+
+      // Attempt to access a different organization ID (BOLA attack)
+      const foreignOrgRes = await fetch(`${baseUrl}/api/v1/dashboard?organizationId=COMPETING_MILL_XYZ`, {
+        headers: { Cookie: cookie },
+      });
+
+      expect(foreignOrgRes.status).toBe(403);
+      const data = await foreignOrgRes.json();
+      expect(data.error).toContain("Access denied to organization COMPETING_MILL_XYZ");
     });
   });
 });

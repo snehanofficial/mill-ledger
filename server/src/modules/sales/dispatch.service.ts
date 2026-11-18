@@ -141,9 +141,16 @@ export class DispatchService {
           );
         }
 
-        const invItem = await tx.inventoryItem.findUnique({
-          where: { id: inventoryItemId },
-        });
+        const invItems = await tx.$queryRaw<
+          Array<{
+            id: string;
+            name: string;
+            sku: string;
+            currentStock: unknown;
+            weightedAverageCost: unknown;
+          }>
+        >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${inventoryItemId} FOR UPDATE`;
+        const invItem = invItems[0];
 
         if (!invItem) {
           throw new AppError(

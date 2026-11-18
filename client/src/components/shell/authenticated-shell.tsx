@@ -289,7 +289,11 @@ function AppBrand({
           asChild
           tooltip={isCollapsed ? `${name} (${description})` : undefined}
         >
-          <Link to={href} onClick={closeMobile} aria-label="MillLedger home">
+          <Link
+            to={href}
+            onClick={closeMobile}
+            aria-label={`${name} ${description ? description + " - " : ""}Home`}
+          >
             <BrandMark>{logo ?? "M"}</BrandMark>
             <div className="grid flex-1 min-w-0 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
               <span className="truncate font-semibold text-foreground">
@@ -461,7 +465,7 @@ function SidebarCollapseToggle() {
           size="default"
           onClick={toggleSidebar}
           tooltip={isCollapsed ? "Expand sidebar (Ctrl+B)" : undefined}
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse to icons"}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse to icons ⌘B"}
           className="text-muted-foreground hover:text-foreground h-8 px-2"
         >
           {isCollapsed ? (
@@ -871,8 +875,8 @@ function StickyHeader({
           onClick={() => setLanguage(language === "en" ? "ta" : "en")}
           aria-label={
             language === "en"
-              ? "Change language to Tamil"
-              : "Change language to English"
+              ? "தமிழ் - Switch language to Tamil"
+              : "EN - Switch language to English"
           }
           className="h-8 px-2 text-xs font-semibold cursor-pointer text-muted-foreground hover:text-foreground"
         >

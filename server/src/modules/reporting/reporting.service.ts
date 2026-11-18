@@ -1,5 +1,5 @@
 import { prisma } from "../../db/client.js";
-import { InvoiceStatus, PaymentStatus } from "@prisma/client";
+import { InvoiceStatus, PaymentStatus, type Prisma } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
 import { auditService } from "./audit.service.js";
 
@@ -410,13 +410,49 @@ export class ReportingService {
       where: { organizationId: orgId },
       include: {
         baseUom: true,
-        stockMovements: true,
-        stockReservations: {
-          where: { status: "ACTIVE" },
-        },
       },
       orderBy: { sku: "asc" },
     });
+
+    const itemIds = items.map((i) => i.id);
+
+    // Group movements in SQL to prevent streaming unbounded ledger into memory
+    const movementAggs =
+      itemIds.length > 0
+        ? await prisma.stockMovement.groupBy({
+            by: ["inventoryItemId"],
+            where: { inventoryItemId: { in: itemIds } },
+            _sum: { quantity: true },
+          })
+        : [];
+
+    const movementMap = new Map<string, number>();
+    for (const m of movementAggs) {
+      movementMap.set(m.inventoryItemId, Number(m._sum.quantity ?? 0));
+    }
+
+    // Group active reservations in SQL
+    const reservationAggs =
+      itemIds.length > 0
+        ? await prisma.stockReservation.groupBy({
+            by: ["inventoryItemId"],
+            where: {
+              inventoryItemId: { in: itemIds },
+              status: "ACTIVE",
+            },
+            _sum: {
+              reservedQuantity: true,
+              releasedQuantity: true,
+            },
+          })
+        : [];
+
+    const reservationMap = new Map<string, number>();
+    for (const r of reservationAggs) {
+      const gross = Number(r._sum.reservedQuantity ?? 0);
+      const released = Number(r._sum.releasedQuantity ?? 0);
+      reservationMap.set(r.inventoryItemId, Math.max(0, gross - released));
+    }
 
     let totalValuation = 0;
     let totalItems = 0;
@@ -424,19 +460,13 @@ export class ReportingService {
 
     const rows = items.map((item) => {
       const onHand = Number(item.currentStock);
-      const reserved = item.stockReservations.reduce(
-        (sum, r) => sum + Number(r.reservedQuantity),
-        0,
-      );
+      const reserved = reservationMap.get(item.id) ?? 0;
       const available = onHand - reserved;
       const unitCost = Number(item.weightedAverageCost);
       const valuation = onHand * unitCost;
 
-      // Reconcile append-only movements
-      const ledgerSum = item.stockMovements.reduce(
-        (sum, m) => sum + Number(m.quantity),
-        0,
-      );
+      // Reconcile append-only movements from database aggregation
+      const ledgerSum = movementMap.get(item.id) ?? 0;
       const isReconciled = Math.abs(onHand - ledgerSum) < 0.0001;
 
       if (!isReconciled) {
@@ -610,6 +640,23 @@ export class ReportingService {
       where.paymentMode = params.paymentMode;
     }
 
+    if (params.salesmanId) {
+      where.customer = {
+        OR: [
+          {
+            assignments: {
+              some: { salesmanId: params.salesmanId },
+            },
+          },
+          {
+            salesOrders: {
+              some: { salesmanId: params.salesmanId },
+            },
+          },
+        ],
+      };
+    }
+
     const payments = await prisma.payment.findMany({
       where,
       include: {
@@ -670,11 +717,48 @@ export class ReportingService {
   async getReceivablesReport(params: ReportFilterParams) {
     const orgId = await this.resolveOrgId(params.organizationId);
 
+    const customerWhere: Prisma.CustomerWhereInput = {
+      organizationId: orgId,
+      ...(params.customerId ? { id: params.customerId } : {}),
+      ...(params.salesmanId
+        ? {
+            OR: [
+              {
+                assignments: {
+                  some: { salesmanId: params.salesmanId },
+                },
+              },
+              {
+                salesOrders: {
+                  some: { salesmanId: params.salesmanId },
+                },
+              },
+            ],
+          }
+        : {}),
+    };
+
     const customers = await prisma.customer.findMany({
-      where: { organizationId: orgId },
+      where: customerWhere,
       include: {
         invoices: {
-          where: { status: { not: InvoiceStatus.DRAFT } },
+          where: {
+            status: { not: InvoiceStatus.DRAFT },
+            ...(params.salesmanId
+              ? {
+                  OR: [
+                    { salesOrder: { salesmanId: params.salesmanId } },
+                    {
+                      customer: {
+                        assignments: {
+                          some: { salesmanId: params.salesmanId },
+                        },
+                      },
+                    },
+                  ],
+                }
+              : {}),
+          },
           include: { creditNotes: true },
         },
         payments: {

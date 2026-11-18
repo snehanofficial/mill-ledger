@@ -44,6 +44,27 @@ export interface ReverseProductionRunInput {
 
 export class ProductionService {
   /**
+   * List active BOM recipes for an organization
+   */
+  async getRecipes(organizationId: string) {
+    return await prisma.recipe.findMany({
+      where: {
+        organizationId,
+        isActive: true,
+      },
+      include: {
+        productVariant: true,
+        items: {
+          include: {
+            inventoryItem: true,
+          },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+  }
+
+  /**
    * Create a draft production run with pre populated recipe BOM lines
    */
   async createDraftRun(input: CreateDraftRunInput) {
@@ -282,9 +303,16 @@ export class ProductionService {
           );
         }
 
-        const invItem = await tx.inventoryItem.findUnique({
-          where: { id: consumed.inventoryItemId },
-        });
+        const invItems = await tx.$queryRaw<
+          Array<{
+            id: string;
+            name: string;
+            sku: string;
+            currentStock: unknown;
+            weightedAverageCost: unknown;
+          }>
+        >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${consumed.inventoryItemId} FOR UPDATE`;
+        const invItem = invItems[0];
 
         if (!invItem) {
           throw new AppError(
@@ -467,9 +495,16 @@ export class ProductionService {
       }
 
       // Finished goods stock update & movement
-      const finishedItem = await tx.inventoryItem.findUnique({
-        where: { id: finishedGoodsItemId },
-      });
+      const finishedItems = await tx.$queryRaw<
+        Array<{
+          id: string;
+          name: string;
+          sku: string;
+          currentStock: unknown;
+          weightedAverageCost: unknown;
+        }>
+      >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${finishedGoodsItemId} FOR UPDATE`;
+      const finishedItem = finishedItems[0];
       if (!finishedItem) {
         throw new AppError(
           `Finished goods item ${finishedGoodsItemId} not found`,
@@ -559,9 +594,16 @@ export class ProductionService {
         );
       }
 
-      const finishedItem = await tx.inventoryItem.findUnique({
-        where: { id: finishedGoodsItemId },
-      });
+      const finishedItems = await tx.$queryRaw<
+        Array<{
+          id: string;
+          name: string;
+          sku: string;
+          currentStock: unknown;
+          weightedAverageCost: unknown;
+        }>
+      >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${finishedGoodsItemId} FOR UPDATE`;
+      const finishedItem = finishedItems[0];
       if (!finishedItem) {
         throw new AppError(
           `Finished goods item ${finishedGoodsItemId} not found`,

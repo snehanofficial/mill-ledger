@@ -1,5 +1,5 @@
 import { prisma } from "../../db/client.js";
-import { MovementType, type Prisma } from "@prisma/client";
+import { MovementType, Prisma } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
 
 export interface CreatePurchaseReceiptInput {
@@ -120,9 +120,16 @@ export class InventoryService {
           throw new AppError("Purchase unit price cannot be negative", 400);
         }
 
-        const item = await tx.inventoryItem.findUnique({
-          where: { id: itemInput.inventoryItemId },
-        });
+        const items = await tx.$queryRaw<
+          Array<{
+            id: string;
+            name: string;
+            sku: string;
+            currentStock: Prisma.Decimal.Value;
+            weightedAverageCost: Prisma.Decimal.Value;
+          }>
+        >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${itemInput.inventoryItemId} FOR UPDATE`;
+        const item = items[0];
 
         if (!item) {
           throw new AppError(
@@ -131,25 +138,26 @@ export class InventoryService {
           );
         }
 
-        const currentStock = Number(item.currentStock);
-        const currentAvgCost = Number(item.weightedAverageCost);
-        const purchasedQty = itemInput.quantity;
-        const purchaseRate = itemInput.unitPrice;
-        const lineTotal = purchasedQty * purchaseRate;
+        const currentStock = new Prisma.Decimal(item.currentStock || 0);
+        const currentAvgCost = new Prisma.Decimal(item.weightedAverageCost || 0);
+        const purchasedQty = new Prisma.Decimal(itemInput.quantity);
+        const purchaseRate = new Prisma.Decimal(itemInput.unitPrice);
+        const lineTotal = purchasedQty.mul(purchaseRate);
 
-        // Weighted Average Cost formula:
+        // Exact Weighted Average Cost formula using Decimal arithmetic:
         // (currentStock * currentAvgCost + purchasedQty * purchaseRate) / (currentStock + purchasedQty)
-        const totalQty = currentStock + purchasedQty;
-        const newWeightedAverageCost =
-          totalQty > 0
-            ? (currentStock * currentAvgCost + lineTotal) / totalQty
-            : purchaseRate;
+        const totalQty = currentStock.add(purchasedQty);
+        const newWeightedAverageCost = totalQty.gt(0)
+          ? currentStock.mul(currentAvgCost).add(lineTotal).dividedBy(totalQty)
+          : purchaseRate;
 
-        // Update inventory item balances
+        // Update inventory item balances atomically with row lock
         await tx.inventoryItem.update({
           where: { id: item.id },
           data: {
-            currentStock: totalQty,
+            currentStock: {
+              increment: itemInput.quantity,
+            },
             weightedAverageCost: newWeightedAverageCost,
           },
         });
@@ -214,47 +222,69 @@ export class InventoryService {
       orderBy: { sku: "asc" },
     });
 
+    if (items.length === 0) {
+      return [];
+    }
+
+    const itemIds = items.map((i) => i.id);
+
+    // 1. Group movements by item in 1 single SQL query
+    const movementWhere: Prisma.StockMovementWhereInput = {
+      inventoryItemId: { in: itemIds },
+      ...(warehouseId ? { warehouseId } : {}),
+    };
+
+    const movementAggs = await prisma.stockMovement.groupBy({
+      by: ["inventoryItemId"],
+      where: movementWhere,
+      _sum: {
+        quantity: true,
+      },
+    });
+
+    const movementMap = new Map<string, number>();
+    for (const m of movementAggs) {
+      movementMap.set(m.inventoryItemId, Number(m._sum.quantity ?? 0));
+    }
+
+    // 2. Group active stock reservations by item in 1 single SQL query
+    const reservationWhere: Prisma.StockReservationWhereInput = {
+      inventoryItemId: { in: itemIds },
+      status: "ACTIVE",
+      ...(warehouseId ? { warehouseId } : {}),
+    };
+
+    const reservationAggs = await prisma.stockReservation.groupBy({
+      by: ["inventoryItemId"],
+      where: reservationWhere,
+      _sum: {
+        reservedQuantity: true,
+        releasedQuantity: true,
+      },
+    });
+
+    const reservationMap = new Map<
+      string,
+      { reservedGross: number; releasedQty: number }
+    >();
+    for (const r of reservationAggs) {
+      reservationMap.set(r.inventoryItemId, {
+        reservedGross: Number(r._sum.reservedQuantity ?? 0),
+        releasedQty: Number(r._sum.releasedQuantity ?? 0),
+      });
+    }
+
     const balances: InventoryBalanceRow[] = [];
 
     for (const item of items) {
-      // Sum movements from ledger to verify deterministic reconciliation
-      const movementWhere: Prisma.StockMovementWhereInput = {
-        inventoryItemId: item.id,
-      };
-      if (warehouseId) {
-        movementWhere.warehouseId = warehouseId;
-      }
-
-      const movementAgg = await prisma.stockMovement.aggregate({
-        where: movementWhere,
-        _sum: {
-          quantity: true,
-        },
-      });
-
-      const ledgerSum = Number(movementAgg._sum.quantity ?? 0);
+      const ledgerSum = movementMap.get(item.id) ?? 0;
       const onHand = Number(item.currentStock);
 
-      // Sum active stock reservations
-      const reservationWhere: Prisma.StockReservationWhereInput = {
-        inventoryItemId: item.id,
-        status: "ACTIVE",
+      const res = reservationMap.get(item.id) ?? {
+        reservedGross: 0,
+        releasedQty: 0,
       };
-      if (warehouseId) {
-        reservationWhere.warehouseId = warehouseId;
-      }
-
-      const reservationAgg = await prisma.stockReservation.aggregate({
-        where: reservationWhere,
-        _sum: {
-          reservedQuantity: true,
-          releasedQuantity: true,
-        },
-      });
-
-      const reservedGross = Number(reservationAgg._sum.reservedQuantity ?? 0);
-      const releasedQty = Number(reservationAgg._sum.releasedQuantity ?? 0);
-      const reserved = Math.max(0, reservedGross - releasedQty);
+      const reserved = Math.max(0, res.reservedGross - res.releasedQty);
       const available = Math.max(0, onHand - reserved);
       const reconciled = Math.abs(onHand - ledgerSum) < 0.000001;
 
@@ -316,6 +346,38 @@ export class InventoryService {
         warehouseName: m.warehouse.name,
         postedAt: m.postedAt,
       };
+    });
+  }
+
+  /**
+   * List purchase receipts with vendor and line details
+   */
+  async getPurchaseReceipts(organizationId: string) {
+    return await prisma.purchaseReceipt.findMany({
+      where: { organizationId },
+      include: {
+        supplier: true,
+        warehouse: true,
+        lines: {
+          include: {
+            inventoryItem: {
+              include: { baseUom: true },
+            },
+            uom: true,
+          },
+        },
+      },
+      orderBy: { postedAt: "desc" },
+    });
+  }
+
+  /**
+   * List active suppliers
+   */
+  async getSuppliers(organizationId: string) {
+    return await prisma.supplier.findMany({
+      where: { organizationId, isActive: true },
+      orderBy: { name: "asc" },
     });
   }
 }

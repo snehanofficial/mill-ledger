@@ -314,7 +314,7 @@ describe("M8: Reporting, audit logs, and owner dashboard", () => {
     const retARow = rec.rows.find((r: any) => r.customerCode === "CUST-RET-A");
     expect(retARow.netOutstanding).toBe(3875);
 
-    // H. Owner Executive Dashboard
+    // H. Owner Executive Dashboard (/api/v1/reports/dashboard and /api/v1/dashboard)
     const dashRes = await fetch(`${baseUrl}/api/v1/reports/dashboard`, {
       headers: { Cookie: adminCookie },
     });
@@ -324,6 +324,14 @@ describe("M8: Reporting, audit logs, and owner dashboard", () => {
     expect(dash.metrics.totalCollections).toBe(4000);
     expect(dash.metrics.totalOutstandingReceivables).toBe(3875);
     expect(dash.metrics.stockReconciliationOk).toBe(true);
+
+    // Verify /api/v1/dashboard direct alias (used by frontend dashboard-page)
+    const directDashRes = await fetch(`${baseUrl}/api/v1/dashboard?organizationId=MILL`, {
+      headers: { Cookie: adminCookie },
+    });
+    expect(directDashRes.status).toBe(200);
+    const directDash = await directDashRes.json();
+    expect(directDash.metrics.totalRevenue).toBe(7875);
 
     // I. CSV Export Engine
     const exportRes = await fetch(
@@ -387,5 +395,28 @@ describe("M8: Reporting, audit logs, and owner dashboard", () => {
       headers: { Cookie: prodCookie },
     });
     expect(prodRepRes.status).toBe(200);
+
+    // 5. MLD-007: Salesman 1 querying receivables receives only their assigned accounts
+    const sales1RecRes = await fetch(`${baseUrl}/api/v1/reports/receivables`, {
+      headers: { Cookie: salesman1Cookie },
+    });
+    expect(sales1RecRes.status).toBe(200);
+    const sales1Rec = await sales1RecRes.json();
+    const customerCodes = sales1Rec.rows.map((r: any) => r.customerCode);
+    expect(customerCodes).toContain("CUST-RET-A");
+    expect(customerCodes).not.toContain("CUST-DIST-B");
+
+    // 6. MLD-007: Salesman attempting to query another salesman's ID is locked to their own
+    const spoofRecRes = await fetch(
+      `${baseUrl}/api/v1/reports/receivables?salesmanId=spoofed-id`,
+      {
+        headers: { Cookie: salesman1Cookie },
+      },
+    );
+    expect(spoofRecRes.status).toBe(200);
+    const spoofRec = await spoofRecRes.json();
+    const spoofCodes = spoofRec.rows.map((r: any) => r.customerCode);
+    expect(spoofCodes).toContain("CUST-RET-A");
+    expect(spoofCodes).not.toContain("CUST-DIST-B");
   });
 });

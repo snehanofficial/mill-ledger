@@ -16,12 +16,28 @@
  *   }
  */
 
-import { Outlet, Navigate } from "react-router-dom";
+import { Suspense } from "react";
+import { Outlet, Navigate, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { AuthenticatedShell } from "@/components/shell/authenticated-shell";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { authClient } from "@/lib/auth-client";
+
+function RouteLoadingFallback() {
+  return (
+    <div className="flex h-[40vh] w-full items-center justify-center p-8">
+      <div className="flex flex-col items-center gap-2">
+        <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <span className="text-xs font-medium text-muted-foreground">Loading view...</span>
+      </div>
+    </div>
+  );
+}
 
 export function AuthenticatedLayout() {
   const { user, isLoading } = useCurrentUser();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Show loading shell to prevent flash/remount
   if (isLoading) {
@@ -33,9 +49,23 @@ export function AuthenticatedLayout() {
     return <Navigate to="/auth/login" replace />;
   }
 
+  const handleSignOut = async () => {
+    try {
+      await authClient.signOut();
+    } catch (err) {
+      console.warn("Sign out request error:", err);
+    } finally {
+      queryClient.clear();
+      navigate("/auth/login", { replace: true });
+      window.location.reload();
+    }
+  };
+
   return (
-    <AuthenticatedShell user={user} notificationCount={0}>
-      <Outlet />
+    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <Outlet />
+      </Suspense>
     </AuthenticatedShell>
   );
 }

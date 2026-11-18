@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import {
   createBrowserRouter,
   Navigate,
@@ -5,31 +6,69 @@ import {
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthenticatedLayout } from "@/layouts/authenticated-layout";
-import { StockPage } from "@/pages/stock-page";
-import { ProductionPage } from "@/pages/production-page";
-import { OrdersPage } from "@/pages/orders-page";
-import { InvoicesPage } from "@/pages/invoices-page";
-import { DispatchPage } from "@/pages/dispatch-page";
-import { PaymentsPage } from "@/pages/payments-page";
-import { DashboardPage } from "@/pages/dashboard-page";
-import {
-  ReportsSalesPage,
-  ReportsStockPage,
-  ReportsProductionPage,
-  ReportsReceivablesPage,
-  ReportsGSTPage,
-  ReportsAuditPage,
-} from "@/pages/reports-page";
-import {
-  NewOrderPage,
-  PurchasesPage,
-  CustomersPage,
-  ExportsPage,
-  SettingsPage,
-  LoginPage,
-  NotFoundPage,
-} from "@/pages/placeholder-pages";
-import ShowcasePage from "@/pages/showcase-page";
+
+// Lazy-loaded routes for code splitting (MLD-014)
+const LoginPage = lazy(() =>
+  import("@/pages/login-page").then((m) => ({ default: m.LoginPage })),
+);
+const DashboardPage = lazy(() =>
+  import("@/pages/dashboard-page").then((m) => ({ default: m.DashboardPage })),
+);
+const StockPage = lazy(() =>
+  import("@/pages/stock-page").then((m) => ({ default: m.StockPage })),
+);
+const ProductionPage = lazy(() =>
+  import("@/pages/production-page").then((m) => ({ default: m.ProductionPage })),
+);
+const OrdersPage = lazy(() =>
+  import("@/pages/orders-page").then((m) => ({ default: m.OrdersPage })),
+);
+const InvoicesPage = lazy(() =>
+  import("@/pages/invoices-page").then((m) => ({ default: m.InvoicesPage })),
+);
+const DispatchPage = lazy(() =>
+  import("@/pages/dispatch-page").then((m) => ({ default: m.DispatchPage })),
+);
+const PaymentsPage = lazy(() =>
+  import("@/pages/payments-page").then((m) => ({ default: m.PaymentsPage })),
+);
+const ReportsSalesPage = lazy(() =>
+  import("@/pages/reports-page").then((m) => ({ default: m.ReportsSalesPage })),
+);
+const ReportsStockPage = lazy(() =>
+  import("@/pages/reports-page").then((m) => ({ default: m.ReportsStockPage })),
+);
+const ReportsProductionPage = lazy(() =>
+  import("@/pages/reports-page").then((m) => ({ default: m.ReportsProductionPage })),
+);
+const ReportsReceivablesPage = lazy(() =>
+  import("@/pages/reports-page").then((m) => ({ default: m.ReportsReceivablesPage })),
+);
+const ReportsGSTPage = lazy(() =>
+  import("@/pages/reports-page").then((m) => ({ default: m.ReportsGSTPage })),
+);
+const ReportsAuditPage = lazy(() =>
+  import("@/pages/reports-page").then((m) => ({ default: m.ReportsAuditPage })),
+);
+const NewOrderPage = lazy(() =>
+  import("@/pages/placeholder-pages").then((m) => ({ default: m.NewOrderPage })),
+);
+const PurchasesPage = lazy(() =>
+  import("@/pages/purchases-page").then((m) => ({ default: m.PurchasesPage })),
+);
+const CustomersPage = lazy(() =>
+  import("@/pages/customers-page").then((m) => ({ default: m.CustomersPage })),
+);
+const ExportsPage = lazy(() =>
+  import("@/pages/placeholder-pages").then((m) => ({ default: m.ExportsPage })),
+);
+const SettingsPage = lazy(() =>
+  import("@/pages/placeholder-pages").then((m) => ({ default: m.SettingsPage })),
+);
+const NotFoundPage = lazy(() =>
+  import("@/pages/placeholder-pages").then((m) => ({ default: m.NotFoundPage })),
+);
+const ShowcasePage = lazy(() => import("@/pages/showcase-page"));
 import {
   dashboardHandle,
   ordersHandle,
@@ -57,7 +96,17 @@ const router = createBrowserRouter([
   // ── Public routes (outside authenticated shell) ─────────────────
   {
     path: "/auth/login",
-    element: <LoginPage />,
+    element: (
+      <Suspense
+        fallback={
+          <div className="flex min-h-svh items-center justify-center bg-background">
+            <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        }
+      >
+        <LoginPage />
+      </Suspense>
+    ),
   },
 
   // ── Authenticated shell ─────────────────────────────────────────

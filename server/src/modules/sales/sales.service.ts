@@ -750,7 +750,9 @@ export class SalesService {
       where: { id: orderId },
       data: {
         notes: input.notes,
-        status: input.status ?? order.status,
+        status: input.status
+          ? (String(input.status).toUpperCase() as OrderStatus)
+          : order.status,
       },
       include: {
         lines: true,

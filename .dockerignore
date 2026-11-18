@@ -1,0 +1,11 @@
+node_modules
+.git
+.github
+dist
+test-results
+playwright-report
+*.log
+.env
+.env.local
+.gemini
+coverage

@@ -10,9 +10,9 @@ import { AppError } from "../../middleware/error.middleware.js";
 
 export const reportingRouter = Router();
 
-// GET /api/v1/reports/dashboard - Executive overview
+// GET /api/v1/reports/dashboard or /api/v1/dashboard - Executive overview
 reportingRouter.get(
-  "/dashboard",
+  ["/", "/dashboard"],
   requireAuth,
   authorize("report", "read"),
   async (req: AuthenticatedRequest, res, next) => {

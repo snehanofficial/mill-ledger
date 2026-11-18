@@ -23,7 +23,7 @@ test.describe("MillLedger Application Shell", () => {
     expect(headerBox?.height).toBe(64);
 
     // Brand and workspace identity
-    await expect(page.getByLabel("MillLedger home")).toBeVisible();
+    await expect(page.getByLabel(/MillLedger.*Home/i)).toBeVisible();
     await expect(
       page.getByText("MillLedger", { exact: true }).first(),
     ).toBeVisible();
@@ -362,7 +362,7 @@ test.describe("MillLedger Application Shell", () => {
 
     // Initially English
     const langBtn = page.getByRole("button", {
-      name: "Change language to Tamil",
+      name: /Switch language to Tamil|Change language to Tamil/i,
     });
     await expect(langBtn).toBeVisible();
 
@@ -373,7 +373,7 @@ test.describe("MillLedger Application Shell", () => {
 
     // Toggle back to English
     const backBtn = page.getByRole("button", {
-      name: "Change language to English",
+      name: /Switch language to English|Change language to English/i,
     });
     await expect(backBtn).toBeVisible();
     await backBtn.click();

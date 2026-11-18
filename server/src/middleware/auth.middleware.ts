@@ -23,17 +23,54 @@ export async function requireAuth(
       throw new AppError("Unauthorized: Session required", 401);
     }
 
+    const isActive = (session.user as { isActive?: boolean }).isActive ?? true;
+    if (!isActive) {
+      throw new AppError("Forbidden: User account is inactive", 403);
+    }
+
     req.user = {
       id: session.user.id,
       email: session.user.email,
       role: (session.user as { role?: Role }).role ?? "SALESMAN",
-      isActive: (session.user as { isActive?: boolean }).isActive ?? true,
+      isActive,
+      organizationId:
+        (session.user as { organizationId?: string }).organizationId || "MILL",
     };
 
     next();
   } catch (error) {
     next(error);
   }
+}
+
+export function requireTenant(
+  req: AuthenticatedRequest,
+  _res: Response,
+  next: NextFunction,
+): void {
+  if (!req.user) {
+    return next(new AppError("Unauthorized", 401));
+  }
+
+  const requestedOrg =
+    (req.query?.organizationId as string) ||
+    (req.body?.organizationId as string);
+
+  if (
+    requestedOrg &&
+    req.user.organizationId &&
+    requestedOrg !== req.user.organizationId &&
+    requestedOrg !== "MILL"
+  ) {
+    return next(
+      new AppError(
+        `Forbidden: Access denied to organization ${requestedOrg}`,
+        403,
+      ),
+    );
+  }
+
+  next();
 }
 
 export function authorize(resource: Resource, action: Action) {
@@ -50,6 +87,25 @@ export function authorize(resource: Resource, action: Action) {
       return next(
         new AppError(
           `Forbidden: Role ${req.user.role} lacks permission ${action} on ${resource}`,
+          403,
+        ),
+      );
+    }
+
+    // BOLA protection (MLD-002 / DEC-001): Deny cross-tenant data requests
+    const requestedOrg =
+      (req.query?.organizationId as string) ||
+      (req.body?.organizationId as string);
+
+    if (
+      requestedOrg &&
+      req.user.organizationId &&
+      requestedOrg !== req.user.organizationId &&
+      requestedOrg !== "MILL"
+    ) {
+      return next(
+        new AppError(
+          `Forbidden: Access denied to organization ${requestedOrg}`,
           403,
         ),
       );

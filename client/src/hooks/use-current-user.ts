@@ -55,8 +55,15 @@ export function useCurrentUser(): CurrentUserResult {
         }
       } catch {
         if (isMounted) {
-          // If unauthenticated or backend is offline in development/test, fallback to dev admin
-          if (import.meta.env.DEV) {
+          // If on /auth/* route, keep user null so login page renders cleanly
+          const isAuthPage =
+            typeof window !== "undefined" &&
+            window.location.pathname.startsWith("/auth/");
+
+          if (isAuthPage) {
+            setUser(null);
+          } else if (import.meta.env.DEV) {
+            // In dev / test environment, default to dev admin so shell and showcase tests run seamlessly
             setUser({
               id: "dev-user-1",
               name: "Factory Admin",

@@ -35,6 +35,27 @@ export function errorHandler(
     return;
   }
 
+  const errObj = err as unknown as { code?: string; message?: string };
+  if (
+    errObj.code === "P2004" ||
+    errObj.code === "23514" ||
+    (typeof err.message === "string" &&
+      (err.message.includes("chk_current_stock_non_negative") ||
+        err.message.includes("23514")))
+  ) {
+    res.status(409).json({
+      error: "Insufficient stock: cannot reduce stock balance below zero",
+    });
+    return;
+  }
+
+  if (errObj.code === "P2002") {
+    res.status(409).json({
+      error: "Conflict: unique constraint violation",
+    });
+    return;
+  }
+
   // Unhandled internal errors
   console.error("Unhandled Server Error:", err);
   res.status(500).json({

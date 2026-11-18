@@ -53,6 +53,44 @@ inventoryRouter.post(
   },
 );
 
+// GET /purchase-receipts
+inventoryRouter.get(
+  "/purchase-receipts",
+  requireAuth,
+  authorize("purchase", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId =
+        (req.query.organizationId as string) ||
+        req.user?.organizationId ||
+        "MILL";
+      const receipts = await inventoryService.getPurchaseReceipts(orgId);
+      res.json({ receipts });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /suppliers
+inventoryRouter.get(
+  "/suppliers",
+  requireAuth,
+  authorize("purchase", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId =
+        (req.query.organizationId as string) ||
+        req.user?.organizationId ||
+        "MILL";
+      const suppliers = await inventoryService.getSuppliers(orgId);
+      res.json({ suppliers });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /balances
 inventoryRouter.get(
   "/balances",

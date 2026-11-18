@@ -1,6 +1,7 @@
 import { prisma } from "../../db/client.js";
 import { InvoiceStatus, type Prisma } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
+import { sequenceService } from "./sequence.service.js";
 
 export interface CreateInvoiceInput {
   salesOrderId: string;
@@ -79,14 +80,11 @@ export class FinanceService {
       }
 
       const fy = this.getFinancialYear();
-      const existingInvoicesCount = await tx.salesInvoice.count({
-        where: {
-          organizationId: order.organizationId,
-          financialYear: fy,
-        },
-      });
-
-      const invoiceNumber = `INV-${fy}-${(existingInvoicesCount + 1).toString().padStart(4, "0")}`;
+      const invoiceNumber = await sequenceService.getNextInvoiceNumber(
+        tx,
+        order.organizationId,
+        fy,
+      );
 
       // Place of supply tax calculation
       const isIntraState =

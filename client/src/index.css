@@ -16,7 +16,7 @@
   --secondary: #f4f4f5;
   --secondary-foreground: #18181b;
   --muted: #f4f4f5;
-  --muted-foreground: #71717a;
+  --muted-foreground: #52525b;
   --accent: #f4f4f5;
   --accent-foreground: #18181b;
   --selection: #e8f3ec;
@@ -26,8 +26,8 @@
   --destructive-pressed: #991b1b;
   --danger-bg: #fef2f2;
   --border: #e4e4e7;
-  --input: #e4e4e7;
-  --control-border: #d4d4d8;
+  --input: #828288;
+  --control-border: #828288;
   --ring: #176b54;
   --surface: #ffffff;
   --surface-muted: #f4f4f5;

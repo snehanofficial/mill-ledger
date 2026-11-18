@@ -24,4 +24,5 @@ export interface UserContext {
   email: string;
   role: Role;
   isActive: boolean;
+  organizationId?: string;
 }

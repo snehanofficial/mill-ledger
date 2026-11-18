@@ -14,8 +14,10 @@ model User {
   image         String?
   role          String    @default("SALESMAN")
   isActive      Boolean   @default(true)
+  organizationId String?  @map("organization_id")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  organization  Organization? @relation(fields: [organizationId], references: [id])
   sessions            Session[]
   accounts            Account[]
   customerAssignments SalesmanCustomerAssignment[]
@@ -96,6 +98,8 @@ model Organization {
   creditNotes    CreditNote[]
   payments       Payment[]
   auditLogs      AuditLog[]
+  users          User[]
+  documentSequences DocumentSequence[]
 
   @@map("organization")
 }
@@ -891,6 +895,20 @@ model AuditLog {
   @@index([organizationId, entity])
   @@index([organizationId, timestamp])
   @@map("audit_log")
+}
+
+model DocumentSequence {
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
+  type           String
+  financialYear  String       @map("financial_year")
+  currentValue   Int          @default(0) @map("current_value")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, type, financialYear])
+  @@map("document_sequences")
 }
 
 

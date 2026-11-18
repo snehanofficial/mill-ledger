@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mill-ledger-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mill_ledger}
+      POSTGRES_USER: ${POSTGRES_USER:-mill}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mill_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mill} -d ${POSTGRES_DB:-mill_ledger}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mill-ledger-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-4000}:4000"
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mill}:${POSTGRES_PASSWORD:-mill_password}@postgres:5432/${POSTGRES_DB:-mill_ledger}?schema=public
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-production_secure_secret_key_minimum_32_characters_long_mill_ledger}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:4000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4000,http://localhost:5173}
+
+volumes:
+  postgres_data:
+    driver: local

@@ -105,6 +105,7 @@ export function OrdersPage() {
 
   // Form states
   const [selectedCustomerId, setSelectedCustomerId] = useState("CUST-RET-A");
+  const [selectedProductId, setSelectedProductId] = useState("VAR-MURUKKU-200G");
   const [orderQuantity, setOrderQuantity] = useState(150);
   const [orderNotes, setOrderNotes] = useState("Benchmark wholesale order");
 
@@ -119,7 +120,76 @@ export function OrdersPage() {
     },
   });
 
-  // Fetch current available stock for Murukku 200g
+  // Fetch customers dynamically (MLD-010)
+  const { data: customersData } = useQuery({
+    queryKey: ["sales-customers"],
+    queryFn: async () => {
+      const res = await apiClient.get<{
+        customers: Array<{
+          id: string;
+          code: string;
+          name: string;
+          state: string;
+          gstin?: string;
+        }>;
+      }>("/sales/customers");
+      return res.data.customers;
+    },
+  });
+
+  // Fetch products dynamically (MLD-010)
+  const { data: productsData } = useQuery({
+    queryKey: ["sales-products"],
+    queryFn: async () => {
+      const res = await apiClient.get<{
+        products: Array<{
+          id: string;
+          sku: string;
+          name: string;
+          defaultPrice: number;
+          taxRate: number;
+        }>;
+      }>("/sales/products");
+      return res.data.products;
+    },
+  });
+
+  const customersList = customersData || [
+    {
+      id: "CUST-RET-A",
+      code: "CUST-RET-A",
+      name: "Retailer A",
+      state: "Tamil Nadu",
+    },
+    {
+      id: "CUST-DIST-B",
+      code: "CUST-DIST-B",
+      name: "Distributor B",
+      state: "Karnataka",
+    },
+  ];
+
+  const productsList = productsData || [
+    {
+      id: "VAR-MURUKKU-200G",
+      sku: "VAR-MURUKKU-200G",
+      name: "Murukku 200 g",
+      defaultPrice: 50.0,
+      taxRate: 5.0,
+    },
+  ];
+
+  const activeCustomer =
+    customersList.find(
+      (c) => c.id === selectedCustomerId || c.code === selectedCustomerId,
+    ) || customersList[0];
+
+  const activeProduct =
+    productsList.find(
+      (p) => p.id === selectedProductId || p.sku === selectedProductId,
+    ) || productsList[0];
+
+  // Fetch current available stock for selected product
   const { data: stockData } = useQuery<{
     balances: Array<{
       sku: string;
@@ -137,34 +207,36 @@ export function OrdersPage() {
     },
   });
 
-  const murukkuStock = stockData?.balances.find(
-    (b) => b.sku === "FG-MURUKKU-200G",
+  const productStock = stockData?.balances.find(
+    (b) =>
+      b.sku === activeProduct.sku ||
+      (b.sku === "FG-MURUKKU-200G" &&
+        activeProduct.sku.includes("MURUKKU")),
   );
-  const availablePackets = murukkuStock?.available ?? 0;
+  const availablePackets = productStock?.available ?? 0;
   const currentShortage = Math.max(0, orderQuantity - availablePackets);
 
-  // Customer options
-  const isRetailerA = selectedCustomerId === "CUST-RET-A";
-  const customerState = isRetailerA ? "Tamil Nadu" : "Karnataka";
-  const isIntraState = customerState.toLowerCase() === "tamil nadu";
+  // Dynamic tax calculation
+  const customerState = activeCustomer.state || "Tamil Nadu";
+  const isIntraState = customerState.trim().toLowerCase() === "tamil nadu";
 
-  const unitPrice = 50.0;
+  const unitPrice = Number(activeProduct.defaultPrice || 50.0);
+  const taxPct = Number(activeProduct.taxRate || 5.0) / 100;
   const calculatedTaxable = orderQuantity * unitPrice;
-  const calculatedTax = calculatedTaxable * 0.05;
+  const calculatedTax = calculatedTaxable * taxPct;
   const calculatedTotal = calculatedTaxable + calculatedTax;
 
   // Create order mutation
   const createOrderMutation = useMutation({
     mutationFn: async () => {
-      // Fetch variant ID and customer ID from database
       const res = await apiClient.post("/sales/orders", {
         organizationId: "MILL",
-        customerId: isRetailerA ? "CUST-RET-A" : "CUST-DIST-B",
+        customerId: activeCustomer.id,
         orderNumber: `SO-2026-${Date.now().toString().slice(-4)}`,
         notes: orderNotes,
         lines: [
           {
-            productVariantId: "VAR-MURUKKU-200G",
+            productVariantId: activeProduct.id,
             quantity: orderQuantity,
             unitPrice,
           },
@@ -180,13 +252,13 @@ export function OrdersPage() {
   });
 
   const handleCreateOrder = async () => {
-    const customerId = isRetailerA ? "CUST-RET-A" : "CUST-DIST-B";
-    const customerName = isRetailerA ? "Retailer A" : "Distributor B";
+    const customerId = activeCustomer.id;
+    const customerName = activeCustomer.name;
     const items = [
       {
-        productVariantId: "VAR-MURUKKU-200G",
-        sku: "VAR-MURUKKU-200G",
-        name: "Murukku 200 g",
+        productVariantId: activeProduct.id,
+        sku: activeProduct.sku,
+        name: activeProduct.name,
         quantity: orderQuantity,
         quotedUnitPrice: unitPrice,
       },
@@ -321,7 +393,7 @@ export function OrdersPage() {
           <Button
             size="sm"
             onClick={() => setShowNewOrderModal(true)}
-            className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="gap-2"
           >
             <PlusCircleIcon className="h-4 w-4" />
             New sales order
@@ -763,12 +835,15 @@ export function OrdersPage() {
                   onChange={(e) => setSelectedCustomerId(e.target.value)}
                   className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
                 >
-                  <option value="CUST-RET-A">
-                    Retailer A (Tamil Nadu, Intra-state)
-                  </option>
-                  <option value="CUST-DIST-B">
-                    Distributor B (Karnataka, Inter-state)
-                  </option>
+                  {customersList.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.state},{" "}
+                      {c.state?.trim().toLowerCase() === "tamil nadu"
+                        ? "Intra-state"
+                        : "Inter-state"}
+                      )
+                    </option>
+                  ))}
                 </select>
                 <span className="text-xs text-muted-foreground">
                   Place of supply: {customerState} (
@@ -782,14 +857,19 @@ export function OrdersPage() {
                   <label className="text-xs font-semibold text-muted-foreground">
                     Product item
                   </label>
-                  <input
-                    type="text"
-                    disabled
-                    value="Murukku 200 g"
-                    className="rounded-md border bg-muted px-3 py-2 text-sm font-medium"
-                  />
+                  <select
+                    value={selectedProductId}
+                    onChange={(e) => setSelectedProductId(e.target.value)}
+                    className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+                  >
+                    {productsList.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} (₹{Number(p.defaultPrice).toFixed(2)})
+                      </option>
+                    ))}
+                  </select>
                   <span className="text-xs text-muted-foreground">
-                    Standard price: ₹50.00 / pkt
+                    Standard price: ₹{unitPrice.toFixed(2)} / pkt
                   </span>
                 </div>
 
@@ -869,7 +949,7 @@ export function OrdersPage() {
                 size="sm"
                 onClick={handleCreateOrder}
                 disabled={isSubmittingOrder || createOrderMutation.isPending}
-                className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                className="gap-2 cursor-pointer"
               >
                 {isSubmittingOrder || createOrderMutation.isPending ? (
                   <>
@@ -957,7 +1037,7 @@ export function OrdersPage() {
                     approveMutation.mutate(selectedOrderForAction.id)
                   }
                   disabled={approveMutation.isPending}
-                  className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="gap-2"
                 >
                   <CheckCircle2Icon className="h-4 w-4" />
                   Confirm approval

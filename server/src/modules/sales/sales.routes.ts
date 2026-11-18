@@ -181,11 +181,9 @@ salesRouter.put(
         throw new AppError("Order ID is required", 400);
       }
 
-      const existing = await salesService
-        .getSalesOrderById(orderId, req.user!)
-        .catch(() => null);
-      if (!existing) {
-        return res.json({ status: "updated", user: req.user });
+      // Enforce server-side ownership from persistent database record, ignoring client-spoofed body
+      if (req.user?.role === "SALESMAN") {
+        await salesService.getSalesOrderById(orderId, req.user);
       }
 
       const updated = await salesService.updateDraftOrder(

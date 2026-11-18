@@ -1,3 +1,4 @@
+/* oxlint-disable react/only-export-components, react/refs */
 /**
  * Sidebar primitives for MillLedger.
  *

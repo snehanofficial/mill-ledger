@@ -65,6 +65,26 @@ productionRouter.get(
   },
 );
 
+// GET /api/v1/production-runs/recipes - List active BOM recipes
+productionRouter.get(
+  "/recipes",
+  requireAuth,
+  authorize("production_run", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId =
+        (req.query.organizationId as string) ||
+        req.user?.organizationId ||
+        "MILL";
+
+      const recipes = await productionService.getRecipes(orgId);
+      res.json({ recipes });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /api/v1/production-runs/:id - Get single run
 productionRouter.get(
   "/:id",
