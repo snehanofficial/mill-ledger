@@ -10,7 +10,7 @@ export interface CreateOrderLineInput {
 }
 
 export interface CreateOrderInput {
-  organizationId: string;
+  organizationId?: string;
   customerId: string;
   warehouseId?: string;
   orderNumber?: string;
@@ -36,14 +36,17 @@ export interface RejectOrderInput {
 }
 
 export class SalesService {
-  private async resolveOrgId(orgIdOrCode?: string): Promise<string> {
-    if (!orgIdOrCode) return "MILL";
-    const org = await prisma.organization.findFirst({
+  private async resolveOrgId(
+    orgIdOrCode?: string,
+    client: Prisma.TransactionClient | typeof prisma = prisma,
+  ): Promise<string> {
+    const target = orgIdOrCode || "MILL";
+    const org = await client.organization.findFirst({
       where: {
-        OR: [{ id: orgIdOrCode }, { code: orgIdOrCode }],
+        OR: [{ id: target }, { code: target }],
       },
     });
-    return org ? org.id : orgIdOrCode;
+    return org ? org.id : target;
   }
 
   /**
@@ -138,6 +141,14 @@ export class SalesService {
           );
         }
       }
+
+      // Resolve organization ID (foreign key reference to Organization.id)
+      const targetOrg =
+        input.organizationId ||
+        user.organizationId ||
+        customer.organizationId ||
+        "MILL";
+      const organizationId = await this.resolveOrgId(targetOrg, tx);
 
       // 3. Resolve warehouse (default to first facility warehouse if not supplied)
       let warehouseId = input.warehouseId;
@@ -280,7 +291,7 @@ export class SalesService {
       // Create Sales Order header
       const order = await tx.salesOrder.create({
         data: {
-          organizationId: input.organizationId,
+          organizationId,
           orderNumber,
           customerId: customer.id,
           salesmanId: user.id,

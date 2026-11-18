@@ -13,7 +13,7 @@ import { OrderStatus } from "@prisma/client";
 export const salesRouter = Router();
 
 const createOrderSchema = z.object({
-  organizationId: z.string().min(1),
+  organizationId: z.string().min(1).optional(),
   customerId: z.string().min(1),
   warehouseId: z.string().min(1).optional(),
   orderNumber: z.string().min(1).optional(),

@@ -43,7 +43,6 @@ CREATE TABLE "user" (
     "image" TEXT,
     "role" TEXT NOT NULL DEFAULT 'SALESMAN',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "organization_id" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -670,18 +669,6 @@ CREATE TABLE "audit_log" (
     CONSTRAINT "audit_log_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "document_sequences" (
-    "id" TEXT NOT NULL,
-    "organization_id" TEXT NOT NULL,
-    "type" TEXT NOT NULL,
-    "financial_year" TEXT NOT NULL,
-    "current_value" INTEGER NOT NULL DEFAULT 0,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "document_sequences_pkey" PRIMARY KEY ("id")
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
@@ -802,11 +789,6 @@ CREATE INDEX "audit_log_organizationId_entity_idx" ON "audit_log"("organizationI
 -- CreateIndex
 CREATE INDEX "audit_log_organizationId_timestamp_idx" ON "audit_log"("organizationId", "timestamp");
 
--- CreateIndex
-CREATE UNIQUE INDEX "document_sequences_organization_id_type_financial_year_key" ON "document_sequences"("organization_id", "type", "financial_year");
-
--- AddForeignKey
-ALTER TABLE "user" ADD CONSTRAINT "user_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organization"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -1015,11 +997,5 @@ ALTER TABLE "payment_allocation" ADD CONSTRAINT "payment_allocation_salesInvoice
 -- AddForeignKey
 ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
-ALTER TABLE "document_sequences" ADD CONSTRAINT "document_sequences_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- CheckConstraints (MLD-004 & DEC-003)
-ALTER TABLE "inventory_item" ADD CONSTRAINT "chk_current_stock_non_negative" CHECK ("currentStock" >= 0);
-ALTER TABLE "sales_invoice" ADD CONSTRAINT "chk_invoice_taxable_amount_non_negative" CHECK ("taxableAmount" >= 0);
-ALTER TABLE "sales_order" ADD CONSTRAINT "chk_order_taxable_amount_non_negative" CHECK ("taxableAmount" >= 0);
 
