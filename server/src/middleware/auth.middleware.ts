@@ -30,11 +30,13 @@ export async function requireAuth(
 
     req.user = {
       id: session.user.id,
+      name: session.user.name,
       email: session.user.email,
       role: (session.user as { role?: Role }).role ?? "SALESMAN",
       isActive,
       organizationId:
         (session.user as { organizationId?: string }).organizationId || "MILL",
+      image: session.user.image,
     };
 
     next();

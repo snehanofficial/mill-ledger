@@ -17,7 +17,7 @@ interface SeedUser {
 
 const SEED_USERS: SeedUser[] = [
   {
-    name: "Mill Admin",
+    name: "Factory Admin",
     email: "admin@millledger.local",
     password: "AdminPassword123!",
     role: "ADMIN",
@@ -25,6 +25,12 @@ const SEED_USERS: SeedUser[] = [
   {
     name: "Salesman One",
     email: "salesman1@millledger.local",
+    password: "SalesmanPassword123!",
+    role: "SALESMAN",
+  },
+  {
+    name: "Salesman Demo",
+    email: "salesman@millledger.local",
     password: "SalesmanPassword123!",
     role: "SALESMAN",
   },
@@ -38,6 +44,12 @@ const SEED_USERS: SeedUser[] = [
     name: "Production Manager",
     email: "production@millledger.local",
     password: "ProductionPassword123!",
+    role: "PRODUCTION",
+  },
+  {
+    name: "Floor Operator",
+    email: "operator@millledger.local",
+    password: "OperatorPassword123!",
     role: "PRODUCTION",
   },
   {

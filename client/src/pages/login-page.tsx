@@ -1,13 +1,31 @@
 import * as React from "react";
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
+import {
+  useCurrentUser,
+  AUTH_SESSION_QUERY_KEY,
+  mapAuthUserToShellUser,
+} from "@/hooks/use-current-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Alert } from "@/components/ui/alert";
 import { useLanguage } from "@/lib/i18n";
-import { LockIcon, MailIcon, ShieldCheckIcon } from "lucide-react";
+import {
+  LockIcon,
+  MailIcon,
+  ShieldCheckIcon,
+  EyeIcon,
+  EyeOffIcon,
+} from "lucide-react";
 
 interface SeedAccount {
   label: string;
@@ -43,31 +61,101 @@ const SEED_ACCOUNTS: SeedAccount[] = [
   },
 ];
 
+/**
+ * OWASP Open Redirect validation.
+ * Ensures destination is a local relative URL, denying external schemes and protocol-relative '//'.
+ */
+function getSafeRedirectUrl(target: unknown, fallback = "/dashboard"): string {
+  if (typeof target !== "string") return fallback;
+  const trimmed = target.trim();
+  if (
+    !trimmed.startsWith("/") ||
+    trimmed.startsWith("//") ||
+    trimmed.startsWith("/auth/")
+  ) {
+    return fallback;
+  }
+  return trimmed;
+}
+
 export function LoginPage() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { language, setLanguage } = useLanguage();
+
+  const { user, isLoading: isCheckingAuth } = useCurrentUser();
 
   const [email, setEmail] = useState("admin@millledger.local");
   const [password, setPassword] = useState("AdminPassword123!");
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/dashboard";
+  // Derive target return URL with open-redirect protection
+  const rawFrom = (
+    location.state as { from?: { pathname: string; search?: string } }
+  )?.from;
+  const fromPath = rawFrom
+    ? `${rawFrom.pathname}${rawFrom.search || ""}`
+    : "/dashboard";
+  const safeFrom = getSafeRedirectUrl(fromPath, "/dashboard");
+
+  // If user is already authenticated, redirect to destination immediately ("vice versa if authenticated")
+  if (user) {
+    return <Navigate to={safeFrom} replace />;
+  }
+
+  // Loading skeleton while checking existing session to avoid form flash
+  if (isCheckingAuth) {
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-background">
+        <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
     setErrorMessage(null);
 
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail || !password) {
+      setIsSubmitting(false);
+      setErrorMessage(
+        language === "ta"
+          ? "மின்னஞ்சல் மற்றும் கடவுச்சொல் தேவை"
+          : "Email and password are required",
+      );
+      return;
+    }
+
     try {
-      await authClient.signIn({ email, password });
-      window.location.href = from;
+      const authUser = await authClient.signIn({
+        email: cleanEmail,
+        password,
+      });
+
+      // Update TanStack query cache with authenticated user
+      queryClient.setQueryData(
+        AUTH_SESSION_QUERY_KEY,
+        mapAuthUserToShellUser(authUser),
+      );
+
+      // Navigate to safe destination
+      navigate(safeFrom, { replace: true });
     } catch (err: unknown) {
-      setIsLoading(false);
+      setIsSubmitting(false);
       if (err instanceof Error) {
         setErrorMessage(err.message);
       } else {
-        setErrorMessage("Authentication failed. Please verify credentials.");
+        setErrorMessage(
+          language === "ta"
+            ? "உள்நுழைவு தோல்வியடைந்தது. சரியான விவரங்களை உள்ளிடவும்."
+            : "Authentication failed. Please verify credentials.",
+        );
       }
     }
   };
@@ -94,7 +182,11 @@ export function LoginPage() {
           variant="outline"
           size="sm"
           onClick={() => setLanguage(language === "en" ? "ta" : "en")}
-          aria-label={language === "en" ? "Switch language to Tamil" : "ஆங்கிலத்திற்கு மாற்று"}
+          aria-label={
+            language === "en"
+              ? "Switch language to Tamil"
+              : "ஆங்கிலத்திற்கு மாற்று"
+          }
         >
           {language === "en" ? "தமிழ்" : "English"}
         </Button>
@@ -129,12 +221,16 @@ export function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               {errorMessage && (
                 <Alert
                   variant="danger"
                   role="alert"
-                  title={language === "ta" ? "உள்நுழைவு தோல்வியடைந்தது" : "Sign in failed"}
+                  title={
+                    language === "ta"
+                      ? "உள்நுழைவு தோல்வியடைந்தது"
+                      : "Sign in failed"
+                  }
                 >
                   {errorMessage}
                 </Alert>
@@ -158,7 +254,10 @@ export function LoginPage() {
                     autoComplete="email"
                     required
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errorMessage) setErrorMessage(null);
+                    }}
                     className="pl-9"
                     placeholder="user@millledger.local"
                   />
@@ -179,29 +278,56 @@ export function LoginPage() {
                   <Input
                     id="password"
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     required
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-9"
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errorMessage) setErrorMessage(null);
+                    }}
+                    className="pl-9 pr-10"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground focus:outline-none"
+                    aria-label={
+                      showPassword
+                        ? language === "ta"
+                          ? "கடவுச்சொல்லை மறை"
+                          : "Hide password"
+                        : language === "ta"
+                          ? "கடவுச்சொல்லைக் காட்டு"
+                          : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOffIcon className="size-4" aria-hidden="true" />
+                    ) : (
+                      <EyeIcon className="size-4" aria-hidden="true" />
+                    )}
+                  </button>
                 </div>
               </div>
 
               <Button
                 type="submit"
                 variant="primary"
-                disabled={isLoading}
+                disabled={isSubmitting}
                 className="w-full text-base font-semibold"
+                aria-busy={isSubmitting}
               >
-                {isLoading
-                  ? language === "ta"
-                    ? "சரிபார்க்கிறது..."
-                    : "Authenticating..."
-                  : language === "ta"
-                    ? "உள்நுழைக"
-                    : "Sign in"}
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <span className="size-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                    {language === "ta" ? "சரிபார்க்கிறது..." : "Signing in..."}
+                  </span>
+                ) : language === "ta" ? (
+                  "உள்நுழைக"
+                ) : (
+                  "Sign in"
+                )}
               </Button>
             </form>
           </CardContent>
@@ -210,7 +336,9 @@ export function LoginPage() {
         {/* Demo Fast-Switch Cards */}
         <div className="rounded-control border border-border bg-card p-4 text-xs">
           <p className="font-semibold text-foreground">
-            {language === "ta" ? "சோதனை கணக்குகள் (Demo Roles):" : "Benchmark Demo Roles:"}
+            {language === "ta"
+              ? "சோதனை கணக்குகள் (Demo Roles):"
+              : "Benchmark Demo Roles:"}
           </p>
           <div className="mt-2 grid grid-cols-2 gap-2">
             {SEED_ACCOUNTS.map((acc) => (
@@ -225,7 +353,9 @@ export function LoginPage() {
                 }`}
               >
                 <div className="font-medium">{acc.label}</div>
-                <div className="truncate text-muted-foreground text-[11px]">{acc.email}</div>
+                <div className="truncate text-muted-foreground text-[11px]">
+                  {acc.email}
+                </div>
               </button>
             ))}
           </div>
@@ -234,4 +364,3 @@ export function LoginPage() {
     </div>
   );
 }
-

@@ -99,6 +99,25 @@ describe("Better Auth and permission integration", () => {
       expect(setCookie).toBeTruthy();
       expect(setCookie).toContain("better-auth");
     });
+
+    it("accepts cross-origin sign-in from LAN IP origin in dev/test environment", async () => {
+      const response = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "http://10.10.70.209:5173",
+        },
+        body: JSON.stringify({
+          email: "admin@millledger.local",
+          password: "AdminPassword123!",
+        }),
+      });
+
+      expect(response.status).toBe(200);
+      const setCookie = response.headers.get("set-cookie");
+      expect(setCookie).toBeTruthy();
+      expect(setCookie).toContain("better-auth");
+    });
   });
 
   describe("Auditor write prevention (403)", () => {

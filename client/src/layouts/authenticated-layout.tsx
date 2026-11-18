@@ -2,22 +2,11 @@
  * AuthenticatedLayout route component.
  *
  * Used as the `element` for the authenticated route subtree in createBrowserRouter.
- * Public auth routes (login, forgot password) must NOT be nested under this.
- *
- * Usage in createBrowserRouter:
- *   {
- *     path: '/',
- *     element: <AuthenticatedLayout />,
- *     handle: { breadcrumb: undefined },
- *     children: [
- *       { path: 'dashboard', element: <DashboardPage />, handle: { breadcrumb: 'Overview' } },
- *       ...
- *     ],
- *   }
+ * Public auth routes (login) must NOT be nested under this.
  */
 
-import { Suspense } from "react";
-import { Outlet, Navigate, useNavigate } from "react-router-dom";
+import { Suspense, useEffect } from "react";
+import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { AuthenticatedShell } from "@/components/shell/authenticated-shell";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -37,27 +26,44 @@ function RouteLoadingFallback() {
 export function AuthenticatedLayout() {
   const { user, isLoading } = useCurrentUser();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
 
-  // Show loading shell to prevent flash/remount
+  // Listen for unauthorized session expiration across active API queries
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      queryClient.clear();
+      navigate("/auth/login", {
+        replace: true,
+        state: { from: location },
+      });
+    };
+
+    window.addEventListener("millledger:unauthorized", handleUnauthorized);
+    return () => {
+      window.removeEventListener("millledger:unauthorized", handleUnauthorized);
+    };
+  }, [navigate, queryClient, location]);
+
+  // Show loading shell to prevent layout shift during initial session verification
   if (isLoading) {
     return <AuthenticatedShellSkeleton />;
   }
 
-  // Redirect unauthenticated users to login
+  // OWASP A01: Redirect unauthenticated users to login page, preserving return route
   if (!user) {
-    return <Navigate to="/auth/login" replace />;
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
   const handleSignOut = async () => {
     try {
       await authClient.signOut();
     } catch (err) {
-      console.warn("Sign out request error:", err);
+      console.warn("Sign out error:", err);
     } finally {
+      // OWASP: Purge all cached sensitive domain and session state from client memory
       queryClient.clear();
       navigate("/auth/login", { replace: true });
-      window.location.reload();
     }
   };
 
@@ -77,7 +83,7 @@ function AuthenticatedShellSkeleton() {
     <div
       className="flex min-h-svh w-full bg-background"
       aria-busy="true"
-      aria-label="Loading"
+      aria-label="Loading workspace"
     >
       {/* Sidebar skeleton */}
       <div className="hidden md:flex h-svh w-62 shrink-0 flex-col border-r border-border bg-surface" />

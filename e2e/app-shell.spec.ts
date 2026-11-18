@@ -1,9 +1,25 @@
 import { expect, test } from "@playwright/test";
 
+async function loginAsAdmin(page: any) {
+  await page.goto("/auth/login");
+  try {
+    await page.waitForURL(/\/dashboard$/, { timeout: 3000 });
+    return;
+  } catch {
+    // Session not active, proceed to sign in
+  }
+  const emailInput = page.locator("input#email");
+  await emailInput.waitFor({ state: "visible", timeout: 10000 });
+  await emailInput.fill("admin@millledger.local");
+  await page.locator("input#password").fill("AdminPassword123!");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.waitForURL(/\/dashboard$/, { timeout: 10000 });
+}
+
 test.describe("MillLedger Application Shell", () => {
   test.beforeEach(async ({ page }) => {
-    // Clear localStorage before each test for clean initial state
-    await page.goto("/");
+    // Authenticate as benchmark admin and clear localStorage before each test
+    await loginAsAdmin(page);
     await page.evaluate(() => window.localStorage.clear());
   });
 
@@ -36,10 +52,10 @@ test.describe("MillLedger Application Shell", () => {
     expect(Math.round(sidebarBox?.width ?? 0)).toBe(248);
 
     // Navigation sections & items
-    await expect(page.getByRole("link", { name: "Overview" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Orders" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Stock" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Invoices" })).toBeVisible();
+    await expect(sidebar.getByRole("link", { name: "Overview" })).toBeVisible();
+    await expect(sidebar.getByRole("button", { name: "Orders" })).toBeVisible();
+    await expect(sidebar.getByRole("link", { name: "Stock" })).toBeVisible();
+    await expect(sidebar.getByRole("link", { name: "Invoices" })).toBeVisible();
 
     // Breadcrumb on overview
     const breadcrumb = page.locator('nav[aria-label="Breadcrumb"]');
@@ -75,9 +91,15 @@ test.describe("MillLedger Application Shell", () => {
     }).toPass({ timeout: 2000 });
 
     // Verify localStorage has persisted 'false'
-    const persisted = await page.evaluate(() =>
-      localStorage.getItem("ml-sidebar-expanded-dev-user-1"),
-    );
+    const persisted = await page.evaluate(() => {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("ml-sidebar-expanded")) {
+          return localStorage.getItem(k);
+        }
+      }
+      return null;
+    });
     expect(persisted).toBe("false");
 
     // Reload page: should start in collapsed state (72px) with NO first-render flicker
@@ -265,8 +287,11 @@ test.describe("MillLedger Application Shell", () => {
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
 
-    // Navigate to another page
-    await page.getByRole("link", { name: "Stock" }).click();
+    // Navigate to another page via sidebar
+    await page
+      .locator('[data-slot="sidebar"]')
+      .getByRole("link", { name: "Stock" })
+      .click();
     await page.waitForURL(/\/stock$/);
 
     const cls = await page.evaluate(

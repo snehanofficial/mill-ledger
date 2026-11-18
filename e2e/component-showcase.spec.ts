@@ -1,5 +1,25 @@
 import { expect, test } from "@playwright/test";
 
+async function loginAsAdmin(page: any) {
+  await page.goto("/auth/login");
+  try {
+    await page.waitForURL(/\/dashboard$/, { timeout: 3000 });
+    return;
+  } catch {
+    // Session not active, proceed to sign in
+  }
+  const emailInput = page.locator("input#email");
+  await emailInput.waitFor({ state: "visible", timeout: 10000 });
+  await emailInput.fill("admin@millledger.local");
+  await page.locator("input#password").fill("AdminPassword123!");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.waitForURL(/\/dashboard$/, { timeout: 10000 });
+}
+
+test.beforeEach(async ({ page }) => {
+  await loginAsAdmin(page);
+});
+
 test("shows the routed component inventory", async ({ page }) => {
   await page.goto("/showcase");
 

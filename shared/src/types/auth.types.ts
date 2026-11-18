@@ -21,8 +21,10 @@ export interface Permission {
 
 export interface UserContext {
   id: string;
+  name?: string;
   email: string;
   role: Role;
   isActive: boolean;
   organizationId?: string;
+  image?: string | null;
 }

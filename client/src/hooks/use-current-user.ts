@@ -1,93 +1,56 @@
-/**
- * useCurrentUser hook.
- * Provides the authenticated user to the shell and route guards.
- * Integrates with Better Auth's client session.
- *
- * Replace the mock implementation once Better Auth client is wired up.
- */
-
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { ShellUser } from "@/components/shell/authenticated-shell";
-import { apiClient } from "@/lib/api-client";
+import { authClient, type AuthUser } from "@/lib/auth-client";
 
-interface CurrentUserResult {
+export const AUTH_SESSION_QUERY_KEY = ["auth", "session"] as const;
+
+export interface CurrentUserResult {
   user: ShellUser | null;
   isLoading: boolean;
+  isError: boolean;
+  refetch: () => Promise<unknown>;
 }
 
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) {
+export function getInitials(nameOrEmail: string): string {
+  const clean = nameOrEmail.trim();
+  const parts = clean.split(/\s+/);
+  if (parts.length >= 2 && parts[0] && parts[parts.length - 1]) {
     return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
   }
-  return name.slice(0, 2).toUpperCase();
+  return clean.slice(0, 2).toUpperCase() || "ML";
+}
+
+export function mapAuthUserToShellUser(user: AuthUser): ShellUser {
+  return {
+    id: user.id,
+    name: user.name || "User",
+    email: user.email,
+    role: user.role,
+    initials: getInitials(user.name || user.email),
+    avatar: user.image || undefined,
+  };
 }
 
 export function useCurrentUser(): CurrentUserResult {
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<ShellUser | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function checkSession() {
-      try {
-        const response = await apiClient.get<{
-          user: {
-            id: string;
-            name: string;
-            email: string;
-            role: ShellUser["role"];
-            image?: string;
-          };
-        }>("/me");
-
-        if (isMounted && response.data?.user) {
-          const u = response.data.user;
-          setUser({
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            role: u.role,
-            initials: getInitials(u.name || "User"),
-            avatar: u.image || undefined,
-          });
-        }
-      } catch {
-        if (isMounted) {
-          // If on /auth/* route, keep user null so login page renders cleanly
-          const isAuthPage =
-            typeof window !== "undefined" &&
-            window.location.pathname.startsWith("/auth/");
-
-          if (isAuthPage) {
-            setUser(null);
-          } else if (import.meta.env.DEV) {
-            // In dev / test environment, default to dev admin so shell and showcase tests run seamlessly
-            setUser({
-              id: "dev-user-1",
-              name: "Factory Admin",
-              email: "admin@millledger.local",
-              role: "ADMIN",
-              initials: "FA",
-            });
-          } else {
-            setUser(null);
-          }
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+  const query = useQuery({
+    queryKey: AUTH_SESSION_QUERY_KEY,
+    queryFn: async (): Promise<ShellUser | null> => {
+      const authUser = await authClient.getSession();
+      if (!authUser) {
+        return null;
       }
-    }
+      return mapAuthUserToShellUser(authUser);
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+    gcTime: 1000 * 60 * 15,
+    retry: false, // Never retry 401 unauthenticated
+    refetchOnWindowFocus: true,
+  });
 
-    checkSession();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  return { user, isLoading };
+  return {
+    user: query.data ?? null,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
 }
