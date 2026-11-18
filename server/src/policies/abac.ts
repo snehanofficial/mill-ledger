@@ -20,7 +20,7 @@ const rules: PolicyRule[] = [
   // ABAC rule: salesmen can only modify their own draft orders
   ({ user, resource, action, resourceAttributes }) => {
     if (
-      user.role === "salesman" &&
+      user.role === "SALESMAN" &&
       resource === "order" &&
       action === "update"
     ) {

@@ -27,12 +27,15 @@ export function createApp() {
 
   app.use(express.json());
 
-  // API routes
+  // API v1 routes
+  app.use("/api/v1/health", healthRouter);
+  app.use("/api/v1/sales", salesRouter);
+  app.use("/api/v1/production", productionRouter);
+  app.use("/api/v1/inventory", inventoryRouter);
+  app.use("/api/v1/finance", financeRouter);
+
+  // Backward compatibility alias for health check
   app.use("/api/health", healthRouter);
-  app.use("/api/sales", salesRouter);
-  app.use("/api/production", productionRouter);
-  app.use("/api/inventory", inventoryRouter);
-  app.use("/api/finance", financeRouter);
 
   // Centralized error handler
   app.use(errorHandler);

@@ -26,7 +26,7 @@ export async function requireAuth(
     req.user = {
       id: session.user.id,
       email: session.user.email,
-      role: (session.user as { role?: Role }).role ?? "salesman",
+      role: (session.user as { role?: Role }).role ?? "SALESMAN",
       isActive: (session.user as { isActive?: boolean }).isActive ?? true,
     };
 

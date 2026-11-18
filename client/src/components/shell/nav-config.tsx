@@ -22,9 +22,9 @@ import {
   TruckIcon,
   UsersIcon,
 } from "lucide-react";
+import type { Role } from "@mill-ledger/shared";
 
-export type UserRole =
-  "ADMIN" | "SALESMAN" | "PRODUCTION" | "ACCOUNTANT" | "OWNER";
+export type UserRole = Role;
 
 export interface NavLink {
   label: string;

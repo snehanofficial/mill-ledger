@@ -1,10 +1,9 @@
 export type Role =
-  | "admin"
-  | "salesman"
-  | "production_manager"
-  | "store_manager"
-  | "accounts"
-  | "auditor";
+  | "ADMIN"
+  | "SALESMAN"
+  | "PRODUCTION"
+  | "ACCOUNTANT"
+  | "OWNER";
 
 export type Action =
   "create" | "read" | "update" | "delete" | "approve" | "dispatch";

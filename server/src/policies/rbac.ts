@@ -4,7 +4,7 @@ export const ROLE_PERMISSIONS: Record<
   Role,
   Partial<Record<Resource, Action[]>>
 > = {
-  admin: {
+  ADMIN: {
     order: ["create", "read", "update", "delete", "approve", "dispatch"],
     invoice: ["create", "read", "update", "delete"],
     production_run: ["create", "read", "update", "delete", "approve"],
@@ -14,29 +14,27 @@ export const ROLE_PERMISSIONS: Record<
     report: ["read"],
     user: ["create", "read", "update", "delete"],
   },
-  salesman: {
+  SALESMAN: {
     order: ["create", "read"],
     inventory: ["read"],
     payment: ["create", "read"],
-  },
-  production_manager: {
-    production_run: ["create", "read", "update", "approve"],
-    inventory: ["read"],
     report: ["read"],
   },
-  store_manager: {
-    inventory: ["create", "read", "update"],
+  PRODUCTION: {
+    production_run: ["create", "read", "update", "approve"],
+    inventory: ["read"],
     purchase: ["create", "read"],
-    production_run: ["read"],
+    report: ["read"],
   },
-  accounts: {
+  ACCOUNTANT: {
+    order: ["read"],
     invoice: ["create", "read", "update"],
     payment: ["create", "read", "update"],
     purchase: ["read"],
-    order: ["read"],
+    inventory: ["read"],
     report: ["read"],
   },
-  auditor: {
+  OWNER: {
     order: ["read"],
     invoice: ["read"],
     production_run: ["read"],
@@ -44,6 +42,7 @@ export const ROLE_PERMISSIONS: Record<
     purchase: ["read"],
     payment: ["read"],
     report: ["read"],
+    user: ["read"],
   },
 };
 

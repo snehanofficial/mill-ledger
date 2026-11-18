@@ -2,6 +2,48 @@
 
 This file applies to every task in this repository.
 
+## Stack
+
+- **Language / Runtime**: TypeScript 5.8, Node.js 22
+- **Frontend**: React 19, Vite 6, Tailwind CSS 4, Radix UI, TanStack Query v5
+- **Backend**: Express 5, Better Auth, Prisma 7, PostgreSQL
+- **Package manager**: pnpm 12 workspaces
+
+## Build approach
+
+Vertical slices (Tracer Bullet): complete each milestone from data model to API, policies, tests, and UI.
+
+## Commands
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run dev servers concurrently
+pnpm dev
+
+# Run unit and integration tests
+pnpm test
+
+# Run end to end browser tests
+pnpm test:e2e
+
+# Run type check across workspaces
+pnpm typecheck
+
+# Lint across workspaces
+pnpm lint
+
+# Format check
+pnpm format
+```
+
+## Context files
+
+- [client/AGENTS.md](client/AGENTS.md) (React PWA frontend, components, and offline storage)
+- [server/AGENTS.md](server/AGENTS.md) (Express API, Better Auth, Prisma, and domain policies)
+- [shared/AGENTS.md](shared/AGENTS.md) (Shared types, Zod schemas, and endpoint contracts)
+
 ## Authority
 
 1. The CDI [problem statement](Problem_Statement_Winter_Internship_Application_2026.md) and exact benchmark are the requirements authority.
