@@ -1,30 +1,100 @@
 /**
  * Placeholder pages for shell route demonstration.
+ * Adapted directly from DashboardBlocks PagePlaceholder pattern.
  * These will be replaced with real portal screens in subsequent milestones.
  */
+
+import { Badge } from '@/components/ui/badge'
 
 interface PlaceholderPageProps {
   title: string
   description: string
 }
 
+const PLACEHOLDER_STATS = [
+  {
+    label: 'Total Active Orders',
+    val: '1,429',
+    change: '+12% vs last mo',
+    variant: 'success' as const,
+  },
+  {
+    label: 'Weekly Milling Yield',
+    val: '68.4%',
+    change: 'Target: 68.0%',
+    variant: 'outline' as const,
+  },
+  {
+    label: 'Pending Audit Review',
+    val: '12',
+    change: 'Action needed',
+    variant: 'warning' as const,
+  },
+  {
+    label: 'Active Milling Batches',
+    val: '4',
+    change: 'Shift in progress',
+    variant: 'info' as const,
+  },
+]
+
+const PLACEHOLDER_BARS = [
+  34, 41, 38, 47, 44, 52, 49, 58, 55, 61, 57, 66, 63, 70, 67, 74, 71, 79, 76, 83, 80, 88,
+  85, 92,
+]
+
 function PlaceholderPage({ title, description }: PlaceholderPageProps) {
   return (
-    <div className="flex flex-1 flex-col p-6 sm:p-8">
-      <div className="mb-6">
-        <h1 className="text-page-title font-semibold text-foreground leading-tight tracking-tight">
-          {title}
-        </h1>
-        <p className="mt-1 text-body text-muted">{description}</p>
+    <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8">
+      {/* Page Header */}
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+        <p className="text-sm text-muted-foreground">{description}</p>
       </div>
 
-      {/* Placeholder content area */}
-      <div className="flex-1 rounded-panel border border-border bg-surface p-6 shadow-sm">
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <p className="text-body font-medium text-foreground">Operational workspace</p>
-          <p className="mt-1 text-caption text-muted">
-            {title} portal screens and ledger tables will be mounted here.
-          </p>
+      {/* Metric Cards Skeleton Wireframe */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {PLACEHOLDER_STATS.map((stat, index) => (
+          <div
+            key={index}
+            className="flex flex-col justify-between gap-3 rounded-xl border border-border bg-card p-5 shadow-xs"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                {stat.label}
+              </span>
+              <Badge variant={stat.variant} className="shrink-0 text-[11px] font-medium">
+                {stat.change}
+              </Badge>
+            </div>
+            <div className="flex items-baseline">
+              <span className="text-2xl font-bold tracking-tight text-foreground">
+                {stat.val}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Main Content Wireframe Card */}
+      <div className="flex flex-1 flex-col rounded-xl border border-border bg-card p-6 shadow-xs min-h-[320px]">
+        <div className="flex items-center justify-between pb-4 border-b border-border">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">Activity & Ledger Stream</h2>
+            <p className="text-xs text-muted-foreground">Real-time operational stream and transaction log</p>
+          </div>
+          <span className="text-xs text-muted-foreground">Last updated just now</span>
+        </div>
+
+        <div className="flex flex-1 items-end gap-1.5 pt-8 pb-4 sm:gap-2">
+          {PLACEHOLDER_BARS.map((height, index) => (
+            <div
+              key={index}
+              className="bg-muted hover:bg-primary/20 transition-colors flex-1 rounded-t-sm"
+              style={{ height: `${height}%` }}
+              title={`Period ${index + 1}: ${height}%`}
+            />
+          ))}
         </div>
       </div>
     </div>
@@ -101,41 +171,43 @@ export function ReportsReceivablesPage() {
 }
 
 export function ReportsGSTPage() {
-  return <PlaceholderPage title="GST report" description="GSTR-1 outward supplies, tax breakdown, and HSN-wise summaries." />
+  return <PlaceholderPage title="GST report" description="GSTR-1 outward supplies, tax liabilities, and HSN-wise summaries." />
 }
 
 export function ReportsAuditPage() {
-  return <PlaceholderPage title="Audit log" description="System security events, user activity trace, and operational change history." />
+  return <PlaceholderPage title="Audit report" description="Traceable modifications, balance reconciliation logs, and security events." />
 }
 
 export function ExportsPage() {
-  return <PlaceholderPage title="Exports" description="Tally XML, Excel, and CSV data export packages." />
+  return <PlaceholderPage title="Exports" description="CSV and Excel financial reporting exports, backups, and audit dumps." />
 }
 
 export function SettingsPage() {
-  return <PlaceholderPage title="Settings" description="Milling unit preferences, notification settings, and system configuration." />
+  return <PlaceholderPage title="Settings" description="System configuration, ledger tax settings, and operational preferences." />
+}
+
+export function SettingsProfilePage() {
+  return <PlaceholderPage title="Profile & Account" description="User profile, credentials, security, and notification settings." />
+}
+
+export function SettingsUsersPage() {
+  return <PlaceholderPage title="User management" description="Staff accounts, role assignments, and permission controls." />
+}
+
+export function SettingsMillPage() {
+  return <PlaceholderPage title="Mill configuration" description="Production lines, huller parameters, storage bins, and ledger tax settings." />
+}
+
+export function SettingsAuditPage() {
+  return <PlaceholderPage title="Audit log" description="Immutable system event log, user actions, and security audit records." />
 }
 
 export function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-sm rounded-panel border border-border bg-surface p-6 shadow-modal">
-        <h1 className="text-section-title font-semibold text-foreground">Sign in to MillLedger</h1>
-        <p className="mt-1 text-body text-muted">Milling operations & ledger platform</p>
-        <div className="mt-6 flex flex-col gap-3">
-          <input
-            type="email"
-            placeholder="name@mill.local"
-            defaultValue="admin@mill.local"
-            className="h-10 rounded-control border border-input bg-surface px-3 text-body text-foreground"
-          />
-          <button
-            type="button"
-            className="flex h-10 items-center justify-center rounded-control bg-primary px-4 text-body font-medium text-primary-foreground hover:bg-primary-hover"
-          >
-            Sign in
-          </button>
-        </div>
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xs">
+        <h1 className="text-xl font-semibold text-foreground">Sign in to MillLedger</h1>
+        <p className="mt-1 text-xs text-muted-foreground">Enter your credentials to access the production unit.</p>
       </div>
     </div>
   )
@@ -143,14 +215,9 @@ export function LoginPage() {
 
 export function NotFoundPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="text-center">
-        <h1 className="text-page-title font-semibold text-foreground">404</h1>
-        <p className="mt-2 text-body text-muted">Page not found</p>
-        <a href="/dashboard" className="mt-4 inline-block text-body font-medium text-primary hover:underline">
-          Return to dashboard
-        </a>
-      </div>
+    <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+      <h1 className="text-2xl font-bold text-foreground">404 - Page Not Found</h1>
+      <p className="mt-2 text-sm text-muted-foreground">The requested operational route does not exist.</p>
     </div>
   )
 }

@@ -2,20 +2,22 @@
  * MillLedger App Shell
  *
  * Architecture:
- * - Adapts structural primitives from DashboardBlocks app-shell (MIT)
+ * - Adapts structural primitives from DashboardBlocks app-shell-02 & app-shell-01 (MIT)
  *   https://www.dashboardblocks.com/docs/components/app-shell
- * - Built on shadcn sidebar component pattern (sidebar-16 layout)
+ * - Built on official shadcn/ui sidebar component pattern (sidebar-16 layout)
  *   https://ui.shadcn.com/blocks/sidebar
- * - Integrated with React Router v7 createBrowserRouter (useLocation, useMatches)
- * - Tokens from docs/design/milledger-design-system.json (Pine & Paper identity)
+ * - Integrated directly with React Router v7 createBrowserRouter (useLocation, useMatches)
+ * - Visual design adapted to docs/design/milledger-design-system.json (Pine & Paper identity)
  *
- * Design decisions (R-31):
- * - Pine (#176B54) primary: brand identity, selected nav, action hierarchy
- * - Paper (#F4F3EE) background: warm, legible, non-screen-dominant
- * - Sidebar 248px collapsed to 72px icon rail on desktop, sheet on mobile
+ * Design features:
+ * - Crisp, modern shadcn / DashboardBlocks surfaces with deep Pine (#176B54) primary
+ * - Sidebar 248px collapsed to 72px icon rail on desktop, drawer on mobile
+ * - Responsive & adaptive: defaults to icons-only mode on tablet viewports (<1024px)
+ * - Directed tooltips on hover with arrow pointer for all icons in collapsed mode
+ * - Dedicated "Collapse to icons" control + keyboard shortcut (⌘B/Ctrl+B)
  * - Header 64px sticky: dimensions reserved unconditionally to prevent CLS
- * - No decorative gradients, blurs, or shadows on the shell chrome
- * - Status elements (sync, notifications) have fixed widths to prevent layout shift
+ * - Status elements (sync, notifications, search) have fixed dimensions to prevent layout shift
+ * - Complete WCAG 2.2 AA accessibility, keyboard shortcuts, reduced-motion support
  */
 
 import {
@@ -32,6 +34,8 @@ import {
   ChevronsUpDownIcon,
   LogOutIcon,
   MenuIcon,
+  PanelLeftCloseIcon,
+  PanelLeftOpenIcon,
   SearchIcon,
   SettingsIcon,
   WifiOffIcon,
@@ -54,12 +58,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
+  SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarProvider,
+  SidebarRail,
   SidebarTrigger,
-  sidebarNavItemClass,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Separator } from '@/components/ui/separator'
+import { Kbd } from '@/components/ui/kbd'
 import {
   Collapsible,
   CollapsibleContent,
@@ -91,12 +100,7 @@ import {
 } from '@/components/ui/command'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 import { type NavSection, type UserRole, getNavSections, getAllLinks } from './nav-config'
 import { useBreadcrumbs } from './use-breadcrumbs'
@@ -145,34 +149,34 @@ function SyncIndicator({ state }: { state: SyncState }) {
     { icon: ReactNode; label: string; color: string }
   > = {
     idle: {
-      icon: <span className="size-2 rounded-full bg-success inline-block shrink-0" aria-hidden />,
+      icon: <span className="size-2 rounded-full bg-emerald-500 inline-block shrink-0" aria-hidden />,
       label: 'Live',
-      color: 'text-muted',
+      color: 'text-muted-foreground',
     },
     offline: {
-      icon: <WifiOffIcon className="size-3.5" aria-hidden />,
+      icon: <WifiOffIcon className="size-3.5 text-amber-500" aria-hidden />,
       label: 'Offline',
-      color: 'text-warning',
+      color: 'text-amber-600',
     },
     syncing: {
-      icon: <RefreshCwIcon className="size-3.5 animate-spin" aria-hidden />,
+      icon: <RefreshCwIcon className="size-3.5 animate-spin text-muted-foreground" aria-hidden />,
       label: 'Syncing',
-      color: 'text-muted',
+      color: 'text-muted-foreground',
     },
     synced: {
-      icon: <CheckCircleIcon className="size-3.5" aria-hidden />,
+      icon: <CheckCircleIcon className="size-3.5 text-emerald-500" aria-hidden />,
       label: 'Synced',
-      color: 'text-success',
+      color: 'text-emerald-600',
     },
     error: {
-      icon: <AlertCircleIcon className="size-3.5" aria-hidden />,
+      icon: <AlertCircleIcon className="size-3.5 text-destructive" aria-hidden />,
       label: 'Sync error',
       color: 'text-destructive',
     },
     conflict: {
-      icon: <AlertCircleIcon className="size-3.5" aria-hidden />,
+      icon: <AlertCircleIcon className="size-3.5 text-amber-500" aria-hidden />,
       label: 'Conflict',
-      color: 'text-warning',
+      color: 'text-amber-600',
     },
   }
 
@@ -181,7 +185,7 @@ function SyncIndicator({ state }: { state: SyncState }) {
     <span
       role="status"
       aria-live="polite"
-      className={cn('flex items-center gap-1.5 text-caption font-medium', config.color)}
+      className={cn('flex items-center gap-1.5 text-xs font-medium', config.color)}
     >
       {config.icon}
       <span className="hidden sm:inline">{config.label}</span>
@@ -190,20 +194,61 @@ function SyncIndicator({ state }: { state: SyncState }) {
 }
 
 // ─── BrandMark ────────────────────────────────────────────────────────────────
-// Pine-green square with "M" lettermark. Purposeful: matches brand identity.
+// DashboardBlocks brandmark: Pine square with "M" lettermark.
 
-function BrandMark({ className }: { className?: string }) {
+function BrandMark({ children, className }: { children?: ReactNode; className?: string }) {
   return (
     <span
       className={cn(
-        'flex size-8 shrink-0 items-center justify-center rounded-control',
-        'bg-primary text-primary-foreground font-semibold text-label',
+        'bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg font-semibold text-sm',
         className,
       )}
       aria-hidden
     >
-      M
+      {children ?? 'M'}
     </span>
+  )
+}
+
+// ─── AppBrand ─────────────────────────────────────────────────────────────────
+
+function AppBrand({
+  href = '/dashboard',
+  logo,
+  name = 'MillLedger',
+  description = 'Production unit',
+}: {
+  href?: string
+  logo?: ReactNode
+  name?: string
+  description?: ReactNode
+}) {
+  const { isMobile, setOpenMobile, state } = useSidebar()
+  const isCollapsed = state === 'collapsed' && !isMobile
+  const closeMobile = useCallback(() => {
+    if (isMobile) setOpenMobile(false)
+  }, [isMobile, setOpenMobile])
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          size="lg"
+          asChild
+          tooltip={isCollapsed ? `${name} (${description})` : undefined}
+        >
+          <Link to={href} onClick={closeMobile} aria-label="MillLedger home">
+            <BrandMark>{logo ?? 'M'}</BrandMark>
+            <div className="grid flex-1 min-w-0 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+              <span className="truncate font-semibold text-foreground">{name}</span>
+              {description && (
+                <span className="truncate text-xs text-muted-foreground">{description}</span>
+              )}
+            </div>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
   )
 }
 
@@ -226,7 +271,6 @@ function AppNavItem({ item, pathname }: NavItemProps) {
   const [expanded, setExpanded] = useState(childActive)
   const [prevChildActive, setPrevChildActive] = useState(childActive)
 
-  // Adjust expansion during render if active child changes
   if (childActive !== prevChildActive) {
     setPrevChildActive(childActive)
     if (childActive) {
@@ -234,35 +278,26 @@ function AppNavItem({ item, pathname }: NavItemProps) {
     }
   }
 
-  // No subitems: render as plain link
+  // No subitems: render as link with directed tooltip in collapsed mode
   if (!item.items?.length) {
     const active = item.href !== undefined && isActiveHref(item.href, pathname)
-    const linkEl = (
-      <Link
-        to={item.href ?? '#'}
-        aria-current={item.href === pathname ? 'page' : undefined}
-        onClick={closeOnMobile}
-        className={sidebarNavItemClass({ isActive: active })}
-      >
-        {item.icon}
-        <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate">
-          {item.label}
-        </span>
-      </Link>
-    )
-
     return (
       <SidebarMenuItem>
-        {isCollapsed && item.label ? (
-          <Tooltip>
-            <TooltipTrigger asChild>{linkEl}</TooltipTrigger>
-            <TooltipContent side="right" align="center">
-              {item.label}
-            </TooltipContent>
-          </Tooltip>
-        ) : (
-          linkEl
-        )}
+        <SidebarMenuButton
+          asChild
+          isActive={active}
+          tooltip={isCollapsed ? item.label : undefined}
+        >
+          <Link
+            to={item.href ?? '#'}
+            aria-label={item.label}
+            aria-current={item.href === pathname ? 'page' : undefined}
+            onClick={closeOnMobile}
+          >
+            {item.icon}
+            <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate">{item.label}</span>
+          </Link>
+        </SidebarMenuButton>
         {item.badge !== undefined && (
           <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>
         )}
@@ -270,7 +305,7 @@ function AppNavItem({ item, pathname }: NavItemProps) {
     )
   }
 
-  // Has subitems: render as collapsible group
+  // Has subitems: render as collapsible group with directed tooltip
   return (
     <Collapsible
       open={expanded}
@@ -282,19 +317,14 @@ function AppNavItem({ item, pathname }: NavItemProps) {
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
             tooltip={isCollapsed ? item.label : undefined}
-            onClick={() => {
-              if (isCollapsed) {
-                // When icon-rail is collapsed, expand sidebar first
-                // useSidebar setOpen is unavailable here; handled by sidebar auto-expand on click
-              }
-            }}
+            aria-label={item.label}
           >
             {item.icon}
             <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate">
               {item.label}
             </span>
             <ChevronRightIcon
-              className="ml-auto size-3.5 shrink-0 text-muted group-data-[collapsible=icon]:hidden transition-transform duration-150 group-data-open/collapsible:rotate-90"
+              className="ml-auto size-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden transition-transform duration-200 group-data-open/collapsible:rotate-90"
               aria-hidden
             />
           </SidebarMenuButton>
@@ -303,21 +333,20 @@ function AppNavItem({ item, pathname }: NavItemProps) {
           <SidebarMenuSub>
             {item.items.map((child) => (
               <SidebarMenuSubItem key={child.href}>
-                <Link
-                  to={child.href}
-                  aria-current={child.href === pathname ? 'page' : undefined}
-                  onClick={closeOnMobile}
-                  data-active={isActiveHref(child.href, pathname) || undefined}
-                  className={cn(
-                    'flex h-8 items-center gap-2 rounded-small px-2 text-body text-muted',
-                    'outline-none focus-visible:ring-3 focus-visible:ring-ring/30',
-                    'transition-colors duration-100 hover:bg-accent hover:text-foreground',
-                    'data-[active=true]:text-foreground data-[active=true]:font-medium',
-                  )}
+                <SidebarMenuSubButton
+                  asChild
+                  isActive={isActiveHref(child.href, pathname)}
                 >
-                  {child.icon && <span className="shrink-0">{child.icon}</span>}
-                  <span className="min-w-0 flex-1 truncate">{child.label}</span>
-                </Link>
+                  <Link
+                    to={child.href}
+                    aria-label={child.label}
+                    aria-current={child.href === pathname ? 'page' : undefined}
+                    onClick={closeOnMobile}
+                  >
+                    {child.icon && <span className="shrink-0">{child.icon}</span>}
+                    <span className="min-w-0 flex-1 truncate">{child.label}</span>
+                  </Link>
+                </SidebarMenuSubButton>
               </SidebarMenuSubItem>
             ))}
           </SidebarMenuSub>
@@ -348,125 +377,156 @@ function AppNav({ sections, pathname }: { sections: NavSection[]; pathname: stri
   )
 }
 
-// ─── UserMenu ─────────────────────────────────────────────────────────────────
+// ─── SidebarCollapseToggle ───────────────────────────────────────────────────
+// Explicit option to collapse the sidebar to icons only or expand back
 
-interface UserMenuProps {
+function SidebarCollapseToggle() {
+  const { state, isMobile, toggleSidebar } = useSidebar()
+  if (isMobile) return null
+  const isCollapsed = state === 'collapsed'
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          size="default"
+          onClick={toggleSidebar}
+          tooltip={isCollapsed ? 'Expand sidebar (Ctrl+B)' : undefined}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse to icons'}
+          className="text-muted-foreground hover:text-foreground h-8 px-2"
+        >
+          {isCollapsed ? (
+            <PanelLeftOpenIcon className="size-4 shrink-0 mx-auto" aria-hidden />
+          ) : (
+            <>
+              <PanelLeftCloseIcon className="size-4 shrink-0" aria-hidden />
+              <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate text-xs font-normal">
+                Collapse to icons
+              </span>
+              <Kbd className="group-data-[collapsible=icon]:hidden ml-auto">⌘B</Kbd>
+            </>
+          )}
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  )
+}
+
+// ─── SidebarUserMenu ──────────────────────────────────────────────────────────
+// Adapted directly from DashboardBlocks SidebarUserMenu
+
+interface SidebarUserMenuProps {
   user: ShellUser
   onSignOut?: () => void
 }
 
-function UserMenu({ user, onSignOut }: UserMenuProps) {
+function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
   const navigate = useNavigate()
-  const { isMobile } = useSidebar()
+  const { isMobile, setOpenMobile, state } = useSidebar()
+  const isCollapsed = state === 'collapsed' && !isMobile
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <SidebarMenuButton size="lg" className="aria-expanded:bg-muted">
-          <UserAvatar user={user} />
-          <div className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="truncate text-body-medium font-medium text-foreground">
-              {user.name}
-            </span>
-            <span className="truncate text-caption text-muted">{user.email}</span>
-          </div>
-          <ChevronsUpDownIcon
-            className="ml-auto size-3.5 shrink-0 text-muted group-data-[collapsible=icon]:hidden"
-            aria-hidden
-          />
-        </SidebarMenuButton>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="end"
-        side={isMobile ? 'bottom' : 'right'}
-        className="min-w-56"
-      >
-        <DropdownMenuLabel className="flex items-center gap-2 font-normal py-2">
-          <UserAvatar user={user} size="md" />
-          <div className="grid min-w-0">
-            <span className="truncate text-body-medium font-medium">{user.name}</span>
-            <span className="truncate text-caption text-muted">{user.email}</span>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => navigate('/settings/profile')}
-          className="cursor-pointer"
-        >
-          <SettingsIcon className="size-4 text-muted" aria-hidden />
-          Account settings
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={onSignOut}
-          className="cursor-pointer text-destructive focus:text-destructive"
-        >
-          <LogOutIcon className="size-4" aria-hidden />
-          Sign out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
-
-// ─── UserAvatar ───────────────────────────────────────────────────────────────
-
-interface UserAvatarProps {
-  user: ShellUser
-  size?: 'sm' | 'md'
-}
-
-function UserAvatar({ user, size = 'sm' }: UserAvatarProps) {
-  return (
-    <span
-      className={cn(
-        'shrink-0 rounded-full bg-primary/10 flex items-center justify-center',
-        'text-primary font-semibold',
-        size === 'sm' && 'size-7 text-caption',
-        size === 'md' && 'size-9 text-label',
-      )}
-      aria-hidden
-    >
-      {user.initials || getInitials(user.name)}
-    </span>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              tooltip={isCollapsed ? `${user.name} (${user.email})` : undefined}
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <Avatar className="size-8 rounded-lg">
+                {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+                <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-medium text-xs">
+                  {user.initials || getInitials(user.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                <span className="truncate font-medium text-foreground">{user.name}</span>
+                <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+              </div>
+              <ChevronsUpDownIcon
+                className="ml-auto size-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden"
+                aria-hidden
+              />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            side={isMobile ? 'bottom' : 'right'}
+            align="end"
+            sideOffset={4}
+          >
+            <DropdownMenuLabel className="p-0 font-normal">
+              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                <Avatar className="size-8 rounded-lg">
+                  {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+                  <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-medium text-xs">
+                    {user.initials || getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">{user.name}</span>
+                  <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                </div>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                if (isMobile) setOpenMobile(false)
+                navigate('/settings/profile')
+              }}
+              className="cursor-pointer"
+            >
+              <SettingsIcon className="mr-2 size-4 text-muted-foreground" aria-hidden />
+              Account settings
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={onSignOut}
+              className="cursor-pointer text-destructive focus:text-destructive"
+            >
+              <LogOutIcon className="mr-2 size-4" aria-hidden />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   )
 }
 
 // ─── HeaderNotificationsButton ────────────────────────────────────────────────
+// DashboardBlocks NotificationsButton pattern
 
 interface NotificationsButtonProps {
   count: number
   onClick: () => void
 }
 
-function NotificationsButton({ count, onClick }: NotificationsButtonProps) {
+function HeaderNotificationsButton({ count, onClick }: NotificationsButtonProps) {
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={onClick}
       aria-label={
         count > 0
           ? `Notifications, ${count} unread`
           : 'Notifications, none unread'
       }
-      onClick={onClick}
-      className={cn(
-        'relative flex size-9 items-center justify-center rounded-control',
-        'text-muted hover:bg-accent hover:text-foreground',
-        'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30',
-        'cursor-pointer transition-colors duration-100',
-      )}
+      className="relative size-9"
     >
       <BellIcon className="size-4" aria-hidden />
-      {/* Fixed space for badge to prevent layout shift */}
       <span
         className={cn(
-          'absolute top-1.5 right-1.5 size-2 rounded-full ring-2 ring-background',
-          'bg-primary transition-opacity duration-100',
+          'absolute top-1.5 right-1.5 size-2 rounded-full ring-2 ring-background bg-primary transition-opacity duration-100',
           count > 0 ? 'opacity-100' : 'opacity-0',
         )}
         aria-hidden
       />
-    </button>
+    </Button>
   )
 }
 
@@ -483,14 +543,27 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
 
   const allItems = sections.flatMap((section) =>
     section.items.flatMap((item) => {
-      const links = []
-      if (item.href) links.push({ label: item.label, href: item.href, section: section.label ?? 'Navigation' })
+      const links: {
+        label: string
+        href: string
+        icon: ReactNode
+        group: string
+      }[] = []
+      if (item.href) {
+        links.push({
+          label: item.label,
+          href: item.href,
+          icon: item.icon,
+          group: section.label ?? 'Navigation',
+        })
+      }
       if (item.items) {
         links.push(
           ...item.items.map((sub) => ({
             label: sub.label,
             href: sub.href,
-            section: item.label,
+            icon: sub.icon ?? item.icon,
+            group: section.label ?? 'Navigation',
           })),
         )
       }
@@ -500,7 +573,11 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-lg" aria-label="Global search">
+      <DialogContent
+        className="p-0 max-w-lg overflow-hidden border border-border shadow-2xl"
+        showCloseButton={false}
+        aria-label="Global search"
+      >
         <DialogTitle className="sr-only">Search pages</DialogTitle>
         <Command>
           <CommandInput placeholder="Search pages and actions..." />
@@ -508,9 +585,7 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
             <CommandEmpty>No results found.</CommandEmpty>
             {sections.map((section) => {
               const sectionItems = allItems.filter(
-                (i) =>
-                  i.section === (section.label ?? 'Navigation') ||
-                  section.items.some((si) => si.label === i.section),
+                (i) => i.group === (section.label ?? 'Navigation'),
               )
               if (!sectionItems.length) return null
               return (
@@ -518,15 +593,14 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
                   {sectionItems.map((item) => (
                     <CommandItem
                       key={item.href}
-                      value={item.label}
+                      value={`${item.label} ${item.group}`}
                       onSelect={() => {
                         navigate(item.href)
                         onOpenChange(false)
                       }}
-                      className="cursor-pointer"
                     >
-                      {item.label}
-                      <span className="ml-auto text-caption text-muted">{item.section}</span>
+                      <span className="text-muted-foreground shrink-0">{item.icon}</span>
+                      <span className="font-medium text-foreground">{item.label}</span>
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -540,9 +614,9 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
 }
 
 // ─── HeaderSearchButton ───────────────────────────────────────────────────────
+// DashboardBlocks SearchButton with ⌘K badge and responsive behavior
 
 function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
-  // Keyboard shortcut: Cmd/Ctrl + K
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
@@ -556,42 +630,28 @@ function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
 
   return (
     <>
-      <button
-        type="button"
+      <Button
+        variant="outline"
+        size="sm"
         onClick={onOpen}
         aria-label="Search (Ctrl+K)"
         aria-keyshortcuts="Meta+K Control+K"
-        className={cn(
-          'hidden sm:flex items-center gap-2 rounded-control border border-border bg-surface',
-          'h-9 pl-3 pr-2 text-body text-muted',
-          'hover:bg-accent hover:text-foreground hover:border-control-border',
-          'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30',
-          'cursor-pointer transition-colors duration-100 w-52',
-        )}
+        className="hidden sm:flex w-52 justify-start text-muted-foreground hover:text-foreground h-9 px-3"
       >
-        <SearchIcon className="size-3.5 shrink-0" aria-hidden />
-        <span className="flex-1 text-left truncate">Search</span>
-        <kbd
-          className="ml-auto hidden sm:inline-flex h-5 items-center gap-0.5 rounded bg-surface-muted px-1.5 text-caption font-medium text-muted"
-          aria-hidden
-        >
-          <span>⌘</span>K
-        </kbd>
-      </button>
+        <SearchIcon className="mr-2 size-4 shrink-0" aria-hidden />
+        <span className="flex-1 text-left truncate font-normal">Search</span>
+        <Kbd className="ml-auto">⌘K</Kbd>
+      </Button>
 
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={onOpen}
         aria-label="Search"
-        className={cn(
-          'flex sm:hidden size-9 items-center justify-center rounded-control text-muted',
-          'hover:bg-accent hover:text-foreground',
-          'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30',
-          'cursor-pointer transition-colors duration-100',
-        )}
+        className="sm:hidden size-9"
       >
         <SearchIcon className="size-4 shrink-0" aria-hidden />
-      </button>
+      </Button>
     </>
   )
 }
@@ -626,7 +686,7 @@ function ShellBreadcrumbs({ role }: { role: UserRole }) {
                     </Link>
                   </BreadcrumbLink>
                 ) : (
-                  <span className="truncate text-muted" title={crumb.label}>
+                  <span className="truncate text-muted-foreground" title={crumb.label}>
                     {crumb.label}
                   </span>
                 )}
@@ -641,7 +701,7 @@ function ShellBreadcrumbs({ role }: { role: UserRole }) {
 }
 
 // ─── StickyHeader ─────────────────────────────────────────────────────────────
-// 64px fixed height; all asynchronous status elements use fixed-width containers.
+// 64px fixed height sticky header matching DashboardBlocks AppHeader pattern
 
 interface StickyHeaderProps {
   user: ShellUser
@@ -665,43 +725,36 @@ function StickyHeader({
   return (
     <header
       className={cn(
-        'sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-border',
-        'bg-surface px-4',
-        // Reserve scroll-padding-top to match header height
-        '[html:has(&)]:scroll-pt-16',
+        'sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b border-border',
+        'bg-background px-4 [html:has(&)]:scroll-pt-16',
       )}
     >
-      {/* Mobile: hamburger */}
-      {isMobile && (
-        <button
-          type="button"
+      {/* Mobile: hamburger button */}
+      {isMobile ? (
+        <Button
+          variant="ghost"
+          size="icon"
           aria-label="Open navigation"
           aria-expanded={openMobile}
           onClick={() => setOpenMobile(!openMobile)}
-          className={cn(
-            'flex size-9 items-center justify-center rounded-control text-muted',
-            'hover:bg-accent hover:text-foreground',
-            'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30',
-            'cursor-pointer transition-colors duration-100',
-          )}
+          className="-ml-2 size-9"
         >
           <MenuIcon className="size-4" aria-hidden />
-        </button>
+        </Button>
+      ) : (
+        <SidebarTrigger className="-ml-1" />
       )}
 
-      {/* Desktop: sidebar trigger */}
-      {!isMobile && <SidebarTrigger />}
-
-      {/* Separator */}
-      <div className="h-5 w-px bg-border" aria-hidden />
+      {/* DashboardBlocks Separator */}
+      <Separator orientation="vertical" className="mr-2 h-4" />
 
       {/* Breadcrumbs */}
       <div className="flex-1 min-w-0 overflow-hidden">
         <ShellBreadcrumbs role={user.role} />
       </div>
 
-      {/* Right: search, sync status, notifications, account */}
-      <div className="flex shrink-0 items-center gap-1.5">
+      {/* Right-side tools: sync, search, notifications, account menu */}
+      <div className="flex shrink-0 items-center gap-2">
         {/* Sync status: fixed-width area to prevent layout shift */}
         <div className="w-20 flex justify-end">
           <SyncIndicator state={syncState} />
@@ -709,35 +762,43 @@ function StickyHeader({
 
         <HeaderSearchButton onOpen={onSearchOpen} />
 
-        <NotificationsButton count={notificationCount} onClick={onNotificationsClick} />
+        <HeaderNotificationsButton count={notificationCount} onClick={onNotificationsClick} />
 
-        {/* Account menu */}
+        {/* Top-right user avatar menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative size-8 rounded-full"
               aria-label={`Account: ${user.name}`}
-              className={cn(
-                'flex size-9 items-center justify-center rounded-full',
-                'hover:ring-2 hover:ring-border',
-                'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30',
-                'cursor-pointer transition-all duration-100',
-              )}
             >
-              <UserAvatar user={user} />
-            </button>
+              <Avatar className="size-8">
+                {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+                <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs">
+                  {user.initials || getInitials(user.name)}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-56">
-            <DropdownMenuLabel className="flex items-center gap-2 font-normal py-2">
-              <UserAvatar user={user} size="md" />
-              <div className="grid min-w-0">
-                <span className="truncate text-body-medium font-medium">{user.name}</span>
-                <span className="truncate text-caption text-muted">{user.email}</span>
+          <DropdownMenuContent align="end" className="min-w-56 rounded-lg">
+            <DropdownMenuLabel className="p-0 font-normal">
+              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                <Avatar className="size-8 rounded-lg">
+                  {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+                  <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-medium text-xs">
+                    {user.initials || getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">{user.name}</span>
+                  <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer">
-              <SettingsIcon className="size-4 text-muted" aria-hidden />
+              <SettingsIcon className="mr-2 size-4 text-muted-foreground" aria-hidden />
               Account settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -745,7 +806,7 @@ function StickyHeader({
               onClick={onSignOut}
               className="cursor-pointer text-destructive focus:text-destructive"
             >
-              <LogOutIcon className="size-4" aria-hidden />
+              <LogOutIcon className="mr-2 size-4" aria-hidden />
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -756,7 +817,7 @@ function StickyHeader({
 }
 
 // ─── AuthenticatedShell ────────────────────────────────────────────────────────
-// The root layout for all authenticated routes.
+// Root layout for all authenticated routes
 
 export function AuthenticatedShell({ user, children, notificationCount = 0, onSignOut }: ShellProps) {
   const location = useLocation()
@@ -767,103 +828,86 @@ export function AuthenticatedShell({ user, children, notificationCount = 0, onSi
   const sections = getNavSections(user.role)
 
   return (
-    <TooltipProvider delayDuration={150}>
+    <TooltipProvider delayDuration={100}>
       <SidebarProvider userId={user.id}>
-        {/* Skip-to-main for keyboard users */}
+        {/* Skip-to-main for keyboard accessibility */}
         <a
           href="#main-content"
           className={cn(
             'sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50',
-            'focus:rounded-control focus:bg-primary focus:px-4 focus:py-2',
-            'focus:text-primary-foreground focus:text-body-medium',
-            'focus:shadow-modal focus:outline-none',
+            'focus:rounded-md focus:bg-primary focus:px-4 focus:py-2',
+            'focus:text-primary-foreground focus:text-sm focus:font-medium',
+            'focus:shadow-lg focus:outline-none',
           )}
         >
           Skip to main content
         </a>
 
-        {/* Desktop sidebar */}
+        {/* Desktop & mobile sidebar */}
         <Sidebar collapsible="icon">
           <SidebarHeader>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <Link
-                  to="/dashboard"
-                  className={sidebarNavItemClass({
-                    size: 'lg',
-                    className: 'flex items-center gap-2.5 px-3 py-2',
-                  })}
-                  aria-label="MillLedger home"
-                >
-                  <BrandMark />
-                  <div className="grid flex-1 min-w-0 leading-tight group-data-[collapsible=icon]:hidden text-left">
-                    <span className="truncate text-body-medium font-semibold text-foreground">
-                      MillLedger
-                    </span>
-                    <span className="truncate text-caption text-muted">Production unit</span>
-                  </div>
-                </Link>
-              </SidebarMenuItem>
-            </SidebarMenu>
+            <AppBrand
+              href="/dashboard"
+              name="MillLedger"
+              description="Production unit"
+            />
           </SidebarHeader>
 
-        <SidebarContent>
-          <AppNav sections={sections} pathname={location.pathname} />
-        </SidebarContent>
+          <SidebarContent>
+            <AppNav sections={sections} pathname={location.pathname} />
+          </SidebarContent>
 
-        <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <UserMenu user={user} onSignOut={onSignOut} />
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
+          <SidebarFooter>
+            <SidebarCollapseToggle />
+            <SidebarUserMenu user={user} onSignOut={onSignOut} />
+          </SidebarFooter>
+          <SidebarRail />
+        </Sidebar>
 
-      <SidebarInset>
-        <StickyHeader
-          user={user}
-          notificationCount={notificationCount}
-          onSearchOpen={() => setSearchOpen(true)}
-          onNotificationsClick={() => setNotificationsOpen(true)}
-          onSignOut={onSignOut}
-          syncState={syncState}
+        <SidebarInset className="min-w-0">
+          <StickyHeader
+            user={user}
+            notificationCount={notificationCount}
+            onSearchOpen={() => setSearchOpen(true)}
+            onNotificationsClick={() => setNotificationsOpen(true)}
+            onSignOut={onSignOut}
+            syncState={syncState}
+          />
+
+          <main
+            id="main-content"
+            className="flex flex-1 flex-col min-h-0"
+            tabIndex={-1}
+          >
+            {children}
+          </main>
+        </SidebarInset>
+
+        {/* Global search palette */}
+        <GlobalSearch
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          sections={sections}
         />
 
-        <main
-          id="main-content"
-          className="flex flex-1 flex-col min-h-0"
-          tabIndex={-1}
-        >
-          {children}
-        </main>
-      </SidebarInset>
-
-      {/* Global search palette */}
-      <GlobalSearch
-        open={searchOpen}
-        onOpenChange={setSearchOpen}
-        sections={sections}
-      />
-
-      {/* Notifications panel (sheet) */}
-      <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-        <SheetContent side="right" className="w-80 p-0">
-          <div className="flex h-14 items-center border-b border-border px-5">
-            <h2 className="text-body-medium font-semibold">Notifications</h2>
-          </div>
-          <div className="flex flex-1 items-center justify-center p-8 text-center">
-            <div>
-              <BellIcon className="mx-auto mb-3 size-8 text-muted" aria-hidden />
-              <p className="text-body-medium font-medium text-foreground">No notifications</p>
-              <p className="mt-1 text-caption text-muted">
-                Activity and system events will appear here.
-              </p>
+        {/* Notifications sheet */}
+        <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+          <SheetContent side="right" className="w-80 p-0">
+            <div className="flex h-14 items-center border-b border-border px-5">
+              <h2 className="text-sm font-semibold">Notifications</h2>
             </div>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </SidebarProvider>
-  </TooltipProvider>
-)
+            <div className="flex flex-1 items-center justify-center p-8 text-center">
+              <div>
+                <BellIcon className="mx-auto mb-3 size-8 text-muted-foreground" aria-hidden />
+                <p className="text-sm font-medium text-foreground">No notifications</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Activity and system events will appear here.
+                </p>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </SidebarProvider>
+    </TooltipProvider>
+  )
 }

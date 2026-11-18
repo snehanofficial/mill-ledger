@@ -132,7 +132,7 @@ function DropdownMenuLabel({
   return (
     <div
       className={cn(
-        "px-3 py-2 text-caption font-semibold text-muted",
+        "px-3 py-2 text-caption font-semibold text-foreground",
         className,
       )}
       {...props}

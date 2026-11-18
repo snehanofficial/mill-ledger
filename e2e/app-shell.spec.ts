@@ -263,6 +263,14 @@ test.describe('MillLedger Application Shell', () => {
     await page.waitForTimeout(300)
     await page.screenshot({ path: 'e2e/screenshots/desktop-collapsed.png' })
 
+    // 2b. Hover over Stock icon to display directed tooltip
+    const stockLink = page.locator('[data-slot="sidebar"]').getByRole('link', { name: 'Stock' })
+    await stockLink.hover()
+    await page.waitForTimeout(200)
+    await page.screenshot({ path: 'e2e/screenshots/desktop-collapsed-tooltip.png' })
+    await page.mouse.move(0, 0)
+    await page.waitForTimeout(100)
+
     // 3. Desktop search open
     await page.keyboard.press('Control+k')
     await page.waitForTimeout(200)

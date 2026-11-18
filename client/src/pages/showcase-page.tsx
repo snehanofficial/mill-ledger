@@ -8,7 +8,6 @@ import {
   Trash2Icon,
 } from "lucide-react";
 
-import "../app.css";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

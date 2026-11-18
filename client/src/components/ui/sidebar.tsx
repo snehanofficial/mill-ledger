@@ -11,8 +11,10 @@
  */
 
 import {
+  cloneElement,
   createContext,
   forwardRef,
+  isValidElement,
   useCallback,
   useContext,
   useEffect,
@@ -20,7 +22,9 @@ import {
   useState,
   type ComponentProps,
   type CSSProperties,
+  type ReactElement,
   type ReactNode,
+  type Ref,
 } from 'react'
 import { Tooltip as TooltipPrimitive } from 'radix-ui'
 
@@ -79,7 +83,12 @@ function readPersistedOpen(userId?: string): boolean {
   try {
     const key = userId ? `${SIDEBAR_COOKIE_KEY}-${userId}` : SIDEBAR_COOKIE_KEY
     const val = localStorage.getItem(key)
-    return val === null ? true : val === 'true'
+    if (val !== null) return val === 'true'
+    // Responsive adaptive default: on tablet / small screens (<1024px), adapt to icons-only mode
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      return false
+    }
+    return true
   } catch {
     return true
   }
@@ -224,7 +233,7 @@ export function Sidebar({
           data-state={openMobile ? 'open' : 'closed'}
           aria-hidden={!openMobile}
           className={cn(
-            'fixed inset-y-0 left-0 z-50 flex flex-col bg-surface border-r border-border',
+            'fixed inset-y-0 left-0 z-50 flex flex-col bg-sidebar border-r border-sidebar-border shadow-2xl',
             'transition-transform duration-220 motion-reduce:transition-none',
             openMobile ? 'translate-x-0' : '-translate-x-full',
           )}
@@ -241,7 +250,7 @@ export function Sidebar({
     return (
       <div
         data-slot="sidebar"
-        className={cn('flex h-full flex-col bg-surface border-r border-border', className)}
+        className={cn('flex h-full flex-col bg-sidebar border-r border-sidebar-border', className)}
         style={{ width: SIDEBAR_WIDTH }}
         {...props}
       >
@@ -258,7 +267,7 @@ export function Sidebar({
       data-variant={variant}
       data-collapsible={state === 'collapsed' ? collapsible : ''}
       className={cn(
-        'group hidden md:flex h-svh flex-col bg-surface border-r border-border',
+        'group hidden md:flex h-svh flex-col bg-sidebar border-r border-sidebar-border',
         'transition-[width] duration-220 ease-[cubic-bezier(0.2,0,0,1)]',
         'motion-reduce:transition-none shrink-0',
         state === 'expanded'
@@ -301,10 +310,10 @@ export function SidebarTrigger({ className, onClick, ...props }: ComponentProps<
         toggleSidebar()
       }}
       className={cn(
-        'flex size-9 items-center justify-center rounded-control text-muted',
+        'flex size-9 items-center justify-center rounded-md text-muted-foreground',
         'hover:bg-accent hover:text-foreground',
-        'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30',
-        'cursor-pointer',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        'cursor-pointer transition-colors',
         className,
       )}
       {...props}
@@ -349,7 +358,10 @@ export function SidebarHeader({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="sidebar-header"
-      className={cn('flex flex-col gap-2 p-2', className)}
+      className={cn(
+        'flex flex-col gap-2 p-2 shrink-0 bg-sidebar border-b border-sidebar-border/40 z-10',
+        className,
+      )}
       {...props}
     />
   )
@@ -359,7 +371,10 @@ export function SidebarFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="sidebar-footer"
-      className={cn('flex flex-col gap-2 p-2', className)}
+      className={cn(
+        'flex flex-col gap-2 p-2 shrink-0 bg-sidebar border-t border-sidebar-border/40 z-10',
+        className,
+      )}
       {...props}
     />
   )
@@ -370,7 +385,7 @@ export function SidebarContent({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="sidebar-content"
       className={cn(
-        'flex flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden [scrollbar-width:thin]',
+        'flex flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden [scrollbar-width:thin] py-1',
         className,
       )}
       {...props}
@@ -405,7 +420,7 @@ export function SidebarGroupLabel({ className, ...props }: ComponentProps<'div'>
     <div
       data-slot="sidebar-group-label"
       className={cn(
-        'px-2 py-1 text-caption font-semibold text-muted uppercase tracking-wider',
+        'px-2 py-1 text-xs font-semibold text-sidebar-foreground uppercase tracking-wider',
         'group-data-[collapsible=icon]:hidden',
         className,
       )}
@@ -449,67 +464,81 @@ export function SidebarMenuItem({ className, ...props }: ComponentProps<'li'>) {
 // ─── SidebarMenuButton ────────────────────────────────────────────────────────
 
 interface SidebarMenuButtonProps extends ComponentProps<'button'> {
+  asChild?: boolean
   isActive?: boolean
   tooltip?: string
-  size?: 'default' | 'lg'
+  size?: 'default' | 'lg' | 'sm'
 }
 
 /** Shared Tailwind classes for sidebar nav items (button and link variants). */
 export function sidebarNavItemClass(opts?: {
-  size?: 'default' | 'lg'
+  size?: 'default' | 'lg' | 'sm'
   isActive?: boolean
   className?: string
 }) {
   const { size = 'default', isActive, className } = opts ?? {}
   return cn(
-    'flex w-full items-center gap-2 rounded-control text-body',
-    'outline-none focus-visible:ring-3 focus-visible:ring-ring/30',
-    'transition-colors duration-100 cursor-pointer',
-    'text-muted hover:bg-accent hover:text-foreground',
-    isActive ? 'bg-selection text-foreground' : '',
+    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md text-left text-sm outline-none transition-colors duration-100 cursor-pointer',
+    'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+    'focus-visible:ring-2 focus-visible:ring-sidebar-ring',
+    isActive && 'bg-sidebar-accent font-medium text-sidebar-accent-foreground',
     size === 'default' && 'h-9 px-3',
     size === 'lg' && 'h-12 px-3',
-    'group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:size-9',
+    size === 'sm' && 'h-7 px-2 text-xs',
+    'group-data-[collapsible=icon]:!size-9 group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto',
     className,
   )
 }
 
-export const SidebarMenuButton = forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
-  ({ className, isActive, tooltip, size = 'default', children, ...props }, ref) => {
+export const SidebarMenuButton = forwardRef<HTMLElement, SidebarMenuButtonProps>(
+  ({ asChild = false, className, isActive, tooltip, size = 'default', children, ...props }, ref) => {
     const { state, isMobile } = useSidebar()
     const isCollapsed = state === 'collapsed' && !isMobile
+    const navClass = sidebarNavItemClass({ size, isActive, className })
 
-    const button = (
-      <button
-        ref={ref}
-        data-slot="sidebar-menu-button"
-        data-active={isActive || undefined}
-        type="button"
-        className={sidebarNavItemClass({ size, isActive, className })}
-        {...props}
-      >
-        {children}
-      </button>
-    )
+    let element: ReactNode
+    if (asChild && isValidElement(children)) {
+      element = cloneElement(children as ReactElement<Record<string, unknown>>, {
+        className: cn(navClass, (children.props as { className?: string }).className),
+        'data-slot': 'sidebar-menu-button',
+        'data-active': isActive || undefined,
+        ref: ref as unknown as Ref<never>,
+      })
+    } else {
+      element = (
+        <button
+          ref={ref as unknown as Ref<HTMLButtonElement>}
+          data-slot="sidebar-menu-button"
+          data-active={isActive || undefined}
+          type="button"
+          className={navClass}
+          {...props}
+        >
+          {children}
+        </button>
+      )
+    }
 
     if (tooltip && isCollapsed) {
       return (
         <TooltipPrimitive.Root>
-          <TooltipPrimitive.Trigger asChild>{button}</TooltipPrimitive.Trigger>
+          <TooltipPrimitive.Trigger asChild>{element}</TooltipPrimitive.Trigger>
           <TooltipPrimitive.Portal>
             <TooltipPrimitive.Content
               side="right"
               align="center"
-              className="z-50 rounded-control bg-foreground px-2 py-1 text-caption text-primary-foreground shadow-menu"
+              sideOffset={8}
+              className="z-50 flex items-center rounded-md bg-foreground px-2.5 py-1 text-xs font-medium text-background shadow-md animate-in fade-in-0 zoom-in-95 data-[side=right]:slide-in-from-left-2"
             >
               {tooltip}
+              <TooltipPrimitive.Arrow className="fill-foreground" width={8} height={4} />
             </TooltipPrimitive.Content>
           </TooltipPrimitive.Portal>
         </TooltipPrimitive.Root>
       )
     }
 
-    return button
+    return element
   },
 )
 SidebarMenuButton.displayName = 'SidebarMenuButton'
@@ -552,6 +581,46 @@ export function SidebarMenuSubItem({ className, ...props }: ComponentProps<'li'>
   )
 }
 
+export function SidebarMenuSubButton({
+  asChild = false,
+  size = 'md',
+  isActive,
+  className,
+  children,
+  ...props
+}: ComponentProps<'a'> & {
+  asChild?: boolean
+  size?: 'sm' | 'md'
+  isActive?: boolean
+}) {
+  const subClass = cn(
+    'flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-sm text-sidebar-foreground/70 outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground',
+    'data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:font-medium',
+    size === 'sm' && 'text-xs',
+    size === 'md' && 'text-sm',
+    className,
+  )
+
+  if (asChild && isValidElement(children)) {
+    return cloneElement(children as ReactElement<Record<string, unknown>>, {
+      className: cn(subClass, (children.props as { className?: string }).className),
+      'data-slot': 'sidebar-menu-sub-button',
+      'data-active': isActive || undefined,
+    })
+  }
+
+  return (
+    <a
+      data-slot="sidebar-menu-sub-button"
+      data-active={isActive || undefined}
+      className={subClass}
+      {...props}
+    >
+      {children}
+    </a>
+  )
+}
+
 // ─── SidebarRail ──────────────────────────────────────────────────────────────
 
 export function SidebarRail({ className, ...props }: ComponentProps<'button'>) {
@@ -560,10 +629,10 @@ export function SidebarRail({ className, ...props }: ComponentProps<'button'>) {
     <button
       data-slot="sidebar-rail"
       type="button"
-      aria-label="Toggle sidebar"
+      aria-label="Resize sidebar"
       tabIndex={-1}
       onClick={toggleSidebar}
-      title="Toggle sidebar"
+      title="Resize sidebar"
       className={cn(
         'absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 cursor-col-resize',
         'transition-all ease-linear',
