@@ -328,4 +328,58 @@ test.describe("MillLedger Application Shell", () => {
     await page.waitForTimeout(300);
     await page.screenshot({ path: "e2e/screenshots/mobile-drawer.png" });
   });
+
+  test("mobile bottom navigation bar and touch targets on 390px viewports", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/dashboard");
+
+    const bottomNav = page.locator('nav[aria-label="Mobile navigation"]');
+    await expect(bottomNav).toBeVisible();
+
+    // Verify touch navigation items
+    const homeBtn = bottomNav.getByRole("link", { name: "Home" });
+    await expect(homeBtn).toBeVisible();
+    const ordersBtn = bottomNav.getByRole("link", { name: "Orders" });
+    await expect(ordersBtn).toBeVisible();
+    const stockBtn = bottomNav.getByRole("link", { name: "Stock" });
+    await expect(stockBtn).toBeVisible();
+    const moreBtn = bottomNav.getByRole("button", { name: "More" });
+    await expect(moreBtn).toBeVisible();
+
+    // Clicking More button opens drawer
+    await moreBtn.click();
+    const drawer = page.locator('[data-slot="sidebar"][data-state="open"]');
+    await expect(drawer).toBeVisible();
+  });
+
+  test("language switch toggles between English and Tamil", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/dashboard");
+
+    // Initially English
+    const langBtn = page.getByRole("button", {
+      name: "Change language to Tamil",
+    });
+    await expect(langBtn).toBeVisible();
+
+    // Toggle to Tamil
+    await langBtn.click();
+    const htmlLang = await page.evaluate(() => document.documentElement.lang);
+    expect(htmlLang).toBe("ta");
+
+    // Toggle back to English
+    const backBtn = page.getByRole("button", {
+      name: "Change language to English",
+    });
+    await expect(backBtn).toBeVisible();
+    await backBtn.click();
+    const englishLang = await page.evaluate(
+      () => document.documentElement.lang,
+    );
+    expect(englishLang).toBe("en");
+  });
 });

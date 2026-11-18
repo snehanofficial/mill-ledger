@@ -42,7 +42,12 @@ import {
   RefreshCwIcon,
   CheckCircleIcon,
   AlertCircleIcon,
+  HomeIcon,
+  PackageIcon,
+  ShoppingCartIcon,
 } from "lucide-react";
+
+import { useLanguage } from "@/lib/i18n";
 
 import { cn } from "@/lib/utils";
 import {
@@ -824,6 +829,7 @@ function StickyHeader({
   pendingCount,
 }: StickyHeaderProps) {
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
+  const { language, setLanguage } = useLanguage();
 
   return (
     <header
@@ -856,8 +862,23 @@ function StickyHeader({
         <ShellBreadcrumbs role={user.role} />
       </div>
 
-      {/* Right-side tools: sync, search, notifications, account menu */}
+      {/* Right-side tools: language, sync, search, notifications, account menu */}
       <div className="flex shrink-0 items-center gap-2">
+        {/* Language switch toggle */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setLanguage(language === "en" ? "ta" : "en")}
+          aria-label={
+            language === "en"
+              ? "Change language to Tamil"
+              : "Change language to English"
+          }
+          className="h-8 px-2 text-xs font-semibold cursor-pointer text-muted-foreground hover:text-foreground"
+        >
+          {language === "en" ? "தமிழ்" : "EN"}
+        </Button>
+
         {/* Sync status: fixed-width area to prevent layout shift */}
         <div className="min-w-20 flex justify-end">
           <SyncIndicator
@@ -932,6 +953,82 @@ function StickyHeader({
         </DropdownMenu>
       </div>
     </header>
+  );
+}
+
+// ─── MobileBottomNav ─────────────────────────────────────────────────────────
+// Accessible touch-first navigation bar on mobile viewports (<768px)
+
+function MobileBottomNav() {
+  const location = useLocation();
+  const { t } = useLanguage();
+  const { setOpenMobile } = useSidebar();
+
+  const navItems = [
+    {
+      label: t("nav.home", "Home"),
+      href: "/dashboard",
+      icon: HomeIcon,
+    },
+    {
+      label: t("nav.orders", "Orders"),
+      href: "/orders",
+      icon: ShoppingCartIcon,
+    },
+    {
+      label: t("nav.stock", "Stock"),
+      href: "/stock",
+      icon: PackageIcon,
+    },
+    {
+      label: t("nav.more", "More"),
+      action: () => setOpenMobile(true),
+      icon: MenuIcon,
+    },
+  ];
+
+  return (
+    <nav
+      aria-label="Mobile navigation"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex h-14 items-center justify-around border-t border-border bg-background/95 backdrop-blur-xs px-2 pb-[env(safe-area-inset-bottom)] shadow-lg"
+    >
+      {navItems.map((item, idx) => {
+        const isActive = item.href && location.pathname === item.href;
+        const Icon = item.icon;
+
+        if (item.action) {
+          return (
+            <button
+              key={idx}
+              type="button"
+              onClick={item.action}
+              className="flex flex-1 flex-col items-center justify-center gap-1 py-1 text-muted-foreground hover:text-foreground transition-colors min-h-[44px] cursor-pointer"
+              aria-label={item.label}
+            >
+              <Icon className="size-5" aria-hidden />
+              <span className="text-2xs font-medium">{item.label}</span>
+            </button>
+          );
+        }
+
+        return (
+          <Link
+            key={idx}
+            to={item.href!}
+            className={cn(
+              "flex flex-1 flex-col items-center justify-center gap-1 py-1 transition-colors min-h-[44px]",
+              isActive
+                ? "text-primary font-semibold"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+            aria-current={isActive ? "page" : undefined}
+          >
+            <Icon className="size-5" aria-hidden />
+            <span className="text-2xs">{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -1069,12 +1166,15 @@ export function AuthenticatedShell({
 
           <main
             id="main-content"
-            className="flex flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden"
+            className="flex flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden pb-16 md:pb-0"
             tabIndex={-1}
           >
             {children}
           </main>
         </SidebarInset>
+
+        {/* Mobile bottom navigation bar for small touch viewports */}
+        <MobileBottomNav />
 
         {/* Global Toast Notifications */}
         <Toaster />

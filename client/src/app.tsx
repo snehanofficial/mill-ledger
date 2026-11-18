@@ -194,11 +194,15 @@ const queryClient = new QueryClient({
   },
 });
 
+import { LanguageProvider } from "@/lib/i18n";
+
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <LanguageProvider>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </LanguageProvider>
   );
 }
 
