@@ -10,6 +10,7 @@ import { salesRouter } from "./modules/sales/sales.routes.js";
 import { productionRouter } from "./modules/production/production.routes.js";
 import { inventoryRouter } from "./modules/inventory/inventory.routes.js";
 import { financeRouter } from "./modules/finance/finance.routes.js";
+import { paymentRouter } from "./modules/finance/payment.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 
 export function createApp() {
@@ -33,11 +34,14 @@ export function createApp() {
   app.use("/api/v1/health", healthRouter);
   app.use("/api/v1/sales", salesRouter);
   app.use("/api/v1/orders", salesRouter);
+  app.use("/api/v1/dispatches", salesRouter);
   app.use("/api/v1/production", productionRouter);
   app.use("/api/v1/production-runs", productionRouter);
   app.use("/api/v1/inventory", inventoryRouter);
   app.use("/api/v1/purchase-receipts", inventoryRouter);
   app.use("/api/v1/finance", financeRouter);
+  app.use("/api/v1/invoices", financeRouter);
+  app.use("/api/v1/payments", paymentRouter);
 
   // Backward compatibility alias for health check
   app.use("/api/health", healthRouter);

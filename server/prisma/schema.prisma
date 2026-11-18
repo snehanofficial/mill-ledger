@@ -91,6 +91,10 @@ model Organization {
   purchaseReceipts PurchaseReceipt[]
   productionRuns ProductionRun[]
   salesOrders    SalesOrder[]
+  invoices       SalesInvoice[]
+  dispatches     Dispatch[]
+  creditNotes    CreditNote[]
+  payments       Payment[]
 
   @@map("organization")
 }
@@ -124,6 +128,7 @@ model Warehouse {
   purchaseReceipts PurchaseReceipt[]
   productionRuns ProductionRun[]
   salesOrders    SalesOrder[]
+  dispatches     Dispatch[]
   stockReservations StockReservation[]
 
   @@unique([facilityId, code])
@@ -148,6 +153,8 @@ model Customer {
 
   assignments SalesmanCustomerAssignment[]
   salesOrders SalesOrder[]
+  invoices    SalesInvoice[]
+  payments    Payment[]
 
   @@unique([organizationId, code])
   @@map("customer")
@@ -255,6 +262,7 @@ model InventoryItem {
   productionRunMaterials ProductionRunMaterial[]
   salesOrderLines SalesOrderLine[]
   stockReservations StockReservation[]
+  dispatchLines   DispatchLine[]
 
   @@unique([organizationId, sku])
   @@map("inventory_item")
@@ -615,6 +623,8 @@ model SalesOrder {
 
   lines        SalesOrderLine[]
   reservations StockReservation[]
+  invoices     SalesInvoice[]
+  dispatches   Dispatch[]
 
   @@unique([organizationId, orderNumber])
   @@index([salesmanId, status])
@@ -665,3 +675,200 @@ model StockReservation {
   @@index([inventoryItemId, warehouseId, status])
   @@map("stock_reservation")
 }
+
+// ─── Invoicing, Dispatch & Credit Notes ─────────────────────────────
+
+enum InvoiceStatus {
+  DRAFT
+  POSTED
+  CANCELLED_BY_CREDIT_NOTE
+  PAID
+  PARTIALLY_PAID
+}
+
+enum DispatchStatus {
+  DRAFT
+  POSTED
+  CANCELLED
+}
+
+model SalesInvoice {
+  id                      String        @id @default(cuid())
+  organizationId          String
+  organization            Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invoiceNumber           String
+  financialYear           String
+  salesOrderId            String?
+  salesOrder              SalesOrder?   @relation(fields: [salesOrderId], references: [id], onDelete: SetNull)
+  customerId              String
+  customer                Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  customerNameSnapshot    String
+  customerGstinSnapshot   String?
+  customerAddressSnapshot String?
+  deliveryStateSnapshot   String
+  companyGstinSnapshot    String        @default("33AAAAA0000A1Z5")
+  status                  InvoiceStatus @default(POSTED)
+  currency                String        @default("INR")
+  taxableAmount           Decimal       @db.Decimal(18, 2)
+  cgstAmount              Decimal       @default(0) @db.Decimal(18, 2)
+  sgstAmount              Decimal       @default(0) @db.Decimal(18, 2)
+  igstAmount              Decimal       @default(0) @db.Decimal(18, 2)
+  totalTaxAmount          Decimal       @db.Decimal(18, 2)
+  totalAmount             Decimal       @db.Decimal(18, 2)
+  paidAmount              Decimal       @default(0) @db.Decimal(18, 2)
+  outstandingAmount       Decimal       @db.Decimal(18, 2)
+  notes                   String?
+  idempotencyKey          String?       @unique
+  postedAt                DateTime      @default(now())
+  dueDate                 DateTime?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  lines              SalesInvoiceLine[]
+  dispatches         Dispatch[]
+  creditNotes        CreditNote[]
+  paymentAllocations PaymentAllocation[]
+
+  @@unique([organizationId, invoiceNumber])
+  @@map("sales_invoice")
+}
+
+model SalesInvoiceLine {
+  id                  String       @id @default(cuid())
+  invoiceId           String
+  salesInvoice        SalesInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  salesOrderLineId    String?
+  productVariantId    String
+  productNameSnapshot String
+  hsnCodeSnapshot     String       @default("21069099")
+  quantity            Decimal      @db.Decimal(18, 6)
+  unitPrice           Decimal      @db.Decimal(18, 2)
+  taxRate             Decimal      @db.Decimal(5, 2)
+  taxableAmount       Decimal      @db.Decimal(18, 2)
+  cgstAmount          Decimal      @default(0) @db.Decimal(18, 2)
+  sgstAmount          Decimal      @default(0) @db.Decimal(18, 2)
+  igstAmount          Decimal      @default(0) @db.Decimal(18, 2)
+  taxAmount           Decimal      @db.Decimal(18, 2)
+  lineTotal           Decimal      @db.Decimal(18, 2)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@map("sales_invoice_line")
+}
+
+model Dispatch {
+  id             String         @id @default(cuid())
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  dispatchNumber String
+  salesOrderId   String
+  salesOrder     SalesOrder     @relation(fields: [salesOrderId], references: [id], onDelete: Restrict)
+  salesInvoiceId String?
+  salesInvoice   SalesInvoice?  @relation(fields: [salesInvoiceId], references: [id], onDelete: SetNull)
+  warehouseId    String
+  warehouse      Warehouse      @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  status         DispatchStatus @default(POSTED)
+  vehicleNumber  String?
+  driverName     String?
+  driverPhone    String?
+  notes          String?
+  idempotencyKey String?        @unique
+  dispatchedAt   DateTime       @default(now())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  lines DispatchLine[]
+
+  @@unique([organizationId, dispatchNumber])
+  @@map("dispatch")
+}
+
+model DispatchLine {
+  id               String        @id @default(cuid())
+  dispatchId       String
+  dispatch         Dispatch      @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  salesOrderLineId String
+  inventoryItemId  String
+  inventoryItem    InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Restrict)
+  quantity         Decimal       @db.Decimal(18, 6)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@map("dispatch_line")
+}
+
+model CreditNote {
+  id               String       @id @default(cuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creditNoteNumber String
+  salesInvoiceId   String
+  salesInvoice     SalesInvoice @relation(fields: [salesInvoiceId], references: [id], onDelete: Restrict)
+  reason           String
+  taxableAmount    Decimal      @db.Decimal(18, 2)
+  taxAmount        Decimal      @db.Decimal(18, 2)
+  totalAmount      Decimal      @db.Decimal(18, 2)
+  postedAt         DateTime     @default(now())
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@unique([organizationId, creditNoteNumber])
+  @@map("credit_note")
+}
+
+enum PaymentMode {
+  CASH
+  BANK_TRANSFER
+  UPI
+  CHEQUE
+  DEMAND_DRAFT
+}
+
+enum PaymentStatus {
+  POSTED
+  CANCELLED
+}
+
+model Payment {
+  id                String            @id @default(cuid())
+  organizationId    String
+  organization      Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  paymentNumber     String
+  customerId        String
+  customer          Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  amount            Decimal           @db.Decimal(18, 2)
+  unallocatedAmount Decimal           @default(0) @db.Decimal(18, 2)
+  paymentMode       PaymentMode       @default(BANK_TRANSFER)
+  referenceNumber   String?
+  paymentDate       DateTime          @default(now())
+  status            PaymentStatus     @default(POSTED)
+  notes             String?
+  idempotencyKey    String?           @unique
+  postedAt          DateTime          @default(now())
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  allocations       PaymentAllocation[]
+
+  @@unique([organizationId, paymentNumber])
+  @@index([organizationId, customerId])
+  @@index([paymentDate])
+  @@map("payment")
+}
+
+model PaymentAllocation {
+  id              String        @id @default(cuid())
+  paymentId       String
+  payment         Payment       @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  salesInvoiceId  String
+  salesInvoice    SalesInvoice  @relation(fields: [salesInvoiceId], references: [id], onDelete: Restrict)
+  amount          Decimal       @db.Decimal(18, 2)
+  allocatedAt     DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([paymentId])
+  @@index([salesInvoiceId])
+  @@map("payment_allocation")
+}
+

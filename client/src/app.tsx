@@ -8,12 +8,12 @@ import { AuthenticatedLayout } from "@/layouts/authenticated-layout";
 import { StockPage } from "@/pages/stock-page";
 import { ProductionPage } from "@/pages/production-page";
 import { OrdersPage } from "@/pages/orders-page";
+import { InvoicesPage } from "@/pages/invoices-page";
+import { DispatchPage } from "@/pages/dispatch-page";
+import { PaymentsPage } from "@/pages/payments-page";
 import {
   DashboardPage,
   NewOrderPage,
-  InvoicesPage,
-  DispatchPage,
-  PaymentsPage,
   PurchasesPage,
   CustomersPage,
   ReportsSalesPage,

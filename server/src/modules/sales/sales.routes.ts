@@ -5,6 +5,7 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { salesService } from "./sales.service.js";
+import { dispatchService } from "./dispatch.service.js";
 import { z } from "zod";
 import { AppError } from "../../middleware/error.middleware.js";
 import { OrderStatus } from "@prisma/client";
@@ -45,6 +46,24 @@ const approveOrderSchema = z.object({
 
 const rejectOrderSchema = z.object({
   reason: z.string().min(1, "Rejection reason is required"),
+});
+
+const createDispatchSchema = z.object({
+  salesOrderId: z.string().min(1),
+  warehouseId: z.string().optional(),
+  vehicleNumber: z.string().optional(),
+  driverName: z.string().optional(),
+  driverPhone: z.string().optional(),
+  notes: z.string().optional(),
+  idempotencyKey: z.string().optional(),
+  lines: z
+    .array(
+      z.object({
+        salesOrderLineId: z.string().min(1),
+        quantity: z.number().positive().optional(),
+      }),
+    )
+    .optional(),
 });
 
 // GET /api/v1/sales/orders - List orders (ABAC enforced)
@@ -211,6 +230,45 @@ salesRouter.post(
         req.user!,
       );
       res.status(200).json(rejected);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/sales/dispatches - Post physical dispatch and release reservations
+salesRouter.post(
+  "/dispatches",
+  requireAuth,
+  authorize("order", "dispatch"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const parsed = createDispatchSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new AppError(
+          `Invalid dispatch data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
+          400,
+        );
+      }
+
+      const dispatch = await dispatchService.postDispatch(parsed.data);
+      res.status(201).json(dispatch);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /api/v1/sales/dispatches - List dispatches
+salesRouter.get(
+  "/dispatches",
+  requireAuth,
+  authorize("order", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = (req.query.organizationId as string) || "MILL";
+      const dispatches = await dispatchService.getDispatches(orgId);
+      res.json({ dispatches });
     } catch (err) {
       next(err);
     }
