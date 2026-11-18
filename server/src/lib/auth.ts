@@ -2,20 +2,35 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "../db/client.js";
 import { env } from "../config/env.js";
+import { getConfiguredOrigins, isAllowedOrigin } from "./origins.js";
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
-  trustedOrigins: [
-    env.CORS_ORIGIN,
-    env.BETTER_AUTH_URL,
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:4173",
-    "http://127.0.0.1:4173",
-    "http://localhost:4000",
-    "http://127.0.0.1:4000",
-  ].filter(Boolean),
+  trustedOrigins: async (request) => {
+    const origins = getConfiguredOrigins();
+
+    if (request) {
+      const origin = request.headers.get("origin");
+      if (origin && isAllowedOrigin(origin)) {
+        try {
+          origins.push(new URL(origin).origin);
+        } catch {
+          // ignore
+        }
+      }
+      const referer = request.headers.get("referer");
+      if (referer && isAllowedOrigin(referer)) {
+        try {
+          origins.push(new URL(referer).origin);
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    return Array.from(new Set(origins));
+  },
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),

@@ -51,7 +51,7 @@ describe("Express application HTTP integration", () => {
       expect(response.headers.get("x-dns-prefetch-control")).toBe("off");
     });
 
-    it("allows request origin and credentials in dev/test environment", async () => {
+    it("allows request origin and credentials in dev/test environment for LAN/local origins", async () => {
       const response = await fetch(`${baseUrl}/api/v1/health`, {
         headers: {
           Origin: "http://10.10.70.209:5173",
@@ -63,6 +63,15 @@ describe("Express application HTTP integration", () => {
       expect(response.headers.get("access-control-allow-credentials")).toBe(
         "true",
       );
+    });
+
+    it("rejects unauthorized external origins without CORS allow headers per OWASP", async () => {
+      const response = await fetch(`${baseUrl}/api/v1/health`, {
+        headers: {
+          Origin: "https://evil-attacker.com",
+        },
+      });
+      expect(response.headers.get("access-control-allow-origin")).toBeNull();
     });
   });
 });

@@ -54,6 +54,25 @@ describe("Environment schema validation (MLD-005)", () => {
     }
   });
 
+  it("fails loudly when CORS_ORIGIN is default localhost in production", () => {
+    const result = envSchema.safeParse({
+      NODE_ENV: "production",
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/mill_ledger?schema=public",
+      BETTER_AUTH_URL: "https://api.mill-ledger.internal",
+      CORS_ORIGIN: "http://localhost:5173",
+      BETTER_AUTH_SECRET: "prod-super-secure-high-entropy-secret-key-9876543210",
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find(
+        (i) => i.path.join(".") === "CORS_ORIGIN",
+      );
+      expect(issue).toBeDefined();
+      expect(issue?.message).toContain("must be explicitly configured with non-local production origin(s)");
+    }
+  });
+
   it("accepts high-entropy secrets >= 32 characters in production", () => {
     const strongSecret = "prod-super-secure-high-entropy-secret-key-9876543210";
     const result = envSchema.safeParse({

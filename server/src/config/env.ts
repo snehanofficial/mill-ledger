@@ -38,6 +38,20 @@ export const envSchema = z
             "BETTER_AUTH_SECRET must be at least 32 characters in production",
         });
       }
+
+      if (
+        !data.CORS_ORIGIN ||
+        data.CORS_ORIGIN === "http://localhost:5173" ||
+        data.CORS_ORIGIN.includes("localhost") ||
+        data.CORS_ORIGIN.includes("127.0.0.1")
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["CORS_ORIGIN"],
+          message:
+            "CORS_ORIGIN must be explicitly configured with non-local production origin(s) in production",
+        });
+      }
     }
   });
 

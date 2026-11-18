@@ -3,7 +3,6 @@ import cors from "cors";
 import helmet from "helmet";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
-import { env } from "./config/env.js";
 import { healthRouter } from "./modules/health/health.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { salesRouter } from "./modules/sales/sales.routes.js";
@@ -13,6 +12,7 @@ import { financeRouter } from "./modules/finance/finance.routes.js";
 import { paymentRouter } from "./modules/finance/payment.routes.js";
 import { reportingRouter } from "./modules/reporting/reporting.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
+import { isAllowedOrigin } from "./lib/origins.js";
 
 export function createApp() {
   const app = express();
@@ -20,7 +20,13 @@ export function createApp() {
   app.use(helmet());
   app.use(
     cors({
-      origin: env.NODE_ENV === "production" ? env.CORS_ORIGIN : true,
+      origin: (requestOrigin, callback) => {
+        // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+        if (!requestOrigin || isAllowedOrigin(requestOrigin)) {
+          return callback(null, true);
+        }
+        return callback(null, false);
+      },
       credentials: true,
     }),
   );
