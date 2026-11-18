@@ -14,7 +14,8 @@
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "test": "vitest run --exclude '**/e2e/**'",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "benchmark": "pnpm --filter @mill-ledger/server benchmark"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.0",
