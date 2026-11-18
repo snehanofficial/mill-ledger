@@ -23,7 +23,9 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
 }
 
 function BreadcrumbItem(props: React.ComponentProps<"li">) {
-  return <li className="inline-flex items-center gap-1.5 sm:gap-2" {...props} />;
+  return (
+    <li className="inline-flex items-center gap-1.5 sm:gap-2" {...props} />
+  );
 }
 
 function BreadcrumbLink({
@@ -67,12 +69,18 @@ function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
   );
 }
 
-function BreadcrumbSeparator({ className, ...props }: React.ComponentProps<"li">) {
+function BreadcrumbSeparator({
+  className,
+  ...props
+}: React.ComponentProps<"li">) {
   return (
     <li
       role="presentation"
       aria-hidden="true"
-      className={cn("inline-flex items-center text-muted-foreground/60", className)}
+      className={cn(
+        "inline-flex items-center text-muted-foreground/60",
+        className,
+      )}
       {...props}
     >
       <ChevronRightIcon className="size-3.5" />
@@ -80,11 +88,17 @@ function BreadcrumbSeparator({ className, ...props }: React.ComponentProps<"li">
   );
 }
 
-function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<"span">) {
+function BreadcrumbEllipsis({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
   return (
     <span
       aria-label="More breadcrumb items"
-      className={cn("inline-flex size-9 items-center justify-center text-muted-foreground", className)}
+      className={cn(
+        "inline-flex size-9 items-center justify-center text-muted-foreground",
+        className,
+      )}
       {...props}
     >
       <MoreHorizontalIcon className="size-4" />

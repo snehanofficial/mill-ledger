@@ -37,14 +37,21 @@ export async function requireAuth(
 }
 
 export function authorize(resource: Resource, action: Action) {
-  return (req: AuthenticatedRequest, _res: Response, next: NextFunction): void => {
+  return (
+    req: AuthenticatedRequest,
+    _res: Response,
+    next: NextFunction,
+  ): void => {
     if (!req.user) {
       return next(new AppError("Unauthorized", 401));
     }
 
     if (!hasRbacPermission(req.user.role, resource, action)) {
       return next(
-        new AppError(`Forbidden: Role ${req.user.role} lacks permission ${action} on ${resource}`, 403),
+        new AppError(
+          `Forbidden: Role ${req.user.role} lacks permission ${action} on ${resource}`,
+          403,
+        ),
       );
     }
 
@@ -56,7 +63,9 @@ export function authorize(resource: Resource, action: Action) {
     });
 
     if (!isAbacAllowed) {
-      return next(new AppError("Forbidden: Policy evaluation denied request", 403));
+      return next(
+        new AppError("Forbidden: Policy evaluation denied request", 403),
+      );
     }
 
     next();

@@ -26,10 +26,10 @@ Design and build a system where every transaction is entered once, at its source
 
 Both loops meet at finished-goods stock, and both feed the monthly reports. Most invoicing apps handle the first loop. The second one, recipe-based production with planned-vs-actual consumption, is what makes this problem interesting, and it carries the most weight in evaluation.
 
-    SALES LOOP:      Salesman order → Admin verifies → GST invoice → Dispatch ──(stock goes down)──┐  
-                                                                                                   ▼  
-    PRODUCTION LOOP: Purchase → Raw stock ──(issued per BOM)──\> Production run ──(stock goes up)──\> Finished goods  
-                                                                                                   │  
+    SALES LOOP:      Salesman order → Admin verifies → GST invoice → Dispatch ──(stock goes down)──┐
+                                                                                                   ▼
+    PRODUCTION LOOP: Purchase → Raw stock ──(issued per BOM)──\> Production run ──(stock goes up)──\> Finished goods
+                                                                                                   │
     All of the above → Monthly reports for the auditor (sales & GST, stock ledger, production variance, cost per packet, outstanding)
 
 Accounting software such as Tally must not be required for daily work. An export or sync to such software is a welcome extra, not a dependency.
@@ -244,4 +244,4 @@ Shortlisted applicants will have a 30-minute interview: a live walkthrough, ques
 \- The business described here is a realistic composite. Where something is unclear, make a reasonable assumption and write it down. Documented assumptions are part of what we evaluate.  
 \- Use only the dummy data in section 5 and data you invent. Do not use real customer or company data.  
 \- Plagiarised or copied submissions are disqualified. Two submissions with substantially the same code are both disqualified.  
-\- You keep the rights to your code. By submitting, you allow the evaluation panel to run and review it.  
+\- You keep the rights to your code. By submitting, you allow the evaluation panel to run and review it.

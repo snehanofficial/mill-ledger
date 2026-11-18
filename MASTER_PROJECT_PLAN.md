@@ -1,4 +1,5 @@
 # MillLedger - Master Project Plan
+
 ## Order-to-Audit System for a Small Food Manufacturer
 
 **Document type:** Product, UX, architecture, data-model and implementation master plan  
@@ -70,47 +71,47 @@ A successful prototype must let the evaluator:
 
 ## 2.1 Mandatory and tiered requirements from the source
 
-| ID | Feature / capability | CDI tier or source | Planned milestone | Criticality | Verification evidence |
-|---|---|---|---|---|---|
-| R-001 | Login and role separation for salesman, admin and production at minimum | Must-have, §6 | M1 | P0 | Automated role tests; login walkthrough |
-| R-002 | Support the five described roles: salesman, factory admin, production supervisor, accountant/auditor, owner | Users and roles, §3 | M1–M2 | P0 | Role-by-role permission matrix and UI walkthrough |
-| R-003 | Product, customer, raw-material and BOM masters | Must-have, §6 | M2 | P0 | Seed data; create/edit/archive tests |
-| R-004 | Mobile-friendly field order entry | Must-have, §6; §4.1 | M5 | P0 | Playwright mobile flow completed in under one minute for a normal order |
-| R-005 | Customer selection and price-list-based product pricing | §4.1 | M2, M5 | P0 | Price snapshot and customer assignment tests |
-| R-006 | Admin order inbox; edit quantities/prices; approve/reject | Must-have, §6; §4.2 | M5 | P0 | End-to-end order-state tests and audit events |
-| R-007 | Stock availability displayed before approval | §4.2 | M5 | P0 | Available-to-promise test; shortage test |
-| R-008 | GST tax invoice with supplier/customer tax details, HSN, place of supply, applicable tax components and FY numbering | §4.2 | M6 | P0 | Golden invoice tests; PDF inspection; sequence uniqueness test |
-| R-009 | Downloadable invoice PDF; share by link/email is sufficient | §4.2 | M6 | P1 | PDF snapshot and download/share test |
-| R-010 | Dispatch reduces finished-goods stock | Must-have, §6; §4.2 | M6 | P0 | Dispatch movement and stock reconciliation test |
-| R-011 | Record payments against invoices and calculate customer outstanding | §4.2; Should-have §6 | M7 | P0 for benchmark | Partial payment allocation test; ₹3,875 benchmark assertion |
-| R-012 | Versioned or otherwise controlled BOM containing raw and packaging quantities and expected yield | §4.3 | M2, M4 | P0 | BOM calculation and historical-version tests |
-| R-013 | Production run captures product, batch/issue quantity, expected output, actual output and wastage/scrap | Must-have, §6; §4.3 | M4 | P0 | Production-run acceptance tests |
-| R-014 | Posting production deducts raw materials and increases finished goods automatically | Must-have, §6; §4.3 | M4 | P0 | Atomic posting test and ledger check |
-| R-015 | Planned-vs-actual consumption and yield variance with tolerance flag | Must-have, §6; §4.3 | M4 | P0 | −6% yield and +5% oil regression tests |
-| R-016 | Unit conversion across kg, g, litres, pieces, packets and cartons | §4.3 | M2, M4 | P0 | Conversion test matrix |
-| R-017 | Separate balances for raw, packaging, WIP if modelled, and finished goods by variant/pack size | §4.4 | M3 | P0 | Inventory category and product-variant tests |
-| R-018 | Stock ledger records every movement and its source document | Must-have, §6; §4.4, §7 | M3 | P0 | Every movement has resolvable source; reconciliation job |
-| R-019 | Purchases and supplier records | Should-have, §6; benchmark step 1 | M3 | P0 for benchmark | 60 kg flour purchase and purchase register |
-| R-020 | Cost of raw materials and packaging using a stated valuation method | §4.5; Should-have §6 | M7 | P0 for benchmark | Costing worksheet reproduces chosen method |
-| R-021 | Labour, power, gas and other overhead allocation | §4.5; benchmark step 8 | M7 | P0 for benchmark | ₹1,200 labour + ₹600 gas/power appear in run cost |
-| R-022 | Cost per packet and margin against selling price | §4.5; Should-have §6 | M7 | P0 for benchmark | Cost per good packet shown with method and assumptions |
-| R-023 | Monthly sales, GST, purchase, stock, production, collection and receivable reports | §4.6 | M8 | P0 | Report-by-report test fixture and export inspection |
-| R-024 | Export monthly reports to Excel/CSV and PDF | §4.6 | M8 | P0 | Valid CSV/XLSX/PDF file checks |
-| R-025 | GST summary in a shape that maps to GSTR-1/GSTR-3B | §4.6; Should-have §6 | M8 | P1 | Tax summary reconciles to invoice lines; labelled as report, not filing |
-| R-026 | Variance alerts beyond configured tolerance | Should-have, §6 | M4, M8 | P1 | Threshold boundary tests |
-| R-027 | Owner dashboard | Should-have, §6; §3 | M8 | P1 | Metrics reconcile to source queries and show freshness time |
-| R-028 | Offline order capture and sync | Strongly preferred §4.1; Stretch §6 | PWA/data foundation M1–M2; local order queue M5; full sync M9 | P1 / differentiator | Offline → reload → reconnect → exactly-once accepted order test |
-| R-029 | Batch and expiry tracking; FEFO dispatch | Stretch, §6 | M11+ | P2 | Lot traceability and FEFO allocation tests |
-| R-030 | Reorder levels and low-stock alerts | Stretch, §6 | M10 | P2 | Threshold and notification tests |
-| R-031 | Production planning from pending orders | Stretch, §6 | M10 | P2 | Planned material and batch recommendation reconciles to BOM |
-| R-032 | Salesman route/visit log and GPS check-in | Stretch, §6 | M12+ | P3 | Consent, accuracy and opt-out tests if ever built |
-| R-033 | Tally-compatible export | Optional §4.6; Stretch §6 | M12+ | P2 | Export schema sample and import validation |
-| R-034 | e-Invoice/e-Way Bill data format/mock API | Stretch, §6 | M12+ | P2 | Explicit sandbox/mock label; contract tests |
-| R-035 | Tamil language interface for floor staff | Stretch, §6 | M10 | P1 | Tamil terminology review and bilingual usability test |
-| R-036 | Stock and production edit audit trail with user and time; posted invoices cancelled through credit note, not deleted | Technical expectations, §7 | M1, M4, M6 | P0 | Immutable-posting and audit-history tests |
-| R-037 | Seed data for the exact benchmark | Technical expectations, §7 | M0, M11 | P0 | Fresh database can be seeded and scenario rerun |
-| R-038 | Hosted demo or single local run command; role test logins | §7–8 | M11 | P0 | Independent evaluator setup test |
-| R-039 | Public repository with meaningful commit history, README, design note ≤2 pages and demo video ≤8 minutes | Deliverables, §8 | M11 | P0 | Submission checklist signed off |
+| ID    | Feature / capability                                                                                                 | CDI tier or source                  | Planned milestone                                             | Criticality         | Verification evidence                                                   |
+| ----- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------- |
+| R-001 | Login and role separation for salesman, admin and production at minimum                                              | Must-have, §6                       | M1                                                            | P0                  | Automated role tests; login walkthrough                                 |
+| R-002 | Support the five described roles: salesman, factory admin, production supervisor, accountant/auditor, owner          | Users and roles, §3                 | M1–M2                                                         | P0                  | Role-by-role permission matrix and UI walkthrough                       |
+| R-003 | Product, customer, raw-material and BOM masters                                                                      | Must-have, §6                       | M2                                                            | P0                  | Seed data; create/edit/archive tests                                    |
+| R-004 | Mobile-friendly field order entry                                                                                    | Must-have, §6; §4.1                 | M5                                                            | P0                  | Playwright mobile flow completed in under one minute for a normal order |
+| R-005 | Customer selection and price-list-based product pricing                                                              | §4.1                                | M2, M5                                                        | P0                  | Price snapshot and customer assignment tests                            |
+| R-006 | Admin order inbox; edit quantities/prices; approve/reject                                                            | Must-have, §6; §4.2                 | M5                                                            | P0                  | End-to-end order-state tests and audit events                           |
+| R-007 | Stock availability displayed before approval                                                                         | §4.2                                | M5                                                            | P0                  | Available-to-promise test; shortage test                                |
+| R-008 | GST tax invoice with supplier/customer tax details, HSN, place of supply, applicable tax components and FY numbering | §4.2                                | M6                                                            | P0                  | Golden invoice tests; PDF inspection; sequence uniqueness test          |
+| R-009 | Downloadable invoice PDF; share by link/email is sufficient                                                          | §4.2                                | M6                                                            | P1                  | PDF snapshot and download/share test                                    |
+| R-010 | Dispatch reduces finished-goods stock                                                                                | Must-have, §6; §4.2                 | M6                                                            | P0                  | Dispatch movement and stock reconciliation test                         |
+| R-011 | Record payments against invoices and calculate customer outstanding                                                  | §4.2; Should-have §6                | M7                                                            | P0 for benchmark    | Partial payment allocation test; ₹3,875 benchmark assertion             |
+| R-012 | Versioned or otherwise controlled BOM containing raw and packaging quantities and expected yield                     | §4.3                                | M2, M4                                                        | P0                  | BOM calculation and historical-version tests                            |
+| R-013 | Production run captures product, batch/issue quantity, expected output, actual output and wastage/scrap              | Must-have, §6; §4.3                 | M4                                                            | P0                  | Production-run acceptance tests                                         |
+| R-014 | Posting production deducts raw materials and increases finished goods automatically                                  | Must-have, §6; §4.3                 | M4                                                            | P0                  | Atomic posting test and ledger check                                    |
+| R-015 | Planned-vs-actual consumption and yield variance with tolerance flag                                                 | Must-have, §6; §4.3                 | M4                                                            | P0                  | −6% yield and +5% oil regression tests                                  |
+| R-016 | Unit conversion across kg, g, litres, pieces, packets and cartons                                                    | §4.3                                | M2, M4                                                        | P0                  | Conversion test matrix                                                  |
+| R-017 | Separate balances for raw, packaging, WIP if modelled, and finished goods by variant/pack size                       | §4.4                                | M3                                                            | P0                  | Inventory category and product-variant tests                            |
+| R-018 | Stock ledger records every movement and its source document                                                          | Must-have, §6; §4.4, §7             | M3                                                            | P0                  | Every movement has resolvable source; reconciliation job                |
+| R-019 | Purchases and supplier records                                                                                       | Should-have, §6; benchmark step 1   | M3                                                            | P0 for benchmark    | 60 kg flour purchase and purchase register                              |
+| R-020 | Cost of raw materials and packaging using a stated valuation method                                                  | §4.5; Should-have §6                | M7                                                            | P0 for benchmark    | Costing worksheet reproduces chosen method                              |
+| R-021 | Labour, power, gas and other overhead allocation                                                                     | §4.5; benchmark step 8              | M7                                                            | P0 for benchmark    | ₹1,200 labour + ₹600 gas/power appear in run cost                       |
+| R-022 | Cost per packet and margin against selling price                                                                     | §4.5; Should-have §6                | M7                                                            | P0 for benchmark    | Cost per good packet shown with method and assumptions                  |
+| R-023 | Monthly sales, GST, purchase, stock, production, collection and receivable reports                                   | §4.6                                | M8                                                            | P0                  | Report-by-report test fixture and export inspection                     |
+| R-024 | Export monthly reports to Excel/CSV and PDF                                                                          | §4.6                                | M8                                                            | P0                  | Valid CSV/XLSX/PDF file checks                                          |
+| R-025 | GST summary in a shape that maps to GSTR-1/GSTR-3B                                                                   | §4.6; Should-have §6                | M8                                                            | P1                  | Tax summary reconciles to invoice lines; labelled as report, not filing |
+| R-026 | Variance alerts beyond configured tolerance                                                                          | Should-have, §6                     | M4, M8                                                        | P1                  | Threshold boundary tests                                                |
+| R-027 | Owner dashboard                                                                                                      | Should-have, §6; §3                 | M8                                                            | P1                  | Metrics reconcile to source queries and show freshness time             |
+| R-028 | Offline order capture and sync                                                                                       | Strongly preferred §4.1; Stretch §6 | PWA/data foundation M1–M2; local order queue M5; full sync M9 | P1 / differentiator | Offline → reload → reconnect → exactly-once accepted order test         |
+| R-029 | Batch and expiry tracking; FEFO dispatch                                                                             | Stretch, §6                         | M11+                                                          | P2                  | Lot traceability and FEFO allocation tests                              |
+| R-030 | Reorder levels and low-stock alerts                                                                                  | Stretch, §6                         | M10                                                           | P2                  | Threshold and notification tests                                        |
+| R-031 | Production planning from pending orders                                                                              | Stretch, §6                         | M10                                                           | P2                  | Planned material and batch recommendation reconciles to BOM             |
+| R-032 | Salesman route/visit log and GPS check-in                                                                            | Stretch, §6                         | M12+                                                          | P3                  | Consent, accuracy and opt-out tests if ever built                       |
+| R-033 | Tally-compatible export                                                                                              | Optional §4.6; Stretch §6           | M12+                                                          | P2                  | Export schema sample and import validation                              |
+| R-034 | e-Invoice/e-Way Bill data format/mock API                                                                            | Stretch, §6                         | M12+                                                          | P2                  | Explicit sandbox/mock label; contract tests                             |
+| R-035 | Tamil language interface for floor staff                                                                             | Stretch, §6                         | M10                                                           | P1                  | Tamil terminology review and bilingual usability test                   |
+| R-036 | Stock and production edit audit trail with user and time; posted invoices cancelled through credit note, not deleted | Technical expectations, §7          | M1, M4, M6                                                    | P0                  | Immutable-posting and audit-history tests                               |
+| R-037 | Seed data for the exact benchmark                                                                                    | Technical expectations, §7          | M0, M11                                                       | P0                  | Fresh database can be seeded and scenario rerun                         |
+| R-038 | Hosted demo or single local run command; role test logins                                                            | §7–8                                | M11                                                           | P0                  | Independent evaluator setup test                                        |
+| R-039 | Public repository with meaningful commit history, README, design note ≤2 pages and demo video ≤8 minutes             | Deliverables, §8                    | M11                                                           | P0                  | Submission checklist signed off                                         |
 
 **Important scope finding:** The mandatory benchmark includes purchasing, payments, labour/power overhead entry and costing, even though the tier list places some of these under “Should have”. Therefore, those modules are part of the benchmark-complete release, not optional for this submission (source §§5–6).
 
@@ -137,13 +138,13 @@ A successful prototype must let the evaluator:
 
 ## 3.1 Personas and primary outcomes
 
-| Persona | Primary device | Main job | Success measure | Main risks / constraints |
-|---|---|---|---|---|
-| Salesman | Android phone, sometimes weak mobile data | Create accurate customer orders while visiting shops | Normal order entered in <60 seconds | One-hand use, sunlight, weak signal, small display, stale pricing, accidental double submit |
-| Factory admin | Desktop/laptop with keyboard and mouse | Review demand, control pricing, approve, invoice, dispatch, record collections | Process order with minimal re-entry and clear exceptions | Many orders, dense lists, invoice mistakes, stock conflicts, printer/PDF workflow |
-| Production supervisor | Tablet or desktop on factory floor | Issue correct materials, record actual output and wastage | A run can be posted with auditable actuals and no stock drift | Gloves/dirty hands, bright light, interruptions, unit confusion, shared device, noisy floor |
-| Accountant/auditor | Desktop/laptop | Inspect registers, balances, tax summaries and receivables | Every reported number can be traced to source | Read-only access, large datasets, period filters, export fidelity, repeatability |
-| Owner | Phone, tablet or desktop | Monitor orders, stock, variance, cost and collections | Detect an issue and drill down to its cause | Needs a concise summary, current-as-of timestamps, meaningful alerts rather than noise |
+| Persona               | Primary device                            | Main job                                                                       | Success measure                                               | Main risks / constraints                                                                    |
+| --------------------- | ----------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Salesman              | Android phone, sometimes weak mobile data | Create accurate customer orders while visiting shops                           | Normal order entered in <60 seconds                           | One-hand use, sunlight, weak signal, small display, stale pricing, accidental double submit |
+| Factory admin         | Desktop/laptop with keyboard and mouse    | Review demand, control pricing, approve, invoice, dispatch, record collections | Process order with minimal re-entry and clear exceptions      | Many orders, dense lists, invoice mistakes, stock conflicts, printer/PDF workflow           |
+| Production supervisor | Tablet or desktop on factory floor        | Issue correct materials, record actual output and wastage                      | A run can be posted with auditable actuals and no stock drift | Gloves/dirty hands, bright light, interruptions, unit confusion, shared device, noisy floor |
+| Accountant/auditor    | Desktop/laptop                            | Inspect registers, balances, tax summaries and receivables                     | Every reported number can be traced to source                 | Read-only access, large datasets, period filters, export fidelity, repeatability            |
+| Owner                 | Phone, tablet or desktop                  | Monitor orders, stock, variance, cost and collections                          | Detect an issue and drill down to its cause                   | Needs a concise summary, current-as-of timestamps, meaningful alerts rather than noise      |
 
 ## 3.2 Real-life conditions the UX must account for
 
@@ -214,18 +215,18 @@ The application should use role-specific navigation. Do not expose the entire ER
 
 **Navigation:** Home, New Order, Orders, Customers, More. Use bottom navigation on narrow phone layouts and a compact side rail on larger screens.
 
-| Screen | Main content and interaction | Critical states / UX rules | Verification |
-|---|---|---|---|
-| Sign-in / session restore | Email/username and password or configured login method; show company/workspace | Offline mode only after a previous authorized sync; no new offline identity creation | Expired session, wrong account and sign-out tests |
-| Home | Today’s orders, local unsynced count, recently used customers, quick New Order | Offline banner must persist; pending queue visible without opening settings | At-a-glance status test |
-| Customer picker | Assigned customers, recent/favourite list, search by name/phone/code | Only assigned customers; last-synced data marker; no full customer database download | ABAC and offline-cache scope tests |
-| Product picker | Product cards/list, pack size, current cached price, quantity control | Clearly label stale/offline price; no fake live stock guarantee; support fast numeric entry | 320px layout, keyboard and order timing test |
-| Cart / order review | Customer, delivery address, lines, quantity, price snapshot, tax estimate if configured | Show total estimate and quote timestamp; changes remain local until synced | Quantity, price and draft persistence tests |
-| Submit result | Local reference, sync state, timestamp and next action | Distinguish Saved Locally, Queued, Submitted, Rejected/Conflict | Offline/reload/reconnect tests |
-| Orders list | Own orders, filter by date/status/customer, customer-wise sales | Show server state separately from local state; no other salesman orders | Record-level authorization tests |
-| Order detail | Line items, submitted price, admin changes, invoice/dispatch state, timeline | Read-only status history; clear reason for rejection or price adjustment | Event history test |
-| Sync centre | Pending, syncing, failed, conflict, last successful sync | Retry one/all; never duplicate an order; preserve failed payload until resolved | Idempotency and retry test |
-| Customer summary | Assigned customer, address, order history and customer-wise sales | Do not expose sensitive financial fields unless role policy allows | ABAC test |
+| Screen                    | Main content and interaction                                                            | Critical states / UX rules                                                                  | Verification                                      |
+| ------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Sign-in / session restore | Email/username and password or configured login method; show company/workspace          | Offline mode only after a previous authorized sync; no new offline identity creation        | Expired session, wrong account and sign-out tests |
+| Home                      | Today’s orders, local unsynced count, recently used customers, quick New Order          | Offline banner must persist; pending queue visible without opening settings                 | At-a-glance status test                           |
+| Customer picker           | Assigned customers, recent/favourite list, search by name/phone/code                    | Only assigned customers; last-synced data marker; no full customer database download        | ABAC and offline-cache scope tests                |
+| Product picker            | Product cards/list, pack size, current cached price, quantity control                   | Clearly label stale/offline price; no fake live stock guarantee; support fast numeric entry | 320px layout, keyboard and order timing test      |
+| Cart / order review       | Customer, delivery address, lines, quantity, price snapshot, tax estimate if configured | Show total estimate and quote timestamp; changes remain local until synced                  | Quantity, price and draft persistence tests       |
+| Submit result             | Local reference, sync state, timestamp and next action                                  | Distinguish Saved Locally, Queued, Submitted, Rejected/Conflict                             | Offline/reload/reconnect tests                    |
+| Orders list               | Own orders, filter by date/status/customer, customer-wise sales                         | Show server state separately from local state; no other salesman orders                     | Record-level authorization tests                  |
+| Order detail              | Line items, submitted price, admin changes, invoice/dispatch state, timeline            | Read-only status history; clear reason for rejection or price adjustment                    | Event history test                                |
+| Sync centre               | Pending, syncing, failed, conflict, last successful sync                                | Retry one/all; never duplicate an order; preserve failed payload until resolved             | Idempotency and retry test                        |
+| Customer summary          | Assigned customer, address, order history and customer-wise sales                       | Do not expose sensitive financial fields unless role policy allows                          | ABAC test                                         |
 
 **One-minute order interaction:** Home → New Order → choose recent customer → add one or more products and quantities → review → save/submit. Avoid requiring the salesman to type full addresses or tax details on every order.
 
@@ -233,56 +234,56 @@ The application should use role-specific navigation. Do not expose the entire ER
 
 **Navigation:** Overview, Order Inbox, Orders, Invoices, Dispatch, Customers, Products & Prices, Inventory, Purchases, Payments, Reports, Settings (only permissions granted).
 
-| Screen | Main content and interaction | Critical states / UX rules | Verification |
-|---|---|---|---|
-| Admin overview | New orders, pending review, low-stock exceptions, dispatches due, receivables alerts | No decorative metrics; every card links to filtered records | Totals reconcile with source data |
-| Order inbox | Dense table with submitted time, salesman, customer, state, value and stock coverage | Filters, sorting, pagination, keyboard navigation; local-offline orders only appear after server acceptance | Filter and access-control tests |
-| Order review | Customer snapshot, requested lines, price list, available stock, reserved stock, proposed quantity/price changes | Show changes side-by-side; require reason for overrides; distinguish stale quote from current rules | Approval policy tests |
-| Shortage resolution | Requested, physically available, already reserved, available-to-promise, shortage | Options: leave pending, reject, or approve partial quantity if policy allows; never create negative stock | Benchmark B shortage = 32 |
-| Approval confirmation | Final lines, effective prices, reservation impact, fulfilment plan | Atomic stock reservation; prevent double approval | Concurrency test |
-| Invoice composer/preview | Supplier/customer details, HSN, place of supply, taxable value, tax split, numbering, PDF preview | Tax rate from effective-dated config; invoice immutable after posting; no offline invoice | Golden invoice and serial sequence tests |
-| Invoice detail | Posted PDF, invoice lines, tax breakdown, payment allocations, credit-note history | No delete/edit of posted invoice; issue credit note for correction | Immutability test |
-| Dispatch workspace | Approved/unfulfilled lines, pick quantities, stock location, dispatch note | Dispatch cannot exceed reservation or physical stock; partial dispatch represented as separate dispatch record | No-over-dispatch tests |
-| Payment receipt | Customer, amount, date, mode/reference, allocations to invoice(s) | Support partial, full and unallocated receipts; show remaining outstanding | ₹4,000 allocation test |
-| Customer ledger | Invoices, credit notes, receipts, outstanding and ageing | Opening balance and historical transactions clearly distinguished | Receivable reconciliation test |
-| Product/price masters | Product variants, pack size, active price lists, effective date | Existing posted documents retain their snapshots after price changes | Historical price snapshot test |
-| Purchase entry | Supplier, item, received quantity, UOM, rate, reference, date | Receipt posts stock only once; purchase cost preserved | Flour purchase benchmark test |
-| Inventory views | On-hand, reserved, available, movement ledger, source link | Show physical quantity and reservations separately | Ledger reconciliation test |
+| Screen                   | Main content and interaction                                                                                     | Critical states / UX rules                                                                                     | Verification                             |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Admin overview           | New orders, pending review, low-stock exceptions, dispatches due, receivables alerts                             | No decorative metrics; every card links to filtered records                                                    | Totals reconcile with source data        |
+| Order inbox              | Dense table with submitted time, salesman, customer, state, value and stock coverage                             | Filters, sorting, pagination, keyboard navigation; local-offline orders only appear after server acceptance    | Filter and access-control tests          |
+| Order review             | Customer snapshot, requested lines, price list, available stock, reserved stock, proposed quantity/price changes | Show changes side-by-side; require reason for overrides; distinguish stale quote from current rules            | Approval policy tests                    |
+| Shortage resolution      | Requested, physically available, already reserved, available-to-promise, shortage                                | Options: leave pending, reject, or approve partial quantity if policy allows; never create negative stock      | Benchmark B shortage = 32                |
+| Approval confirmation    | Final lines, effective prices, reservation impact, fulfilment plan                                               | Atomic stock reservation; prevent double approval                                                              | Concurrency test                         |
+| Invoice composer/preview | Supplier/customer details, HSN, place of supply, taxable value, tax split, numbering, PDF preview                | Tax rate from effective-dated config; invoice immutable after posting; no offline invoice                      | Golden invoice and serial sequence tests |
+| Invoice detail           | Posted PDF, invoice lines, tax breakdown, payment allocations, credit-note history                               | No delete/edit of posted invoice; issue credit note for correction                                             | Immutability test                        |
+| Dispatch workspace       | Approved/unfulfilled lines, pick quantities, stock location, dispatch note                                       | Dispatch cannot exceed reservation or physical stock; partial dispatch represented as separate dispatch record | No-over-dispatch tests                   |
+| Payment receipt          | Customer, amount, date, mode/reference, allocations to invoice(s)                                                | Support partial, full and unallocated receipts; show remaining outstanding                                     | ₹4,000 allocation test                   |
+| Customer ledger          | Invoices, credit notes, receipts, outstanding and ageing                                                         | Opening balance and historical transactions clearly distinguished                                              | Receivable reconciliation test           |
+| Product/price masters    | Product variants, pack size, active price lists, effective date                                                  | Existing posted documents retain their snapshots after price changes                                           | Historical price snapshot test           |
+| Purchase entry           | Supplier, item, received quantity, UOM, rate, reference, date                                                    | Receipt posts stock only once; purchase cost preserved                                                         | Flour purchase benchmark test            |
+| Inventory views          | On-hand, reserved, available, movement ledger, source link                                                       | Show physical quantity and reservations separately                                                             | Ledger reconciliation test               |
 
 ## 4.4 Production supervisor tablet/desktop workspace
 
 **Navigation:** Today’s Runs, New Production Run, Material Receipts, Material Issues, Run History, Inventory Lookup. Avoid exposing sales/financial configuration unless separately permitted.
 
-| Screen | Main content and interaction | Critical states / UX rules | Verification |
-|---|---|---|---|
-| Production home | Planned runs, drafts needing completion, posted runs, shortages and variance alerts | Large status labels; show run date and assigned product | Role access and queue tests |
-| New run | Select product variant and active production specification/BOM version | Show the exact version/effective date; do not silently switch a historical run to a newer BOM | BOM snapshot test |
-| Planned material sheet | Component, standard quantity, unit, available stock, expected output | Units shown on every row; conversions visible; inadequate stock is blocking | Unit conversion and stock tests |
-| Material issue/actual consumption | Actual quantity used/issued, returned quantity if modelled, damaged/scrapped quantities and reason | Separate issue, consumption, return and waste; prevent duplicate posting | Actual-material reconciliation |
-| Output entry | Expected good output, actual good packets, rejects/scrap and explanation | Do not treat damaged pouch as finished-product reject; allow a documented variance | Yield formula test |
-| Packaging reconciliation | Pouches used, damaged pouches, cartons used, carton capacity | Calculate implied capacity and show warnings without silently changing benchmark data | 188 packets vs 9×20 capacity warning |
-| Variance review | Planned vs actual by component; yield variance; configured tolerance | Show formula, absolute difference, percentage and reason; warning vs blocking rule configurable | +5% oil and −6% yield flags |
-| Cost entry | Direct labour, gas, power and other cost entries | Cost category and amount are explicit; avoid ambiguous “miscellaneous” only | ₹1,800 overhead total test |
-| Run posting preview | Every raw/packaging deduction, finished-goods receipt, cost and variance | One final confirmation; show transaction summary before posting | Atomicity and rollback tests |
-| Run detail | Posted material lines, output, waste, valuation, costs and audit history | Posted record read-only; correction via reversal/adjustment | Immutability test |
+| Screen                            | Main content and interaction                                                                       | Critical states / UX rules                                                                      | Verification                         |
+| --------------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------ |
+| Production home                   | Planned runs, drafts needing completion, posted runs, shortages and variance alerts                | Large status labels; show run date and assigned product                                         | Role access and queue tests          |
+| New run                           | Select product variant and active production specification/BOM version                             | Show the exact version/effective date; do not silently switch a historical run to a newer BOM   | BOM snapshot test                    |
+| Planned material sheet            | Component, standard quantity, unit, available stock, expected output                               | Units shown on every row; conversions visible; inadequate stock is blocking                     | Unit conversion and stock tests      |
+| Material issue/actual consumption | Actual quantity used/issued, returned quantity if modelled, damaged/scrapped quantities and reason | Separate issue, consumption, return and waste; prevent duplicate posting                        | Actual-material reconciliation       |
+| Output entry                      | Expected good output, actual good packets, rejects/scrap and explanation                           | Do not treat damaged pouch as finished-product reject; allow a documented variance              | Yield formula test                   |
+| Packaging reconciliation          | Pouches used, damaged pouches, cartons used, carton capacity                                       | Calculate implied capacity and show warnings without silently changing benchmark data           | 188 packets vs 9×20 capacity warning |
+| Variance review                   | Planned vs actual by component; yield variance; configured tolerance                               | Show formula, absolute difference, percentage and reason; warning vs blocking rule configurable | +5% oil and −6% yield flags          |
+| Cost entry                        | Direct labour, gas, power and other cost entries                                                   | Cost category and amount are explicit; avoid ambiguous “miscellaneous” only                     | ₹1,800 overhead total test           |
+| Run posting preview               | Every raw/packaging deduction, finished-goods receipt, cost and variance                           | One final confirmation; show transaction summary before posting                                 | Atomicity and rollback tests         |
+| Run detail                        | Posted material lines, output, waste, valuation, costs and audit history                           | Posted record read-only; correction via reversal/adjustment                                     | Immutability test                    |
 
 ## 4.5 Accountant / auditor desktop workspace
 
 **Navigation:** Report Centre, Sales Register, GST Summary, Purchase Register, Stock Summary, Stock Ledger, Production & Variance, Collections, Receivables & Ageing, Audit Trail.
 
-| Screen | Main content and interaction | Critical states / UX rules | Verification |
-|---|---|---|---|
-| Report centre | Report cards grouped by Sales, Tax, Stock, Production, Finance | Show supported date filters and export types | Coverage test |
-| Sales register | Invoice number/date/customer/product/taxable value/tax/total/status | Drill down to immutable invoice lines | Totals reconcile with invoices |
-| GST outward summary | Intra/inter-state taxable values and tax components; HSN summaries if supported | Clearly label as a summary shaped for reconciliation, not a filed return | Tax aggregation test |
-| Purchase register | Supplier, receipt/invoice reference, item, quantity, rate and value | Link each receipt to resulting stock movements | Purchase/ledger reconciliation |
-| Stock summary | Opening, receipts, production issues, output, dispatch, adjustment, closing | Filter by item/category/location/period | Opening + movements = closing |
-| Stock ledger | Chronological movements and source documents | No unexplained manual balance row; export preserves movement identifiers | Source-link test |
-| Production report | BOM, planned vs actual, output, waste, cost and tolerance flags | Explain calculation method and unit base | Benchmark variance test |
-| Collections | Payment receipts and invoice allocations | Unallocated payment clearly separated | Allocation reconciliation |
-| Receivables ageing | Customer/invoice/due date/balance/age bucket | Ageing needs invoice and due dates; benchmark dates must be seeded/documented | Ageing boundary tests |
-| Audit trail | Actor, time, entity, action, change summary, reason | Read-only; protect personal data; filters and export | Audit coverage tests |
-| Export preview | Chosen report, date range, filters, row count and format | Same source query and filters as on-screen report | Export-versus-screen totals |
+| Screen              | Main content and interaction                                                    | Critical states / UX rules                                                    | Verification                   |
+| ------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------ |
+| Report centre       | Report cards grouped by Sales, Tax, Stock, Production, Finance                  | Show supported date filters and export types                                  | Coverage test                  |
+| Sales register      | Invoice number/date/customer/product/taxable value/tax/total/status             | Drill down to immutable invoice lines                                         | Totals reconcile with invoices |
+| GST outward summary | Intra/inter-state taxable values and tax components; HSN summaries if supported | Clearly label as a summary shaped for reconciliation, not a filed return      | Tax aggregation test           |
+| Purchase register   | Supplier, receipt/invoice reference, item, quantity, rate and value             | Link each receipt to resulting stock movements                                | Purchase/ledger reconciliation |
+| Stock summary       | Opening, receipts, production issues, output, dispatch, adjustment, closing     | Filter by item/category/location/period                                       | Opening + movements = closing  |
+| Stock ledger        | Chronological movements and source documents                                    | No unexplained manual balance row; export preserves movement identifiers      | Source-link test               |
+| Production report   | BOM, planned vs actual, output, waste, cost and tolerance flags                 | Explain calculation method and unit base                                      | Benchmark variance test        |
+| Collections         | Payment receipts and invoice allocations                                        | Unallocated payment clearly separated                                         | Allocation reconciliation      |
+| Receivables ageing  | Customer/invoice/due date/balance/age bucket                                    | Ageing needs invoice and due dates; benchmark dates must be seeded/documented | Ageing boundary tests          |
+| Audit trail         | Actor, time, entity, action, change summary, reason                             | Read-only; protect personal data; filters and export                          | Audit coverage tests           |
+| Export preview      | Chosen report, date range, filters, row count and format                        | Same source query and filters as on-screen report                             | Export-versus-screen totals    |
 
 ## 4.6 Owner experience
 
@@ -504,13 +505,13 @@ Reports are read models over posted business documents and ledgers. A user choos
 
 **Product:** Murukku 200 g. One batch expects 200 packets.
 
-| BOM item | Planned per batch | Rate / valuation input |
-|---|---:|---:|
-| Flour | 40 kg | Opening 100 kg @ ₹42/kg; purchase 60 kg @ ₹45/kg |
-| Cooking oil | 10 L | ₹140/L |
-| Salt and spice mix | 1.2 kg | ₹200/kg |
-| 200 g pouch | 200 pieces | ₹2.50/piece |
-| Carton (20 packets) | 10 pieces | ₹15/piece |
+| BOM item            | Planned per batch |                           Rate / valuation input |
+| ------------------- | ----------------: | -----------------------------------------------: |
+| Flour               |             40 kg | Opening 100 kg @ ₹42/kg; purchase 60 kg @ ₹45/kg |
+| Cooking oil         |              10 L |                                           ₹140/L |
+| Salt and spice mix  |            1.2 kg |                                          ₹200/kg |
+| 200 g pouch         |        200 pieces |                                      ₹2.50/piece |
+| Carton (20 packets) |         10 pieces |                                        ₹15/piece |
 
 Opening stock: flour 100 kg; oil 30 L; spice mix 5 kg; pouches 500; cartons 30; finished Murukku 200 g 50 packets. Selling price ₹50/packet before tax. Benchmark GST 5%. Factory state Tamil Nadu.
 
@@ -528,23 +529,23 @@ Opening stock: flour 100 kg; oil 30 L; spice mix 5 kg; pouches 500; cartons 30; 
 
 ## 6.3 Required benchmark assertions
 
-| Assertion | Formula | Expected |
-|---|---|---:|
-| Flour closing | 100 + 60 − 40 | 120 kg |
-| Oil closing | 30 − 10.5 | 19.5 L |
-| Spice closing | 5 − 1.2 | 3.8 kg |
-| Pouch closing | 500 − 188 − 6 | 306 pieces |
-| Carton closing | 30 − 9 | 21 pieces |
-| Finished goods after run | 50 + 188 | 238 packets |
-| Finished goods after Retailer A dispatch | 238 − 150 | 88 packets |
-| Yield variance | (188 − 200) / 200 | −6%, flagged |
-| Oil consumption variance | (10.5 − 10) / 10 | +5%, flagged |
-| Taxable invoice value | 150 × ₹50 | ₹7,500 |
-| CGST | ₹7,500 × 2.5% | ₹187.50 |
-| SGST | ₹7,500 × 2.5% | ₹187.50 |
-| Invoice total | ₹7,500 + ₹187.50 + ₹187.50 | ₹7,875 |
-| Retailer A outstanding | ₹7,875 − ₹4,000 | ₹3,875 |
-| Distributor B shortage | 120 − 88 available | 32 packets |
+| Assertion                                | Formula                    |     Expected |
+| ---------------------------------------- | -------------------------- | -----------: |
+| Flour closing                            | 100 + 60 − 40              |       120 kg |
+| Oil closing                              | 30 − 10.5                  |       19.5 L |
+| Spice closing                            | 5 − 1.2                    |       3.8 kg |
+| Pouch closing                            | 500 − 188 − 6              |   306 pieces |
+| Carton closing                           | 30 − 9                     |    21 pieces |
+| Finished goods after run                 | 50 + 188                   |  238 packets |
+| Finished goods after Retailer A dispatch | 238 − 150                  |   88 packets |
+| Yield variance                           | (188 − 200) / 200          | −6%, flagged |
+| Oil consumption variance                 | (10.5 − 10) / 10           | +5%, flagged |
+| Taxable invoice value                    | 150 × ₹50                  |       ₹7,500 |
+| CGST                                     | ₹7,500 × 2.5%              |      ₹187.50 |
+| SGST                                     | ₹7,500 × 2.5%              |      ₹187.50 |
+| Invoice total                            | ₹7,500 + ₹187.50 + ₹187.50 |       ₹7,875 |
+| Retailer A outstanding                   | ₹7,875 − ₹4,000            |       ₹3,875 |
+| Distributor B shortage                   | 120 − 88 available         |   32 packets |
 
 ## 6.4 Recommended costing method: weighted average
 
@@ -556,19 +557,19 @@ Available flour = `160 kg`; available value = `₹6,900`
 Weighted-average flour rate = `₹6,900 / 160 = ₹43.125/kg`  
 Flour consumed = `40 × ₹43.125 = ₹1,725`
 
-| Cost component | Calculation | Cost |
-|---|---:|---:|
-| Flour | 40 × ₹43.125 | ₹1,725 |
-| Oil | 10.5 × ₹140 | ₹1,470 |
-| Spice mix | 1.2 × ₹200 | ₹240 |
-| Pouches | (188 good + 6 damaged) × ₹2.50 | ₹485 |
-| Cartons | 9 × ₹15 | ₹135 |
-| **Direct material + packaging** | | **₹4,055** |
-| Labour | Direct run cost | ₹1,200 |
-| Gas/power | Direct run cost | ₹600 |
-| **Total run cost** | | **₹5,855** |
-| Good output | | **188 packets** |
-| **Cost per good packet** | ₹5,855 / 188 | **₹31.1436 ≈ ₹31.14** |
+| Cost component                  |                    Calculation |                  Cost |
+| ------------------------------- | -----------------------------: | --------------------: |
+| Flour                           |                   40 × ₹43.125 |                ₹1,725 |
+| Oil                             |                    10.5 × ₹140 |                ₹1,470 |
+| Spice mix                       |                     1.2 × ₹200 |                  ₹240 |
+| Pouches                         | (188 good + 6 damaged) × ₹2.50 |                  ₹485 |
+| Cartons                         |                        9 × ₹15 |                  ₹135 |
+| **Direct material + packaging** |                                |            **₹4,055** |
+| Labour                          |                Direct run cost |                ₹1,200 |
+| Gas/power                       |                Direct run cost |                  ₹600 |
+| **Total run cost**              |                                |            **₹5,855** |
+| Good output                     |                                |       **188 packets** |
+| **Cost per good packet**        |                   ₹5,855 / 188 | **₹31.1436 ≈ ₹31.14** |
 
 Selling price excluding GST is ₹50. Approximate gross contribution is ₹18.86 per good packet and 37.71% of selling price, before any other excluded costs. The cost denominator is 188 good packets, not the 200 planned packets.
 
@@ -606,30 +607,30 @@ The scenario does not specify invoice date, GSTIN, HSN, address, due date or pay
 
 ## 7.1 Recommended stack
 
-| Concern | Decision | Why |
-|---|---|---|
-| Language | TypeScript, strict mode | Shared contracts and fewer runtime shape mistakes |
-| Frontend | React + Vite | Efficient SPA/PWA for distinct role workspaces |
-| Routing | React Router Data Router with `createBrowserRouter` | Nested layouts, loaders, route-level error handling and lazy route modules |
-| Server-state/cache | TanStack Query v5 | Query caching, invalidation and mutation lifecycle |
-| HTTP | Axios | Centralized API client, timeout/interceptor/error mapping |
-| Forms | React Hook Form + Zod | Fast forms and shared runtime validation patterns |
-| UI primitives | Radix UI; shadcn/ui selectively | Accessible primitives and control over visual implementation |
-| Styling | Tailwind CSS + design tokens | Consistent responsive layout and theming |
-| Tables | TanStack Table | Dense admin/audit tables with controlled state |
-| Icons | Lucide React | Consistent, recognizable icons |
-| PWA | `vite-plugin-pwa` + Workbox `injectManifest` | Custom service worker and controlled cache policy |
-| Local offline database | Dexie over IndexedDB | Structured, indexed local catalogue and outbox |
-| Backend | Node.js + Express + TypeScript | One modular API service |
-| Authentication | Better Auth, subject to pinned adapter compatibility | Session-based auth with Prisma/PostgreSQL integration |
-| Authorization | Application-owned RBAC + ABAC policy layer | Business-specific role and record-level access |
-| Database | PostgreSQL | Relational integrity, exact numeric types, transactions and row-level security capability |
-| ORM | Prisma 7 + PostgreSQL driver adapter for initial baseline | Familiar schema/migrations/client; raw SQL remains available for locking and reports |
-| Validation | Zod at API boundary | Reject invalid external input before business logic |
-| Logging | Pino or equivalent structured logger | Correlation IDs and actionable operational logs |
-| Tests | Vitest, Supertest, Playwright | Unit, API and full user-flow coverage |
-| Accessibility tests | axe-core with Playwright + manual review | Automated checks plus keyboard/screen-reader verification |
-| Package manager | pnpm workspaces | Shared contracts without a complex monorepo framework |
+| Concern                | Decision                                                  | Why                                                                                       |
+| ---------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Language               | TypeScript, strict mode                                   | Shared contracts and fewer runtime shape mistakes                                         |
+| Frontend               | React + Vite                                              | Efficient SPA/PWA for distinct role workspaces                                            |
+| Routing                | React Router Data Router with `createBrowserRouter`       | Nested layouts, loaders, route-level error handling and lazy route modules                |
+| Server-state/cache     | TanStack Query v5                                         | Query caching, invalidation and mutation lifecycle                                        |
+| HTTP                   | Axios                                                     | Centralized API client, timeout/interceptor/error mapping                                 |
+| Forms                  | React Hook Form + Zod                                     | Fast forms and shared runtime validation patterns                                         |
+| UI primitives          | Radix UI; shadcn/ui selectively                           | Accessible primitives and control over visual implementation                              |
+| Styling                | Tailwind CSS + design tokens                              | Consistent responsive layout and theming                                                  |
+| Tables                 | TanStack Table                                            | Dense admin/audit tables with controlled state                                            |
+| Icons                  | Lucide React                                              | Consistent, recognizable icons                                                            |
+| PWA                    | `vite-plugin-pwa` + Workbox `injectManifest`              | Custom service worker and controlled cache policy                                         |
+| Local offline database | Dexie over IndexedDB                                      | Structured, indexed local catalogue and outbox                                            |
+| Backend                | Node.js + Express + TypeScript                            | One modular API service                                                                   |
+| Authentication         | Better Auth, subject to pinned adapter compatibility      | Session-based auth with Prisma/PostgreSQL integration                                     |
+| Authorization          | Application-owned RBAC + ABAC policy layer                | Business-specific role and record-level access                                            |
+| Database               | PostgreSQL                                                | Relational integrity, exact numeric types, transactions and row-level security capability |
+| ORM                    | Prisma 7 + PostgreSQL driver adapter for initial baseline | Familiar schema/migrations/client; raw SQL remains available for locking and reports      |
+| Validation             | Zod at API boundary                                       | Reject invalid external input before business logic                                       |
+| Logging                | Pino or equivalent structured logger                      | Correlation IDs and actionable operational logs                                           |
+| Tests                  | Vitest, Supertest, Playwright                             | Unit, API and full user-flow coverage                                                     |
+| Accessibility tests    | axe-core with Playwright + manual review                  | Automated checks plus keyboard/screen-reader verification                                 |
+| Package manager        | pnpm workspaces                                           | Shared contracts without a complex monorepo framework                                     |
 
 **Version note checked 17 Nov 2026:** React Router's current documentation exposes `createBrowserRouter` as a Data Router API. Better Auth's current Prisma adapter guide explicitly documents Prisma 7 with PostgreSQL and warns that its adapter does not yet support Prisma ORM 8; install matching Prisma 7 packages explicitly rather than using unqualified `latest`. Revalidate package versions and peer dependencies at implementation start.
 
@@ -746,28 +747,28 @@ Do not create every file if a module is tiny; consistency matters more than cere
 
 ## 7.6 Suggested endpoint map
 
-| Domain | Example endpoint | Purpose |
-|---|---|---|
-| Session | `GET /api/v1/me` | Current user, roles and allowed workspace context |
-| Masters | `GET /api/v1/customers/assigned` | Salesman's assigned customer catalogue |
-| Masters | `GET /api/v1/products/catalog` | Active product variants and effective price data |
-| Purchases | `POST /api/v1/purchase-receipts` | Create/post a receipt, with idempotency |
-| Inventory | `GET /api/v1/inventory/balances` | On-hand/reserved/available balances |
-| Inventory | `GET /api/v1/inventory/items/:id/ledger` | Movement history and source documents |
-| Production | `POST /api/v1/production-runs` | Create draft run using a BOM version |
-| Production | `POST /api/v1/production-runs/:id/post` | Atomically post consumption, output, cost and audit |
-| Orders | `POST /api/v1/orders` | Submit online order with idempotency key |
-| Orders | `GET /api/v1/orders/mine` | Salesman's own orders |
-| Admin orders | `POST /api/v1/orders/:id/approve` | Approve and reserve stock transactionally |
-| Admin orders | `POST /api/v1/orders/:id/reject` | Reject with reason |
-| Invoices | `POST /api/v1/orders/:id/invoices` | Create/post invoice under numbering/tax rules |
-| Invoices | `GET /api/v1/invoices/:id/pdf` | Retrieve generated invoice PDF |
-| Dispatch | `POST /api/v1/dispatches` | Post dispatch and stock movement |
-| Payments | `POST /api/v1/payments` | Record payment and invoice allocations |
-| Reports | `GET /api/v1/reports/sales-register` | Filtered sales register |
-| Reports | `GET /api/v1/reports/stock-ledger` | Stock movement report |
-| Reports | `POST /api/v1/reports/exports` | Generate downloadable export |
-| Sync | `POST /api/v1/sync/orders` or idempotent `POST /orders` per item | Submit queued orders; return per-item accepted/conflict results |
+| Domain       | Example endpoint                                                 | Purpose                                                         |
+| ------------ | ---------------------------------------------------------------- | --------------------------------------------------------------- |
+| Session      | `GET /api/v1/me`                                                 | Current user, roles and allowed workspace context               |
+| Masters      | `GET /api/v1/customers/assigned`                                 | Salesman's assigned customer catalogue                          |
+| Masters      | `GET /api/v1/products/catalog`                                   | Active product variants and effective price data                |
+| Purchases    | `POST /api/v1/purchase-receipts`                                 | Create/post a receipt, with idempotency                         |
+| Inventory    | `GET /api/v1/inventory/balances`                                 | On-hand/reserved/available balances                             |
+| Inventory    | `GET /api/v1/inventory/items/:id/ledger`                         | Movement history and source documents                           |
+| Production   | `POST /api/v1/production-runs`                                   | Create draft run using a BOM version                            |
+| Production   | `POST /api/v1/production-runs/:id/post`                          | Atomically post consumption, output, cost and audit             |
+| Orders       | `POST /api/v1/orders`                                            | Submit online order with idempotency key                        |
+| Orders       | `GET /api/v1/orders/mine`                                        | Salesman's own orders                                           |
+| Admin orders | `POST /api/v1/orders/:id/approve`                                | Approve and reserve stock transactionally                       |
+| Admin orders | `POST /api/v1/orders/:id/reject`                                 | Reject with reason                                              |
+| Invoices     | `POST /api/v1/orders/:id/invoices`                               | Create/post invoice under numbering/tax rules                   |
+| Invoices     | `GET /api/v1/invoices/:id/pdf`                                   | Retrieve generated invoice PDF                                  |
+| Dispatch     | `POST /api/v1/dispatches`                                        | Post dispatch and stock movement                                |
+| Payments     | `POST /api/v1/payments`                                          | Record payment and invoice allocations                          |
+| Reports      | `GET /api/v1/reports/sales-register`                             | Filtered sales register                                         |
+| Reports      | `GET /api/v1/reports/stock-ledger`                               | Stock movement report                                           |
+| Reports      | `POST /api/v1/reports/exports`                                   | Generate downloadable export                                    |
+| Sync         | `POST /api/v1/sync/orders` or idempotent `POST /orders` per item | Submit queued orders; return per-item accepted/conflict results |
 
 Use a single-order submission endpoint first. Add batch sync only if it provides measurable reliability or efficiency benefits. Every order in a batch still needs its own idempotency key and result.
 
@@ -796,144 +797,144 @@ The following is the proposed logical schema. Exact field names can be refined d
 
 ### A. Organization, identity and authorization
 
-| Table | Important fields | Purpose / key constraints |
-|---|---|---|
-| `organizations` | id, name, legal_name, state_code, GSTIN, currency, timezone | One company for the prototype; keep org scope available for safe future growth |
-| `facilities` | id, organization_id, name, state_code, active | One factory initially |
-| `warehouses` | id, facility_id, code, name | Main raw/packaging/finished warehouse; optional finer locations later |
-| `users` | id, auth identity fields, display_name, active | Prefer Better Auth-managed user/session/account tables where applicable |
-| `roles` | id, code, name | SALESMAN, ADMIN, PRODUCTION, ACCOUNTANT, OWNER |
-| `permissions` | id, code, description | Atomic capabilities such as `orders.approve` |
-| `role_permissions` | role_id, permission_id | RBAC assignment |
-| `user_roles` | user_id, role_id, organization_id, facility_id, active | Scope role to company/facility if needed |
-| `salesman_customer_assignments` | user_id, customer_id, valid_from, valid_to | ABAC filter for customer/order visibility |
-| `user_devices` | id, user_id, device label, last_seen_at, revoked_at | Optional device/session visibility for shared devices |
+| Table                           | Important fields                                            | Purpose / key constraints                                                      |
+| ------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `organizations`                 | id, name, legal_name, state_code, GSTIN, currency, timezone | One company for the prototype; keep org scope available for safe future growth |
+| `facilities`                    | id, organization_id, name, state_code, active               | One factory initially                                                          |
+| `warehouses`                    | id, facility_id, code, name                                 | Main raw/packaging/finished warehouse; optional finer locations later          |
+| `users`                         | id, auth identity fields, display_name, active              | Prefer Better Auth-managed user/session/account tables where applicable        |
+| `roles`                         | id, code, name                                              | SALESMAN, ADMIN, PRODUCTION, ACCOUNTANT, OWNER                                 |
+| `permissions`                   | id, code, description                                       | Atomic capabilities such as `orders.approve`                                   |
+| `role_permissions`              | role_id, permission_id                                      | RBAC assignment                                                                |
+| `user_roles`                    | user_id, role_id, organization_id, facility_id, active      | Scope role to company/facility if needed                                       |
+| `salesman_customer_assignments` | user_id, customer_id, valid_from, valid_to                  | ABAC filter for customer/order visibility                                      |
+| `user_devices`                  | id, user_id, device label, last_seen_at, revoked_at         | Optional device/session visibility for shared devices                          |
 
 **Better Auth note:** Keep its generated auth/session/account/verification model compatible with the pinned Prisma adapter. Do not manually fork auth tables unless there is a clear requirement.
 
 ### B. Customers, suppliers and parties
 
-| Table | Important fields | Purpose / key constraints |
-|---|---|---|
-| `customers` | id, code, name, kind (RETAILER/DISTRIBUTOR), phone, active, assigned metadata | Business customer master |
-| `customer_addresses` | id, customer_id, address fields, state_code, is_default, active | Billing and delivery addresses |
-| `customer_tax_registrations` | id, customer_id, GSTIN, state_code, valid_from/to | Tax registration snapshots/reference |
-| `suppliers` | id, code, name, phone, address, GSTIN, state_code, active | Supplier master |
-| `supplier_addresses` | id, supplier_id, address fields, state_code | Optional multiple addresses |
+| Table                        | Important fields                                                              | Purpose / key constraints            |
+| ---------------------------- | ----------------------------------------------------------------------------- | ------------------------------------ |
+| `customers`                  | id, code, name, kind (RETAILER/DISTRIBUTOR), phone, active, assigned metadata | Business customer master             |
+| `customer_addresses`         | id, customer_id, address fields, state_code, is_default, active               | Billing and delivery addresses       |
+| `customer_tax_registrations` | id, customer_id, GSTIN, state_code, valid_from/to                             | Tax registration snapshots/reference |
+| `suppliers`                  | id, code, name, phone, address, GSTIN, state_code, active                     | Supplier master                      |
+| `supplier_addresses`         | id, supplier_id, address fields, state_code                                   | Optional multiple addresses          |
 
 ### C. Product, inventory item and units
 
-| Table | Important fields | Purpose / key constraints |
-|---|---|---|
-| `products` | id, code, name, description, active | Product family, e.g. Murukku |
-| `product_variants` | id, product_id, SKU, pack_size_value, pack_size_uom, finished_inventory_item_id, HSN/tax category | Sellable unit such as Murukku 200 g; unique SKU |
-| `inventory_items` | id, code, name, category (RAW/PACKAGING/FINISHED/WIP), base_uom_id, active, track_lot | Stock-controlled item |
-| `units_of_measure` | id, code, label, dimension (MASS/VOLUME/COUNT), precision | kg, g, L, ml, piece, packet, carton |
-| `unit_conversions` | from_uom_id, to_uom_id, factor, item_scope optional | Explicit dimensionally valid conversion; avoid converting mass to volume without item-specific density |
-| `price_lists` | id, name, currency, effective_from/to, status | Price book version |
-| `price_list_lines` | price_list_id, product_variant_id, unit_price, tax-inclusion mode | Effective sell price |
-| `customer_price_overrides` | customer_id, product_variant_id, price, valid_from/to, reason | Optional customer-specific pricing |
+| Table                      | Important fields                                                                                  | Purpose / key constraints                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `products`                 | id, code, name, description, active                                                               | Product family, e.g. Murukku                                                                           |
+| `product_variants`         | id, product_id, SKU, pack_size_value, pack_size_uom, finished_inventory_item_id, HSN/tax category | Sellable unit such as Murukku 200 g; unique SKU                                                        |
+| `inventory_items`          | id, code, name, category (RAW/PACKAGING/FINISHED/WIP), base_uom_id, active, track_lot             | Stock-controlled item                                                                                  |
+| `units_of_measure`         | id, code, label, dimension (MASS/VOLUME/COUNT), precision                                         | kg, g, L, ml, piece, packet, carton                                                                    |
+| `unit_conversions`         | from_uom_id, to_uom_id, factor, item_scope optional                                               | Explicit dimensionally valid conversion; avoid converting mass to volume without item-specific density |
+| `price_lists`              | id, name, currency, effective_from/to, status                                                     | Price book version                                                                                     |
+| `price_list_lines`         | price_list_id, product_variant_id, unit_price, tax-inclusion mode                                 | Effective sell price                                                                                   |
+| `customer_price_overrides` | customer_id, product_variant_id, price, valid_from/to, reason                                     | Optional customer-specific pricing                                                                     |
 
 **Important unit rule:** kg ↔ g and L ↔ ml are valid conversions. A carton ↔ packet conversion is item/pack-specific (e.g. 1 Murukku carton = 20 packets); do not treat it as a universal unit conversion.
 
 ### D. Tax and invoice configuration
 
-| Table | Important fields | Purpose / key constraints |
-|---|---|---|
-| `hsn_codes` | id, code, description, active | HSN master; dummy value only for assignment if not supplied |
-| `tax_categories` | id, code, description | Tax classification associated with product |
-| `tax_rates` | id, tax_category_id, rate, component, effective_from/to, jurisdiction | Effective-dated rate; exercise rate 5% is seeded, not hardcoded |
-| `invoice_sequences` | organization_id, financial_year, series, next_number, max-length config | Locked sequence allocation; unique FY/series |
-| `company_tax_profiles` | organization_id, GSTIN, legal name/address, state_code, valid_from/to | Supplier details snapshot source |
+| Table                  | Important fields                                                        | Purpose / key constraints                                       |
+| ---------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `hsn_codes`            | id, code, description, active                                           | HSN master; dummy value only for assignment if not supplied     |
+| `tax_categories`       | id, code, description                                                   | Tax classification associated with product                      |
+| `tax_rates`            | id, tax_category_id, rate, component, effective_from/to, jurisdiction   | Effective-dated rate; exercise rate 5% is seeded, not hardcoded |
+| `invoice_sequences`    | organization_id, financial_year, series, next_number, max-length config | Locked sequence allocation; unique FY/series                    |
+| `company_tax_profiles` | organization_id, GSTIN, legal name/address, state_code, valid_from/to   | Supplier details snapshot source                                |
 
 ### E. Recipe and production specification
 
 A product formula and the pack-size/packaging specification should be separable. This supports the interview's example of adding a 500 g variant while reusing the same underlying recipe where the production process permits it.
 
-| Table | Important fields | Purpose / key constraints |
-|---|---|---|
-| `recipes` | id, product_id, code, name | Shared food formulation |
-| `recipe_versions` | id, recipe_id, version, status, effective_from/to, notes | Historical recipe version |
-| `recipe_components` | id, recipe_version_id, inventory_item_id, qty_per_base_batch, uom_id | Flour, oil, spice components |
-| `production_specifications` | id, product_variant_id, recipe_version_id, expected_output_qty, output_uom_id, batch_basis, version, status | Maps recipe to sellable SKU and expected yield |
-| `production_packaging_lines` | id, production_specification_id, inventory_item_id, standard_qty, uom_id, capacity_per_pack optional | Pouches, cartons, labels; supports pack-specific packaging |
-| `variance_policies` | id, metric_code, tolerance_pct, severity, effective_from/to | e.g. 3% threshold; policy must be configurable |
+| Table                        | Important fields                                                                                            | Purpose / key constraints                                  |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `recipes`                    | id, product_id, code, name                                                                                  | Shared food formulation                                    |
+| `recipe_versions`            | id, recipe_id, version, status, effective_from/to, notes                                                    | Historical recipe version                                  |
+| `recipe_components`          | id, recipe_version_id, inventory_item_id, qty_per_base_batch, uom_id                                        | Flour, oil, spice components                               |
+| `production_specifications`  | id, product_variant_id, recipe_version_id, expected_output_qty, output_uom_id, batch_basis, version, status | Maps recipe to sellable SKU and expected yield             |
+| `production_packaging_lines` | id, production_specification_id, inventory_item_id, standard_qty, uom_id, capacity_per_pack optional        | Pouches, cartons, labels; supports pack-specific packaging |
+| `variance_policies`          | id, metric_code, tolerance_pct, severity, effective_from/to                                                 | e.g. 3% threshold; policy must be configurable             |
 
 If a simpler BOM-per-SKU model is chosen for the MVP, preserve versioning and keep the component model reusable. Do not duplicate all ingredient recipes for every pack size without a reason.
 
 ### F. Purchasing
 
-| Table | Important fields | Purpose / key constraints |
-|---|---|---|
-| `purchase_receipts` | id, organization_id, supplier_id, receipt_no, supplier_reference, received_at, status, created_by | Stock-receipt document |
-| `purchase_receipt_lines` | id, receipt_id, inventory_item_id, qty, uom_id, normalized_qty, unit_rate, line_value, lot_id optional | Quantity/rate snapshot |
-| `supplier_invoices` | id, supplier_id, supplier_invoice_no, invoice_date, taxable_value, tax fields, total | Optional purchase register financial document; distinguish receipt date from supplier invoice date |
+| Table                    | Important fields                                                                                       | Purpose / key constraints                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `purchase_receipts`      | id, organization_id, supplier_id, receipt_no, supplier_reference, received_at, status, created_by      | Stock-receipt document                                                                             |
+| `purchase_receipt_lines` | id, receipt_id, inventory_item_id, qty, uom_id, normalized_qty, unit_rate, line_value, lot_id optional | Quantity/rate snapshot                                                                             |
+| `supplier_invoices`      | id, supplier_id, supplier_invoice_no, invoice_date, taxable_value, tax fields, total                   | Optional purchase register financial document; distinguish receipt date from supplier invoice date |
 
 A direct purchase receipt is sufficient for the benchmark; purchase orders can be a later addition.
 
 ### G. Production transactions
 
-| Table | Important fields | Purpose / key constraints |
-|---|---|---|
-| `production_runs` | id, run_no, product_variant_id, production_specification_id, status, planned_batches, expected_output, actual_good_output, run_date, posted_at, created_by | Draft-to-posted manufacturing document |
-| `production_material_lines` | id, production_run_id, inventory_item_id, planned_qty, actual_consumed_qty, damaged_qty, returned_qty, uom_id, unit_cost_snapshot, cost_value | Actual material/packaging use by component |
-| `production_output_lines` | id, production_run_id, product_variant_id, planned_qty, good_qty, rejected_qty, uom_id | Finished output and rejects |
-| `production_cost_entries` | id, production_run_id, cost_type, amount, currency, allocation_method, note | Labour, gas, power, other overhead |
-| `production_variances` | id, production_run_id, metric_code, planned_value, actual_value, delta, variance_pct, threshold_pct, severity | Saved calculation snapshot |
-| `production_run_reversals` | id, original_run_id, reversal_run_id, reason, created_by | Correct posted run without destructive edit |
+| Table                       | Important fields                                                                                                                                           | Purpose / key constraints                   |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `production_runs`           | id, run_no, product_variant_id, production_specification_id, status, planned_batches, expected_output, actual_good_output, run_date, posted_at, created_by | Draft-to-posted manufacturing document      |
+| `production_material_lines` | id, production_run_id, inventory_item_id, planned_qty, actual_consumed_qty, damaged_qty, returned_qty, uom_id, unit_cost_snapshot, cost_value              | Actual material/packaging use by component  |
+| `production_output_lines`   | id, production_run_id, product_variant_id, planned_qty, good_qty, rejected_qty, uom_id                                                                     | Finished output and rejects                 |
+| `production_cost_entries`   | id, production_run_id, cost_type, amount, currency, allocation_method, note                                                                                | Labour, gas, power, other overhead          |
+| `production_variances`      | id, production_run_id, metric_code, planned_value, actual_value, delta, variance_pct, threshold_pct, severity                                              | Saved calculation snapshot                  |
+| `production_run_reversals`  | id, original_run_id, reversal_run_id, reason, created_by                                                                                                   | Correct posted run without destructive edit |
 
 ### H. Inventory and traceability
 
-| Table | Important fields | Purpose / key constraints |
-|---|---|---|
-| `stock_documents` | id, document_type, document_no, organization_id, status, source_record_id | Common source-document anchor for movement traceability |
-| `inventory_transactions` | id, stock_document_id, warehouse_id, transaction_type, posted_at, created_by | A posting event groups one or more movements |
-| `stock_movements` | id, inventory_transaction_id, inventory_item_id, quantity_delta_base, base_uom_id, unit_cost_snapshot, value_delta, lot_id nullable, source_line_id nullable | Append-only signed stock movement rows |
-| `inventory_balances` | inventory_item_id, warehouse_id, location_id nullable, on_hand_qty, reserved_qty, updated_at | Projection/cache; must reconcile to ledger and reservation table |
-| `stock_reservations` | id, order_line_id, inventory_item_id, warehouse_id, qty_base, status, created_at, released_at | Commitment against available stock; not a physical stock movement |
-| `inventory_adjustments` | id, reason_code, reason_text, requested_by, approved_by, status | Controlled correction document |
-| `inventory_lots` | id, inventory_item_id, lot_no, received_at, manufacture_date, expiry_date, supplier_id | Optional now; required for future FEFO/traceability |
-| `inventory_cost_layers` | id, inventory_item_id, received_qty, remaining_qty, unit_cost, received_at, source_movement_id | Needed if FIFO chosen; not necessary for weighted average MVP |
-| `inventory_valuations` | inventory_item_id, warehouse_id, average_unit_cost, valuation_qty, valuation_value, updated_at | Moving weighted-average projection |
+| Table                    | Important fields                                                                                                                                             | Purpose / key constraints                                         |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `stock_documents`        | id, document_type, document_no, organization_id, status, source_record_id                                                                                    | Common source-document anchor for movement traceability           |
+| `inventory_transactions` | id, stock_document_id, warehouse_id, transaction_type, posted_at, created_by                                                                                 | A posting event groups one or more movements                      |
+| `stock_movements`        | id, inventory_transaction_id, inventory_item_id, quantity_delta_base, base_uom_id, unit_cost_snapshot, value_delta, lot_id nullable, source_line_id nullable | Append-only signed stock movement rows                            |
+| `inventory_balances`     | inventory_item_id, warehouse_id, location_id nullable, on_hand_qty, reserved_qty, updated_at                                                                 | Projection/cache; must reconcile to ledger and reservation table  |
+| `stock_reservations`     | id, order_line_id, inventory_item_id, warehouse_id, qty_base, status, created_at, released_at                                                                | Commitment against available stock; not a physical stock movement |
+| `inventory_adjustments`  | id, reason_code, reason_text, requested_by, approved_by, status                                                                                              | Controlled correction document                                    |
+| `inventory_lots`         | id, inventory_item_id, lot_no, received_at, manufacture_date, expiry_date, supplier_id                                                                       | Optional now; required for future FEFO/traceability               |
+| `inventory_cost_layers`  | id, inventory_item_id, received_qty, remaining_qty, unit_cost, received_at, source_movement_id                                                               | Needed if FIFO chosen; not necessary for weighted average MVP     |
+| `inventory_valuations`   | inventory_item_id, warehouse_id, average_unit_cost, valuation_qty, valuation_value, updated_at                                                               | Moving weighted-average projection                                |
 
 **Ledger design:** Every stock-changing event produces an immutable `stock_movements` row. Its source must resolve to a posted document. `inventory_balances` can be updated in the same transaction for fast display, but a reconciliation query must be able to recalculate the balance from movements and compare it to the projection.
 
 ### I. Sales, invoices, dispatch and returns
 
-| Table | Important fields | Purpose / key constraints |
-|---|---|---|
-| `sales_orders` | id, order_no, customer_id, salesman_id, status, submitted_at, requested_delivery_date, source_device_id, idempotency_key | Server-accepted order; unique idempotency key per scope |
-| `sales_order_lines` | id, order_id, product_variant_id, quantity, uom_id, quoted_unit_price, approved_unit_price, price_list_version, line_discount, line_total | Preserve submitted and approved price separately |
-| `order_events` | id, order_id, event_type, actor_id, event_at, reason, payload_summary | Timeline and approval history |
-| `order_approvals` | id, order_id, decision, approved_by, decision_at, reason | Approval/rejection decision |
-| `sales_invoices` | id, invoice_no, financial_year, order_id, customer snapshot fields, issue_date, place_of_supply, taxable_value, total_tax, grand_total, status, posted_at | Immutable tax invoice |
-| `sales_invoice_lines` | id, invoice_id, product/SKU snapshot, HSN, description, quantity, unit, rate, discount, taxable_value | Immutable invoice line snapshot |
-| `invoice_tax_lines` | id, invoice_line_id, component (CGST/SGST/IGST), rate, taxable_base, tax_amount | Tax breakdown |
-| `credit_notes` | id, credit_note_no, invoice_id, issue_date, reason, taxable_value, tax_amount, total | Invoice correction/return financial document |
-| `dispatches` | id, dispatch_no, order_id, invoice_id nullable, dispatched_at, status, created_by | Physical fulfilment document |
-| `dispatch_lines` | id, dispatch_id, order_line_id, product_variant_id, quantity, warehouse_id | Actual quantity shipped; each line creates a stock movement |
-| `sales_returns` | id, return_no, dispatch_id, reason, received_at, status | Returned goods receipt |
-| `sales_return_lines` | id, sales_return_id, product_variant_id, quantity, disposition | Restock, quarantine or scrap disposition |
+| Table                 | Important fields                                                                                                                                          | Purpose / key constraints                                   |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `sales_orders`        | id, order_no, customer_id, salesman_id, status, submitted_at, requested_delivery_date, source_device_id, idempotency_key                                  | Server-accepted order; unique idempotency key per scope     |
+| `sales_order_lines`   | id, order_id, product_variant_id, quantity, uom_id, quoted_unit_price, approved_unit_price, price_list_version, line_discount, line_total                 | Preserve submitted and approved price separately            |
+| `order_events`        | id, order_id, event_type, actor_id, event_at, reason, payload_summary                                                                                     | Timeline and approval history                               |
+| `order_approvals`     | id, order_id, decision, approved_by, decision_at, reason                                                                                                  | Approval/rejection decision                                 |
+| `sales_invoices`      | id, invoice_no, financial_year, order_id, customer snapshot fields, issue_date, place_of_supply, taxable_value, total_tax, grand_total, status, posted_at | Immutable tax invoice                                       |
+| `sales_invoice_lines` | id, invoice_id, product/SKU snapshot, HSN, description, quantity, unit, rate, discount, taxable_value                                                     | Immutable invoice line snapshot                             |
+| `invoice_tax_lines`   | id, invoice_line_id, component (CGST/SGST/IGST), rate, taxable_base, tax_amount                                                                           | Tax breakdown                                               |
+| `credit_notes`        | id, credit_note_no, invoice_id, issue_date, reason, taxable_value, tax_amount, total                                                                      | Invoice correction/return financial document                |
+| `dispatches`          | id, dispatch_no, order_id, invoice_id nullable, dispatched_at, status, created_by                                                                         | Physical fulfilment document                                |
+| `dispatch_lines`      | id, dispatch_id, order_line_id, product_variant_id, quantity, warehouse_id                                                                                | Actual quantity shipped; each line creates a stock movement |
+| `sales_returns`       | id, return_no, dispatch_id, reason, received_at, status                                                                                                   | Returned goods receipt                                      |
+| `sales_return_lines`  | id, sales_return_id, product_variant_id, quantity, disposition                                                                                            | Restock, quarantine or scrap disposition                    |
 
 Order state, invoice state and fulfilment state must not be collapsed into one status field. Partial dispatch and return are optional in the source, but the schema should not make them impossible.
 
 ### J. Receipts and receivables
 
-| Table | Important fields | Purpose / key constraints |
-|---|---|---|
-| `payments` | id, receipt_no, customer_id, received_at, amount, method, reference, created_by | Customer receipt |
-| `payment_allocations` | id, payment_id, invoice_id, allocated_amount | One payment can be allocated to one or more invoices; partial payments supported |
-| `receivable_snapshots` | optional materialized fields by invoice/date | Performance only; derived from invoice, credit note and allocations |
+| Table                  | Important fields                                                                | Purpose / key constraints                                                        |
+| ---------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `payments`             | id, receipt_no, customer_id, received_at, amount, method, reference, created_by | Customer receipt                                                                 |
+| `payment_allocations`  | id, payment_id, invoice_id, allocated_amount                                    | One payment can be allocated to one or more invoices; partial payments supported |
+| `receivable_snapshots` | optional materialized fields by invoice/date                                    | Performance only; derived from invoice, credit note and allocations              |
 
 ### K. Audit, sync and exports
 
-| Table | Important fields | Purpose / key constraints |
-|---|---|---|
-| `audit_logs` | id, actor_id, action, entity_type, entity_id, occurred_at, request_id, reason, before_summary, after_summary | Append-only business audit record |
-| `idempotency_records` | id, key, actor_id, operation, request_hash, response_snapshot, status, created_at | Safe retries and duplicate prevention |
-| `sync_devices` | id, user_id, device_id, last_sync_at, app_version, revoked_at | Device sync state without storing secrets |
-| `export_jobs` | id, report_type, filters_json, requested_by, status, file_key, generated_at, expires_at | Auditable asynchronous export where needed |
-| `file_objects` | id, storage_key, mime_type, size, checksum, purpose, created_by | Private PDFs and exports; access through authorization-aware download |
+| Table                 | Important fields                                                                                             | Purpose / key constraints                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `audit_logs`          | id, actor_id, action, entity_type, entity_id, occurred_at, request_id, reason, before_summary, after_summary | Append-only business audit record                                     |
+| `idempotency_records` | id, key, actor_id, operation, request_hash, response_snapshot, status, created_at                            | Safe retries and duplicate prevention                                 |
+| `sync_devices`        | id, user_id, device_id, last_sync_at, app_version, revoked_at                                                | Device sync state without storing secrets                             |
+| `export_jobs`         | id, report_type, filters_json, requested_by, status, file_key, generated_at, expires_at                      | Auditable asynchronous export where needed                            |
+| `file_objects`        | id, storage_key, mime_type, size, checksum, purpose, created_by                                              | Private PDFs and exports; access through authorization-aware download |
 
 ## 8.3 Relationship overview
 
@@ -1092,21 +1093,21 @@ A posted run can only be corrected through a linked reversal/adjustment record w
 
 ## 10.1 Offline scope
 
-| Capability | Offline? | Reason / behaviour |
-|---|---|---|
-| App shell and static assets | Yes | Service worker precache/runtime cache |
-| Assigned customer list | Yes, cached subset | Needed for field work; show last-sync time |
-| Active product catalogue | Yes, cached subset | Needed for order entry |
-| Price list | Yes, cached snapshot | Mark as last-synced/subject to server validation |
-| Create/edit local order draft | Yes | Durable IndexedDB write |
-| Queue order for submission | Yes | Outbox; status remains local/queued |
-| View previously synced own orders | Yes, cached subset | Read-only and timestamped |
-| Approve/reject order | No | Requires server stock and permission check |
-| Reserve stock | No | Must be authoritative and concurrency-safe |
-| Post production run | No | Must atomically update stock ledger |
-| Post GST invoice | No | Requires authoritative numbering/tax/customer data |
-| Dispatch | No | Physical stock transaction must be server-authoritative |
-| Post payment | No | Financial record must be server-authoritative |
+| Capability                        | Offline?             | Reason / behaviour                                      |
+| --------------------------------- | -------------------- | ------------------------------------------------------- |
+| App shell and static assets       | Yes                  | Service worker precache/runtime cache                   |
+| Assigned customer list            | Yes, cached subset   | Needed for field work; show last-sync time              |
+| Active product catalogue          | Yes, cached subset   | Needed for order entry                                  |
+| Price list                        | Yes, cached snapshot | Mark as last-synced/subject to server validation        |
+| Create/edit local order draft     | Yes                  | Durable IndexedDB write                                 |
+| Queue order for submission        | Yes                  | Outbox; status remains local/queued                     |
+| View previously synced own orders | Yes, cached subset   | Read-only and timestamped                               |
+| Approve/reject order              | No                   | Requires server stock and permission check              |
+| Reserve stock                     | No                   | Must be authoritative and concurrency-safe              |
+| Post production run               | No                   | Must atomically update stock ledger                     |
+| Post GST invoice                  | No                   | Requires authoritative numbering/tax/customer data      |
+| Dispatch                          | No                   | Physical stock transaction must be server-authoritative |
+| Post payment                      | No                   | Financial record must be server-authoritative           |
 
 ## 10.2 Storage architecture
 
@@ -1119,8 +1120,8 @@ A posted run can only be corrected through a linked reversal/adjustment record w
 
 ```ts
 interface OfflineOrder {
-  id: string;                 // local UUID
-  idempotencyKey: string;     // unique server-side key
+  id: string; // local UUID
+  idempotencyKey: string; // unique server-side key
   schemaVersion: number;
   userId: string;
   deviceId: string;
@@ -1197,14 +1198,14 @@ The server's idempotency record prevents duplicate acceptance. Inventory is not 
 
 ## 11.2 Responsive behaviour by device
 
-| Context | Layout approach | Interaction details |
-|---|---|---|
-| Small phone (320–390 px) | Single-column, bottom navigation, sticky total/action where useful | Large controls, short labels, no horizontal page scroll |
-| Larger phone | Two-level product list/detail where helpful | One-hand reach for primary actions |
-| Tablet portrait | Two-pane where it reduces navigation; production checklist as stacked cards | Touch-first, landscape not required |
-| Tablet landscape | Production run summary + entry panel | Large numeric inputs and clear confirmation |
-| Desktop | Persistent side navigation, dense tables, split review panels | Keyboard shortcuts where safe, focus-visible controls |
-| Large desktop | Constrained content width; optional multi-column dashboards | Avoid stretching forms and paragraphs across the entire viewport |
+| Context                  | Layout approach                                                             | Interaction details                                              |
+| ------------------------ | --------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Small phone (320–390 px) | Single-column, bottom navigation, sticky total/action where useful          | Large controls, short labels, no horizontal page scroll          |
+| Larger phone             | Two-level product list/detail where helpful                                 | One-hand reach for primary actions                               |
+| Tablet portrait          | Two-pane where it reduces navigation; production checklist as stacked cards | Touch-first, landscape not required                              |
+| Tablet landscape         | Production run summary + entry panel                                        | Large numeric inputs and clear confirmation                      |
+| Desktop                  | Persistent side navigation, dense tables, split review panels               | Keyboard shortcuts where safe, focus-visible controls            |
+| Large desktop            | Constrained content width; optional multi-column dashboards                 | Avoid stretching forms and paragraphs across the entire viewport |
 
 ## 11.3 WCAG 2.2 AA implementation checklist
 
@@ -1262,22 +1263,22 @@ Build a central policy layer and test it. Do not scatter `if (role === ...)` che
 
 ## 12.2 Baseline permission matrix
 
-| Capability | Salesman | Admin | Production | Accountant/auditor | Owner |
-|---|---:|---:|---:|---:|---:|
-| View assigned customers | Yes | Yes | No by default | Read as needed | Summary/read scope |
-| Create own order | Yes | Optional | No | No | No |
-| Read all orders | No | Yes | No by default | Read-only if needed | Summary/drill-down scope |
-| Approve/reject orders | No | Yes | No | No | Optional only if explicitly configured |
-| Edit price list | No | Yes | No | No | Optional |
-| Create purchase receipt | No | Yes/authorized | Authorized if configured | No | Read |
-| Create/post production run | No | Optional admin override | Yes | No | Read |
-| View raw/finished stock | Limited catalogue availability | Yes | Yes | Yes | Yes |
-| Post dispatch | No | Yes | No | No | No |
-| Create/post invoice | No | Yes | No | No | No |
-| Record payment | No | Yes | No | Read-only | Read |
-| Read reports | Own/customer-wise | Yes | Production scope | Yes | Yes |
-| Export reports | No or own summary | Yes | Production scope | Yes | Yes |
-| Edit posted records | No | No direct edit | No direct edit | No | No |
+| Capability                 |                       Salesman |                   Admin |               Production |  Accountant/auditor |                                  Owner |
+| -------------------------- | -----------------------------: | ----------------------: | -----------------------: | ------------------: | -------------------------------------: |
+| View assigned customers    |                            Yes |                     Yes |            No by default |      Read as needed |                     Summary/read scope |
+| Create own order           |                            Yes |                Optional |                       No |                  No |                                     No |
+| Read all orders            |                             No |                     Yes |            No by default | Read-only if needed |               Summary/drill-down scope |
+| Approve/reject orders      |                             No |                     Yes |                       No |                  No | Optional only if explicitly configured |
+| Edit price list            |                             No |                     Yes |                       No |                  No |                               Optional |
+| Create purchase receipt    |                             No |          Yes/authorized | Authorized if configured |                  No |                                   Read |
+| Create/post production run |                             No | Optional admin override |                      Yes |                  No |                                   Read |
+| View raw/finished stock    | Limited catalogue availability |                     Yes |                      Yes |                 Yes |                                    Yes |
+| Post dispatch              |                             No |                     Yes |                       No |                  No |                                     No |
+| Create/post invoice        |                             No |                     Yes |                       No |                  No |                                     No |
+| Record payment             |                             No |                     Yes |                       No |           Read-only |                                   Read |
+| Read reports               |              Own/customer-wise |                     Yes |         Production scope |                 Yes |                                    Yes |
+| Export reports             |              No or own summary |                     Yes |         Production scope |                 Yes |                                    Yes |
+| Edit posted records        |                             No |          No direct edit |           No direct edit |                  No |                                     No |
 
 The owner role should not automatically become a superuser. Explicitly grant only the required read/operational permissions.
 
@@ -1307,19 +1308,19 @@ RLS is an optional defence-in-depth enhancement, not a substitute for applicatio
 
 ## 13.1 Report catalogue
 
-| Report | Core fields | Source data | Required formats |
-|---|---|---|---|
-| Sales register | Invoice no/date/customer/SKU/qty/taxable value/tax/total | Posted invoices | CSV/XLSX/PDF |
-| Customer-wise sales | Customer/date/SKU/qty/value | Posted invoice lines | CSV/XLSX/PDF |
-| Product-wise sales | SKU/pack size/qty/value | Posted invoice lines | CSV/XLSX/PDF |
-| GST outward summary | Place/state, intra/inter-state, taxable value, tax components, HSN grouping where available | Invoice tax snapshots | CSV/XLSX/PDF |
-| Purchase register | Supplier/reference/date/item/qty/rate/value/tax | Purchase receipts and supplier invoices | CSV/XLSX/PDF |
-| Stock summary | Opening/receipts/issues/production/output/dispatch/adjustments/closing | Stock movements | CSV/XLSX/PDF |
-| Stock ledger | Timestamp/item/source/movement/qty/rate/value/running balance | Stock movements | CSV/XLSX/PDF |
-| Production report | Run/BOM version/planned/actual/yield/waste/variance/cost | Production documents | CSV/XLSX/PDF |
-| Collection report | Receipt/date/customer/method/reference/allocated/unallocated | Payments and allocations | CSV/XLSX/PDF |
-| Receivables and ageing | Customer/invoice/due date/paid/balance/age bucket | Invoices, credit notes, payments | CSV/XLSX/PDF |
-| Audit report | Actor/action/entity/time/reason | Audit logs | CSV/PDF |
+| Report                 | Core fields                                                                                 | Source data                             | Required formats |
+| ---------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------- | ---------------- |
+| Sales register         | Invoice no/date/customer/SKU/qty/taxable value/tax/total                                    | Posted invoices                         | CSV/XLSX/PDF     |
+| Customer-wise sales    | Customer/date/SKU/qty/value                                                                 | Posted invoice lines                    | CSV/XLSX/PDF     |
+| Product-wise sales     | SKU/pack size/qty/value                                                                     | Posted invoice lines                    | CSV/XLSX/PDF     |
+| GST outward summary    | Place/state, intra/inter-state, taxable value, tax components, HSN grouping where available | Invoice tax snapshots                   | CSV/XLSX/PDF     |
+| Purchase register      | Supplier/reference/date/item/qty/rate/value/tax                                             | Purchase receipts and supplier invoices | CSV/XLSX/PDF     |
+| Stock summary          | Opening/receipts/issues/production/output/dispatch/adjustments/closing                      | Stock movements                         | CSV/XLSX/PDF     |
+| Stock ledger           | Timestamp/item/source/movement/qty/rate/value/running balance                               | Stock movements                         | CSV/XLSX/PDF     |
+| Production report      | Run/BOM version/planned/actual/yield/waste/variance/cost                                    | Production documents                    | CSV/XLSX/PDF     |
+| Collection report      | Receipt/date/customer/method/reference/allocated/unallocated                                | Payments and allocations                | CSV/XLSX/PDF     |
+| Receivables and ageing | Customer/invoice/due date/paid/balance/age bucket                                           | Invoices, credit notes, payments        | CSV/XLSX/PDF     |
+| Audit report           | Actor/action/entity/time/reason                                                             | Audit logs                              | CSV/PDF          |
 
 ## 13.2 Report correctness requirements
 
@@ -1359,23 +1360,23 @@ These features are not required to pass the benchmark. Add them only after the P
 
 ## 14.1 High-value differentiators
 
-| Feature | User value | Design approach | Dependencies | Suggested phase | Verification / success signal |
-|---|---|---|---|---|---|
-| Offline-first salesman workflow | Orders can be captured at shops with weak/no network | Durable IndexedDB outbox, idempotent sync, explicit conflict states | M5 order API, user-scoped cache | M9 | No lost/duplicate order after offline reload and retries |
-| Live production variance cockpit | Supervisor/owner sees excess use and yield loss by run/product | Trend actual-vs-standard by BOM version, batch and material | Reliable production history | M10 | Can identify top recurring variance contributors from source runs |
-| Production planner / MRP-lite | “To fulfil pending demand, produce X batches; procure Y materials” | Net demand against finished stock and reservations; explode BOM; show constraints | Orders, stock reservations, active BOM, lead-time assumptions | M10 | Recommended batches and material needs reconcile to BOM calculations |
-| Batch and expiry / FEFO | Reduce expiry waste and improve recall readiness | Lot receipt, expiry, lot allocation to issue/dispatch, FEFO suggestion | Supplier lot data, production lot capture | M11 | Expiring stock prioritised; full forward/backward traceability |
-| QR/barcode scanning | Faster receiving, material issue, dispatch and product lookup | Scan SKU/lot/dispatch document; manual fallback always available | Stable codes and hardware testing | M11 | Scan flow faster than manual entry without blocking no-camera devices |
-| Food quality checkpoints | Record moisture/seal/weight/visual checks and hold bad batches | Quality checklist per product/run; HOLD/RELEASE status | Production batches and quality rules | M11 | Held batch cannot be dispatched until released |
-| Batch genealogy and recall simulation | Identify which customers received product from a suspect production batch | Link input lots → production run → finished lot → dispatch/customer | Lot tracking and dispatch allocation | M11 | Simulated recall report lists affected stock and customers |
-| Tamil production UI | Lower training burden and floor-entry errors | Reviewed locale dictionary and bilingual labels | i18n foundation | M10 | Tamil-speaking staff can complete a run without English-only prompts |
-| Reorder and low-stock intelligence | Reduce unexpected production stoppage | Min/max levels, average usage and lead-time config | Inventory history and supplier lead times | M10 | Correct low-stock alerts and explainable reorder quantity |
-| Customer self-service portal | Retailers/distributors place repeat orders and view invoice/dues | Separate customer role and restricted data scope | Stable customer/auth model | M12+ | Customer sees only their own orders/invoices |
-| WhatsApp invoice sharing | Reduce manual invoice distribution | Share secure expiring PDF link or use approved provider integration | Invoice PDF and secure file links | M10 | Delivered link is authorized, expires and is auditable |
-| Tally-compatible export | Accountant can import without retyping | Versioned export mapping, reconciliation report | Stable invoice/purchase/payment data | M12+ | Imported totals match source system totals |
-| e-Invoice/e-Way Bill connector | Reduce manual compliance entry where applicable | Adapter boundary, sandbox first, live compliance only after tax review | Verified eligibility, official API credentials and legal review | M12+ | Sandbox contract test; never label mock payload as a real filing |
-| Sales territory and visit log | Improve customer coverage | Optional visit log and route planning; GPS check-in only with clear consent | Salesman assignments and device permission | M12+ | User-controlled location permission and clear opt-out |
-| Demand forecasting | Estimate likely product demand and material procurement | Start with explainable moving averages/seasonality only after enough history | Clean order/sales history and calendar | M13+ | Back-tested forecast error shown; user can inspect assumptions |
+| Feature                               | User value                                                                | Design approach                                                                   | Dependencies                                                    | Suggested phase | Verification / success signal                                         |
+| ------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------- | --------------- | --------------------------------------------------------------------- |
+| Offline-first salesman workflow       | Orders can be captured at shops with weak/no network                      | Durable IndexedDB outbox, idempotent sync, explicit conflict states               | M5 order API, user-scoped cache                                 | M9              | No lost/duplicate order after offline reload and retries              |
+| Live production variance cockpit      | Supervisor/owner sees excess use and yield loss by run/product            | Trend actual-vs-standard by BOM version, batch and material                       | Reliable production history                                     | M10             | Can identify top recurring variance contributors from source runs     |
+| Production planner / MRP-lite         | “To fulfil pending demand, produce X batches; procure Y materials”        | Net demand against finished stock and reservations; explode BOM; show constraints | Orders, stock reservations, active BOM, lead-time assumptions   | M10             | Recommended batches and material needs reconcile to BOM calculations  |
+| Batch and expiry / FEFO               | Reduce expiry waste and improve recall readiness                          | Lot receipt, expiry, lot allocation to issue/dispatch, FEFO suggestion            | Supplier lot data, production lot capture                       | M11             | Expiring stock prioritised; full forward/backward traceability        |
+| QR/barcode scanning                   | Faster receiving, material issue, dispatch and product lookup             | Scan SKU/lot/dispatch document; manual fallback always available                  | Stable codes and hardware testing                               | M11             | Scan flow faster than manual entry without blocking no-camera devices |
+| Food quality checkpoints              | Record moisture/seal/weight/visual checks and hold bad batches            | Quality checklist per product/run; HOLD/RELEASE status                            | Production batches and quality rules                            | M11             | Held batch cannot be dispatched until released                        |
+| Batch genealogy and recall simulation | Identify which customers received product from a suspect production batch | Link input lots → production run → finished lot → dispatch/customer               | Lot tracking and dispatch allocation                            | M11             | Simulated recall report lists affected stock and customers            |
+| Tamil production UI                   | Lower training burden and floor-entry errors                              | Reviewed locale dictionary and bilingual labels                                   | i18n foundation                                                 | M10             | Tamil-speaking staff can complete a run without English-only prompts  |
+| Reorder and low-stock intelligence    | Reduce unexpected production stoppage                                     | Min/max levels, average usage and lead-time config                                | Inventory history and supplier lead times                       | M10             | Correct low-stock alerts and explainable reorder quantity             |
+| Customer self-service portal          | Retailers/distributors place repeat orders and view invoice/dues          | Separate customer role and restricted data scope                                  | Stable customer/auth model                                      | M12+            | Customer sees only their own orders/invoices                          |
+| WhatsApp invoice sharing              | Reduce manual invoice distribution                                        | Share secure expiring PDF link or use approved provider integration               | Invoice PDF and secure file links                               | M10             | Delivered link is authorized, expires and is auditable                |
+| Tally-compatible export               | Accountant can import without retyping                                    | Versioned export mapping, reconciliation report                                   | Stable invoice/purchase/payment data                            | M12+            | Imported totals match source system totals                            |
+| e-Invoice/e-Way Bill connector        | Reduce manual compliance entry where applicable                           | Adapter boundary, sandbox first, live compliance only after tax review            | Verified eligibility, official API credentials and legal review | M12+            | Sandbox contract test; never label mock payload as a real filing      |
+| Sales territory and visit log         | Improve customer coverage                                                 | Optional visit log and route planning; GPS check-in only with clear consent       | Salesman assignments and device permission                      | M12+            | User-controlled location permission and clear opt-out                 |
+| Demand forecasting                    | Estimate likely product demand and material procurement                   | Start with explainable moving averages/seasonality only after enough history      | Clean order/sales history and calendar                          | M13+            | Back-tested forecast error shown; user can inspect assumptions        |
 
 ## 14.2 Best “wow” demonstration candidates
 
@@ -1408,6 +1409,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 **Outcome:** A testable, source-traceable product specification.
 
 **Work:**
+
 - Convert the CDI statement into requirement IDs R-001 onward.
 - Confirm the one-factory business context and five roles.
 - Document assumptions and ambiguities from §6.5.
@@ -1425,6 +1427,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 **Outcome:** Deployable skeleton with role-aware sessions and testable API.
 
 **Work:**
+
 - Create pnpm workspace with `client`, `server` and a small `shared` contracts package.
 - Configure TypeScript strict mode, build, formatting/lint and CI.
 - Create React/Vite shell, router, error boundaries, global providers and design tokens.
@@ -1436,6 +1439,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 - Configure test environment and seeded test users.
 
 **Critical verification:**
+
 - Every role can log in.
 - Unauthorized API calls return consistent 401/403 responses.
 - Salesman cannot query another salesman's order.
@@ -1450,6 +1454,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 **Outcome:** Reliable business vocabulary and reusable product specifications.
 
 **Work:**
+
 - Customer/supplier masters and customer assignments.
 - Product families, sellable variants and SKU rules.
 - Inventory-item categories and base UOM.
@@ -1462,6 +1467,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 - Admin master screens and audit changes.
 
 **Critical verification:**
+
 - kg/g and L/ml conversions pass.
 - Count units are not incorrectly converted across unrelated items.
 - 200 g Murukku SKU loads with the exact source BOM.
@@ -1475,6 +1481,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 **Outcome:** Every initial and purchased stock quantity has a traceable source.
 
 **Work:**
+
 - Purchase receipt screen and supplier record.
 - Opening stock as an explicit opening-balance document.
 - Stock document anchor, inventory transaction and append-only movement rows.
@@ -1484,6 +1491,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 - Inventory adjustment request/review flow.
 
 **Critical verification:**
+
 - 60 kg flour purchase at ₹45/kg increases flour from 100 to 160 kg.
 - Weighted average flour rate becomes ₹43.125/kg.
 - No purchase receipt can post twice with the same idempotency key.
@@ -1497,6 +1505,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 **Outcome:** Production becomes a first-class, atomic stock transaction.
 
 **Work:**
+
 - Draft production run with BOM version snapshot.
 - Planned material calculation and expected yield.
 - Actual material consumption/issue, return, damage and waste capture.
@@ -1507,6 +1516,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 - Direct production cost entries for labour, gas and power.
 
 **Critical verification:**
+
 - Flour/oil/spice/pouch/carton quantities reconcile to the source benchmark.
 - Oil variance is +5% using the benchmark batch denominator.
 - Yield variance is −6% and flagged.
@@ -1522,6 +1532,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 **Outcome:** Order enters once at its source and passes controlled review.
 
 **Work:**
+
 - Salesman mobile home, customer picker, catalogue, cart and own-order history.
 - API order submission with idempotency.
 - Cached price snapshot and explicit quote freshness.
@@ -1533,6 +1544,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 - Stock reservation service with concurrency control.
 
 **Critical verification:**
+
 - Salesman A can submit the 150-packet order from a mobile viewport.
 - Admin sees it once and can approve it.
 - Approval reserves 150 packets; availability becomes 88 while on-hand remains 238.
@@ -1547,6 +1559,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 **Outcome:** Approved orders become controlled tax/dispatch documents.
 
 **Work:**
+
 - Tax calculation service with intra-state and inter-state logic.
 - Invoice numbering sequence per financial year.
 - Invoice snapshot fields and tax lines.
@@ -1557,6 +1570,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 - Optional basic return document if feasible without harming P0.
 
 **Critical verification:**
+
 - Retailer A invoice: taxable ₹7,500; CGST ₹187.50; SGST ₹187.50; total ₹7,875.
 - Invoice number unique within the configured financial-year series.
 - PDF displays configured supplier/customer/HSN/tax fields and exact totals.
@@ -1571,6 +1585,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 **Outcome:** Financial impact of sales and production is visible and explainable.
 
 **Work:**
+
 - Payment receipt entry.
 - Payment-to-invoice allocations; partial and unallocated receipts.
 - Invoice outstanding calculation and customer ledger.
@@ -1580,6 +1595,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 - Cost per good packet and gross margin view.
 
 **Critical verification:**
+
 - Allocate ₹4,000 to Retailer A's ₹7,875 invoice.
 - Outstanding is ₹3,875.
 - Production run cost is ₹5,855 under the stated assumptions.
@@ -1594,6 +1610,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 **Outcome:** The same transactions generate reliable monthly reporting.
 
 **Work:**
+
 - Sales register and customer/product analysis.
 - GST outward summary and HSN grouping where data permits.
 - Purchase register.
@@ -1605,6 +1622,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 - Owner summary dashboard with source drill-downs and freshness timestamps.
 
 **Critical verification:**
+
 - Every report total reconciles to its source data.
 - Filters match between screen and export.
 - No draft/duplicate movement is included unintentionally.
@@ -1618,6 +1636,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 **Outcome:** The PWA groundwork, local drafts and outbox created in earlier milestones become a fully verified offline-order workflow. Salesman can capture orders on a weak/no network and sync them safely later.
 
 **Work:**
+
 - Complete Workbox `injectManifest` caching rules and safe service-worker lifecycle/update prompt.
 - Finalize Dexie user-scoped customer/product/price snapshots and outbox migrations.
 - Customer/product/price snapshot download.
@@ -1627,6 +1646,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 - Logout/account-switch handling for pending orders.
 
 **Critical verification:**
+
 - Create order with network disabled.
 - Reload/close/reopen the PWA; the order remains.
 - Reconnect and sync; server creates exactly one order.
@@ -1642,6 +1662,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 **Outcome:** Each role can use its portal efficiently in its real device context.
 
 **Work:**
+
 - Complete responsive layouts and role-specific navigation.
 - Polish keyboard workflows and table ergonomics.
 - Tablet/floor workflow and large numeric controls.
@@ -1652,6 +1673,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 - Basic operational telemetry and error correlation.
 
 **Critical verification:**
+
 - Salesman normal order flow under one minute with seeded/recent data.
 - 320 CSS pixel viewport works without ordinary horizontal page scrolling.
 - Keyboard-only admin and auditor paths are operable.
@@ -1666,6 +1688,7 @@ No dated schedule is inferred because the supplied CDI statement contains placeh
 **Outcome:** Evaluator can run the product independently and verify the benchmark.
 
 **Work:**
+
 - Fresh-install benchmark run from seed script.
 - End-to-end 8-minute demo recording.
 - Public repository with incremental commit history.
@@ -1690,25 +1713,25 @@ Build batch/expiry/FEFO, production planner, QR scanning, quality checkpoints, b
 
 This compact cross-check prevents features from appearing in the UI without a completed backend/test path.
 
-| Feature group | Milestone | Unit verification | Integration verification | E2E / human verification | Release gate |
-|---|---|---|---|---|---|
-| Authentication and five roles | M1 | Policy decision tests | Session/API authorization | Sign in as each role | G1 |
-| Customer/product/price masters | M2 | Validation and effective-date tests | Persistence and assignment queries | Create/edit/search workflows | G1 |
-| UOM and conversion | M2/M4 | Conversion matrix | Production BOM calculations | Supervisor verifies units | G2 |
-| Purchase receipt | M3 | Receipt calculation | Stock and valuation transaction | Record 60 kg purchase | G2 |
-| Stock ledger/balance | M3 | Signed movement math | Balance vs movement reconciliation | Drill into source movement | G2 |
-| BOM/versioning | M2/M4 | Planned consumption formulas | Run uses correct version | Add alternate pack variant | G2 |
-| Production posting | M4 | Variance/cost primitives | Atomic multi-movement transaction | Record benchmark run | G2 |
-| Order capture | M5 | Price/quantity validation | Idempotent order create | Mobile order in <60 sec | G3 |
-| Admin review/reservation | M5 | Availability logic | Concurrent approval transaction | Approve Retailer A; shortage Distributor B | G3 |
-| Tax and invoice | M6 | Tax/rounding tests | Invoice sequence and snapshots | Inspect PDF | G3 |
-| Dispatch | M6 | Quantity allocation tests | Stock decrement/reservation release | Verify 88 packets remain | G3 |
-| Payments | M7 | Allocation arithmetic | Invoice balance transaction | Record ₹4,000 | G3 |
-| Production costing | M7 | Weighted average and overhead formulas | Cost snapshot | Explain ₹31.14 | G3 |
-| Reports/exports | M8 | Aggregate query tests | Reconciliation to ledgers/docs | Auditor exports full report pack | G4 |
-| PWA foundation / offline queue / sync | M1–M2 / M5 / M9 | Outbox/state reducer tests | Idempotency/conflict API tests | Airplane-mode/reload/reconnect | G4 |
-| Accessibility/localization | M10 | Component semantics tests | API error accessibility mappings | Manual WCAG-oriented audit | G5 |
-| Deployment/submission | M11 | Build/seed checks | Smoke test deployed stack | Independent README run + demo | G5 |
+| Feature group                         | Milestone       | Unit verification                      | Integration verification            | E2E / human verification                   | Release gate |
+| ------------------------------------- | --------------- | -------------------------------------- | ----------------------------------- | ------------------------------------------ | ------------ |
+| Authentication and five roles         | M1              | Policy decision tests                  | Session/API authorization           | Sign in as each role                       | G1           |
+| Customer/product/price masters        | M2              | Validation and effective-date tests    | Persistence and assignment queries  | Create/edit/search workflows               | G1           |
+| UOM and conversion                    | M2/M4           | Conversion matrix                      | Production BOM calculations         | Supervisor verifies units                  | G2           |
+| Purchase receipt                      | M3              | Receipt calculation                    | Stock and valuation transaction     | Record 60 kg purchase                      | G2           |
+| Stock ledger/balance                  | M3              | Signed movement math                   | Balance vs movement reconciliation  | Drill into source movement                 | G2           |
+| BOM/versioning                        | M2/M4           | Planned consumption formulas           | Run uses correct version            | Add alternate pack variant                 | G2           |
+| Production posting                    | M4              | Variance/cost primitives               | Atomic multi-movement transaction   | Record benchmark run                       | G2           |
+| Order capture                         | M5              | Price/quantity validation              | Idempotent order create             | Mobile order in <60 sec                    | G3           |
+| Admin review/reservation              | M5              | Availability logic                     | Concurrent approval transaction     | Approve Retailer A; shortage Distributor B | G3           |
+| Tax and invoice                       | M6              | Tax/rounding tests                     | Invoice sequence and snapshots      | Inspect PDF                                | G3           |
+| Dispatch                              | M6              | Quantity allocation tests              | Stock decrement/reservation release | Verify 88 packets remain                   | G3           |
+| Payments                              | M7              | Allocation arithmetic                  | Invoice balance transaction         | Record ₹4,000                              | G3           |
+| Production costing                    | M7              | Weighted average and overhead formulas | Cost snapshot                       | Explain ₹31.14                             | G3           |
+| Reports/exports                       | M8              | Aggregate query tests                  | Reconciliation to ledgers/docs      | Auditor exports full report pack           | G4           |
+| PWA foundation / offline queue / sync | M1–M2 / M5 / M9 | Outbox/state reducer tests             | Idempotency/conflict API tests      | Airplane-mode/reload/reconnect             | G4           |
+| Accessibility/localization            | M10             | Component semantics tests              | API error accessibility mappings    | Manual WCAG-oriented audit                 | G5           |
+| Deployment/submission                 | M11             | Build/seed checks                      | Smoke test deployed stack           | Independent README run + demo              | G5           |
 
 ### Release gates
 
@@ -1931,19 +1954,19 @@ Do not turn every module into its own package. `shared` should contain contracts
 
 ## 20.1 Documents that must remain authoritative
 
-| Document | Owns |
-|---|---|
-| `master-project-plan.md` | Overall scope, architecture, milestones and release gates |
-| `product-requirements.md` | Requirement IDs and acceptance criteria |
-| `business-rules.md` | Stock, BOM, variance, invoice, payment, costing and state rules |
-| `data-model.md` | ERD, tables, constraints and migration decisions |
-| `api-contract.md` | Routes, schemas, error codes and idempotency behaviour |
-| `authorization-matrix.md` | RBAC permissions and ABAC attributes |
-| `offline-sync.md` | IndexedDB tables, sync states, conflict policy and security |
-| `ui-ux-spec.md` | Role journeys, screen inventory, responsive and accessibility rules |
-| `benchmark.md` | Exact fixture, formulas, expected results and test evidence |
-| `assumptions.md` | Unanswered source questions and explicit decisions |
-| Decision records | Why an important architectural choice was made and when it may be revisited |
+| Document                  | Owns                                                                        |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `master-project-plan.md`  | Overall scope, architecture, milestones and release gates                   |
+| `product-requirements.md` | Requirement IDs and acceptance criteria                                     |
+| `business-rules.md`       | Stock, BOM, variance, invoice, payment, costing and state rules             |
+| `data-model.md`           | ERD, tables, constraints and migration decisions                            |
+| `api-contract.md`         | Routes, schemas, error codes and idempotency behaviour                      |
+| `authorization-matrix.md` | RBAC permissions and ABAC attributes                                        |
+| `offline-sync.md`         | IndexedDB tables, sync states, conflict policy and security                 |
+| `ui-ux-spec.md`           | Role journeys, screen inventory, responsive and accessibility rules         |
+| `benchmark.md`            | Exact fixture, formulas, expected results and test evidence                 |
+| `assumptions.md`          | Unanswered source questions and explicit decisions                          |
+| Decision records          | Why an important architectural choice was made and when it may be revisited |
 
 ## 20.2 AI coding-agent operating rules
 
@@ -1980,24 +2003,24 @@ A feature is done only when:
 
 # 21. Risks, open decisions and assumptions log
 
-| ID | Issue | Risk if ignored | Proposed decision | Status |
-|---|---|---|---|---|
-| A-001 | Carton capacity: 9 cartons × 20 = 180, but output is 188 | Production packaging arithmetic appears inconsistent | Preserve 9 cartons; show 8 units not represented by carton capacity as a warning/assumption | Documented; seek clarification if possible |
-| A-002 | Six damaged pouches | Could be omitted from material consumption | Record 188 good pouches + 6 damaged = 194 consumed | Fixed by benchmark arithmetic |
-| A-003 | Opening finished goods cost absent | Cannot accurately value all 150 dispatched units | Show run cost separately; do not claim blended COGS without opening finished-goods valuation | Open input; documented |
-| A-004 | Benchmark invoice/due dates absent | FY sequence and ageing need dates | Use configurable benchmark date and explicit payment-term fixture | Open input; documented |
-| A-005 | GSTIN/HSN/customer addresses absent | Cannot create a real statutory invoice from supplied data alone | Use clearly marked dummy data; tax master configurable; do not claim legal filing compliance | Open input; documented |
-| A-006 | Tax rate is 5% in exercise | Hardcoding would be unsafe for real products | Seed 5% for benchmark only; effective-dated product tax configuration | Design decision |
-| A-007 | Partial dispatch/return optional | A simple status field may block future fulfilment | Keep separate dispatch and return documents; implement minimum required path first | Design decision |
-| A-008 | Offline order price may be stale | Salesman may promise a superseded price | Store quote/time/version; backend validates and admin sees difference | Design decision |
-| A-009 | Offline stock may be stale | Overselling if app promises stock | Never reserve/guarantee stock offline; server approval is authoritative | Design decision |
-| A-010 | Two concurrent approvals | Negative stock/double reservation | Transactional reservation with lock/serializable strategy and retry | Design decision |
-| A-011 | Five described roles, only three minimum auth roles | Incomplete experience for auditor/owner | Implement all five roles; minimum-three statement is not a reason to omit two described users | Design decision |
-| A-012 | Prisma package compatibility changes | Broken auth adapter or ORM generation | Pin Prisma 7 for Better Auth adapter at current verified baseline; recheck official compatibility at setup | Time-sensitive; recheck |
-| A-013 | Background Sync browser support differs | Orders may never sync if app relies only on it | App-launch, online-event and manual sync are primary; Background Sync optional | Design decision |
-| A-014 | PWA local data can be cleared/evicted | Unsynced orders could be lost | Persist locally, request persistent storage where supported, warn about pending orders, provide explicit recovery states | Design decision |
-| A-015 | No deadline in source: placeholders remain | Cannot produce reliable dated Gantt | Use dependency-based milestones; confirm deadline separately | Open |
-| A-016 | “GST-compliant” requires up-to-date legal facts | Demo assumptions could be mistaken for legal readiness | Use configurable tax logic and verify invoice rules/tax rates with current official material and qualified review before real use | Open before real production |
+| ID    | Issue                                                    | Risk if ignored                                                 | Proposed decision                                                                                                                 | Status                                     |
+| ----- | -------------------------------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| A-001 | Carton capacity: 9 cartons × 20 = 180, but output is 188 | Production packaging arithmetic appears inconsistent            | Preserve 9 cartons; show 8 units not represented by carton capacity as a warning/assumption                                       | Documented; seek clarification if possible |
+| A-002 | Six damaged pouches                                      | Could be omitted from material consumption                      | Record 188 good pouches + 6 damaged = 194 consumed                                                                                | Fixed by benchmark arithmetic              |
+| A-003 | Opening finished goods cost absent                       | Cannot accurately value all 150 dispatched units                | Show run cost separately; do not claim blended COGS without opening finished-goods valuation                                      | Open input; documented                     |
+| A-004 | Benchmark invoice/due dates absent                       | FY sequence and ageing need dates                               | Use configurable benchmark date and explicit payment-term fixture                                                                 | Open input; documented                     |
+| A-005 | GSTIN/HSN/customer addresses absent                      | Cannot create a real statutory invoice from supplied data alone | Use clearly marked dummy data; tax master configurable; do not claim legal filing compliance                                      | Open input; documented                     |
+| A-006 | Tax rate is 5% in exercise                               | Hardcoding would be unsafe for real products                    | Seed 5% for benchmark only; effective-dated product tax configuration                                                             | Design decision                            |
+| A-007 | Partial dispatch/return optional                         | A simple status field may block future fulfilment               | Keep separate dispatch and return documents; implement minimum required path first                                                | Design decision                            |
+| A-008 | Offline order price may be stale                         | Salesman may promise a superseded price                         | Store quote/time/version; backend validates and admin sees difference                                                             | Design decision                            |
+| A-009 | Offline stock may be stale                               | Overselling if app promises stock                               | Never reserve/guarantee stock offline; server approval is authoritative                                                           | Design decision                            |
+| A-010 | Two concurrent approvals                                 | Negative stock/double reservation                               | Transactional reservation with lock/serializable strategy and retry                                                               | Design decision                            |
+| A-011 | Five described roles, only three minimum auth roles      | Incomplete experience for auditor/owner                         | Implement all five roles; minimum-three statement is not a reason to omit two described users                                     | Design decision                            |
+| A-012 | Prisma package compatibility changes                     | Broken auth adapter or ORM generation                           | Pin Prisma 7 for Better Auth adapter at current verified baseline; recheck official compatibility at setup                        | Time-sensitive; recheck                    |
+| A-013 | Background Sync browser support differs                  | Orders may never sync if app relies only on it                  | App-launch, online-event and manual sync are primary; Background Sync optional                                                    | Design decision                            |
+| A-014 | PWA local data can be cleared/evicted                    | Unsynced orders could be lost                                   | Persist locally, request persistent storage where supported, warn about pending orders, provide explicit recovery states          | Design decision                            |
+| A-015 | No deadline in source: placeholders remain               | Cannot produce reliable dated Gantt                             | Use dependency-based milestones; confirm deadline separately                                                                      | Open                                       |
+| A-016 | “GST-compliant” requires up-to-date legal facts          | Demo assumptions could be mistaken for legal readiness          | Use configurable tax logic and verify invoice rules/tax rates with current official material and qualified review before real use | Open before real production                |
 
 ---
 

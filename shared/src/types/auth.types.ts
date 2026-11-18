@@ -6,7 +6,8 @@ export type Role =
   | "accounts"
   | "auditor";
 
-export type Action = "create" | "read" | "update" | "delete" | "approve" | "dispatch";
+export type Action =
+  "create" | "read" | "update" | "delete" | "approve" | "dispatch";
 
 export type Resource =
   | "order"

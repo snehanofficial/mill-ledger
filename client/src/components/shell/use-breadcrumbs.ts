@@ -6,17 +6,17 @@
  * This hook walks the matches and builds the breadcrumb trail.
  */
 
-import { useMatches, useLocation } from 'react-router-dom'
-import type { NavLink } from './nav-config'
+import { useMatches, useLocation } from "react-router-dom";
+import type { NavLink } from "./nav-config";
 
 export interface Crumb {
-  label: string
-  href?: string
+  label: string;
+  href?: string;
 }
 
 /** Extend your route handle with this type */
 export interface RouteHandle {
-  breadcrumb?: string | ((data: unknown) => string)
+  breadcrumb?: string | ((data: unknown) => string);
 }
 
 /**
@@ -25,48 +25,48 @@ export interface RouteHandle {
  * 2. Fallback: match current pathname against known nav links
  */
 export function useBreadcrumbs(allLinks?: NavLink[]): Crumb[] {
-  const matches = useMatches()
-  const location = useLocation()
+  const matches = useMatches();
+  const location = useLocation();
 
   // Try route handle-based breadcrumbs first
   const fromHandles = matches
     .filter((m) => {
-      const handle = m.handle as RouteHandle | undefined
-      return handle?.breadcrumb !== undefined
+      const handle = m.handle as RouteHandle | undefined;
+      return handle?.breadcrumb !== undefined;
     })
     .map((m, index, arr) => {
-      const handle = m.handle as RouteHandle
-      const isLast = index === arr.length - 1
+      const handle = m.handle as RouteHandle;
+      const isLast = index === arr.length - 1;
       const label =
-        typeof handle.breadcrumb === 'function'
+        typeof handle.breadcrumb === "function"
           ? handle.breadcrumb(m.data)
-          : (handle.breadcrumb as string)
+          : (handle.breadcrumb as string);
       return {
         label,
         href: isLast ? undefined : m.pathname,
-      }
-    })
+      };
+    });
 
-  if (fromHandles.length > 0) return fromHandles
+  if (fromHandles.length > 0) return fromHandles;
 
   // Fallback: match pathname segments against known nav links
-  if (!allLinks) return []
+  if (!allLinks) return [];
 
-  const pathname = location.pathname
-  const crumbs: Crumb[] = []
+  const pathname = location.pathname;
+  const crumbs: Crumb[] = [];
 
   // Build from most specific to least specific match
-  const pathSegments = pathname.split('/').filter(Boolean)
+  const pathSegments = pathname.split("/").filter(Boolean);
   for (let i = 0; i < pathSegments.length; i++) {
-    const partial = '/' + pathSegments.slice(0, i + 1).join('/')
-    const match = allLinks.find((l) => l.href === partial)
+    const partial = "/" + pathSegments.slice(0, i + 1).join("/");
+    const match = allLinks.find((l) => l.href === partial);
     if (match) {
       crumbs.push({
         label: match.label,
         href: i < pathSegments.length - 1 ? partial : undefined,
-      })
+      });
     }
   }
 
-  return crumbs
+  return crumbs;
 }

@@ -1,5 +1,9 @@
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
-import { AuthenticatedLayout } from '@/layouts/authenticated-layout'
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
+import { AuthenticatedLayout } from "@/layouts/authenticated-layout";
 import {
   DashboardPage,
   OrdersPage,
@@ -23,8 +27,8 @@ import {
   SettingsPage,
   LoginPage,
   NotFoundPage,
-} from '@/pages/placeholder-pages'
-import ShowcasePage from '@/pages/showcase-page'
+} from "@/pages/placeholder-pages";
+import ShowcasePage from "@/pages/showcase-page";
 import {
   dashboardHandle,
   ordersHandle,
@@ -46,18 +50,18 @@ import {
   reportsAuditHandle,
   exportsHandle,
   settingsHandle,
-} from '@/routes/route-handles'
+} from "@/routes/route-handles";
 
 const router = createBrowserRouter([
   // ── Public routes (outside authenticated shell) ─────────────────
   {
-    path: '/auth/login',
+    path: "/auth/login",
     element: <LoginPage />,
   },
 
   // ── Authenticated shell ─────────────────────────────────────────
   {
-    path: '/',
+    path: "/",
     element: <AuthenticatedLayout />,
     children: [
       {
@@ -65,79 +69,123 @@ const router = createBrowserRouter([
         element: <Navigate to="/dashboard" replace />,
       },
       {
-        path: 'dashboard',
+        path: "dashboard",
         element: <DashboardPage />,
         handle: dashboardHandle,
       },
 
       // Orders
       {
-        path: 'orders',
+        path: "orders",
         handle: ordersHandle,
         children: [
           { index: true, element: <OrdersPage />, handle: ordersHandle },
-          { path: 'new', element: <NewOrderPage />, handle: newOrderHandle },
+          { path: "new", element: <NewOrderPage />, handle: newOrderHandle },
         ],
       },
 
       // Invoices
-      { path: 'invoices', element: <InvoicesPage />, handle: invoicesHandle },
+      { path: "invoices", element: <InvoicesPage />, handle: invoicesHandle },
 
       // Dispatch
-      { path: 'dispatch', element: <DispatchPage />, handle: dispatchHandle },
+      { path: "dispatch", element: <DispatchPage />, handle: dispatchHandle },
 
       // Payments
-      { path: 'payments', element: <PaymentsPage />, handle: paymentsHandle },
+      { path: "payments", element: <PaymentsPage />, handle: paymentsHandle },
 
       // Stock
-      { path: 'stock', element: <StockPage />, handle: stockHandle },
+      { path: "stock", element: <StockPage />, handle: stockHandle },
 
       // Purchases
-      { path: 'purchases', element: <PurchasesPage />, handle: purchasesHandle },
+      {
+        path: "purchases",
+        element: <PurchasesPage />,
+        handle: purchasesHandle,
+      },
 
       // Production
       {
-        path: 'production',
+        path: "production",
         children: [
-          { path: 'today', element: <ProductionTodayPage />, handle: productionTodayHandle },
-          { path: 'new', element: <ProductionNewPage />, handle: productionNewHandle },
-          { path: 'history', element: <ProductionHistoryPage />, handle: productionHistoryHandle },
+          {
+            path: "today",
+            element: <ProductionTodayPage />,
+            handle: productionTodayHandle,
+          },
+          {
+            path: "new",
+            element: <ProductionNewPage />,
+            handle: productionNewHandle,
+          },
+          {
+            path: "history",
+            element: <ProductionHistoryPage />,
+            handle: productionHistoryHandle,
+          },
         ],
       },
 
       // Customers
-      { path: 'customers', element: <CustomersPage />, handle: customersHandle },
+      {
+        path: "customers",
+        element: <CustomersPage />,
+        handle: customersHandle,
+      },
 
       // Reports
       {
-        path: 'reports',
+        path: "reports",
         children: [
-          { path: 'sales', element: <ReportsSalesPage />, handle: reportsSalesHandle },
-          { path: 'stock', element: <ReportsStockPage />, handle: reportsStockHandle },
-          { path: 'production', element: <ReportsProductionPage />, handle: reportsProductionHandle },
-          { path: 'receivables', element: <ReportsReceivablesPage />, handle: reportsReceivablesHandle },
-          { path: 'gst', element: <ReportsGSTPage />, handle: reportsGSTHandle },
-          { path: 'audit', element: <ReportsAuditPage />, handle: reportsAuditHandle },
+          {
+            path: "sales",
+            element: <ReportsSalesPage />,
+            handle: reportsSalesHandle,
+          },
+          {
+            path: "stock",
+            element: <ReportsStockPage />,
+            handle: reportsStockHandle,
+          },
+          {
+            path: "production",
+            element: <ReportsProductionPage />,
+            handle: reportsProductionHandle,
+          },
+          {
+            path: "receivables",
+            element: <ReportsReceivablesPage />,
+            handle: reportsReceivablesHandle,
+          },
+          {
+            path: "gst",
+            element: <ReportsGSTPage />,
+            handle: reportsGSTHandle,
+          },
+          {
+            path: "audit",
+            element: <ReportsAuditPage />,
+            handle: reportsAuditHandle,
+          },
         ],
       },
 
       // Exports
-      { path: 'exports', element: <ExportsPage />, handle: exportsHandle },
+      { path: "exports", element: <ExportsPage />, handle: exportsHandle },
 
       // Settings
-      { path: 'settings', element: <SettingsPage />, handle: settingsHandle },
+      { path: "settings", element: <SettingsPage />, handle: settingsHandle },
 
       // Component showcase
-      { path: 'showcase', element: <ShowcasePage /> },
+      { path: "showcase", element: <ShowcasePage /> },
 
       // Catch-all within authenticated area
-      { path: '*', element: <NotFoundPage /> },
+      { path: "*", element: <NotFoundPage /> },
     ],
   },
-])
+]);
 
 function App() {
-  return <RouterProvider router={router} />
+  return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;

@@ -27,7 +27,9 @@ function TooltipContent({
   children,
   showArrow = true,
   ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Content> & { showArrow?: boolean }) {
+}: React.ComponentProps<typeof TooltipPrimitive.Content> & {
+  showArrow?: boolean;
+}) {
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Content
@@ -43,7 +45,11 @@ function TooltipContent({
       >
         {children}
         {showArrow && (
-          <TooltipPrimitive.Arrow className="fill-foreground" width={8} height={4} />
+          <TooltipPrimitive.Arrow
+            className="fill-foreground"
+            width={8}
+            height={4}
+          />
         )}
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>

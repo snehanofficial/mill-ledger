@@ -26,8 +26,8 @@ import {
   useState,
   useEffect,
   useCallback,
-} from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+} from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BellIcon,
   ChevronRightIcon,
@@ -42,9 +42,9 @@ import {
   RefreshCwIcon,
   CheckCircleIcon,
   AlertCircleIcon,
-} from 'lucide-react'
+} from "lucide-react";
 
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
@@ -64,16 +64,16 @@ import {
   SidebarRail,
   SidebarTrigger,
   useSidebar,
-} from '@/components/ui/sidebar'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
-import { Kbd } from '@/components/ui/kbd'
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { Kbd } from "@/components/ui/kbd";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+} from "@/components/ui/collapsible";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -81,7 +81,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
+} from "@/components/ui/breadcrumb";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -89,7 +89,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 import {
   Command,
   CommandEmpty,
@@ -97,38 +97,43 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { Sheet, SheetContent } from '@/components/ui/sheet'
-import { TooltipProvider } from '@/components/ui/tooltip'
+} from "@/components/ui/command";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
-import { type NavSection, type UserRole, getNavSections, getAllLinks } from './nav-config'
-import { useBreadcrumbs } from './use-breadcrumbs'
-import { useConnectionStatus, type SyncState } from './use-connection-status'
+import {
+  type NavSection,
+  type UserRole,
+  getNavSections,
+  getAllLinks,
+} from "./nav-config";
+import { useBreadcrumbs } from "./use-breadcrumbs";
+import { useConnectionStatus, type SyncState } from "./use-connection-status";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ShellUser {
-  id: string
-  name: string
-  email: string
-  role: UserRole
-  avatar?: string
-  initials: string
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  avatar?: string;
+  initials: string;
 }
 
 interface ShellProps {
-  user: ShellUser
-  children: ReactNode
-  notificationCount?: number
-  onSignOut?: () => void
+  user: ShellUser;
+  children: ReactNode;
+  notificationCount?: number;
+  onSignOut?: () => void;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function isActiveHref(href: string, pathname: string): boolean {
-  if (href === pathname) return true
-  return href !== '/' && pathname.startsWith(`${href.replace(/\/$/, '')}/`)
+  if (href === pathname) return true;
+  return href !== "/" && pathname.startsWith(`${href.replace(/\/$/, "")}/`);
 }
 
 function getInitials(name: string): string {
@@ -136,8 +141,8 @@ function getInitials(name: string): string {
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('')
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
 }
 
 // ─── SyncIndicator ────────────────────────────────────────────────────────────
@@ -149,85 +154,108 @@ function SyncIndicator({ state }: { state: SyncState }) {
     { icon: ReactNode; label: string; color: string }
   > = {
     idle: {
-      icon: <span className="size-2 rounded-full bg-emerald-500 inline-block shrink-0" aria-hidden />,
-      label: 'Live',
-      color: 'text-muted-foreground',
+      icon: (
+        <span
+          className="size-2 rounded-full bg-emerald-500 inline-block shrink-0"
+          aria-hidden
+        />
+      ),
+      label: "Live",
+      color: "text-muted-foreground",
     },
     offline: {
       icon: <WifiOffIcon className="size-3.5 text-amber-500" aria-hidden />,
-      label: 'Offline',
-      color: 'text-amber-600',
+      label: "Offline",
+      color: "text-amber-600",
     },
     syncing: {
-      icon: <RefreshCwIcon className="size-3.5 animate-spin text-muted-foreground" aria-hidden />,
-      label: 'Syncing',
-      color: 'text-muted-foreground',
+      icon: (
+        <RefreshCwIcon
+          className="size-3.5 animate-spin text-muted-foreground"
+          aria-hidden
+        />
+      ),
+      label: "Syncing",
+      color: "text-muted-foreground",
     },
     synced: {
-      icon: <CheckCircleIcon className="size-3.5 text-emerald-500" aria-hidden />,
-      label: 'Synced',
-      color: 'text-emerald-600',
+      icon: (
+        <CheckCircleIcon className="size-3.5 text-emerald-500" aria-hidden />
+      ),
+      label: "Synced",
+      color: "text-emerald-600",
     },
     error: {
-      icon: <AlertCircleIcon className="size-3.5 text-destructive" aria-hidden />,
-      label: 'Sync error',
-      color: 'text-destructive',
+      icon: (
+        <AlertCircleIcon className="size-3.5 text-destructive" aria-hidden />
+      ),
+      label: "Sync error",
+      color: "text-destructive",
     },
     conflict: {
       icon: <AlertCircleIcon className="size-3.5 text-amber-500" aria-hidden />,
-      label: 'Conflict',
-      color: 'text-amber-600',
+      label: "Conflict",
+      color: "text-amber-600",
     },
-  }
+  };
 
-  const config = configs[state]
+  const config = configs[state];
   return (
     <span
       role="status"
       aria-live="polite"
-      className={cn('flex items-center gap-1.5 text-xs font-medium', config.color)}
+      className={cn(
+        "flex items-center gap-1.5 text-xs font-medium",
+        config.color,
+      )}
     >
       {config.icon}
       <span className="hidden sm:inline">{config.label}</span>
     </span>
-  )
+  );
 }
 
 // ─── BrandMark ────────────────────────────────────────────────────────────────
 // DashboardBlocks brandmark: Pine square with "M" lettermark.
 
-function BrandMark({ children, className }: { children?: ReactNode; className?: string }) {
+function BrandMark({
+  children,
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
   return (
     <span
       className={cn(
-        'bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg font-semibold text-sm',
+        "bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg font-semibold text-sm",
         className,
       )}
       aria-hidden
     >
-      {children ?? 'M'}
+      {children ?? "M"}
     </span>
-  )
+  );
 }
 
 // ─── AppBrand ─────────────────────────────────────────────────────────────────
 
 function AppBrand({
-  href = '/dashboard',
+  href = "/dashboard",
   logo,
-  name = 'MillLedger',
-  description = 'Production unit',
+  name = "MillLedger",
+  description = "Production unit",
 }: {
-  href?: string
-  logo?: ReactNode
-  name?: string
-  description?: ReactNode
+  href?: string;
+  logo?: ReactNode;
+  name?: string;
+  description?: ReactNode;
 }) {
-  const { isMobile, setOpenMobile, state } = useSidebar()
-  const isCollapsed = state === 'collapsed' && !isMobile
+  const { isMobile, setOpenMobile, state } = useSidebar();
+  const isCollapsed = state === "collapsed" && !isMobile;
   const closeMobile = useCallback(() => {
-    if (isMobile) setOpenMobile(false)
-  }, [isMobile, setOpenMobile])
+    if (isMobile) setOpenMobile(false);
+  }, [isMobile, setOpenMobile]);
 
   return (
     <SidebarMenu>
@@ -238,49 +266,54 @@ function AppBrand({
           tooltip={isCollapsed ? `${name} (${description})` : undefined}
         >
           <Link to={href} onClick={closeMobile} aria-label="MillLedger home">
-            <BrandMark>{logo ?? 'M'}</BrandMark>
+            <BrandMark>{logo ?? "M"}</BrandMark>
             <div className="grid flex-1 min-w-0 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-              <span className="truncate font-semibold text-foreground">{name}</span>
+              <span className="truncate font-semibold text-foreground">
+                {name}
+              </span>
               {description && (
-                <span className="truncate text-xs text-muted-foreground">{description}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {description}
+                </span>
               )}
             </div>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }
 
 // ─── NavItem ──────────────────────────────────────────────────────────────────
 
 interface NavItemProps {
-  item: NavSection['items'][number]
-  pathname: string
+  item: NavSection["items"][number];
+  pathname: string;
 }
 
 function AppNavItem({ item, pathname }: NavItemProps) {
-  const { state, isMobile, setOpenMobile } = useSidebar()
-  const isCollapsed = state === 'collapsed' && !isMobile
+  const { state, isMobile, setOpenMobile } = useSidebar();
+  const isCollapsed = state === "collapsed" && !isMobile;
 
   const closeOnMobile = useCallback(() => {
-    if (isMobile) setOpenMobile(false)
-  }, [isMobile, setOpenMobile])
+    if (isMobile) setOpenMobile(false);
+  }, [isMobile, setOpenMobile]);
 
-  const childActive = item.items?.some((c) => isActiveHref(c.href, pathname)) ?? false
-  const [expanded, setExpanded] = useState(childActive)
-  const [prevChildActive, setPrevChildActive] = useState(childActive)
+  const childActive =
+    item.items?.some((c) => isActiveHref(c.href, pathname)) ?? false;
+  const [expanded, setExpanded] = useState(childActive);
+  const [prevChildActive, setPrevChildActive] = useState(childActive);
 
   if (childActive !== prevChildActive) {
-    setPrevChildActive(childActive)
+    setPrevChildActive(childActive);
     if (childActive) {
-      setExpanded(true)
+      setExpanded(true);
     }
   }
 
   // No subitems: render as link with directed tooltip in collapsed mode
   if (!item.items?.length) {
-    const active = item.href !== undefined && isActiveHref(item.href, pathname)
+    const active = item.href !== undefined && isActiveHref(item.href, pathname);
     return (
       <SidebarMenuItem>
         <SidebarMenuButton
@@ -289,20 +322,22 @@ function AppNavItem({ item, pathname }: NavItemProps) {
           tooltip={isCollapsed ? item.label : undefined}
         >
           <Link
-            to={item.href ?? '#'}
+            to={item.href ?? "#"}
             aria-label={item.label}
-            aria-current={item.href === pathname ? 'page' : undefined}
+            aria-current={item.href === pathname ? "page" : undefined}
             onClick={closeOnMobile}
           >
             {item.icon}
-            <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate">{item.label}</span>
+            <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate">
+              {item.label}
+            </span>
           </Link>
         </SidebarMenuButton>
         {item.badge !== undefined && (
           <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>
         )}
       </SidebarMenuItem>
-    )
+    );
   }
 
   // Has subitems: render as collapsible group with directed tooltip
@@ -340,11 +375,15 @@ function AppNavItem({ item, pathname }: NavItemProps) {
                   <Link
                     to={child.href}
                     aria-label={child.label}
-                    aria-current={child.href === pathname ? 'page' : undefined}
+                    aria-current={child.href === pathname ? "page" : undefined}
                     onClick={closeOnMobile}
                   >
-                    {child.icon && <span className="shrink-0">{child.icon}</span>}
-                    <span className="min-w-0 flex-1 truncate">{child.label}</span>
+                    {child.icon && (
+                      <span className="shrink-0">{child.icon}</span>
+                    )}
+                    <span className="min-w-0 flex-1 truncate">
+                      {child.label}
+                    </span>
                   </Link>
                 </SidebarMenuSubButton>
               </SidebarMenuSubItem>
@@ -353,12 +392,18 @@ function AppNavItem({ item, pathname }: NavItemProps) {
         </CollapsibleContent>
       </SidebarMenuItem>
     </Collapsible>
-  )
+  );
 }
 
 // ─── AppNav ───────────────────────────────────────────────────────────────────
 
-function AppNav({ sections, pathname }: { sections: NavSection[]; pathname: string }) {
+function AppNav({
+  sections,
+  pathname,
+}: {
+  sections: NavSection[];
+  pathname: string;
+}) {
   return (
     <>
       {sections.map((section, index) => (
@@ -374,16 +419,16 @@ function AppNav({ sections, pathname }: { sections: NavSection[]; pathname: stri
         </SidebarGroup>
       ))}
     </>
-  )
+  );
 }
 
 // ─── SidebarCollapseToggle ───────────────────────────────────────────────────
 // Explicit option to collapse the sidebar to icons only or expand back
 
 function SidebarCollapseToggle() {
-  const { state, isMobile, toggleSidebar } = useSidebar()
-  if (isMobile) return null
-  const isCollapsed = state === 'collapsed'
+  const { state, isMobile, toggleSidebar } = useSidebar();
+  if (isMobile) return null;
+  const isCollapsed = state === "collapsed";
 
   return (
     <SidebarMenu>
@@ -391,39 +436,44 @@ function SidebarCollapseToggle() {
         <SidebarMenuButton
           size="default"
           onClick={toggleSidebar}
-          tooltip={isCollapsed ? 'Expand sidebar (Ctrl+B)' : undefined}
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse to icons'}
+          tooltip={isCollapsed ? "Expand sidebar (Ctrl+B)" : undefined}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse to icons"}
           className="text-muted-foreground hover:text-foreground h-8 px-2"
         >
           {isCollapsed ? (
-            <PanelLeftOpenIcon className="size-4 shrink-0 mx-auto" aria-hidden />
+            <PanelLeftOpenIcon
+              className="size-4 shrink-0 mx-auto"
+              aria-hidden
+            />
           ) : (
             <>
               <PanelLeftCloseIcon className="size-4 shrink-0" aria-hidden />
               <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate text-xs font-normal">
                 Collapse to icons
               </span>
-              <Kbd className="group-data-[collapsible=icon]:hidden ml-auto">⌘B</Kbd>
+              <Kbd className="group-data-[collapsible=icon]:hidden ml-auto">
+                ⌘B
+              </Kbd>
             </>
           )}
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }
 
 // ─── SidebarUserMenu ──────────────────────────────────────────────────────────
 // Adapted directly from DashboardBlocks SidebarUserMenu
 
 interface SidebarUserMenuProps {
-  user: ShellUser
-  onSignOut?: () => void
+  user: ShellUser;
+  onSignOut?: () => void;
 }
 
 function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
-  const navigate = useNavigate()
-  const { isMobile, setOpenMobile, state } = useSidebar()
-  const isCollapsed = state === 'collapsed' && !isMobile
+  const navigate = useNavigate();
+  const { isMobile, setOpenMobile, state } = useSidebar();
+  const isCollapsed = state === "collapsed" && !isMobile;
 
   return (
     <SidebarMenu>
@@ -436,14 +486,20 @@ function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="size-8 rounded-lg">
-                {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+                {user.avatar && (
+                  <AvatarImage src={user.avatar} alt={user.name} />
+                )}
                 <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-medium text-xs">
                   {user.initials || getInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate font-medium text-foreground">{user.name}</span>
-                <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                <span className="truncate font-medium text-foreground">
+                  {user.name}
+                </span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {user.email}
+                </span>
               </div>
               <ChevronsUpDownIcon
                 className="ml-auto size-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden"
@@ -453,33 +509,40 @@ function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? 'bottom' : 'right'}
+            side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="size-8 rounded-lg">
-                  {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+                  {user.avatar && (
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                  )}
                   <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-medium text-xs">
                     {user.initials || getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {user.email}
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                if (isMobile) setOpenMobile(false)
-                navigate('/settings/profile')
+                if (isMobile) setOpenMobile(false);
+                navigate("/settings/profile");
               }}
               className="cursor-pointer"
             >
-              <SettingsIcon className="mr-2 size-4 text-muted-foreground" aria-hidden />
+              <SettingsIcon
+                className="mr-2 size-4 text-muted-foreground"
+                aria-hidden
+              />
               Account settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -494,18 +557,21 @@ function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }
 
 // ─── HeaderNotificationsButton ────────────────────────────────────────────────
 // DashboardBlocks NotificationsButton pattern
 
 interface NotificationsButtonProps {
-  count: number
-  onClick: () => void
+  count: number;
+  onClick: () => void;
 }
 
-function HeaderNotificationsButton({ count, onClick }: NotificationsButtonProps) {
+function HeaderNotificationsButton({
+  count,
+  onClick,
+}: NotificationsButtonProps) {
   return (
     <Button
       variant="ghost"
@@ -514,48 +580,48 @@ function HeaderNotificationsButton({ count, onClick }: NotificationsButtonProps)
       aria-label={
         count > 0
           ? `Notifications, ${count} unread`
-          : 'Notifications, none unread'
+          : "Notifications, none unread"
       }
       className="relative size-9"
     >
       <BellIcon className="size-4" aria-hidden />
       <span
         className={cn(
-          'absolute top-1.5 right-1.5 size-2 rounded-full ring-2 ring-background bg-primary transition-opacity duration-100',
-          count > 0 ? 'opacity-100' : 'opacity-0',
+          "absolute top-1.5 right-1.5 size-2 rounded-full ring-2 ring-background bg-primary transition-opacity duration-100",
+          count > 0 ? "opacity-100" : "opacity-0",
         )}
         aria-hidden
       />
     </Button>
-  )
+  );
 }
 
 // ─── Global Search ────────────────────────────────────────────────────────────
 
 interface GlobalSearchProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  sections: NavSection[]
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  sections: NavSection[];
 }
 
 function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const allItems = sections.flatMap((section) =>
     section.items.flatMap((item) => {
       const links: {
-        label: string
-        href: string
-        icon: ReactNode
-        group: string
-      }[] = []
+        label: string;
+        href: string;
+        icon: ReactNode;
+        group: string;
+      }[] = [];
       if (item.href) {
         links.push({
           label: item.label,
           href: item.href,
           icon: item.icon,
-          group: section.label ?? 'Navigation',
-        })
+          group: section.label ?? "Navigation",
+        });
       }
       if (item.items) {
         links.push(
@@ -563,13 +629,13 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
             label: sub.label,
             href: sub.href,
             icon: sub.icon ?? item.icon,
-            group: section.label ?? 'Navigation',
+            group: section.label ?? "Navigation",
           })),
-        )
+        );
       }
-      return links
+      return links;
     }),
-  )
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -585,32 +651,39 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
             <CommandEmpty>No results found.</CommandEmpty>
             {sections.map((section) => {
               const sectionItems = allItems.filter(
-                (i) => i.group === (section.label ?? 'Navigation'),
-              )
-              if (!sectionItems.length) return null
+                (i) => i.group === (section.label ?? "Navigation"),
+              );
+              if (!sectionItems.length) return null;
               return (
-                <CommandGroup key={section.label ?? 'main'} heading={section.label ?? 'Navigation'}>
+                <CommandGroup
+                  key={section.label ?? "main"}
+                  heading={section.label ?? "Navigation"}
+                >
                   {sectionItems.map((item) => (
                     <CommandItem
                       key={item.href}
                       value={`${item.label} ${item.group}`}
                       onSelect={() => {
-                        navigate(item.href)
-                        onOpenChange(false)
+                        navigate(item.href);
+                        onOpenChange(false);
                       }}
                     >
-                      <span className="text-muted-foreground shrink-0">{item.icon}</span>
-                      <span className="font-medium text-foreground">{item.label}</span>
+                      <span className="text-muted-foreground shrink-0">
+                        {item.icon}
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {item.label}
+                      </span>
                     </CommandItem>
                   ))}
                 </CommandGroup>
-              )
+              );
             })}
           </CommandList>
         </Command>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // ─── HeaderSearchButton ───────────────────────────────────────────────────────
@@ -619,14 +692,14 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
 function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        onOpen()
+      if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        onOpen();
       }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [onOpen])
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onOpen]);
 
   return (
     <>
@@ -653,32 +726,34 @@ function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
         <SearchIcon className="size-4 shrink-0" aria-hidden />
       </Button>
     </>
-  )
+  );
 }
 
 // ─── Breadcrumbs ──────────────────────────────────────────────────────────────
 
 function ShellBreadcrumbs({ role }: { role: UserRole }) {
-  const allLinks = getAllLinks(role)
-  const crumbs = useBreadcrumbs(allLinks)
+  const allLinks = getAllLinks(role);
+  const crumbs = useBreadcrumbs(allLinks);
 
-  if (!crumbs.length) return null
+  if (!crumbs.length) return null;
 
   return (
     <Breadcrumb className="min-w-0">
       <BreadcrumbList className="flex-nowrap">
         {crumbs.map((crumb, index) => {
-          const isLast = index === crumbs.length - 1
+          const isLast = index === crumbs.length - 1;
           return (
             <Fragment key={`${crumb.label}-${index}`}>
               <BreadcrumbItem
                 className={cn(
-                  'min-w-0',
-                  isLast ? 'max-w-full shrink-0' : 'hidden md:inline-flex',
+                  "min-w-0",
+                  isLast ? "max-w-full shrink-0" : "hidden md:inline-flex",
                 )}
               >
                 {isLast ? (
-                  <BreadcrumbPage className="truncate">{crumb.label}</BreadcrumbPage>
+                  <BreadcrumbPage className="truncate">
+                    {crumb.label}
+                  </BreadcrumbPage>
                 ) : crumb.href ? (
                   <BreadcrumbLink asChild className="truncate">
                     <Link to={crumb.href} className="truncate">
@@ -686,30 +761,35 @@ function ShellBreadcrumbs({ role }: { role: UserRole }) {
                     </Link>
                   </BreadcrumbLink>
                 ) : (
-                  <span className="truncate text-muted-foreground" title={crumb.label}>
+                  <span
+                    className="truncate text-muted-foreground"
+                    title={crumb.label}
+                  >
                     {crumb.label}
                   </span>
                 )}
               </BreadcrumbItem>
-              {!isLast && <BreadcrumbSeparator className="hidden md:inline-flex" />}
+              {!isLast && (
+                <BreadcrumbSeparator className="hidden md:inline-flex" />
+              )}
             </Fragment>
-          )
+          );
         })}
       </BreadcrumbList>
     </Breadcrumb>
-  )
+  );
 }
 
 // ─── StickyHeader ─────────────────────────────────────────────────────────────
 // 64px fixed height sticky header matching DashboardBlocks AppHeader pattern
 
 interface StickyHeaderProps {
-  user: ShellUser
-  notificationCount: number
-  onSearchOpen: () => void
-  onNotificationsClick: () => void
-  onSignOut?: () => void
-  syncState: SyncState
+  user: ShellUser;
+  notificationCount: number;
+  onSearchOpen: () => void;
+  onNotificationsClick: () => void;
+  onSignOut?: () => void;
+  syncState: SyncState;
 }
 
 function StickyHeader({
@@ -720,13 +800,13 @@ function StickyHeader({
   onSignOut,
   syncState,
 }: StickyHeaderProps) {
-  const { isMobile, openMobile, setOpenMobile } = useSidebar()
+  const { isMobile, openMobile, setOpenMobile } = useSidebar();
 
   return (
     <header
       className={cn(
-        'sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b border-border',
-        'bg-background px-4 [html:has(&)]:scroll-pt-16',
+        "sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b border-border",
+        "bg-background px-4 [html:has(&)]:scroll-pt-16",
       )}
     >
       {/* Mobile: hamburger button */}
@@ -762,7 +842,10 @@ function StickyHeader({
 
         <HeaderSearchButton onOpen={onSearchOpen} />
 
-        <HeaderNotificationsButton count={notificationCount} onClick={onNotificationsClick} />
+        <HeaderNotificationsButton
+          count={notificationCount}
+          onClick={onNotificationsClick}
+        />
 
         {/* Top-right user avatar menu */}
         <DropdownMenu>
@@ -774,7 +857,9 @@ function StickyHeader({
               aria-label={`Account: ${user.name}`}
             >
               <Avatar className="size-8">
-                {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+                {user.avatar && (
+                  <AvatarImage src={user.avatar} alt={user.name} />
+                )}
                 <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs">
                   {user.initials || getInitials(user.name)}
                 </AvatarFallback>
@@ -785,20 +870,27 @@ function StickyHeader({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="size-8 rounded-lg">
-                  {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+                  {user.avatar && (
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                  )}
                   <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-medium text-xs">
                     {user.initials || getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {user.email}
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer">
-              <SettingsIcon className="mr-2 size-4 text-muted-foreground" aria-hidden />
+              <SettingsIcon
+                className="mr-2 size-4 text-muted-foreground"
+                aria-hidden
+              />
               Account settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -813,19 +905,24 @@ function StickyHeader({
         </DropdownMenu>
       </div>
     </header>
-  )
+  );
 }
 
 // ─── AuthenticatedShell ────────────────────────────────────────────────────────
 // Root layout for all authenticated routes
 
-export function AuthenticatedShell({ user, children, notificationCount = 0, onSignOut }: ShellProps) {
-  const location = useLocation()
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [notificationsOpen, setNotificationsOpen] = useState(false)
-  const { syncState } = useConnectionStatus()
+export function AuthenticatedShell({
+  user,
+  children,
+  notificationCount = 0,
+  onSignOut,
+}: ShellProps) {
+  const location = useLocation();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const { syncState } = useConnectionStatus();
 
-  const sections = getNavSections(user.role)
+  const sections = getNavSections(user.role);
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -834,10 +931,10 @@ export function AuthenticatedShell({ user, children, notificationCount = 0, onSi
         <a
           href="#main-content"
           className={cn(
-            'sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50',
-            'focus:rounded-md focus:bg-primary focus:px-4 focus:py-2',
-            'focus:text-primary-foreground focus:text-sm focus:font-medium',
-            'focus:shadow-lg focus:outline-none',
+            "sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50",
+            "focus:rounded-md focus:bg-primary focus:px-4 focus:py-2",
+            "focus:text-primary-foreground focus:text-sm focus:font-medium",
+            "focus:shadow-lg focus:outline-none",
           )}
         >
           Skip to main content
@@ -898,8 +995,13 @@ export function AuthenticatedShell({ user, children, notificationCount = 0, onSi
             </div>
             <div className="flex flex-1 items-center justify-center p-8 text-center">
               <div>
-                <BellIcon className="mx-auto mb-3 size-8 text-muted-foreground" aria-hidden />
-                <p className="text-sm font-medium text-foreground">No notifications</p>
+                <BellIcon
+                  className="mx-auto mb-3 size-8 text-muted-foreground"
+                  aria-hidden
+                />
+                <p className="text-sm font-medium text-foreground">
+                  No notifications
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Activity and system events will appear here.
                 </p>
@@ -909,5 +1011,5 @@ export function AuthenticatedShell({ user, children, notificationCount = 0, onSi
         </Sheet>
       </SidebarProvider>
     </TooltipProvider>
-  )
+  );
 }

@@ -4,7 +4,9 @@ import { env } from "./config/env.js";
 const app = createApp();
 
 const server = app.listen(env.PORT, () => {
-  console.log(`🚀 Mill-Ledger API running on port ${env.PORT} in ${env.NODE_ENV} mode`);
+  console.log(
+    `🚀 Mill-Ledger API running on port ${env.PORT} in ${env.NODE_ENV} mode`,
+  );
 });
 
 const shutdown = () => {

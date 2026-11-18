@@ -16,35 +16,39 @@
  *   }
  */
 
-import { Outlet, Navigate } from 'react-router-dom'
-import { AuthenticatedShell } from '@/components/shell/authenticated-shell'
-import { useCurrentUser } from '@/hooks/use-current-user'
+import { Outlet, Navigate } from "react-router-dom";
+import { AuthenticatedShell } from "@/components/shell/authenticated-shell";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export function AuthenticatedLayout() {
-  const { user, isLoading } = useCurrentUser()
+  const { user, isLoading } = useCurrentUser();
 
   // Show loading shell to prevent flash/remount
   if (isLoading) {
-    return <AuthenticatedShellSkeleton />
+    return <AuthenticatedShellSkeleton />;
   }
 
   // Redirect unauthenticated users to login
   if (!user) {
-    return <Navigate to="/auth/login" replace />
+    return <Navigate to="/auth/login" replace />;
   }
 
   return (
     <AuthenticatedShell user={user} notificationCount={0}>
       <Outlet />
     </AuthenticatedShell>
-  )
+  );
 }
 
 // Minimal skeleton that matches shell geometry during auth check.
 // Same dimensions as the real shell to prevent CLS on hydration.
 function AuthenticatedShellSkeleton() {
   return (
-    <div className="flex min-h-svh w-full bg-background" aria-busy="true" aria-label="Loading">
+    <div
+      className="flex min-h-svh w-full bg-background"
+      aria-busy="true"
+      aria-label="Loading"
+    >
       {/* Sidebar skeleton */}
       <div className="hidden md:flex h-svh w-62 shrink-0 flex-col border-r border-border bg-surface" />
       {/* Main area */}
@@ -55,5 +59,5 @@ function AuthenticatedShellSkeleton() {
         <div className="flex flex-1" />
       </div>
     </div>
-  )
+  );
 }

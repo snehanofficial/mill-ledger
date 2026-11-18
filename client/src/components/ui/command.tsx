@@ -46,7 +46,10 @@ function CommandList({
 }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
-      className={cn("max-h-80 overflow-y-auto overflow-x-hidden p-1.5 [scrollbar-width:thin]", className)}
+      className={cn(
+        "max-h-80 overflow-y-auto overflow-x-hidden p-1.5 [scrollbar-width:thin]",
+        className,
+      )}
       {...props}
     />
   );

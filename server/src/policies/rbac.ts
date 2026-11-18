@@ -1,6 +1,9 @@
 import type { Action, Resource, Role } from "@mill-ledger/shared";
 
-export const ROLE_PERMISSIONS: Record<Role, Partial<Record<Resource, Action[]>>> = {
+export const ROLE_PERMISSIONS: Record<
+  Role,
+  Partial<Record<Resource, Action[]>>
+> = {
   admin: {
     order: ["create", "read", "update", "delete", "approve", "dispatch"],
     invoice: ["create", "read", "update", "delete"],
@@ -44,7 +47,11 @@ export const ROLE_PERMISSIONS: Record<Role, Partial<Record<Resource, Action[]>>>
   },
 };
 
-export function hasRbacPermission(role: Role, resource: Resource, action: Action): boolean {
+export function hasRbacPermission(
+  role: Role,
+  resource: Resource,
+  action: Action,
+): boolean {
   const resourcePermissions = ROLE_PERMISSIONS[role]?.[resource];
   if (!resourcePermissions) {
     return false;
