@@ -5,6 +5,7 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
 import { env } from "./config/env.js";
 import { healthRouter } from "./modules/health/health.routes.js";
+import { authRouter } from "./modules/auth/auth.routes.js";
 import { salesRouter } from "./modules/sales/sales.routes.js";
 import { productionRouter } from "./modules/production/production.routes.js";
 import { inventoryRouter } from "./modules/inventory/inventory.routes.js";
@@ -23,11 +24,12 @@ export function createApp() {
   );
 
   // Better Auth handler
-  app.all("/api/auth/*", toNodeHandler(auth));
+  app.use("/api/auth", toNodeHandler(auth));
 
   app.use(express.json());
 
   // API v1 routes
+  app.use("/api/v1", authRouter);
   app.use("/api/v1/health", healthRouter);
   app.use("/api/v1/sales", salesRouter);
   app.use("/api/v1/production", productionRouter);

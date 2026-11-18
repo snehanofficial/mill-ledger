@@ -30,6 +30,43 @@ const rules: PolicyRule[] = [
     }
     return true;
   },
+
+  // ABAC rule: salesmen can only read their own orders when resource attributes specify ownership
+  ({ user, resource, action, resourceAttributes }) => {
+    if (
+      user.role === "SALESMAN" &&
+      resource === "order" &&
+      action === "read" &&
+      resourceAttributes?.creatorId
+    ) {
+      return resourceAttributes.creatorId === user.id;
+    }
+    return true;
+  },
+
+  // ABAC rule: salesmen can only read their assigned customers
+  ({ user, resource, action, resourceAttributes }) => {
+    if (
+      user.role === "SALESMAN" &&
+      resource === "customer" &&
+      action === "read" &&
+      resourceAttributes?.assignedSalesmanId
+    ) {
+      return resourceAttributes.assignedSalesmanId === user.id;
+    }
+    return true;
+  },
+
+  // ABAC rule: immutable posted records cannot be directly edited or deleted
+  ({ action, resourceAttributes }) => {
+    if (
+      (action === "update" || action === "delete") &&
+      resourceAttributes?.status === "posted"
+    ) {
+      return false;
+    }
+    return true;
+  },
 ];
 
 export function evaluateAbac(context: EvaluationContext): boolean {

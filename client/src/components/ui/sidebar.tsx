@@ -243,7 +243,7 @@ export function Sidebar({
           className={cn(
             "fixed inset-y-0 left-0 z-50 flex flex-col bg-sidebar border-r border-sidebar-border shadow-2xl",
             "transition-transform duration-220 motion-reduce:transition-none",
-            openMobile ? "translate-x-0" : "-translate-x-full",
+            openMobile ? "translate-x-0 visible" : "-translate-x-full invisible",
           )}
           style={{ width: SIDEBAR_WIDTH_MOBILE }}
           {...props}

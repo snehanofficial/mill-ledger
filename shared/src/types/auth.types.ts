@@ -16,7 +16,8 @@ export type Resource =
   | "purchase"
   | "payment"
   | "report"
-  | "user";
+  | "user"
+  | "customer";
 
 export interface Permission {
   action: Action;

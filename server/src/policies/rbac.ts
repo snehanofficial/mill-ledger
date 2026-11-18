@@ -13,12 +13,13 @@ export const ROLE_PERMISSIONS: Record<
     payment: ["create", "read", "update", "delete"],
     report: ["read"],
     user: ["create", "read", "update", "delete"],
+    customer: ["create", "read", "update", "delete"],
   },
   SALESMAN: {
-    order: ["create", "read"],
+    order: ["create", "read", "update"],
     inventory: ["read"],
-    payment: ["create", "read"],
     report: ["read"],
+    customer: ["read"],
   },
   PRODUCTION: {
     production_run: ["create", "read", "update", "approve"],
@@ -28,11 +29,12 @@ export const ROLE_PERMISSIONS: Record<
   },
   ACCOUNTANT: {
     order: ["read"],
-    invoice: ["create", "read", "update"],
-    payment: ["create", "read", "update"],
+    invoice: ["read"],
+    payment: ["read"],
     purchase: ["read"],
     inventory: ["read"],
     report: ["read"],
+    customer: ["read"],
   },
   OWNER: {
     order: ["read"],
@@ -43,6 +45,7 @@ export const ROLE_PERMISSIONS: Record<
     payment: ["read"],
     report: ["read"],
     user: ["read"],
+    customer: ["read"],
   },
 };
 
