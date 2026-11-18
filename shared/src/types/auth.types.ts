@@ -1,9 +1,4 @@
-export type Role =
-  | "ADMIN"
-  | "SALESMAN"
-  | "PRODUCTION"
-  | "ACCOUNTANT"
-  | "OWNER";
+export type Role = "ADMIN" | "SALESMAN" | "PRODUCTION" | "ACCOUNTANT" | "OWNER";
 
 export type Action =
   "create" | "read" | "update" | "delete" | "approve" | "dispatch";

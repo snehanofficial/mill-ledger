@@ -1,8 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "./db/client.js";
 import { ItemCategory, MovementType, RecipeItemType } from "@prisma/client";
+import { seedBenchmarkMasters } from "./db/seed.js";
 
 describe("M2: Masters, BOM, and opening stock verification", () => {
+  beforeAll(async () => {
+    await seedBenchmarkMasters();
+  });
   it("verifies organization, facility, and warehouse setup", async () => {
     const org = await prisma.organization.findUnique({
       where: { code: "MILL" },
@@ -161,9 +165,7 @@ describe("M2: Masters, BOM, and opening stock verification", () => {
     expect(Number(flourItem?.plannedQty)).toBe(40);
     expect(flourItem?.itemType).toBe(RecipeItemType.INGREDIENT);
 
-    const oilItem = recipe?.items.find(
-      (i) => i.inventoryItem.sku === "RM-OIL",
-    );
+    const oilItem = recipe?.items.find((i) => i.inventoryItem.sku === "RM-OIL");
     expect(oilItem).toBeDefined();
     expect(Number(oilItem?.plannedQty)).toBe(10);
     expect(Number(oilItem?.tolerancePct)).toBe(5);

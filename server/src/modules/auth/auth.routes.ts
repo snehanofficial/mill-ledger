@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { requireAuth, type AuthenticatedRequest } from "../../middleware/auth.middleware.js";
+import {
+  requireAuth,
+  type AuthenticatedRequest,
+} from "../../middleware/auth.middleware.js";
 
 export const authRouter = Router();
 

@@ -22,7 +22,10 @@ describe("Better Auth and permission integration", () => {
     });
   });
 
-  async function loginAndGetCookie(email: string, password: string): Promise<{ cookie: string; user: any }> {
+  async function loginAndGetCookie(
+    email: string,
+    password: string,
+  ): Promise<{ cookie: string; user: any }> {
     const res = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -100,7 +103,9 @@ describe("Better Auth and permission integration", () => {
 
       expect(response.status).toBe(403);
       const data = await response.json();
-      expect(data.error).toContain("Forbidden: Role ACCOUNTANT lacks permission create on order");
+      expect(data.error).toContain(
+        "Forbidden: Role ACCOUNTANT lacks permission create on order",
+      );
     });
   });
 
@@ -140,7 +145,9 @@ describe("Better Auth and permission integration", () => {
 
       expect(crossUpdateResponse.status).toBe(403);
       const crossData = await crossUpdateResponse.json();
-      expect(crossData.error).toContain("Forbidden: Policy evaluation denied request");
+      expect(crossData.error).toContain(
+        "Forbidden: Policy evaluation denied request",
+      );
 
       // Verify salesman 1 CAN update their own draft order
       const ownUpdateResponse = await fetch(

@@ -3,7 +3,10 @@ import {
   Navigate,
   RouterProvider,
 } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthenticatedLayout } from "@/layouts/authenticated-layout";
+import { StockPage } from "@/pages/stock-page";
+import { ProductionPage } from "@/pages/production-page";
 import {
   DashboardPage,
   OrdersPage,
@@ -11,11 +14,7 @@ import {
   InvoicesPage,
   DispatchPage,
   PaymentsPage,
-  StockPage,
   PurchasesPage,
-  ProductionTodayPage,
-  ProductionNewPage,
-  ProductionHistoryPage,
   CustomersPage,
   ReportsSalesPage,
   ReportsStockPage,
@@ -109,17 +108,17 @@ const router = createBrowserRouter([
         children: [
           {
             path: "today",
-            element: <ProductionTodayPage />,
+            element: <ProductionPage />,
             handle: productionTodayHandle,
           },
           {
             path: "new",
-            element: <ProductionNewPage />,
+            element: <ProductionPage />,
             handle: productionNewHandle,
           },
           {
             path: "history",
-            element: <ProductionHistoryPage />,
+            element: <ProductionPage />,
             handle: productionHistoryHandle,
           },
         ],
@@ -184,8 +183,21 @@ const router = createBrowserRouter([
   },
 ]);
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 30,
+      retry: 1,
+    },
+  },
+});
+
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
 }
 
 export default App;

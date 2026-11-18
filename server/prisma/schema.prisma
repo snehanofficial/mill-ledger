@@ -87,6 +87,8 @@ model Organization {
   recipes        Recipe[]
   priceLists     PriceList[]
   taxRates       TaxRate[]
+  purchaseReceipts PurchaseReceipt[]
+  productionRuns ProductionRun[]
 
   @@map("organization")
 }
@@ -117,6 +119,8 @@ model Warehouse {
   updatedAt  DateTime @updatedAt
 
   stockMovements StockMovement[]
+  purchaseReceipts PurchaseReceipt[]
+  productionRuns ProductionRun[]
 
   @@unique([facilityId, code])
   @@map("warehouse")
@@ -171,6 +175,8 @@ model Supplier {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
+  purchaseReceipts PurchaseReceipt[]
+
   @@unique([organizationId, code])
   @@map("supplier")
 }
@@ -191,6 +197,7 @@ model UnitOfMeasure {
   productVariants ProductVariant[]
   recipeOutputs   Recipe[]
   recipeItems     RecipeItem[]
+  purchaseReceiptLines PurchaseReceiptLine[]
   fromConversions UnitConversion[] @relation("FromUom")
   toConversions   UnitConversion[] @relation("ToUom")
 
@@ -239,6 +246,8 @@ model InventoryItem {
   productVariants ProductVariant[]
   recipeItems     RecipeItem[]
   stockMovements  StockMovement[]
+  purchaseReceiptLines PurchaseReceiptLine[]
+  productionRunMaterials ProductionRunMaterial[]
 
   @@unique([organizationId, sku])
   @@map("inventory_item")
@@ -249,6 +258,7 @@ enum MovementType {
   PURCHASE_RECEIPT
   PRODUCTION_CONSUMED
   PRODUCTION_OUTPUT
+  PRODUCTION_REVERSAL
   DISPATCH
   ADJUSTMENT
   RETURN
@@ -336,6 +346,7 @@ model Recipe {
   productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   outputUom      UnitOfMeasure  @relation(fields: [outputUomId], references: [id], onDelete: Restrict)
   items          RecipeItem[]
+  productionRuns ProductionRun[]
 
   @@unique([productVariantId, version])
   @@map("recipe")
@@ -416,4 +427,126 @@ model TaxRate {
 
   @@unique([organizationId, hsnCode, effectiveFrom])
   @@map("tax_rate")
+}
+
+// ─── Purchases & Receipts ───────────────────────────────────────────
+
+model PurchaseReceipt {
+  id                    String                @id @default(cuid())
+  organizationId        String
+  organization          Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  supplierId            String
+  supplier              Supplier              @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  warehouseId           String
+  warehouse             Warehouse             @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  receiptNumber         String
+  supplierInvoiceNumber String?
+  status                String                @default("POSTED")
+  totalAmount           Decimal               @db.Decimal(18, 2)
+  notes                 String?
+  idempotencyKey        String?               @unique
+  postedAt              DateTime              @default(now())
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  lines PurchaseReceiptLine[]
+
+  @@unique([organizationId, receiptNumber])
+  @@map("purchase_receipt")
+}
+
+model PurchaseReceiptLine {
+  id                String          @id @default(cuid())
+  purchaseReceiptId String
+  purchaseReceipt   PurchaseReceipt @relation(fields: [purchaseReceiptId], references: [id], onDelete: Cascade)
+  inventoryItemId   String
+  inventoryItem     InventoryItem   @relation(fields: [inventoryItemId], references: [id], onDelete: Restrict)
+  quantity          Decimal         @db.Decimal(18, 6)
+  uomId             String
+  uom               UnitOfMeasure   @relation(fields: [uomId], references: [id], onDelete: Restrict)
+  unitPrice         Decimal         @db.Decimal(18, 6)
+  totalPrice        Decimal         @db.Decimal(18, 2)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@map("purchase_receipt_line")
+}
+
+// ─── Production Runs & Variances ───────────────────────────────────
+
+enum ProductionRunStatus {
+  DRAFT
+  POSTED
+  REVERSED
+}
+
+model ProductionRun {
+  id                 String              @id @default(cuid())
+  organizationId     String
+  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  warehouseId        String
+  warehouse          Warehouse           @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  recipeId           String
+  recipe             Recipe              @relation(fields: [recipeId], references: [id], onDelete: Restrict)
+  recipeVersion      Int
+  runNumber          String
+  batchCount         Decimal             @default(1) @db.Decimal(18, 6)
+  status             ProductionRunStatus @default(DRAFT)
+  expectedOutputQty  Decimal             @db.Decimal(18, 6)
+  actualGoodQty      Decimal             @default(0) @db.Decimal(18, 6)
+  actualRejectedQty  Decimal             @default(0) @db.Decimal(18, 6)
+  yieldVarianceQty   Decimal             @default(0) @db.Decimal(18, 6)
+  yieldVariancePct   Decimal             @default(0) @db.Decimal(5, 2)
+  isYieldFlagged     Boolean             @default(false)
+  directMaterialCost Decimal             @default(0) @db.Decimal(18, 2)
+  directLaborCost    Decimal             @default(0) @db.Decimal(18, 2)
+  utilityCost        Decimal             @default(0) @db.Decimal(18, 2)
+  totalRunCost       Decimal             @default(0) @db.Decimal(18, 2)
+  costPerGoodUnit    Decimal             @default(0) @db.Decimal(18, 6)
+  notes              String?
+  idempotencyKey     String?             @unique
+  postedAt           DateTime?
+  reversedAt         DateTime?
+  reversalReason     String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  materials ProductionRunMaterial[]
+  reversal  ProductionRunReversal?
+
+  @@unique([organizationId, runNumber])
+  @@map("production_run")
+}
+
+model ProductionRunMaterial {
+  id                String         @id @default(cuid())
+  productionRunId   String
+  productionRun     ProductionRun  @relation(fields: [productionRunId], references: [id], onDelete: Cascade)
+  inventoryItemId   String
+  inventoryItem     InventoryItem  @relation(fields: [inventoryItemId], references: [id], onDelete: Restrict)
+  itemType          RecipeItemType
+  plannedQty        Decimal        @db.Decimal(18, 6)
+  actualQty         Decimal        @db.Decimal(18, 6)
+  damagedQty        Decimal        @default(0) @db.Decimal(18, 6)
+  varianceQty       Decimal        @default(0) @db.Decimal(18, 6)
+  variancePct       Decimal        @default(0) @db.Decimal(5, 2)
+  isVarianceFlagged Boolean        @default(false)
+  unitCost          Decimal        @default(0) @db.Decimal(18, 6)
+  totalCost         Decimal        @default(0) @db.Decimal(18, 2)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@map("production_run_material")
+}
+
+model ProductionRunReversal {
+  id                 String        @id @default(cuid())
+  originalRunId      String        @unique
+  originalRun        ProductionRun @relation(fields: [originalRunId], references: [id], onDelete: Cascade)
+  reversalRunNumber  String
+  reason             String
+  reversedByUserId   String?
+  createdAt          DateTime      @default(now())
+
+  @@map("production_run_reversal")
 }

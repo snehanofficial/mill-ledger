@@ -36,9 +36,15 @@ describe("RBAC policy permissions", () => {
   });
 
   it("grants PRODUCTION permission to create, update, and approve production runs", () => {
-    expect(hasRbacPermission("PRODUCTION", "production_run", "create")).toBe(true);
-    expect(hasRbacPermission("PRODUCTION", "production_run", "update")).toBe(true);
-    expect(hasRbacPermission("PRODUCTION", "production_run", "approve")).toBe(true);
+    expect(hasRbacPermission("PRODUCTION", "production_run", "create")).toBe(
+      true,
+    );
+    expect(hasRbacPermission("PRODUCTION", "production_run", "update")).toBe(
+      true,
+    );
+    expect(hasRbacPermission("PRODUCTION", "production_run", "approve")).toBe(
+      true,
+    );
     expect(hasRbacPermission("PRODUCTION", "inventory", "read")).toBe(true);
     expect(hasRbacPermission("PRODUCTION", "purchase", "create")).toBe(true);
 
@@ -59,7 +65,13 @@ describe("RBAC policy permissions", () => {
     expect(hasRbacPermission("ACCOUNTANT", "customer", "read")).toBe(true);
 
     // Write actions are strictly prohibited across all resources
-    const writeActions: Action[] = ["create", "update", "delete", "approve", "dispatch"];
+    const writeActions: Action[] = [
+      "create",
+      "update",
+      "delete",
+      "approve",
+      "dispatch",
+    ];
     const allResources: Resource[] = [
       "order",
       "invoice",
