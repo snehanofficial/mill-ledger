@@ -6,11 +6,7 @@
     "status": "proposed-foundation",
     "created": "2026-11-18",
     "productType": "responsive operations, inventory, purchasing, production and sales PWA",
-    "platforms": [
-      "desktop web",
-      "tablet web",
-      "mobile web/PWA"
-    ],
+    "platforms": ["desktop web", "tablet web", "mobile web/PWA"],
     "defaultAppearance": "light",
     "language": "en-IN",
     "currency": "INR",
@@ -664,98 +660,63 @@
         "button-press": {
           "duration": "press",
           "easing": "standard",
-          "properties": [
-            "background-color",
-            "border-color",
-            "transform"
-          ],
+          "properties": ["background-color", "border-color", "transform"],
           "transform": "scale(0.985)"
         },
         "hover": {
           "duration": "micro",
           "easing": "standard",
-          "properties": [
-            "background-color",
-            "border-color",
-            "color"
-          ]
+          "properties": ["background-color", "border-color", "color"]
         },
         "checkbox-toggle": {
           "duration": "micro",
           "easing": "standard",
-          "properties": [
-            "background-color",
-            "border-color",
-            "opacity"
-          ]
+          "properties": ["background-color", "border-color", "opacity"]
         },
         "tooltip": {
           "duration": "fast",
           "easing": "enter",
-          "properties": [
-            "opacity",
-            "transform"
-          ],
+          "properties": ["opacity", "transform"],
           "offset": "2px"
         },
         "menu-popover": {
           "duration": "standard",
           "easing": "enter",
-          "properties": [
-            "opacity",
-            "transform"
-          ],
+          "properties": ["opacity", "transform"],
           "offset": "4px"
         },
         "drawer-modal-enter": {
           "duration": "overlay-enter",
           "easing": "enter",
-          "properties": [
-            "opacity",
-            "transform"
-          ],
+          "properties": ["opacity", "transform"],
           "offset": "8px"
         },
         "drawer-modal-exit": {
           "duration": "overlay-exit",
           "easing": "exit",
-          "properties": [
-            "opacity",
-            "transform"
-          ],
+          "properties": ["opacity", "transform"],
           "offset": "4px"
         },
         "toast-enter": {
           "duration": "toast-enter",
           "easing": "enter",
-          "properties": [
-            "opacity",
-            "transform"
-          ],
+          "properties": ["opacity", "transform"],
           "offset": "6px"
         },
         "toast-exit": {
           "duration": "toast-exit",
           "easing": "exit",
-          "properties": [
-            "opacity",
-            "transform"
-          ]
+          "properties": ["opacity", "transform"]
         },
         "accordion": {
           "duration": "standard",
           "easing": "standard",
-          "properties": [
-            "grid-template-rows",
-            "opacity"
-          ]
+          "properties": ["grid-template-rows", "opacity"]
         },
         "progress": {
           "duration": "standard",
           "easing": "standard",
-          "properties": [
-            "transform"
-          ]
+          "properties": ["transform"]
         }
       },
       "rules": [
@@ -847,13 +808,7 @@
       "height": "24px minimum",
       "radius": "4px",
       "content": "Icon or shape plus explicit text label.",
-      "variants": [
-        "success",
-        "warning",
-        "danger",
-        "info",
-        "neutral"
-      ],
+      "variants": ["success", "warning", "danger", "info", "neutral"],
       "never": [
         "color-only dot as the only status indication",
         "ambiguous labels such as Active when a domain-specific state is available"
@@ -1647,12 +1602,7 @@
     "iconography": {
       "library": "Lucide",
       "strokeWidth": "1.75-2",
-      "sizes": [
-        "16px",
-        "18px",
-        "20px",
-        "24px"
-      ],
+      "sizes": ["16px", "18px", "20px", "24px"],
       "rules": [
         "Keep icon style consistent.",
         "Do not use emoji as interface icons.",

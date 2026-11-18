@@ -59,3 +59,26 @@ Every transaction screen supports loading, empty, validation error, server error
 ## Tamil
 
 Build i18n keys from the start. Review floor terms with a Tamil-speaking reviewer. Keep quantities, units, SKU values, and error meanings consistent across languages.
+
+## Component foundation
+
+The reusable UI foundation lives in `client/src/components/ui/`. Components compose shadcn/Radix primitives and the existing Radix, Lucide, Tailwind, and Sonner dependencies. Domain-specific behavior is intentionally absent.
+
+### Inventory
+
+- Actions and forms: `Button`, `Input`, `Textarea`, `Label`, `Field`, `Checkbox`, `RadioGroup`, `Switch`, `Select`, `DatePicker`, and `ConfirmationDialog`
+- Surfaces: `Card`, `Dialog`, `AlertDialog`, `Sheet`, `Drawer`, `DropdownMenu`, `Popover`, `Tooltip`, and `Command`
+- Navigation and data: `Table`, `Pagination`, `Tabs`, `Breadcrumb`, `StatusIndicator`, `DataList`, `DataItem`, and `Metric`
+- Feedback: `Alert`, `Toaster`, `Badge`, `Skeleton`, `Spinner`, `Empty`, `LoadingState`, `SkeletonTable`, and `ErrorState`
+
+### Usage conventions
+
+- Consume semantic CSS variables for color, typography, spacing, radius, border, elevation, and motion. Do not add component-local hex values.
+- Compose a `FieldGroup` and `Field` for forms. Every control must have a visible label, an associated description or error, and a 44px minimum target.
+- Use `AlertDialog` for consequential actions and `Dialog` only for blocking decisions that cannot safely continue in the current context.
+- Use `Sonner` toasts for transient confirmation. Never use a toast as the only record of a server-side result or field validation error.
+- Use text plus icon or shape for every status. Numeric table columns remain right-aligned and use tabular figures with visible units.
+- Keep loading, empty and error states in the same layout as the affected content. Loading text must identify what is loading; error text must identify what failed and the next safe action.
+- Preserve keyboard focus, visible 3px focus rings, Escape-to-close behavior, and reduced-motion behavior in every component.
+
+The routed inventory is available at `/` and `/components` through the client router. It demonstrates variants, interaction states, overlays, feedback, tables and responsive reflow.
