@@ -251,7 +251,11 @@ export function LoginPage() {
                     id="email"
                     name="email"
                     type="email"
+                    inputMode="email"
                     autoComplete="email"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
                     required
                     value={email}
                     onChange={(e) => {
@@ -291,7 +295,8 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground focus:outline-none"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none rounded-sm"
+                    aria-pressed={showPassword}
                     aria-label={
                       showPassword
                         ? language === "ta"

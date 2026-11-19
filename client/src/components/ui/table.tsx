@@ -6,7 +6,10 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full max-w-full overflow-x-auto rounded-control border border-border"
+      role="region"
+      tabIndex={0}
+      aria-label={props["aria-label"] || "Data table"}
+      className="relative w-full max-w-full overflow-x-auto rounded-control border border-border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
     >
       <table
         data-slot="table"
@@ -66,10 +69,15 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   );
 }
 
-function TableHead({ className, ...props }: React.ComponentProps<"th">) {
+function TableHead({
+  className,
+  scope = "col",
+  ...props
+}: React.ComponentProps<"th">) {
   return (
     <th
       data-slot="table-head"
+      scope={scope}
       className={cn(
         "h-10 px-4 text-left align-middle text-xs font-semibold text-muted-foreground whitespace-nowrap",
         className,

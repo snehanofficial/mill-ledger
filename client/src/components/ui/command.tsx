@@ -24,7 +24,7 @@ function CommandInput({
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Input>) {
   return (
-    <div
+    <search
       data-slot="command-input"
       className="flex h-12 items-center gap-2.5 border-b border-border px-3.5"
     >
@@ -36,7 +36,7 @@ function CommandInput({
         )}
         {...props}
       />
-    </div>
+    </search>
   );
 }
 

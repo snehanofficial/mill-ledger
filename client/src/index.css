@@ -3,6 +3,7 @@
 @import "tw-animate-css";
 
 :root {
+  color-scheme: light;
   --background: #fcfdfc;
   --foreground: #09090b;
   --card: #ffffff;
@@ -186,22 +187,28 @@
   scrollbar-color: var(--border) transparent;
 }
 
-*::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+@supports not (scrollbar-color: auto) {
+  * {
+    scrollbar-width: auto;
+  }
 
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-*::-webkit-scrollbar-thumb {
-  background-color: var(--border);
-  border-radius: 9999px;
-}
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-*::-webkit-scrollbar-thumb:hover {
-  background-color: var(--muted-foreground);
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted-foreground);
+  }
 }
 
 html {

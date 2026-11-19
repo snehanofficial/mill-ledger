@@ -370,9 +370,9 @@ export function SidebarTrigger({
 
 // ─── SidebarInset ─────────────────────────────────────────────────────────────
 
-export function SidebarInset({ className, ...props }: ComponentProps<"main">) {
+export function SidebarInset({ className, ...props }: ComponentProps<"div">) {
   return (
-    <main
+    <div
       data-slot="sidebar-inset"
       className={cn(
         "relative flex h-svh max-h-svh flex-1 flex-col bg-background overflow-hidden min-w-0",
