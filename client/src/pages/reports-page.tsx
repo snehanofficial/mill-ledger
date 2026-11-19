@@ -125,9 +125,6 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Reports & Audit
             </h1>
-            <Badge variant="outline" className="font-mono text-xs">
-              M8
-            </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             Tax registers, stock valuation, production costing, and system

@@ -132,9 +132,6 @@ export function InvoicesPage() {
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Invoices
             </h1>
-            <Badge variant="outline" className="font-mono text-xs">
-              M6
-            </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             Tax calculation snapshots, FY series numbering, and immutable

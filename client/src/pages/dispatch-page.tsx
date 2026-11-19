@@ -190,9 +190,6 @@ export function DispatchPage() {
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Dispatch
             </h1>
-            <Badge variant="outline" className="font-mono text-xs">
-              M6
-            </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             Physical stock movements, reservation release, and warehouse

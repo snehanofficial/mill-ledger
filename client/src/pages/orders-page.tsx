@@ -366,9 +366,6 @@ export function OrdersPage() {
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Orders
             </h1>
-            <Badge variant="outline" className="font-mono text-xs">
-              M5
-            </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             Salesman mobile orders, admin approval, shortages, and atomic stock

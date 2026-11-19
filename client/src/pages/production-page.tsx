@@ -247,9 +247,6 @@ export function ProductionPage() {
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Production execution
             </h1>
-            <Badge variant="outline" className="font-mono text-xs">
-              M4
-            </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             BOM execution, consumption variances, yield calculations, and run

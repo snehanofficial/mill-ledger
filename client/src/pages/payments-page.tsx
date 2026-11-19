@@ -297,9 +297,6 @@ export function PaymentsPage() {
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Payments
             </h1>
-            <Badge variant="outline" className="font-mono text-xs">
-              M7
-            </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             Customer collections, invoice payment allocations, and receivables
