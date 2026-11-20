@@ -2,9 +2,9 @@ name: MillLedger CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, "remediation/*", "remediation/**"]
   pull_request:
-    branches: [main]
+    branches: [main, "remediation/*", "remediation/**"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -76,6 +76,9 @@ jobs:
 
       - name: Execute benchmark verification script
         run: pnpm benchmark
+
+      - name: Validate Remediation Tracker
+        run: node audit/tracker/check-tracker.mjs
 
       - name: Build client production bundles
         run: pnpm --filter client build

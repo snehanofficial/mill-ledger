@@ -5,3 +5,10 @@ playwright-report
 .env
 .env.local
 .env.*.local
+
+# Codebase Audit Bookkeeping (ignore large blobs & transient run logs)
+audit/evidence/
+audit/scratch/
+audit/runs/
+audits/
+prompts/
