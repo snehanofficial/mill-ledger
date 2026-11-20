@@ -12,11 +12,11 @@
 ### By Status
 | Status | Count | Percentage |
 |---|---|---|
-| OPEN | 95 | 89.6% |
+| OPEN | 102 | 96.2% |
 | IN-PROGRESS | 0 | 0.0% |
 | FIXED-UNVERIFIED | 0 | 0.0% |
 | VERIFIED | 0 | 0.0% |
-| BLOCKED | 7 | 6.6% |
+| BLOCKED | 0 | 0.0% |
 | WONT-FIX | 4 | 3.8% |
 | **TOTAL** | **106** | **100.0%** |
 
@@ -34,13 +34,7 @@
 
 | ID | Title | Tier | Severity | Blocking Reason & Unblocking Action |
 |---|---|---|---|---|
-| **F-013** | Backend lacks payment bounce/reversal methods and debit note data structures required for double-entry correction | T1 | P1 | BLOCKED on Owner Decision OD-06: Payment Bounce and Debit Note Data Model Specification. |
-| **F-014** | Statutory GST rates are read from static `product.taxRate` columns; the dedicated `TaxRate` master table is never queried | T1 | P2 | BLOCKED on Owner Decision OD-01: Dynamic GST Rate Master Source vs Static Product Column. |
-| **F-018** | `GET /api/v1/sales/dispatches` is accessible to salesmen and leaks company-wide customer orders, invoices, and dispatch records | T2 | P1 | BLOCKED on Owner Decision OD-03: Multi-tier ABAC Scoping Matrix for Salesmen & Dispatches. |
-| **F-020** | Sales order creation permits arbitrary client-supplied unit prices without discount bounds, minimum margin validation, or manager approval | T2 | P1 | BLOCKED on Owner Decision OD-07: Sales Order Unit Price Discount Bounds and Margin Policy. |
-| **F-023** | Backend lacks user and role management API endpoints; super admin accounts rely on hardcoded seeded credentials without last-admin demotion safeguards or MFA | T2 | P1 | BLOCKED on Owner Decision OD-02: Super Admin Bootstrap and First-Run Credential Policy. |
-| **F-083** | Silent Server Acceptance of Insufficient Stock Offline Orders Violating Explicit Conflict Queue Requirement (REQ-052) | T9 | P1 | BLOCKED on Owner Decision OD-04: Offline Outbox Stock Shortage Conflict Queue Policy (REQ-052). |
-| **F-106** | Lack of Data Protection Policies, Retention Schedules, Erasure/Anonymization Routines, and Subject Access Export Under DPDP Act 2023 | T4 | P2 | BLOCKED on Owner Decision OD-08: DPDP Act 2023 Customer Data Retention, Anonymization & Erasure Schedule. |
+| None | - | - | - | All items are eligible for processing |
 
 ---
 
@@ -48,42 +42,43 @@
 
 | ID | Tier | Sev | Cluster | Status | Approval | Depends On | Title |
 |---|---|---|---|---|---|---|---|
-| **F-001** | T7 | P1 | CLUSTER-10 | `OPEN` | none | F-045 | Duplicate "Skip to main content" links violate Playwright strict mode and degrade keyboard navigation |
-| **F-002** | T11 | P2 | CLUSTER-15 | `OPEN` | none | F-070 | README instructions specify nonexistent `server/.env.example` path and incorrect backend port 3000 |
-| **F-003** | T11 | P1 | CLUSTER-15 | `OPEN` | none | F-070 | README command `pnpm --filter @mill-ledger/server prisma db seed` fails silently without seeding records |
-| **F-004** | T4 | P0 | CLUSTER-07 | `OPEN` | none | F-025 | Prisma seed script executes in production mode without guard or confirmation, injecting hardcoded test accounts |
-| **F-005** | T11 | P3 | CLUSTER-15 | `OPEN` | none | F-070 | Unused dependency `cn@^0.5.2` installed in client package.json alongside `clsx` and `tailwind-merge` |
-| **F-006** | T4 | P2 | CLUSTER-07 | `OPEN` | none | F-025 | Installed Zod version 3.24.2 is subject to high-severity denial-of-service advisory GHSA-mrhx-c7xc-m3w5 |
-| **F-007** | T1 | P0 | CLUSTER-02 | `OPEN` | none | F-009 | Missing row-level lock in sales order approval allows concurrent orders to exceed ATP stock by over 100% |
-| **F-008** | T1 | P0 | CLUSTER-02 | `OPEN` | none | F-009 | Non-atomic `count()` based dispatch sequence generation causes unique constraint crashes on concurrent dispatches |
+| **F-097** | T1 | P2 | CLUSTER-01 | `OPEN` | schema | - | Architectural Inconsistency: Zero Centralized Currency & Date Formatters across 7 Financial Surfaces (Ad-hoc `.toFixed(2)` & Fragmented Locales) |
 | **F-009** | T1 | P1 | CLUSTER-03 | `OPEN` | schema | - | Application database role retains full UPDATE and DELETE privileges on stock movements and posted invoices without database triggers or rules |
 | **F-010** | T1 | P1 | CLUSTER-01 | `OPEN` | schema | F-009 | Invoice tax and totals calculated with unrounded JS float math produce 1-2 paise rounding drift in 46.4% of invoices |
-| **F-011** | T1 | P1 | CLUSTER-03 | `OPEN` | schema | - | `financeService.getFinancialYear()` relies on Node process timezone, misclassifying April 1st morning invoices into previous financial year on UTC servers |
-| **F-012** | T3 | P1 | CLUSTER-06 | `OPEN` | API | F-017, F-023 | Absence of format and checksum validation allows malformed and counterfeit GSTIN strings in customer records and tax invoices |
-| **F-013** | T1 | P1 | CLUSTER-03 | `BLOCKED` | schema | - | Backend lacks payment bounce/reversal methods and debit note data structures required for double-entry correction |
-| **F-014** | T1 | P2 | CLUSTER-03 | `BLOCKED` | schema | - | Statutory GST rates are read from static `product.taxRate` columns; the dedicated `TaxRate` master table is never queried |
+| **F-036** | T1 | P0 | CLUSTER-01 | `OPEN` | schema | F-010 | Dashboard Sales Revenue Silently Drops Invoices Without Lines (SQL vs API Mismatch) |
+| **F-007** | T1 | P0 | CLUSTER-02 | `OPEN` | none | F-009 | Missing row-level lock in sales order approval allows concurrent orders to exceed ATP stock by over 100% |
+| **F-008** | T1 | P0 | CLUSTER-02 | `OPEN` | none | F-009 | Non-atomic `count()` based dispatch sequence generation causes unique constraint crashes on concurrent dispatches |
 | **F-015** | T1 | P2 | CLUSTER-02 | `OPEN` | none | F-009, F-008 | Idempotency pre-query race condition causes concurrent duplicate submissions to crash with unhandled 500 unique constraint error |
+| **F-011** | T1 | P1 | CLUSTER-03 | `OPEN` | schema | - | `financeService.getFinancialYear()` relies on Node process timezone, misclassifying April 1st morning invoices into previous financial year on UTC servers |
+| **F-013** | T1 | P1 | CLUSTER-03 | `OPEN` | schema | - | Backend lacks payment bounce/reversal methods and debit note data structures required for double-entry correction |
+| **F-014** | T1 | P2 | CLUSTER-03 | `OPEN` | schema | - | Statutory GST rates are read from static `product.taxRate` columns; the dedicated `TaxRate` master table is never queried |
 | **F-016** | T1 | P2 | CLUSTER-03 | `OPEN` | schema | - | Packaging capacity mismatch warning is hardcoded to specific SKU and multiplier, and is never persisted to database |
 | **F-017** | T2 | P0 | CLUSTER-04 | `OPEN` | permission | F-007, F-009, F-010 | Unvalidated `status` in order creation payload allows salesman to set `status: "APPROVED"` directly in PostgreSQL |
-| **F-018** | T2 | P1 | CLUSTER-04 | `BLOCKED` | permission | F-007, F-009, F-010 | `GET /api/v1/sales/dispatches` is accessible to salesmen and leaks company-wide customer orders, invoices, and dispatch records |
+| **F-018** | T2 | P1 | CLUSTER-04 | `OPEN` | permission | F-007, F-009, F-010 | `GET /api/v1/sales/dispatches` is accessible to salesmen and leaks company-wide customer orders, invoices, and dispatch records |
 | **F-019** | T2 | P1 | CLUSTER-04 | `OPEN` | permission | F-007, F-009, F-010 | Direct URL navigation to forbidden routes renders full operational page shells without route-level authorization guards or 403 pages |
-| **F-020** | T2 | P1 | CLUSTER-04 | `BLOCKED` | permission | F-007, F-009, F-010 | Sales order creation permits arbitrary client-supplied unit prices without discount bounds, minimum margin validation, or manager approval |
+| **F-020** | T2 | P1 | CLUSTER-04 | `OPEN` | permission | F-007, F-009, F-010 | Sales order creation permits arbitrary client-supplied unit prices without discount bounds, minimum margin validation, or manager approval |
 | **F-021** | T2 | P1 | CLUSTER-04 | `OPEN` | permission | F-007, F-009, F-010 | Multi-mount of `inventoryRouter` exposes `GET /api/v1/purchase-receipts/items/:id/ledger` to salesmen due to broad `inventory:read` privilege |
-| **F-022** | T3 | P1 | CLUSTER-06 | `OPEN` | API | F-017, F-023 | `auditService.log` is invoked only on report exports; zero audit log records are generated for orders, dispatches, production runs, invoices, or payments |
-| **F-023** | T2 | P1 | CLUSTER-05 | `BLOCKED` | API | F-017 | Backend lacks user and role management API endpoints; super admin accounts rely on hardcoded seeded credentials without last-admin demotion safeguards or MFA |
-| **F-024** | T2 | P2 | CLUSTER-05 | `OPEN` | API | F-017 | Better Auth password reset endpoint is unconfigured (returns 404); account lockout is not implemented after repeated authentication failures |
-| **F-025** | T3 | P2 | CLUSTER-06 | `OPEN` | API | F-017, F-023 | Application middleware pipeline deviates from security baseline: lacks request correlation IDs, app-wide rate limits, JSON 404 envelope, and translates 413 payload limits into 500 server crashes |
-| **F-026** | T3 | P1 | CLUSTER-06 | `OPEN` | API | F-017, F-023 | Unsanitized user inputs exported to CSV files allow formula injection in spreadsheet viewers |
 | **F-027** | T2 | P1 | CLUSTER-04 | `OPEN` | permission | F-007, F-009, F-010 | Stock reservations lack TTL and expiration semantics, enabling inventory lockup and order fulfillment denial of service |
+| **F-023** | T2 | P1 | CLUSTER-05 | `OPEN` | API | F-017 | Backend lacks user and role management API endpoints; super admin accounts rely on hardcoded seeded credentials without last-admin demotion safeguards or MFA |
+| **F-024** | T2 | P2 | CLUSTER-05 | `OPEN` | API | F-017 | Better Auth password reset endpoint is unconfigured (returns 404); account lockout is not implemented after repeated authentication failures |
 | **F-028** | T2 | P2 | CLUSTER-05 | `OPEN` | API | F-017 | Dexie IndexedDB fails to purge sensitive customer PII and pending offline orders upon user sign-out |
 | **F-029** | T2 | P2 | CLUSTER-05 | `OPEN` | API | F-017 | CI pipeline uses mutable GitHub Action references, lacks package manager release-age protection, and exposes unconstrained database seeds |
+| **F-084** | T2 | P2 | CLUSTER-05 | `WONT-FIX` | API | F-017 | Plaintext Sensitive Customer PII and Outbox Orders Persist in IndexedDB Across User Logout and Account Switches |
+| **F-012** | T3 | P1 | CLUSTER-06 | `OPEN` | API | F-017, F-023 | Absence of format and checksum validation allows malformed and counterfeit GSTIN strings in customer records and tax invoices |
+| **F-022** | T3 | P1 | CLUSTER-06 | `OPEN` | API | F-017, F-023 | `auditService.log` is invoked only on report exports; zero audit log records are generated for orders, dispatches, production runs, invoices, or payments |
+| **F-025** | T3 | P2 | CLUSTER-06 | `OPEN` | API | F-017, F-023 | Application middleware pipeline deviates from security baseline: lacks request correlation IDs, app-wide rate limits, JSON 404 envelope, and translates 413 payload limits into 500 server crashes |
+| **F-026** | T3 | P1 | CLUSTER-06 | `OPEN` | API | F-017, F-023 | Unsanitized user inputs exported to CSV files allow formula injection in spreadsheet viewers |
 | **F-030** | T3 | P0 | CLUSTER-06 | `OPEN` | API | F-017, F-023 | Order modification endpoint lacks request body schema validation, accepting unvalidated mutations and crashing with HTTP 500 on malformed status values |
 | **F-031** | T3 | P1 | CLUSTER-06 | `OPEN` | API | F-017, F-023 | Shared contracts workspace contains zero domain schemas; client executes with no Zod validation while server routes define isolated, unexported schemas |
+| **F-004** | T4 | P0 | CLUSTER-07 | `OPEN` | none | F-025 | Prisma seed script executes in production mode without guard or confirmation, injecting hardcoded test accounts |
+| **F-006** | T4 | P2 | CLUSTER-07 | `OPEN` | none | F-025 | Installed Zod version 3.24.2 is subject to high-severity denial-of-service advisory GHSA-mrhx-c7xc-m3w5 |
 | **F-032** | T4 | P1 | CLUSTER-07 | `OPEN` | none | F-025 | Zero API Zod schemas configure `.strict()`, allowing unknown fields to be silently accepted or stripped without client notification |
 | **F-033** | T4 | P1 | CLUSTER-07 | `OPEN` | none | F-025 | Application lacks domain-level validation for statutory formats (PIN, Phone, Email, State, HSN), discrete UOM integer quantities, customer credit limits, and chronological dates |
 | **F-034** | T4 | P1 | CLUSTER-07 | `OPEN` | none | F-025 | Server lacks consistent error envelope (missing code, fieldErrors, requestId), leaks internal Prisma schema details and stack traces, and triggers client UI error masking |
 | **F-035** | T4 | P1 | CLUSTER-07 | `OPEN` | none | F-025 | Zero HTTP request logging middleware exists; no correlation IDs are generated; operational mutations bypass audit logs; and `audit_log` records are mutable and lack search/export UI |
-| **F-036** | T1 | P0 | CLUSTER-01 | `OPEN` | schema | F-010 | Dashboard Sales Revenue Silently Drops Invoices Without Lines (SQL vs API Mismatch) |
+| **F-100** | T4 | P1 | CLUSTER-07 | `OPEN` | none | F-025 | Missing Fail-Fast Environment Validation on `DATABASE_URL` and Absence of Staging / Production Env Configs |
+| **F-101** | T4 | P0 | CLUSTER-07 | `WONT-FIX` | none | F-025 | Benchmark Seed Script Executes Unchecked in Production Without Environment Guard |
+| **F-106** | T4 | P2 | CLUSTER-07 | `OPEN` | none | F-025 | Lack of Data Protection Policies, Retention Schedules, Erasure/Anonymization Routines, and Subject Access Export Under DPDP Act 2023 |
 | **F-037** | T5 | P1 | CLUSTER-08 | `OPEN` | API | F-010, F-017, F-025 | Core Invoicing Workflow Cannot Be Initiated From Client UI (Missing Create Invoice Action) |
 | **F-038** | T5 | P1 | CLUSTER-08 | `OPEN` | API | F-010, F-017, F-025 | Suppliers Master Cannot Be Added or Managed via UI or API (Static Seed-Only Entity) |
 | **F-039** | T5 | P2 | CLUSTER-08 | `OPEN` | API | F-010, F-017, F-025 | Audit Log CSV Export Throws 400 Error ("Unknown report type: audit") |
@@ -91,13 +86,14 @@
 | **F-041** | T5 | P2 | CLUSTER-08 | `OPEN` | API | F-010, F-017, F-025 | Unrestricted Report Tabs Cause 403 Console Errors for Scoped Roles (Salesman & Production) |
 | **F-042** | T5 | P1 | CLUSTER-08 | `OPEN` | API | F-010, F-017, F-025 | Ordering Interface Missing Required Product Tiles, Visual Images, and Accessible Quantity Steppers |
 | **F-043** | T5 | P1 | CLUSTER-08 | `OPEN` | API | F-010, F-017, F-025 | Pervasive Tamil Localization Failure Across Internal Business Routes Despite Language Selector |
-| **F-044** | T7 | P2 | CLUSTER-10 | `WONT-FIX` | none | F-045 | Touch Targets Below Minimum 44x44px Across Mobile Viewports |
 | **F-045** | T6 | P2 | CLUSTER-09 | `OPEN` | none | F-038 | Lack of Skeleton Loaders and Omission of Request IDs in UI Error States |
 | **F-046** | T6 | P2 | CLUSTER-09 | `OPEN` | none | F-038 | Ephemeral Filter, Sort, and Tab State Not Preserved in URL |
 | **F-047** | T6 | P2 | CLUSTER-09 | `OPEN` | none | F-038 | Absence of Sticky Table Headers and Card Transformation on Mobile Viewports |
 | **F-048** | T6 | P2 | CLUSTER-09 | `OPEN` | none | F-038 | Missing Confirmation Dialogs for Irreversible Operations (Dispatch, Order Rejection) |
 | **F-049** | T6 | P2 | CLUSTER-09 | `OPEN` | none | F-038 | Complete Absence of In-App Documentation, Onboarding Guidance, and Domain Jargon Tooltips |
 | **F-050** | T6 | P3 | CLUSTER-09 | `OPEN` | none | F-038 | Incomplete Dark Mode Infrastructure and Design Token Fragmentation in CSS Output |
+| **F-001** | T7 | P1 | CLUSTER-10 | `OPEN` | none | F-045 | Duplicate "Skip to main content" links violate Playwright strict mode and degrade keyboard navigation |
+| **F-044** | T7 | P2 | CLUSTER-10 | `WONT-FIX` | none | F-045 | Touch Targets Below Minimum 44x44px Across Mobile Viewports |
 | **F-051** | T7 | P1 | CLUSTER-10 | `OPEN` | none | F-045 | Missing Accessible Name and APG Dialog Semantics on Core Modal Overlays |
 | **F-052** | T7 | P1 | CLUSTER-10 | `OPEN` | none | F-045 | Unassociated Form Labels and Missing Accessible Names Across Operational Forms |
 | **F-053** | T7 | P1 | CLUSTER-10 | `OPEN` | none | F-045 | and Absence of Route Transition Announcements for Screen Readers |
@@ -130,8 +126,7 @@
 | **F-080** | T9 | P1 | CLUSTER-13 | `OPEN` | none | F-038, F-051 | Untranslated User Interface Across 100% of Application Routes (755 Hardcoded Strings vs 4 Translated Navigation Items) |
 | **F-081** | T9 | P1 | CLUSTER-13 | `OPEN` | none | F-038, F-051 | Immediate Destructive Outbox Order Discard Without Confirmation Dialog and Irrevocable Data Loss |
 | **F-082** | T9 | P1 | CLUSTER-13 | `OPEN` | none | F-038, F-051 | Corrupt Outbox Queue Entry Head-of-Line Blocking Halts All Subsequent Offline Order Synchronization |
-| **F-083** | T9 | P1 | CLUSTER-13 | `BLOCKED` | none | F-038, F-051 | Silent Server Acceptance of Insufficient Stock Offline Orders Violating Explicit Conflict Queue Requirement (REQ-052) |
-| **F-084** | T2 | P2 | CLUSTER-05 | `WONT-FIX` | API | F-017 | Plaintext Sensitive Customer PII and Outbox Orders Persist in IndexedDB Across User Logout and Account Switches |
+| **F-083** | T9 | P1 | CLUSTER-13 | `OPEN` | none | F-038, F-051 | Silent Server Acceptance of Insufficient Stock Offline Orders Violating Explicit Conflict Queue Requirement (REQ-052) |
 | **F-085** | T9 | P2 | CLUSTER-13 | `OPEN` | none | F-038, F-051 | Complete Absence of Indic/Tamil Number Formatting, Date Localization, and Collation (Sorting) |
 | **F-086** | T9 | P2 | CLUSTER-13 | `OPEN` | none | F-038, F-051 | Missing Pre-Hydration HTML Lang Synchronization and Non-User-Scoped Language Preference Causing FOUC |
 | **F-087** | T9 | P2 | CLUSTER-13 | `OPEN` | none | F-038, F-051 | Absence of Persistent Storage Request Permitting Silent Browser Eviction of Offline Outbox Queue |
@@ -141,16 +136,15 @@
 | **F-091** | T10 | P1 | CLUSTER-14 | `OPEN` | none | F-019 | Statically Frozen `<title>` and Total Omission of Essential SEO & Social Metadata |
 | **F-092** | T10 | P2 | CLUSTER-14 | `OPEN` | none | F-019 | Missing Public Marketing, Landing, Catalog, and Contact Surfaces |
 | **F-093** | T10 | P2 | CLUSTER-14 | `OPEN` | none | F-019 | Absence of Schema.org JSON-LD Structured Data and Semantic `<main>` Landmark on Login Surface |
+| **F-002** | T11 | P2 | CLUSTER-15 | `OPEN` | none | F-070 | README instructions specify nonexistent `server/.env.example` path and incorrect backend port 3000 |
+| **F-003** | T11 | P1 | CLUSTER-15 | `OPEN` | none | F-070 | README command `pnpm --filter @mill-ledger/server prisma db seed` fails silently without seeding records |
+| **F-005** | T11 | P3 | CLUSTER-15 | `OPEN` | none | F-070 | Unused dependency `cn@^0.5.2` installed in client package.json alongside `clsx` and `tailwind-merge` |
 | **F-094** | T11 | P2 | CLUSTER-15 | `OPEN` | none | F-070 | Dead Code, Orphaned Stubs, and Dependency Bloat (10 Unused Dependencies, Orphaned Dictionary, and 22 Dead Placeholder Pages) |
 | **F-095** | T11 | P1 | CLUSTER-15 | `OPEN` | none | F-070 | Domain Layer Type Safety Breach: 14 Explicit `any` Types, 4 Double Casts (`as unknown as`), and Missing `--strict` in Frontend tsconfig |
 | **F-096** | T11 | P1 | CLUSTER-15 | `OPEN` | none | F-070 | Test Assertion Blindspots: Surviving Mutants in GST and Payment Allocation Logic (Stryker 59.32% Mutation Score, Zero Inter-State & Error Boundary Tests) |
-| **F-097** | T1 | P2 | CLUSTER-01 | `OPEN` | schema | - | Architectural Inconsistency: Zero Centralized Currency & Date Formatters across 7 Financial Surfaces (Ad-hoc `.toFixed(2)` & Fragmented Locales) |
 | **F-098** | T11 | P3 | CLUSTER-15 | `OPEN` | none | F-070 | Documentation Drift and False Claims: "Modular Monolog" Typo, False API Port, and Overstated Deliverables in README |
 | **F-099** | T11 | P1 | CLUSTER-15 | `OPEN` | none | F-070 | Broken Production Dockerfile: Missing `tsconfig.json` Causes Build Failure, Unpruned DevDependencies, and Static Client Files Never Served by API Server |
-| **F-100** | T4 | P1 | CLUSTER-07 | `OPEN` | none | F-025 | Missing Fail-Fast Environment Validation on `DATABASE_URL` and Absence of Staging / Production Env Configs |
-| **F-101** | T4 | P0 | CLUSTER-07 | `WONT-FIX` | none | F-025 | Benchmark Seed Script Executes Unchecked in Production Without Environment Guard |
 | **F-102** | T11 | P1 | CLUSTER-15 | `OPEN` | none | F-070 | Missing Readiness Endpoint, Health Check Omits Database Connectivity, and Express Missing Request Timeout & Trust Proxy Settings |
 | **F-103** | T11 | P2 | CLUSTER-15 | `OPEN` | none | F-070 | Total Absence of Observability: Unstructured Console Logging, Zero Source Maps, No Error Tracking, No Metrics, and Missing Alert Rules |
 | **F-104** | T11 | P1 | CLUSTER-15 | `OPEN` | none | F-070 | CI/CD Pipeline Gaps: E2E, Lighthouse, Audit, Bundle Gate, and Secret Scan Missing; Main Branch Lacks Merge Protection |
 | **F-105** | T11 | P2 | CLUSTER-15 | `OPEN` | none | F-070 | Missing Production Runbooks (Deploy, Rollback, Restore, Secret Rotation, Super Admin) and Absence of Comprehensive Data Dictionary |
-| **F-106** | T4 | P2 | CLUSTER-07 | `BLOCKED` | none | F-025 | Lack of Data Protection Policies, Retention Schedules, Erasure/Anonymization Routines, and Subject Access Export Under DPDP Act 2023 |

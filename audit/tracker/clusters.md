@@ -134,8 +134,8 @@ server/src/modules/production/production.service.ts:729:    const run = await pr
 |---|---|---|---|
 | **F-009** | P1 | `OPEN` | Application database role retains full UPDATE and DELETE privileges on stock movements and posted invoices without database triggers or rules |
 | **F-011** | P1 | `OPEN` | `financeService.getFinancialYear()` relies on Node process timezone, misclassifying April 1st morning invoices into previous financial year on UTC servers |
-| **F-013** | P1 | `BLOCKED` | Backend lacks payment bounce/reversal methods and debit note data structures required for double-entry correction |
-| **F-014** | P2 | `BLOCKED` | Statutory GST rates are read from static `product.taxRate` columns; the dedicated `TaxRate` master table is never queried |
+| **F-013** | P1 | `OPEN` | Backend lacks payment bounce/reversal methods and debit note data structures required for double-entry correction |
+| **F-014** | P2 | `OPEN` | Statutory GST rates are read from static `product.taxRate` columns; the dedicated `TaxRate` master table is never queried |
 | **F-016** | P2 | `OPEN` | Packaging capacity mismatch warning is hardcoded to specific SKU and multiplier, and is never persisted to database |
 
 #### Sibling Sweep Record
@@ -160,9 +160,9 @@ server/src/modules/production/production.service.ts:448:        await tx.product
 | ID | Sev | Status | Title |
 |---|---|---|---|
 | **F-017** | P0 | `OPEN` | Unvalidated `status` in order creation payload allows salesman to set `status: "APPROVED"` directly in PostgreSQL |
-| **F-018** | P1 | `BLOCKED` | `GET /api/v1/sales/dispatches` is accessible to salesmen and leaks company-wide customer orders, invoices, and dispatch records |
+| **F-018** | P1 | `OPEN` | `GET /api/v1/sales/dispatches` is accessible to salesmen and leaks company-wide customer orders, invoices, and dispatch records |
 | **F-019** | P1 | `OPEN` | Direct URL navigation to forbidden routes renders full operational page shells without route-level authorization guards or 403 pages |
-| **F-020** | P1 | `BLOCKED` | Sales order creation permits arbitrary client-supplied unit prices without discount bounds, minimum margin validation, or manager approval |
+| **F-020** | P1 | `OPEN` | Sales order creation permits arbitrary client-supplied unit prices without discount bounds, minimum margin validation, or manager approval |
 | **F-021** | P1 | `OPEN` | Multi-mount of `inventoryRouter` exposes `GET /api/v1/purchase-receipts/items/:id/ledger` to salesmen due to broad `inventory:read` privilege |
 | **F-027** | P1 | `OPEN` | Stock reservations lack TTL and expiration semantics, enabling inventory lockup and order fulfillment denial of service |
 
@@ -184,7 +184,7 @@ server/src/modules/production/production.service.ts:448:        await tx.product
 
 | ID | Sev | Status | Title |
 |---|---|---|---|
-| **F-023** | P1 | `BLOCKED` | Backend lacks user and role management API endpoints; super admin accounts rely on hardcoded seeded credentials without last-admin demotion safeguards or MFA |
+| **F-023** | P1 | `OPEN` | Backend lacks user and role management API endpoints; super admin accounts rely on hardcoded seeded credentials without last-admin demotion safeguards or MFA |
 | **F-024** | P2 | `OPEN` | Better Auth password reset endpoint is unconfigured (returns 404); account lockout is not implemented after repeated authentication failures |
 | **F-028** | P2 | `OPEN` | Dexie IndexedDB fails to purge sensitive customer PII and pending offline orders upon user sign-out |
 | **F-029** | P2 | `OPEN` | CI pipeline uses mutable GitHub Action references, lacks package manager release-age protection, and exposes unconstrained database seeds |
@@ -257,7 +257,7 @@ server/src/modules/production/production.routes.ts:200:        ? req.params.id[0
 | **F-035** | P1 | `OPEN` | Zero HTTP request logging middleware exists; no correlation IDs are generated; operational mutations bypass audit logs; and `audit_log` records are mutable and lack search/export UI |
 | **F-100** | P1 | `OPEN` | Missing Fail-Fast Environment Validation on `DATABASE_URL` and Absence of Staging / Production Env Configs |
 | **F-101** | P0 | `WONT-FIX` | Benchmark Seed Script Executes Unchecked in Production Without Environment Guard |
-| **F-106** | P2 | `BLOCKED` | Lack of Data Protection Policies, Retention Schedules, Erasure/Anonymization Routines, and Subject Access Export Under DPDP Act 2023 |
+| **F-106** | P2 | `OPEN` | Lack of Data Protection Policies, Retention Schedules, Erasure/Anonymization Routines, and Subject Access Export Under DPDP Act 2023 |
 
 #### Sibling Sweep Record
 
@@ -474,7 +474,7 @@ server/src/modules/inventory/inventory.service.ts:356:    return await prisma.pu
 | **F-080** | P1 | `OPEN` | Untranslated User Interface Across 100% of Application Routes (755 Hardcoded Strings vs 4 Translated Navigation Items) |
 | **F-081** | P1 | `OPEN` | Immediate Destructive Outbox Order Discard Without Confirmation Dialog and Irrevocable Data Loss |
 | **F-082** | P1 | `OPEN` | Corrupt Outbox Queue Entry Head-of-Line Blocking Halts All Subsequent Offline Order Synchronization |
-| **F-083** | P1 | `BLOCKED` | Silent Server Acceptance of Insufficient Stock Offline Orders Violating Explicit Conflict Queue Requirement (REQ-052) |
+| **F-083** | P1 | `OPEN` | Silent Server Acceptance of Insufficient Stock Offline Orders Violating Explicit Conflict Queue Requirement (REQ-052) |
 | **F-085** | P2 | `OPEN` | Complete Absence of Indic/Tamil Number Formatting, Date Localization, and Collation (Sorting) |
 | **F-086** | P2 | `OPEN` | Missing Pre-Hydration HTML Lang Synchronization and Non-User-Scoped Language Preference Causing FOUC |
 | **F-087** | P2 | `OPEN` | Absence of Persistent Storage Request Permitting Silent Browser Eviction of Offline Outbox Queue |

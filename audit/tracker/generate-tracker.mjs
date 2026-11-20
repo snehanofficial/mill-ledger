@@ -182,15 +182,38 @@ for (const [cId, cData] of Object.entries(CLUSTERS)) {
   }
 }
 
-// Blocked decisions list
-const BLOCKED_DECISIONS = {
-  "F-013": "BLOCKED on Owner Decision OD-06: Payment Bounce and Debit Note Data Model Specification.",
-  "F-014": "BLOCKED on Owner Decision OD-01: Dynamic GST Rate Master Source vs Static Product Column.",
-  "F-018": "BLOCKED on Owner Decision OD-03: Multi-tier ABAC Scoping Matrix for Salesmen & Dispatches.",
-  "F-020": "BLOCKED on Owner Decision OD-07: Sales Order Unit Price Discount Bounds and Margin Policy.",
-  "F-023": "BLOCKED on Owner Decision OD-02: Super Admin Bootstrap and First-Run Credential Policy.",
-  "F-083": "BLOCKED on Owner Decision OD-04: Offline Outbox Stock Shortage Conflict Queue Policy (REQ-052).",
-  "F-106": "BLOCKED on Owner Decision OD-08: DPDP Act 2023 Customer Data Retention, Anonymization & Erasure Schedule."
+// Blocked decisions list (All unblocked on 2026-11-20 via formal owner decisions OD-01 through OD-08)
+const BLOCKED_DECISIONS = {};
+
+const RESOLVED_DECISIONS = {
+  "F-013": {
+    od: "OD-06",
+    note: "Unblocked on 2026-11-20 per Owner Decision OD-06 (Dedicated DebitNote model for supplier returns & PaymentStatus.BOUNCED)."
+  },
+  "F-014": {
+    od: "OD-01",
+    note: "Unblocked on 2026-11-20 per Owner Decision OD-01 (Dynamic TaxRate master lookup by HSN & effective date, fail-safe if missing)."
+  },
+  "F-018": {
+    od: "OD-03",
+    note: "Unblocked on 2026-11-20 per Owner Decision OD-03 (Scoped Dispatches by salesOrder.createdById === user.id)."
+  },
+  "F-020": {
+    od: "OD-07",
+    note: "Unblocked on 2026-11-20 per Owner Decision OD-07 (Threshold Discount Guard: <=5% salesman discretion, 5-15% manager approval, >15% reject)."
+  },
+  "F-023": {
+    od: "OD-02",
+    note: "Unblocked on 2026-11-20 per Owner Decision OD-02 (Interactive CLI pnpm admin:bootstrap with hidden password entry)."
+  },
+  "F-083": {
+    od: "OD-04",
+    note: "Unblocked on 2026-11-20 per Owner Decision OD-04 (STOCK_SHORTAGE_CONFLICT state with row locking and partial reservation)."
+  },
+  "F-106": {
+    od: "OD-08",
+    note: "Unblocked on 2026-11-20 per Owner Decision OD-08 (PII Anonymization with CGST Section 36 72-month statutory retention safeguards)."
+  }
 };
 
 // Duplicate findings list
@@ -293,6 +316,23 @@ for (const file of findingFiles) {
       evidenceLink: "audit/tracker/owner-decisions.md",
       note: BLOCKED_DECISIONS[fId]
     });
+  } else if (RESOLVED_DECISIONS[fId]) {
+    status = "OPEN";
+    notes = RESOLVED_DECISIONS[fId].note;
+    statusHistory.push({
+      status: "BLOCKED",
+      date: "2026-11-20",
+      commit: null,
+      evidenceLink: "audit/tracker/owner-decisions.md",
+      note: `BLOCKED pending Owner Decision ${RESOLVED_DECISIONS[fId].od}.`
+    });
+    statusHistory.push({
+      status: "OPEN",
+      date: "2026-11-20",
+      commit: null,
+      evidenceLink: "audit/tracker/owner-decisions.md",
+      note: RESOLVED_DECISIONS[fId].note
+    });
   }
 
   // Dependencies
@@ -355,10 +395,60 @@ for (const item of items) {
   }
 }
 
-// Write tracker.json
+// Topological sort respecting tiers and dependency ordering
+const TIER_ORDER = {
+  T0: 0, T1: 1, T2: 2, T3: 3, T4: 4, T5: 5,
+  T6: 6, T7: 7, T8: 8, T9: 9, T10: 10, T11: 11
+};
+
+const inDegree = new Map();
+const adj = new Map();
+const itemMap = new Map();
+
+for (const item of items) {
+  itemMap.set(item.id, item);
+  inDegree.set(item.id, 0);
+  adj.set(item.id, []);
+}
+
+for (const item of items) {
+  for (const depId of item.dependsOn || []) {
+    if (adj.has(depId)) {
+      adj.get(depId).push(item.id);
+      inDegree.set(item.id, inDegree.get(item.id) + 1);
+    }
+  }
+}
+
+const ready = items.filter(i => inDegree.get(i.id) === 0);
+const sortedItems = [];
+
+while (ready.length > 0) {
+  ready.sort((a, b) => {
+    const tDiff = TIER_ORDER[a.tier] - TIER_ORDER[b.tier];
+    if (tDiff !== 0) return tDiff;
+    if (a.cluster !== b.cluster) return a.cluster.localeCompare(b.cluster);
+    return a.id.localeCompare(b.id);
+  });
+  const current = ready.shift();
+  sortedItems.push(current);
+
+  for (const neighborId of adj.get(current.id) || []) {
+    inDegree.set(neighborId, inDegree.get(neighborId) - 1);
+    if (inDegree.get(neighborId) === 0) {
+      ready.push(itemMap.get(neighborId));
+    }
+  }
+}
+
+if (sortedItems.length !== items.length) {
+  throw new Error(`Topological sort error: sorted ${sortedItems.length} of ${items.length} items`);
+}
+
+// Write tracker.json in topological order
 const trackerJsonFile = path.join(ROOT, "audit/tracker/tracker.json");
-fs.writeFileSync(trackerJsonFile, JSON.stringify(items, null, 2), "utf8");
-console.log(`Wrote ${items.length} work items to ${trackerJsonFile}`);
+fs.writeFileSync(trackerJsonFile, JSON.stringify(sortedItems, null, 2), "utf8");
+console.log(`Wrote ${sortedItems.length} work items in topological order to ${trackerJsonFile}`);
 
 // Generate tracker.md via check-tracker.mjs
 console.log("Generating tracker.md via check-tracker.mjs...");
@@ -565,7 +655,12 @@ const ownerDecisionsMd = `# MillLedger Owner Decisions & Architectural Approvals
 - **Unblocking Action**: Owner selects Option A or Option B.
 `;
 
-fs.writeFileSync(path.join(ROOT, "audit/tracker/owner-decisions.md"), ownerDecisionsMd, "utf8");
-console.log("Wrote audit/tracker/owner-decisions.md");
+const ownerDecisionsFile = path.join(ROOT, "audit/tracker/owner-decisions.md");
+if (!fs.existsSync(ownerDecisionsFile)) {
+  fs.writeFileSync(ownerDecisionsFile, ownerDecisionsMd, "utf8");
+  console.log("Wrote audit/tracker/owner-decisions.md");
+} else {
+  console.log("Preserving existing audit/tracker/owner-decisions.md");
+}
 
 console.log("Done generating all tracker files.");

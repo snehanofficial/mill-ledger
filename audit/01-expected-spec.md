@@ -246,24 +246,38 @@
   - Then order is created in status `SUBMITTED` with taxable amount 7,500.00.
 - **Verification Method**: E2E mobile test and Playwright browser test.
 
-### REQ-024: Customer-Specific Price List and Tier Resolution
-- **Statement**: When adding line items to an order, unit rates must resolve automatically from the customer's effective price list, preventing arbitrary client-side price tampering.
-- **Source**: S1 (README "Customer selection and effective price-list pricing"), S3 (OWASP ASVS v4.0.3 V11.1.1, V13.1.1).
+### REQ-024: Customer-Specific Price List and Threshold Discount Guard
+- **Statement**: When adding line items to an order, base unit rates must resolve automatically from the customer's effective price list, preventing arbitrary client-side price tampering. Any discount applied against list price must follow the strict statutory threshold discount guard: discounts up to and including 5% are allowed at salesman discretion; discounts above 5% and up to 15% require explicit manager approval; discounts above 15% are rejected by the server.
+- **Source**: S1 (README "Customer selection and effective price-list pricing"), S2 (Owner Decision OD-07: "Sales Order Unit Price Discount Bounds and Margin Policy"), S3 (OWASP ASVS v4.0.3 V11.1.1, V13.1.1).
+> [!NOTE] Specification Refinement (20 November 2026 — Owner Decision OD-07):
+> Salesmen may not freely override unit prices. Discounts against the customer's assigned price list are governed by:
+> - Up to and including 5%: Salesman discretion.
+> - Above 5% and up to and including 15%: Explicit Manager approval required (enforced via dedicated manager permission, not generic admin).
+> - Above 15%: Rejected outright with HTTP 422 Unprocessable Entity.
+> Discounts and unit prices are recalculated server-side using precise decimal arithmetic. Every discount application must immutably record the applied discount, requesting salesman, approving manager, approval timestamp, and reason. Modifying prices after approval mandates revalidation.
 - **Testable Acceptance Criteria**:
-  - When an order line is submitted with a spoofed rate (e.g. 1.00 instead of 50.00):
-  - Then the backend recalculates and enforces the active master price list rate of 50.00.
-- **Verification Method**: Integration test.
+  - When an order line is submitted with a spoofed rate below 85% of price list (discount > 15%):
+  - Then the backend rejects the request with HTTP 422 Unprocessable Entity (`DISCOUNT_EXCEEDS_MAX_THRESHOLD`).
+  - When an order line is submitted with a discount between 5.01% and 15.00%:
+  - Then the order requires explicit approval from a user with `MANAGER` permission; approval cannot be granted by an unprivileged role.
+  - When an order line is submitted with a discount <= 5.00%:
+  - Then the discount is accepted under salesman discretion.
+- **Verification Method**: Integration test (`discount-guard.test.ts`).
 
-### REQ-025: Salesman Territory and Scope Enforcement
-- **Statement**: Salesmen must only see and create orders for customers assigned to their territory and must only access their own submitted orders.
-- **Source**: S1 (README "Salesman can read only own orders and assigned customers"), S3 (OWASP Top 10:2021 A01:2021, OWASP API Security Top 10:2023 API1:2023).
+### REQ-025: Salesman Territory, Scope Enforcement, and Scoped Dispatch Visibility
+- **Statement**: Salesmen must only see and create orders for customers assigned to their territory and must only access their own submitted orders. Salesmen may access dispatch information associated exclusively with their own submitted sales orders (`salesOrder.createdById === authenticatedUser.id`), projecting only delivery tracking details.
+- **Source**: S1 (README "Salesman can read only own orders and assigned customers"), S2 (Owner Decision OD-03: "Multi-tier ABAC Scoping Matrix for Salesmen & Dispatches"), S3 (OWASP Top 10:2021 A01:2021, OWASP API Security Top 10:2023 API1:2023).
+> [!NOTE] Specification Refinement (20 November 2026 — Owner Decision OD-03):
+> Salesmen access to `GET /api/v1/sales/dispatches` and `GET /api/v1/sales/dispatches/:id` is strictly scoped to `salesOrder.createdById === authenticatedUser.id`. Company-wide dispatches, unrelated customer profiles, financial invoices, payments, and internal warehouse notes are omitted from the projection. Server-side ABAC is enforced across list and detail endpoints.
 - **Testable Acceptance Criteria**:
   - Given Salesman 1 (Tamil Nadu territory) and Salesman 2 (Karnataka territory):
   - When Salesman 1 queries `GET /api/v1/sales/orders`:
   - Then only orders created by Salesman 1 are returned.
   - When Salesman 1 queries `GET /api/v1/sales/orders/:id` for an order belonging to Salesman 2:
   - Then the API returns HTTP 403 or 404.
-- **Verification Method**: Integration test.
+  - When Salesman 1 queries `GET /api/v1/sales/dispatches`:
+  - Then only dispatch records for orders created by Salesman 1 are returned, and payload contains only delivery tracking fields.
+- **Verification Method**: Integration test (`sales-scope-abac.test.ts`).
 
 ### REQ-026: Available-to-Promise (ATP) Stock Visibility
 - **Statement**: The order review screen must show physical on-hand stock, active reservations, and Available-to-Promise (`ATP = on_hand - reserved`).
@@ -343,9 +357,11 @@
 
 ## 6. Domain: Statutory Invoicing and Indian GST Compliance
 
-### REQ-034: GST Statutory Calculation (Intra-State vs Inter-State)
-- **Statement**: The tax engine must compute GST components based on supplier facility state and customer place of supply: Intra-state (same state) splits tax equally into CGST and SGST (e.g. 2.5% + 2.5% for a 5% rate); Inter-state charges full IGST (5%).
-- **Source**: S1 (README "Indian GST statutory calculation: CGST, SGST, IGST with inter state and intra state logic", "Benchmark: Retailer A TN -> ₹187.50 CGST + ₹187.50 SGST; Distributor B KA -> IGST applies").
+### REQ-034: GST Statutory Calculation and Dynamic TaxRate Master Resolution
+- **Statement**: The tax engine must resolve statutory GST rates dynamically from the authoritative `TaxRate` master table matched using HSN code and document effective date, computing components based on supplier facility state and customer place of supply: Intra-state (same state) splits tax equally into CGST and SGST (e.g. 2.5% + 2.5% for a 5% rate); Inter-state charges full IGST (5%).
+- **Source**: S1 (README "Indian GST statutory calculation: CGST, SGST, IGST with inter state and intra state logic", "Benchmark: Retailer A TN -> ₹187.50 CGST + ₹187.50 SGST; Distributor B KA -> IGST applies"), S2 (Owner Decision OD-01: "Dynamic GST Rate Master Table vs Static Product Column").
+> [!NOTE] Specification Refinement (20 November 2026 — Owner Decision OD-01):
+> `TaxRate` is the authoritative source for statutory GST rates. The system must not silently fall back to `product.taxRate` when a matching rate is unavailable; invoice finalization must fail safely and report a tax configuration error. Posted invoice lines must preserve an immutable snapshot of applicable tax rate, HSN code, taxable value, tax breakdown, and rate reference. Overlapping effective dates for the same classification are forbidden. Historical posted invoices are never recalculated. The static `product.taxRate` dependency is deprecated and removed following verified data migration.
 - **Testable Acceptance Criteria**:
   - Given supplier in Tamil Nadu and taxable amount of 7,500.00:
   - When billing Retailer A in Tamil Nadu:
@@ -355,6 +371,8 @@
     - Total invoice amount is 7,875.00.
   - When billing Distributor B in Karnataka:
     - CGST is 0.00, SGST is 0.00, IGST is 5.0% on taxable value.
+  - When finalized with an unconfigured or expired HSN tax rate:
+    - Then invoice finalization fails safely with HTTP 422 `TAX_CONFIGURATION_ERROR` and blocks posting.
 - **Verification Method**: Unit test and Benchmark Runner.
 
 ### REQ-035: Financial Year Sequential Invoice Numbering
@@ -373,13 +391,17 @@
   - Then the server rejects the request with HTTP 405 Method Not Allowed or HTTP 400.
 - **Verification Method**: Integration test.
 
-### REQ-037: Statutory Credit Note Generation for Invoice Correction
-- **Statement**: Correction or cancellation of a posted invoice must be executed via an official Credit Note referencing the original invoice, adjusting customer receivables accordingly.
-- **Source**: S1 (README "Correct posted invoices by credit note; posted invoices are cancelled with a credit note, not deleted").
+### REQ-037: Statutory Credit Notes and Dedicated Supplier Debit Notes
+- **Statement**: Correction or cancellation of a posted customer invoice must be executed via an official Credit Note referencing the original invoice, adjusting customer receivables accordingly. Deductions against suppliers (purchase returns, short delivery, damaged goods, quality rejections, and supplier price adjustments) must be executed using a dedicated `DebitNote` model distinct from customer credit notes.
+- **Source**: S1 (README "Correct posted invoices by credit note; posted invoices are cancelled with a credit note, not deleted"), S2 (Owner Decision OD-06: "Payment Bounce and Debit Note Data Model Specification").
+> [!NOTE] Specification Refinement (20 November 2026 — Owner Decision OD-06):
+> Customer credit notes (AR) and supplier debit notes (AP) must remain separate document models with independent lifecycles, authorizations, and audit requirements. A debit note raised by Mill Ledger against a supplier links to the supplier and purchase invoice/receipt, recording item quantities, taxable values, tax breakdowns, and reasons. Supplier payables update via immutable compensating adjustments; physical stock movements occur only when physical stock is returned. Posted documents are immutable.
 - **Testable Acceptance Criteria**:
   - When an admin issues a credit note via `POST /api/v1/finance/invoices/:id/credit-note`:
   - Then a `credit_note` record is created, the original invoice status transitions to `CREDITED`, and customer balance reflects the deduction.
-- **Verification Method**: Integration test.
+  - When a debit note is raised against a supplier via `POST /api/v1/purchasing/debit-notes`:
+  - Then a dedicated `debit_note` record is created, supplier payable balance is reduced, and a return stock movement is appended if physical stock was returned.
+- **Verification Method**: Integration test (`debit-note.test.ts`, `credit-note.test.ts`).
 
 ### REQ-038: Statutory PDF Invoice Generation
 - **Statement**: The system must generate compliant PDF invoices containing supplier GSTIN, customer GSTIN, HSN code, tax breakdown (taxable value, CGST, SGST, IGST), and total in words.
@@ -391,15 +413,19 @@
 
 ---
 
-## 7. Domain: Payments and Customer Receivables
+## 7. Domain: Payments, Customer Receivables and Bounced Payment Lifecycle
 
-### REQ-039: Transactional Payment Recording and FIFO Invoice Allocation
-- **Statement**: Payments received from customers must be recorded transactionally and allocated against outstanding posted invoices using FIFO (oldest open invoice first) or explicit line-item allocation.
-- **Source**: S1 (README "FIFO payment allocation against posted invoices", "Record a payment of ₹4,000 from Retailer A").
+### REQ-039: Transactional Payment Recording, FIFO Invoice Allocation and Bounced Payment Lifecycle
+- **Statement**: Payments received from customers must be recorded transactionally and allocated against outstanding posted invoices using FIFO (oldest open invoice first) or explicit line-item allocation. When a cheque or NACH mandate bounces or chargeback occurs, the payment status transitions to `BOUNCED`, and allocations are transactionally reversed, restoring invoice outstanding amounts without deleting ledger history.
+- **Source**: S1 (README "FIFO payment allocation against posted invoices", "Record a payment of ₹4,000 from Retailer A"), S2 (Owner Decision OD-06: "Payment Bounce and Debit Note Data Model Specification").
+> [!NOTE] Specification Refinement (20 November 2026 — Owner Decision OD-06):
+> Introduce `PaymentStatus.BOUNCED` for cheque/NACH dishonour and support chargeback reversals. Reversals must transactionally roll back original invoice allocations, restoring customer outstanding balances. Original payments and allocation histories must never be deleted or overwritten. Duplicate reversal operations are prevented via idempotency controls. Reversal reason, transaction reference, timestamp, and actor are immutably audited.
 - **Testable Acceptance Criteria**:
   - Given Retailer A invoice of 7,875.00:
   - When a payment of 4,000.00 is posted via `POST /api/v1/payments`:
   - Then 4,000.00 is allocated to the invoice in `payment_allocation`, leaving an outstanding balance of exactly 3,875.00.
+  - When the payment bounces and `POST /api/v1/payments/:id/bounce` is invoked:
+  - Then payment status becomes `BOUNCED`, allocations are reversed, and the invoice outstanding balance is restored to 7,875.00.
 - **Verification Method**: Unit test and Benchmark Runner.
 
 ### REQ-040: Dynamic Derived Customer Outstanding Ledger
@@ -508,15 +534,18 @@
   - Then the second response returns HTTP 200 with the original order ID and no duplicate database record is created.
 - **Verification Method**: Integration test (`offline-sync.test.ts`).
 
-### REQ-052: Sync State Tracking and Explicit Conflict Queue Triage
-- **Statement**: Offline orders must display explicit states (`LOCAL_DRAFT`, `QUEUED`, `SYNCING`, `SERVER_ACCEPTED`, `CONFLICT`, `FAILED`). When stock is insufficient or customer credit is invalid at sync time, the system must place conflicting orders into an explicit `CONFLICT` queue for manual triage (adjust quantities, backorder, or cancel) and must never silently overbook stock or automatically split orders.
-- **Source**: S1 (README "Never present a local offline order as server-submitted or stock-reserved"), S2 (Owner Decision 9: "Offline Synchronization Conflict: Explicit conflict queue. Put conflicting offline orders into a CONFLICT queue when stock is insufficient at synchronization time. Allow authorized users to adjust quantities, create backorders, or cancel. Never silently overbook stock or split orders automatically").
+### REQ-052: Sync State Tracking and Explicit Conflict Queue Triage (STOCK_SHORTAGE_CONFLICT)
+- **Statement**: Offline orders must display explicit states (`LOCAL_DRAFT`, `QUEUED`, `SYNCING`, `SERVER_ACCEPTED`, `CONFLICT`, `FAILED`). When stock is insufficient at sync time, the server must atomically create the order in a dedicated `STOCK_SHORTAGE_CONFLICT` database state, reserving only available inventory, recording the exact remaining shortage, and routing the order into an explicit Conflict Queue for triage (adjust quantities, backorder, or cancel) without overbooking stock or splitting orders automatically.
+- **Source**: S1 (README "Never present a local offline order as server-submitted or stock-reserved"), S2 (Owner Decision OD-04: "Offline Outbox Stock Shortage Conflict Queue Policy (REQ-052)").
+> [!NOTE] Specification Refinement (20 November 2026 — Owner Decision OD-04):
+> The server preserves the original offline order intent. Orders encountering shortages transition atomically to `STOCK_SHORTAGE_CONFLICT`. Available-to-promise inventory is computed using database row locking (`SELECT ... FOR UPDATE`) and transactional isolation. Only actually available quantities are reserved; negative inventory and overselling are strictly prevented. The order remains in `STOCK_SHORTAGE_CONFLICT` until authorized resolution. Conflict creation, resolution actor, timestamps, and inventory adjustments are fully audited. Notifications are emitted via transactional outbox only after database commit. Sync requests must be idempotent.
 - **Testable Acceptance Criteria**:
   - In the Salesman UI:
   - Then queued orders display an amber badge "Queued Offline", syncing shows a spinner, and synced shows a green checkmark.
-  - When an offline order synchronizes for an item whose available stock is zero:
-  - Then the server sets order status to `CONFLICT`, does not reserve stock, and surfaces the order in the Admin Conflict Queue for manual review.
-- **Verification Method**: E2E browser test and offline sync integration test.
+  - When an offline order synchronizes for an item whose available stock is less than requested:
+  - Then the server sets order status to `STOCK_SHORTAGE_CONFLICT`, reserves available units, records exact remaining shortage, and surfaces the order in the Admin Conflict Queue.
+  - Repeated sync requests with the same idempotency key return the existing conflict record without duplicate reservations.
+- **Verification Method**: E2E browser test, offline sync integration test, and concurrency lock verification.
 
 ---
 
@@ -535,15 +564,19 @@
 
 ## 11. Domain: Owner Verbatim & System Capabilities
 
-### REQ-054: Full Master Entity Management in UI (All 10 Master Entities)
-- **Statement**: All ten master entities (Suppliers, Customers, Raw Materials, Packaging Materials, Finished Goods SKUs, BOM Recipes, Facilities, Warehouses, Units of Measure, and Price Lists) must be fully manageable through the UI. The UI must support Create, View, Update, and Deactivate operations, while preventing hard deletion when historical transactions reference the record.
-- **Source**: S2 ("Suppliers and every other master entity must be fully manageable in the UI (not only seeded)"), S2 (Owner Decision 5: "Master Entity UI: All 10 entities. All ten master entities must be manageable through the UI. Support create, view, update, and deactivate operations. Prevent deletion where historical transactions reference the record").
+### REQ-054: Full Master Entity Management in UI and Secure Admin Bootstrap CLI
+- **Statement**: All ten master entities (Suppliers, Customers, Raw Materials, Packaging Materials, Finished Goods SKUs, BOM Recipes, Facilities, Warehouses, Units of Measure, and Price Lists) must be fully manageable through the UI. The UI must support Create, View, Update, and Deactivate operations, while preventing hard deletion when historical transactions reference the record. Super admin initial account provisioning must occur strictly through an interactive CLI utility (`pnpm admin:bootstrap`), prohibiting hardcoded administrator passwords in version control, seed files, and environment configs.
+- **Source**: S2 ("Suppliers and every other master entity must be fully manageable in the UI (not only seeded)"), S2 (Owner Decision 5: "Master Entity UI: All 10 entities"), S2 (Owner Decision OD-02: "Super Admin Bootstrap and First-Run Credential Policy").
+> [!NOTE] Specification Refinement (20 November 2026 — Owner Decision OD-02):
+> Interactive CLI `pnpm admin:bootstrap` is the sole authorized mechanism to provision the initial super administrator. Input passwords must be hidden in terminal. Passwords must be hashed using the application's secure hashing mechanism. The utility must refuse to run if an initial administrator already exists. Account creation is transactional and emits an audit event. Credentials and hashes must never be logged. Seed scripts are restricted to non-sensitive master data.
 - **Testable Acceptance Criteria**:
   - In the web application:
   - Then an authorized administrator can navigate to dedicated management screens for all 10 master entities and perform Create, View, Update, and Deactivate operations directly in the browser.
-  - When attempting to delete or deactivate a master entity referenced by existing posted records (e.g., posted purchase receipts, production runs, invoices):
-  - Then hard SQL deletion is blocked, and the entity transitions to deactivated/archived status.
-- **Verification Method**: E2E test covering all 10 master entity screens and delete-blocking integration tests.
+  - When running `pnpm admin:bootstrap` on an unprovisioned database:
+  - Then it securely prompts for email and password (masked), hashes credentials, and provisions the initial ADMIN.
+  - When re-running `pnpm admin:bootstrap` on an already provisioned database:
+  - Then it terminates with code 1 and message: "Initial administrator already exists".
+- **Verification Method**: E2E test covering all 10 master entity screens and CLI integration test (`admin-bootstrap.test.ts`).
 
 ### REQ-055: High Performance Site with Route Lazy Loading (Owner Requirement)
 - **Statement**: The frontend application must achieve very fast load times by lazy loading routes, chunking code bundles, and keeping initial JavaScript download minimal.
@@ -553,13 +586,20 @@
   - Then routes are wrapped in `React.lazy()` / dynamic imports with `<Suspense>` fallbacks, and the initial landing bundle is under 350 kB gzip.
 - **Verification Method**: Static build analysis and Lighthouse audit.
 
-### REQ-056: Content-Hashed Filename Cache-Busting and Below-the-Fold Lazy Loading
-- **Statement**: Asset images must use content-hashed filenames for immutable HTTP cache-busting, serve WebP or AVIF modern formats, and apply lazy loading (`loading="lazy"`) to all images below the initial viewport fold. BlurHash/ThumbHash placeholders are optional.
-- **Source**: S2 ("Lazy load images below the fold. Use an image hash"), S2 (Owner Decision 1: "Image Hash Technique: Content-hashed filenames. Use content hashes in asset filenames for cache-busting, with WebP/AVIF formats and lazy loading. BlurHash/ThumbHash placeholders are optional, not mandatory").
+### REQ-056: Mandatory Image Pipelines: Progressive ThumbHash for Products and SHA-256 for Proof-of-Delivery
+- **Statement**: Asset images must use content-hashed filenames for immutable HTTP cache-busting, serve optimized modern formats (AVIF/WebP), and apply lazy loading (`loading="lazy"`) to images below the initial viewport fold. Product imagery must generate and store compact progressive ThumbHash placeholders during the upload pipeline, preserving intrinsic image dimensions to prevent layout shifts. Uploaded receipt and proof-of-delivery documents must generate and store server-side SHA-256 checksums for tenant-scoped deduplication and document integrity verification.
+- **Source**: S2 ("Lazy load images below the fold. Use an image hash"), S2 (Owner Decision OD-05: "Image Hash Interpretation & Asset Optimization").
+> [!WARNING] Specification Contradiction Resolved (20 November 2026 — Owner Decision OD-05):
+> **Prior Baseline (Superseded)**: The original requirement stated: "BlurHash/ThumbHash placeholders are optional, not mandatory."
+> **Updated Requirement**: Per Owner Decision OD-05, both mechanisms are approved and mandatory:
+> 1. *Product Imagery*: Generate ThumbHash placeholders during upload pipeline; serve responsive AVIF/WebP renditions; preserve intrinsic aspect ratios to prevent CLS; above-the-fold LCP images must never be delayed by placeholder processing or lazy loading.
+> 2. *Proof-of-Delivery & Receipts*: Compute SHA-256 checksums on the server upon upload; store checksums with document metadata in immutable audit records; enforce tenant-scoped deduplication; protect stored documents and audit records against tampering.
 - **Testable Acceptance Criteria**:
-  - In static build and network inspection:
-  - Then image asset URLs match content-hashed patterns (e.g. `[name].[hash].webp`), images below the viewport fold contain `loading="lazy"` and `decoding="async"`, and static assets serve immutable `Cache-Control` response headers.
-- **Verification Method**: DOM inspection test and static asset manifest analysis.
+  - In product catalog and order booking screens:
+  - Then product image elements contain compact ThumbHash data URLs rendered as instant placeholders, and images load AVIF/WebP formats with intrinsic aspect ratio attributes (`aspect-ratio` or `width`/`height`).
+  - When uploading receipt or proof-of-delivery documents:
+  - Then the server computes SHA-256 checksum, stores it with document record, and blocks duplicate uploads within the same tenant.
+- **Verification Method**: DOM inspection test, static asset manifest analysis, and document upload integration test.
 
 ### REQ-057: Accessible Field Sales Booking Screens with Co-Located Images and Text Labels
 - **Statement**: Field-sales customer order booking screens must pair product variant images with clear, legible text labels (product name, SKU, pack size, price, unit) and comply fully with accessibility standards. Production batches and scheduling must use clear text-based identifiers.
@@ -743,19 +783,37 @@
   - Then buttons show disabled loading spinners, background operations show toasts via Sonner, and irreversible actions (e.g. posting a run or reversing an invoice) require an explicit confirmation dialog.
 - **Verification Method**: E2E interaction test.
 
+### REQ-078: Customer Data Retention, Anonymization & Erasure Schedule (DPDP Act 2023 & CGST Act 2017)
+- **Statement**: The system must implement a controlled customer data-erasure and anonymization workflow under Section 12 of the Digital Personal Data Protection (DPDP) Act 2023, while enforcing strict statutory preservation under Section 36 of the Central Goods and Services Tax (CGST) Act 2017 (retaining tax invoices and books of account for 72 months from the due date of furnishing the annual return for the relevant financial year, plus any extended period for pending proceedings).
+- **Source**: DPDP Act 2023 (Act No. 22 of 2023, Sections 11 & 12), CGST Act 2017 (Section 36), S2 (Owner Decision OD-08: "DPDP Act 2023 Customer Data Retention, Anonymization & Erasure Schedule").
+> [!NOTE] Specification Addition (20 November 2026 — Owner Decision OD-08):
+> On verified customer erasure request, personal data no longer required for statutory obligations must be erased or irreversibly anonymized (pseudonymization or reversible hashing does not suffice). Statutory GST invoices and accounting records must never be removed or rewritten during their mandatory 72-month retention period (calculated from the annual return due date, not the invoice date). Retained statutory records are restricted strictly to authorized accounting, compliance, and audit personnel and barred from sales or marketing operations. A complete audit log of erasure requests, legal exceptions, and retention expiry dates is maintained, with automated reassessment and erasure upon retention expiration.
+- **Testable Acceptance Criteria**:
+  - When an erasure request is executed for a customer with active posted invoices within the 72-month statutory retention window:
+  - Then personal contact information (email, personal phone, billing notes) is irreversibly anonymized, while statutory invoice records (GSTIN, legal name, tax breakdown, document sequence) are preserved under restricted audit-only access.
+  - When an erasure request is executed for a contact with zero statutory financial transactions:
+  - Then customer PII is fully purged/anonymized from all operational tables.
+- **Verification Method**: Integration test (`dpdp-retention.test.ts`).
+
 ---
 
 ## 14. Formal Owner Decisions Baseline
 
-The following 9 owner decisions represent the binding implementation baseline:
+The following 9 owner decisions represent the binding implementation baseline (formally updated with verbatim Owner Decisions on 20 November 2026):
 
-1. **Image Hash Technique (Content-Hashed Filenames)**: Use content hashes in asset filenames for cache-busting, with WebP/AVIF formats and lazy loading. BlurHash/ThumbHash placeholders are optional, not mandatory.
-2. **SEO Scope (Metadata, Not Public Indexing)**: Keep authenticated ERP pages `noindex`. Implement descriptive titles, semantic HTML, and relevant metadata throughout the application. Public landing pages may be indexed.
-3. **Super Admin Permission (Controlled System-Wide Access)**: Allow cross-organization administration, master-data management, and system configuration through explicit permissions. All privileged actions must be audited. Never allow direct modification or deletion of posted ledger entries; corrections must use reversal entries.
-4. **Booking Screens (Sales Order Booking)**: Treat booking as field-sales/customer order booking. Product images must always have readable text labels. Production batches and scheduling should use clear text-based identifiers.
+1. **Image Hash Technique & Asset Pipeline (MANDATORY)**:
+   > [!WARNING] Specification Change Notice (20 November 2026):
+   > Supersedes prior assumption that placeholders were optional. Per Owner Decision OD-05, both mechanisms are approved and mandatory:
+   > - **Product Imagery**: Generate ThumbHash compact progressive blur placeholders during the image upload pipeline. Serve responsive modern formats (AVIF/WebP) with intrinsic dimensions to eliminate layout shifts (CLS). Above-the-fold LCP images must never be delayed by placeholder processing or lazy loading.
+   > - **Proof-of-Delivery & Receipts**: Generate server-side SHA-256 checksums upon upload. Store checksums with document metadata and immutable audit records for tenant-scoped deduplication and document tamper-proofing.
+2. **SEO Scope (Metadata, Not Public Indexing)**: Keep authenticated ERP pages `noindex` via `X-Robots-Tag: noindex, nofollow`. Implement descriptive page titles, semantic HTML, and metadata throughout the application. Public landing pages may be indexed.
+3. **Super Admin Provisioning & System-Wide Permissions (Owner Decision OD-02)**: Interactive CLI `pnpm admin:bootstrap` is the exclusive mechanism to provision the initial super administrator. Input password must be hidden; passwords hashed with secure application algorithm; initial admin check prevents re-runs; zero secrets stored in seed files, environment variables, or logs. Privileged actions must be audited. Never allow direct modification or deletion of posted ledger entries; corrections must use reversal entries.
+4. **Booking Screens (Sales Order Booking)**: Treat booking as field-sales/customer order booking. Product images must always have readable text labels and ThumbHash placeholders. Production batches and scheduling must use clear text-based identifiers.
 5. **Master Entity UI (All 10 Entities)**: All ten master entities (Suppliers, Customers, Raw Materials, Packaging Materials, Finished Goods SKUs, BOM Recipes, Facilities, Warehouses, Units of Measure, and Price Lists) must be manageable through the UI. Support create, view, update, and deactivate operations. Prevent deletion where historical transactions reference the record.
-6. **Packaging Capacity Mismatch (Track Loose Stock)**: Allow production output to exceed available packaging capacity. Record packed and unboxed quantities separately. Do not automatically consume an additional carton or block production.
+6. **Dynamic Statutory GST Rate Master (Owner Decision OD-01)**: `TaxRate` master table is the authoritative source for statutory GST rates, matched by HSN code and effective date. Invoice finalization fails safely without fallback to static product column if unconfigured. Immutable snapshots of rates and tax breakdown are preserved on invoice lines; historical invoices never recalculated; overlapping effective dates prevented; static `product.taxRate` deprecated and removed.
 7. **Opening Finished Goods Costing (FIFO)**: Use FIFO inventory costing. The 50 opening packets retain their recorded opening valuation (₹0 in the benchmark), while subsequent production is valued at its actual cost. Do not blend costs across inventory layers.
-8. **API Request Logging (Hybrid Architecture)**: Store searchable request metadata in PostgreSQL for authorized admin access, and emit structured operational logs for external monitoring. Never retain passwords, session cookies, access tokens, or sensitive authentication headers. Use configurable retention and role-restricted access.
-9. **Offline Synchronization Conflict (Explicit Conflict Queue)**: Put conflicting offline orders into a `CONFLICT` queue when stock is insufficient at synchronization time. Allow authorized users to adjust quantities, create backorders, or cancel. Never silently overbook stock or split orders automatically.
+8. **Threshold Discount Guard & Pricing Policy (Owner Decision OD-07)**: Base rates derive strictly from the customer's assigned price list. Discounts follow the exact policy: up to 5% salesman discretion, 5% to 15% requires explicit Manager approval (enforced via dedicated manager permission, not assumed admin equivalence), and above 15% is rejected by the server. All calculations use precise decimal arithmetic and are fully audited.
+9. **Offline Synchronization Conflict Queue (Owner Decision OD-04)**: When offline orders encounter stock shortages, the server atomically creates the order in `STOCK_SHORTAGE_CONFLICT` database state using row locking (`SELECT ... FOR UPDATE`), reserving only available units and recording the exact shortage. Conflicting orders route to an explicit Conflict Queue for triage. Notifications emit via transactional outbox post-commit. Repeated sync requests are idempotent.
+10. **Compensating Journal Entries, Payment Bounces & Dedicated Debit Notes (Owner Decision OD-06)**: Introduce `PaymentStatus.BOUNCED` for cheque/NACH dishonour, transactionally reversing invoice allocations and restoring customer outstanding balances without deleting payment history. Maintain a dedicated `DebitNote` model for supplier purchase returns, short deliveries, and price adjustments, cleanly separated from customer credit notes.
+11. **Statutory Data Retention & Privacy Erasure Schedule (Owner Decision OD-08)**: Privacy-first customer data erasure under DPDP Act 2023 with CGST Act Section 36 statutory retention safeguards (preserving tax invoice and accounting records for 72 months from annual return due date under restricted audit access).
 

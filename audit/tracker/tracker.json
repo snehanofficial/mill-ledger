@@ -1,39 +1,174 @@
 [
   {
-    "id": "F-001",
-    "title": "Duplicate \"Skip to main content\" links violate Playwright strict mode and degrade keyboard navigation",
+    "id": "F-097",
+    "title": "Architectural Inconsistency: Zero Centralized Currency & Date Formatters across 7 Financial Surfaces (Ad-hoc `.toFixed(2)` & Fragmented Locales)",
+    "severity": "P2",
+    "category": "Architectural Consistency & Maintainability",
+    "tier": "T1",
+    "cluster": "CLUSTER-01",
+    "dependsOn": [],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "- Jakob Nielsen's 10 Usability Heuristics: Heuristic #4 (Consistency and Standards)"
+    ],
+    "files": [
+      "client/src/pages/invoices-page.ts",
+      "///home/snehan/projects/web/mill-ledger/client/src/pages/invoices-page.ts",
+      "client/src/pages/reports-page.ts",
+      "///home/snehan/projects/web/mill-ledger/client/src/pages/reports-page.ts",
+      "client/src/pages/stock-page.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-097.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-097-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn '\\.toFixed(' client/src/ server/src/ | head -n 30",
+      "hits": [
+        "client/src/pages/invoices-page.tsx:294:                        <span>IGST: ₹{Number(inv.igstAmount).toFixed(2)}</span>",
+        "client/src/pages/invoices-page.tsx:300:                          ).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:435:                          ₹{Number(l.unitPrice).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:438:                          ₹{Number(l.taxableAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:441:                          ₹{Number(l.taxAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:444:                          ₹{Number(l.lineTotal).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:460:                      ₹{Number(selectedInvoice.taxableAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:470:                          ₹{Number(selectedInvoice.cgstAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:478:                          ₹{Number(selectedInvoice.sgstAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:489:                        ₹{Number(selectedInvoice.igstAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:496:                      ₹{Number(selectedInvoice.totalAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:502:                      ₹{Number(selectedInvoice.outstandingAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:567:                  {Number(selectedInvoice.outstandingAmount).toFixed(2)}",
+        "client/src/pages/reports-page.tsx:203:                  Taxable: ₹{salesData.summary.totalTaxable.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:205:                <span>Tax: ₹{salesData.summary.totalTax.toFixed(2)}</span>",
+        "client/src/pages/reports-page.tsx:207:                  Grand total: ₹{salesData.summary.grandTotal.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:260:                        ₹{row.taxableAmount.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:263:                        ₹{row.cgstAmount.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:266:                        ₹{row.sgstAmount.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:269:                        ₹{row.lineTotal.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:289:                ₹{Number(gstData?.summary?.totalTaxable || 0).toFixed(2)}",
+        "client/src/pages/reports-page.tsx:297:                ₹{Number(gstData?.summary?.totalTaxAmount || 0).toFixed(2)}",
+        "client/src/pages/reports-page.tsx:306:                {Number(gstData?.summary?.totalCreditNotesAmount || 0).toFixed(",
+        "client/src/pages/reports-page.tsx:336:                        ₹{r.taxable.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:339:                        ₹{r.cgst.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:342:                        ₹{r.sgst.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:345:                        ₹{r.totalTax.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:374:                        ₹{h.taxable.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:377:                        ₹{(h.cgst + h.sgst + h.igst).toFixed(2)}",
+        "client/src/pages/reports-page.tsx:406:                  ₹{Number(stockData.summary.totalValuation).toFixed(2)}"
+      ]
+    },
+    "needsApproval": "schema",
+    "notes": ""
+  },
+  {
+    "id": "F-009",
+    "title": "Application database role retains full UPDATE and DELETE privileges on stock movements and posted invoices without database triggers or rules",
     "severity": "P1",
-    "category": "Accessibility / Test Failure",
-    "tier": "T7",
-    "cluster": "CLUSTER-10",
+    "category": "Security / Data Integrity / Audit Trail",
+    "tier": "T1",
+    "cluster": "CLUSTER-03",
+    "dependsOn": [],
+    "blocks": [
+      "F-007",
+      "F-008",
+      "F-010",
+      "F-015",
+      "F-017",
+      "F-018",
+      "F-019",
+      "F-020",
+      "F-021",
+      "F-027"
+    ],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "MLD Core Rule (Never overwrite stock balances; preserve immutable posted invoices)",
+      "OWASP ASVS v4.0.3 Item 8.3.1",
+      "REQ-009",
+      "REQ-036"
+    ],
+    "files": [
+      "/audit/scripts/verify-immutability.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-009.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-009-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'deleteMany' server/src/modules/ | head -n 20",
+      "hits": [
+        "server/src/modules/production/production.service.ts:448:        await tx.productionRunMaterial.deleteMany({"
+      ]
+    },
+    "needsApproval": "schema",
+    "notes": ""
+  },
+  {
+    "id": "F-010",
+    "title": "Invoice tax and totals calculated with unrounded JS float math produce 1-2 paise rounding drift in 46.4% of invoices",
+    "severity": "P1",
+    "category": "Compliance / Financial Precision / Statutory Invoicing",
+    "tier": "T1",
+    "cluster": "CLUSTER-01",
     "dependsOn": [
-      "F-045"
+      "F-009"
     ],
     "blocks": [
-      "F-062",
-      "F-063",
-      "F-064",
-      "F-065",
-      "F-066",
-      "F-067",
-      "F-068",
-      "F-069"
+      "F-017",
+      "F-018",
+      "F-019",
+      "F-020",
+      "F-021",
+      "F-027",
+      "F-036",
+      "F-037",
+      "F-038",
+      "F-039",
+      "F-040",
+      "F-041",
+      "F-042",
+      "F-043"
     ],
     "relatedFindings": [],
     "standardsRefs": [
-      "WCAG 2.2 SC 2.4.1 (Bypass Blocks",
-      "Level A)",
-      "SC 2.4.3 (Focus Order",
-      "Level A)",
-      "Playwright Strict Mode"
+      "Section 170 of CGST Act",
+      "2017 (Rounding of tax)",
+      "Rule 46 of CGST Rules",
+      "2017",
+      "REQ-034"
     ],
     "files": [
-      "authenticated-shell.ts",
-      "e2e/app-shell.spec.ts",
-      "client/src/components/shell/authenticated-shell.ts",
-      "///home/snehan/projects/web/mill-ledger/client/src/components/shell/authenticated-shell.ts"
+      "finance.service.ts",
+      "///home/snehan/projects/web/mill-ledger/server/src/modules/finance/finance.service.ts"
     ],
-    "effort": "S",
+    "effort": "M",
     "owner": "agent",
     "status": "OPEN",
     "statusHistory": [
@@ -41,210 +176,71 @@
         "status": "OPEN",
         "date": "2026-11-20",
         "commit": null,
-        "evidenceLink": "audit/findings/F-001.md",
+        "evidenceLink": "audit/findings/F-010.md",
         "note": "Discovered during audit phase."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-001-regression.spec.ts",
+    "regressionTest": "audit/tests/f-010-regression.spec.ts",
     "fixCommit": null,
     "verifyEvidence": [],
     "siblingSweep": {
       "done": true,
-      "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",
+      "queryUsed": "grep -rn '\\.toFixed(' client/src/ server/src/ | head -n 30",
       "hits": [
-        "client/src/pages/showcase-page.tsx:169:          aria-label=\"Component inventory sections\"",
-        "client/src/pages/showcase-page.tsx:248:                      aria-label=\"Add item\"",
-        "client/src/pages/showcase-page.tsx:412:                          aria-label=\"Standard review\"",
-        "client/src/pages/showcase-page.tsx:419:                          aria-label=\"Compact review\"",
-        "client/src/pages/login-page.tsx:185:          aria-label={",
-        "client/src/pages/login-page.tsx:300:                    aria-label={",
-        "client/src/layouts/authenticated-layout.tsx:86:      aria-label=\"Loading workspace\"",
-        "client/src/components/shell/authenticated-shell.tsx:225:      aria-label={`Sync state: ${config.label}`}",
-        "client/src/components/shell/authenticated-shell.tsx:295:            aria-label={`${name} ${description ? description + \" - \" : \"\"}Home`}",
-        "client/src/components/shell/authenticated-shell.tsx:354:            aria-label={item.label}",
-        "client/src/components/shell/authenticated-shell.tsx:383:            aria-label={item.label}",
-        "client/src/components/shell/authenticated-shell.tsx:405:                    aria-label={child.label}",
-        "client/src/components/shell/authenticated-shell.tsx:468:          aria-label={isCollapsed ? \"Expand sidebar\" : \"Collapse to icons ⌘B\"}",
-        "client/src/components/shell/authenticated-shell.tsx:608:      aria-label={",
-        "client/src/components/shell/authenticated-shell.tsx:673:        aria-label=\"Global search\"",
-        "client/src/components/shell/authenticated-shell.tsx:738:        aria-label=\"Search (Ctrl+K)\"",
-        "client/src/components/shell/authenticated-shell.tsx:751:        aria-label=\"Search\"",
-        "client/src/components/shell/authenticated-shell.tsx:851:          : \"Skip to main content\"}",
-        "client/src/components/shell/authenticated-shell.tsx:858:          aria-label=\"Open navigation\"",
-        "client/src/components/shell/authenticated-shell.tsx:884:          aria-label={",
-        "client/src/components/shell/authenticated-shell.tsx:917:              aria-label={`Account: ${user.name}`}",
-        "client/src/components/shell/authenticated-shell.tsx:1004:      aria-label=\"Mobile navigation\"",
-        "client/src/components/shell/authenticated-shell.tsx:1018:              aria-label={item.label}",
-        "client/src/components/shell/authenticated-shell.tsx:1088:          Skip to main content",
-        "client/src/components/ui/spinner.tsx:12:      aria-label=\"Loading\""
+        "client/src/pages/invoices-page.tsx:294:                        <span>IGST: ₹{Number(inv.igstAmount).toFixed(2)}</span>",
+        "client/src/pages/invoices-page.tsx:300:                          ).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:435:                          ₹{Number(l.unitPrice).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:438:                          ₹{Number(l.taxableAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:441:                          ₹{Number(l.taxAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:444:                          ₹{Number(l.lineTotal).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:460:                      ₹{Number(selectedInvoice.taxableAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:470:                          ₹{Number(selectedInvoice.cgstAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:478:                          ₹{Number(selectedInvoice.sgstAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:489:                        ₹{Number(selectedInvoice.igstAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:496:                      ₹{Number(selectedInvoice.totalAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:502:                      ₹{Number(selectedInvoice.outstandingAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:567:                  {Number(selectedInvoice.outstandingAmount).toFixed(2)}",
+        "client/src/pages/reports-page.tsx:203:                  Taxable: ₹{salesData.summary.totalTaxable.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:205:                <span>Tax: ₹{salesData.summary.totalTax.toFixed(2)}</span>",
+        "client/src/pages/reports-page.tsx:207:                  Grand total: ₹{salesData.summary.grandTotal.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:260:                        ₹{row.taxableAmount.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:263:                        ₹{row.cgstAmount.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:266:                        ₹{row.sgstAmount.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:269:                        ₹{row.lineTotal.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:289:                ₹{Number(gstData?.summary?.totalTaxable || 0).toFixed(2)}",
+        "client/src/pages/reports-page.tsx:297:                ₹{Number(gstData?.summary?.totalTaxAmount || 0).toFixed(2)}",
+        "client/src/pages/reports-page.tsx:306:                {Number(gstData?.summary?.totalCreditNotesAmount || 0).toFixed(",
+        "client/src/pages/reports-page.tsx:336:                        ₹{r.taxable.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:339:                        ₹{r.cgst.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:342:                        ₹{r.sgst.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:345:                        ₹{r.totalTax.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:374:                        ₹{h.taxable.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:377:                        ₹{(h.cgst + h.sgst + h.igst).toFixed(2)}",
+        "client/src/pages/reports-page.tsx:406:                  ₹{Number(stockData.summary.totalValuation).toFixed(2)}"
       ]
     },
-    "needsApproval": "none",
+    "needsApproval": "schema",
     "notes": ""
   },
   {
-    "id": "F-002",
-    "title": "README instructions specify nonexistent `server/.env.example` path and incorrect backend port 3000",
-    "severity": "P2",
-    "category": "Documentation Drift / Onboarding",
-    "tier": "T11",
-    "cluster": "CLUSTER-15",
-    "dependsOn": [
-      "F-070"
-    ],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "NN/g Heuristic #10 (Help and Documentation)"
-    ],
-    "files": [
-      "client/vite.config.ts"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-002.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-002-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
-      "hits": [
-        "server/src/purchases.test.ts:154:      (b: any) => b.sku === \"RM-FLOUR\",",
-        "server/src/auth.integration.test.ts:28:  ): Promise<{ cookie: string; user: any }> {",
-        "server/src/payments.test.ts:252:      (e: any) => e.documentType === \"INVOICE\",",
-        "server/src/payments.test.ts:255:      (e: any) => e.documentType === \"PAYMENT\",",
-        "server/src/reports.test.ts:275:    const flourRow = stock.rows.find((r: any) => r.sku === \"RM-FLOUR\");",
-        "server/src/reports.test.ts:281:    const fgRow = stock.rows.find((r: any) => r.sku === \"FG-MURUKKU-200G\");",
-        "server/src/reports.test.ts:314:    const retARow = rec.rows.find((r: any) => r.customerCode === \"CUST-RET-A\");",
-        "server/src/reports.test.ts:356:    const exportLog = auditData.logs.find((l: any) => l.action === \"EXPORT\");",
-        "server/src/reports.test.ts:405:    const customerCodes = sales1Rec.rows.map((r: any) => r.customerCode);",
-        "server/src/reports.test.ts:418:    const spoofCodes = spoofRec.rows.map((r: any) => r.customerCode);",
-        "server/src/modules/reporting/reporting.routes.ts:140:        let data: any;",
-        "server/src/modules/reporting/reporting.routes.ts:239:      let result: any;",
-        "server/src/modules/reporting/reporting.service.ts:35:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:68:    const rows: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:147:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:169:    const b2bSupplies: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:171:    const b2cSupplies: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:173:    const creditNotes: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:328:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:358:    const rows: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:513:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:625:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:919:    userContext?: any,",
-        "server/src/modules/reporting/reporting.service.ts:921:    let reportData: any;",
-        "server/src/modules/reporting/reporting.service.ts:960:    const rows: any[] = reportData.rows || reportData.b2bSupplies || [];"
-      ]
-    },
-    "needsApproval": "none",
-    "notes": ""
-  },
-  {
-    "id": "F-003",
-    "title": "README command `pnpm --filter @mill-ledger/server prisma db seed` fails silently without seeding records",
-    "severity": "P1",
-    "category": "Core Workflow / Seed Reliability",
-    "tier": "T11",
-    "cluster": "CLUSTER-15",
-    "dependsOn": [
-      "F-070"
-    ],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "MLD-001 Baseline Operations",
-      "Prisma 7 Migration Guide"
-    ],
-    "files": [
-      "server/prisma.config.ts",
-      "///home/snehan/projects/web/mill-ledger/server/prisma.config.ts",
-      "./prisma/seed.ts"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-003.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-003-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
-      "hits": [
-        "server/src/purchases.test.ts:154:      (b: any) => b.sku === \"RM-FLOUR\",",
-        "server/src/auth.integration.test.ts:28:  ): Promise<{ cookie: string; user: any }> {",
-        "server/src/payments.test.ts:252:      (e: any) => e.documentType === \"INVOICE\",",
-        "server/src/payments.test.ts:255:      (e: any) => e.documentType === \"PAYMENT\",",
-        "server/src/reports.test.ts:275:    const flourRow = stock.rows.find((r: any) => r.sku === \"RM-FLOUR\");",
-        "server/src/reports.test.ts:281:    const fgRow = stock.rows.find((r: any) => r.sku === \"FG-MURUKKU-200G\");",
-        "server/src/reports.test.ts:314:    const retARow = rec.rows.find((r: any) => r.customerCode === \"CUST-RET-A\");",
-        "server/src/reports.test.ts:356:    const exportLog = auditData.logs.find((l: any) => l.action === \"EXPORT\");",
-        "server/src/reports.test.ts:405:    const customerCodes = sales1Rec.rows.map((r: any) => r.customerCode);",
-        "server/src/reports.test.ts:418:    const spoofCodes = spoofRec.rows.map((r: any) => r.customerCode);",
-        "server/src/modules/reporting/reporting.routes.ts:140:        let data: any;",
-        "server/src/modules/reporting/reporting.routes.ts:239:      let result: any;",
-        "server/src/modules/reporting/reporting.service.ts:35:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:68:    const rows: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:147:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:169:    const b2bSupplies: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:171:    const b2cSupplies: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:173:    const creditNotes: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:328:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:358:    const rows: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:513:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:625:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:919:    userContext?: any,",
-        "server/src/modules/reporting/reporting.service.ts:921:    let reportData: any;",
-        "server/src/modules/reporting/reporting.service.ts:960:    const rows: any[] = reportData.rows || reportData.b2bSupplies || [];"
-      ]
-    },
-    "needsApproval": "none",
-    "notes": ""
-  },
-  {
-    "id": "F-004",
-    "title": "Prisma seed script executes in production mode without guard or confirmation, injecting hardcoded test accounts",
+    "id": "F-036",
+    "title": "Dashboard Sales Revenue Silently Drops Invoices Without Lines (SQL vs API Mismatch)",
     "severity": "P0",
-    "category": "Security / Data Integrity / Credential Exposure",
-    "tier": "T4",
-    "cluster": "CLUSTER-07",
+    "category": "Domain & Accounting Integrity",
+    "tier": "T1",
+    "cluster": "CLUSTER-01",
     "dependsOn": [
-      "F-025"
+      "F-010"
     ],
     "blocks": [],
     "relatedFindings": [],
     "standardsRefs": [
-      "OWASP Top 10:2021 A01 (Broken Access Control)",
-      "A07 (Identification and Authentication Failures)",
-      "OWASP ASVS v4.0.3 Item 2.1.1",
-      "Req 1.14.1",
-      "ISO/IEC 27001:2022 Control 8.31"
+      "OWASP ASVS v4.0.3 Section 10.3 (Accounting Integrity)",
+      "REQ-026"
     ],
     "files": [
-      "server/prisma/seed.ts",
-      "///home/snehan/projects/web/mill-ledger/server/prisma/seed.ts",
-      "seed.ts"
+      "server/src/modules/reporting/reporting.service.ts"
     ],
     "effort": "S",
     "owner": "agent",
@@ -254,146 +250,51 @@
         "status": "OPEN",
         "date": "2026-11-20",
         "commit": null,
-        "evidenceLink": "audit/findings/F-004.md",
+        "evidenceLink": "audit/findings/F-036.md",
         "note": "Discovered during audit phase."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-004-regression.spec.ts",
+    "regressionTest": "audit/tests/f-036-regression.spec.ts",
     "fixCommit": null,
     "verifyEvidence": [],
     "siblingSweep": {
       "done": true,
-      "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",
+      "queryUsed": "grep -rn '\\.toFixed(' client/src/ server/src/ | head -n 30",
       "hits": [
-        "server/src/app.test.ts:48:    it(\"sets helmet security headers on responses\", async () => {",
-        "server/src/app.ts:2:import cors from \"cors\";",
-        "server/src/app.ts:3:import helmet from \"helmet\";",
-        "server/src/app.ts:20:  app.use(helmet());",
-        "server/src/app.ts:22:    cors({"
+        "client/src/pages/invoices-page.tsx:294:                        <span>IGST: ₹{Number(inv.igstAmount).toFixed(2)}</span>",
+        "client/src/pages/invoices-page.tsx:300:                          ).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:435:                          ₹{Number(l.unitPrice).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:438:                          ₹{Number(l.taxableAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:441:                          ₹{Number(l.taxAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:444:                          ₹{Number(l.lineTotal).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:460:                      ₹{Number(selectedInvoice.taxableAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:470:                          ₹{Number(selectedInvoice.cgstAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:478:                          ₹{Number(selectedInvoice.sgstAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:489:                        ₹{Number(selectedInvoice.igstAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:496:                      ₹{Number(selectedInvoice.totalAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:502:                      ₹{Number(selectedInvoice.outstandingAmount).toFixed(2)}",
+        "client/src/pages/invoices-page.tsx:567:                  {Number(selectedInvoice.outstandingAmount).toFixed(2)}",
+        "client/src/pages/reports-page.tsx:203:                  Taxable: ₹{salesData.summary.totalTaxable.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:205:                <span>Tax: ₹{salesData.summary.totalTax.toFixed(2)}</span>",
+        "client/src/pages/reports-page.tsx:207:                  Grand total: ₹{salesData.summary.grandTotal.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:260:                        ₹{row.taxableAmount.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:263:                        ₹{row.cgstAmount.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:266:                        ₹{row.sgstAmount.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:269:                        ₹{row.lineTotal.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:289:                ₹{Number(gstData?.summary?.totalTaxable || 0).toFixed(2)}",
+        "client/src/pages/reports-page.tsx:297:                ₹{Number(gstData?.summary?.totalTaxAmount || 0).toFixed(2)}",
+        "client/src/pages/reports-page.tsx:306:                {Number(gstData?.summary?.totalCreditNotesAmount || 0).toFixed(",
+        "client/src/pages/reports-page.tsx:336:                        ₹{r.taxable.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:339:                        ₹{r.cgst.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:342:                        ₹{r.sgst.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:345:                        ₹{r.totalTax.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:374:                        ₹{h.taxable.toFixed(2)}",
+        "client/src/pages/reports-page.tsx:377:                        ₹{(h.cgst + h.sgst + h.igst).toFixed(2)}",
+        "client/src/pages/reports-page.tsx:406:                  ₹{Number(stockData.summary.totalValuation).toFixed(2)}"
       ]
     },
-    "needsApproval": "none",
-    "notes": ""
-  },
-  {
-    "id": "F-005",
-    "title": "Unused dependency `cn@^0.5.2` installed in client package.json alongside `clsx` and `tailwind-merge`",
-    "severity": "P3",
-    "category": "Dependency Hygiene / Dead Code",
-    "tier": "T11",
-    "cluster": "CLUSTER-15",
-    "dependsOn": [
-      "F-070"
-    ],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "MLD Architecture Guidelines (Package boundaries and dependency hygiene)"
-    ],
-    "files": [
-      "client/package.js",
-      "client/src/lib/utils.ts",
-      "///home/snehan/projects/web/mill-ledger/client/package.js"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-005.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-005-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
-      "hits": [
-        "server/src/purchases.test.ts:154:      (b: any) => b.sku === \"RM-FLOUR\",",
-        "server/src/auth.integration.test.ts:28:  ): Promise<{ cookie: string; user: any }> {",
-        "server/src/payments.test.ts:252:      (e: any) => e.documentType === \"INVOICE\",",
-        "server/src/payments.test.ts:255:      (e: any) => e.documentType === \"PAYMENT\",",
-        "server/src/reports.test.ts:275:    const flourRow = stock.rows.find((r: any) => r.sku === \"RM-FLOUR\");",
-        "server/src/reports.test.ts:281:    const fgRow = stock.rows.find((r: any) => r.sku === \"FG-MURUKKU-200G\");",
-        "server/src/reports.test.ts:314:    const retARow = rec.rows.find((r: any) => r.customerCode === \"CUST-RET-A\");",
-        "server/src/reports.test.ts:356:    const exportLog = auditData.logs.find((l: any) => l.action === \"EXPORT\");",
-        "server/src/reports.test.ts:405:    const customerCodes = sales1Rec.rows.map((r: any) => r.customerCode);",
-        "server/src/reports.test.ts:418:    const spoofCodes = spoofRec.rows.map((r: any) => r.customerCode);",
-        "server/src/modules/reporting/reporting.routes.ts:140:        let data: any;",
-        "server/src/modules/reporting/reporting.routes.ts:239:      let result: any;",
-        "server/src/modules/reporting/reporting.service.ts:35:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:68:    const rows: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:147:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:169:    const b2bSupplies: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:171:    const b2cSupplies: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:173:    const creditNotes: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:328:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:358:    const rows: any[] = [];",
-        "server/src/modules/reporting/reporting.service.ts:513:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:625:    const where: any = {",
-        "server/src/modules/reporting/reporting.service.ts:919:    userContext?: any,",
-        "server/src/modules/reporting/reporting.service.ts:921:    let reportData: any;",
-        "server/src/modules/reporting/reporting.service.ts:960:    const rows: any[] = reportData.rows || reportData.b2bSupplies || [];"
-      ]
-    },
-    "needsApproval": "none",
-    "notes": ""
-  },
-  {
-    "id": "F-006",
-    "title": "Installed Zod version 3.24.2 is subject to high-severity denial-of-service advisory GHSA-mrhx-c7xc-m3w5",
-    "severity": "P2",
-    "category": "Supply Chain Security / Vulnerability",
-    "tier": "T4",
-    "cluster": "CLUSTER-07",
-    "dependsOn": [
-      "F-025"
-    ],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "OWASP Top 10:2021 A06 (Vulnerable and Outdated Components)",
-      "GHSA-mrhx-c7xc-m3w5"
-    ],
-    "files": [
-      "server/package.js",
-      "client/package.js"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-006.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-006-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",
-      "hits": [
-        "server/src/app.test.ts:48:    it(\"sets helmet security headers on responses\", async () => {",
-        "server/src/app.ts:2:import cors from \"cors\";",
-        "server/src/app.ts:3:import helmet from \"helmet\";",
-        "server/src/app.ts:20:  app.use(helmet());",
-        "server/src/app.ts:22:    cors({"
-      ]
-    },
-    "needsApproval": "none",
+    "needsApproval": "schema",
     "notes": ""
   },
   {
@@ -551,393 +452,6 @@
     "notes": ""
   },
   {
-    "id": "F-009",
-    "title": "Application database role retains full UPDATE and DELETE privileges on stock movements and posted invoices without database triggers or rules",
-    "severity": "P1",
-    "category": "Security / Data Integrity / Audit Trail",
-    "tier": "T1",
-    "cluster": "CLUSTER-03",
-    "dependsOn": [],
-    "blocks": [
-      "F-007",
-      "F-008",
-      "F-010",
-      "F-015",
-      "F-017",
-      "F-018",
-      "F-019",
-      "F-020",
-      "F-021",
-      "F-027"
-    ],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "MLD Core Rule (Never overwrite stock balances; preserve immutable posted invoices)",
-      "OWASP ASVS v4.0.3 Item 8.3.1",
-      "REQ-009",
-      "REQ-036"
-    ],
-    "files": [
-      "/audit/scripts/verify-immutability.ts"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-009.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-009-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'deleteMany' server/src/modules/ | head -n 20",
-      "hits": [
-        "server/src/modules/production/production.service.ts:448:        await tx.productionRunMaterial.deleteMany({"
-      ]
-    },
-    "needsApproval": "schema",
-    "notes": ""
-  },
-  {
-    "id": "F-010",
-    "title": "Invoice tax and totals calculated with unrounded JS float math produce 1-2 paise rounding drift in 46.4% of invoices",
-    "severity": "P1",
-    "category": "Compliance / Financial Precision / Statutory Invoicing",
-    "tier": "T1",
-    "cluster": "CLUSTER-01",
-    "dependsOn": [
-      "F-009"
-    ],
-    "blocks": [
-      "F-017",
-      "F-018",
-      "F-019",
-      "F-020",
-      "F-021",
-      "F-027",
-      "F-036",
-      "F-037",
-      "F-038",
-      "F-039",
-      "F-040",
-      "F-041",
-      "F-042",
-      "F-043"
-    ],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "Section 170 of CGST Act",
-      "2017 (Rounding of tax)",
-      "Rule 46 of CGST Rules",
-      "2017",
-      "REQ-034"
-    ],
-    "files": [
-      "finance.service.ts",
-      "///home/snehan/projects/web/mill-ledger/server/src/modules/finance/finance.service.ts"
-    ],
-    "effort": "M",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-010.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-010-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn '\\.toFixed(' client/src/ server/src/ | head -n 30",
-      "hits": [
-        "client/src/pages/invoices-page.tsx:294:                        <span>IGST: ₹{Number(inv.igstAmount).toFixed(2)}</span>",
-        "client/src/pages/invoices-page.tsx:300:                          ).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:435:                          ₹{Number(l.unitPrice).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:438:                          ₹{Number(l.taxableAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:441:                          ₹{Number(l.taxAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:444:                          ₹{Number(l.lineTotal).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:460:                      ₹{Number(selectedInvoice.taxableAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:470:                          ₹{Number(selectedInvoice.cgstAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:478:                          ₹{Number(selectedInvoice.sgstAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:489:                        ₹{Number(selectedInvoice.igstAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:496:                      ₹{Number(selectedInvoice.totalAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:502:                      ₹{Number(selectedInvoice.outstandingAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:567:                  {Number(selectedInvoice.outstandingAmount).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:203:                  Taxable: ₹{salesData.summary.totalTaxable.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:205:                <span>Tax: ₹{salesData.summary.totalTax.toFixed(2)}</span>",
-        "client/src/pages/reports-page.tsx:207:                  Grand total: ₹{salesData.summary.grandTotal.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:260:                        ₹{row.taxableAmount.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:263:                        ₹{row.cgstAmount.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:266:                        ₹{row.sgstAmount.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:269:                        ₹{row.lineTotal.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:289:                ₹{Number(gstData?.summary?.totalTaxable || 0).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:297:                ₹{Number(gstData?.summary?.totalTaxAmount || 0).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:306:                {Number(gstData?.summary?.totalCreditNotesAmount || 0).toFixed(",
-        "client/src/pages/reports-page.tsx:336:                        ₹{r.taxable.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:339:                        ₹{r.cgst.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:342:                        ₹{r.sgst.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:345:                        ₹{r.totalTax.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:374:                        ₹{h.taxable.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:377:                        ₹{(h.cgst + h.sgst + h.igst).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:406:                  ₹{Number(stockData.summary.totalValuation).toFixed(2)}"
-      ]
-    },
-    "needsApproval": "schema",
-    "notes": ""
-  },
-  {
-    "id": "F-011",
-    "title": "`financeService.getFinancialYear()` relies on Node process timezone, misclassifying April 1st morning invoices into previous financial year on UTC servers",
-    "severity": "P1",
-    "category": "Statutory Compliance / Timezone / Invoicing",
-    "tier": "T1",
-    "cluster": "CLUSTER-03",
-    "dependsOn": [],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "Rule 46 of CGST Rules",
-      "2017",
-      "Section 2(7) of the Income-tax Act",
-      "1961 (Definition of Financial Year)"
-    ],
-    "files": [
-      "finance.service.ts",
-      "///home/snehan/projects/web/mill-ledger/server/src/modules/finance/finance.service.ts",
-      "/audit/scripts/test-tz.ts",
-      "../audit/scripts/test-tz.ts"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-011.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-011-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'deleteMany' server/src/modules/ | head -n 20",
-      "hits": [
-        "server/src/modules/production/production.service.ts:448:        await tx.productionRunMaterial.deleteMany({"
-      ]
-    },
-    "needsApproval": "schema",
-    "notes": ""
-  },
-  {
-    "id": "F-012",
-    "title": "Absence of format and checksum validation allows malformed and counterfeit GSTIN strings in customer records and tax invoices",
-    "severity": "P1",
-    "category": "Statutory Compliance / Input Validation / GST Compliance",
-    "tier": "T3",
-    "cluster": "CLUSTER-06",
-    "dependsOn": [
-      "F-017",
-      "F-023"
-    ],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "Section 25 of CGST Act",
-      "2017",
-      "Rule 8 of CGST Rules",
-      "2017",
-      "GST Portal Specification (gst.gov.in)",
-      "OWASP ASVS v4.0.3 Item 5.1.4"
-    ],
-    "files": [
-      "server/src/modules/sales/sales.routes.ts",
-      "finance.routes.ts",
-      "client/src/pages/customers-page.ts",
-      "/audit/scripts/verify-gstin.ts",
-      "../audit/scripts/verify-gstin.ts"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-012.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-012-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'req\\.query\\|req\\.params' server/src/modules/ | grep -v 'parse' | head -n 25",
-      "hits": [
-        "server/src/modules/production/production.routes.ts:55:      const orgId = req.query.organizationId as string;",
-        "server/src/modules/production/production.routes.ts:76:        (req.query.organizationId as string) ||",
-        "server/src/modules/production/production.routes.ts:95:      const runId = Array.isArray(req.params.id)",
-        "server/src/modules/production/production.routes.ts:96:        ? req.params.id[0]",
-        "server/src/modules/production/production.routes.ts:97:        : req.params.id;",
-        "server/src/modules/production/production.routes.ts:166:      const runId = Array.isArray(req.params.id)",
-        "server/src/modules/production/production.routes.ts:167:        ? req.params.id[0]",
-        "server/src/modules/production/production.routes.ts:168:        : req.params.id;",
-        "server/src/modules/production/production.routes.ts:199:      const runId = Array.isArray(req.params.id)",
-        "server/src/modules/production/production.routes.ts:200:        ? req.params.id[0]",
-        "server/src/modules/production/production.routes.ts:201:        : req.params.id;",
-        "server/src/modules/sales/sales.routes.ts:76:      const orgId = (req.query.organizationId as string) || \"MILL\";",
-        "server/src/modules/sales/sales.routes.ts:92:      const orgId = (req.query.organizationId as string) || \"MILL\";",
-        "server/src/modules/sales/sales.routes.ts:108:      const orgId = (req.query.organizationId as string) || \"MILL\";",
-        "server/src/modules/sales/sales.routes.ts:109:      const status = req.query.status as OrderStatus | undefined;",
-        "server/src/modules/sales/sales.routes.ts:129:      const orderId = Array.isArray(req.params.id)",
-        "server/src/modules/sales/sales.routes.ts:130:        ? req.params.id[0]",
-        "server/src/modules/sales/sales.routes.ts:131:        : req.params.id;",
-        "server/src/modules/sales/sales.routes.ts:177:      const orderId = Array.isArray(req.params.id)",
-        "server/src/modules/sales/sales.routes.ts:178:        ? req.params.id[0]",
-        "server/src/modules/sales/sales.routes.ts:179:        : req.params.id;",
-        "server/src/modules/sales/sales.routes.ts:208:      const orderId = Array.isArray(req.params.id)",
-        "server/src/modules/sales/sales.routes.ts:209:        ? req.params.id[0]",
-        "server/src/modules/sales/sales.routes.ts:210:        : req.params.id;",
-        "server/src/modules/sales/sales.routes.ts:242:      const orderId = Array.isArray(req.params.id)"
-      ]
-    },
-    "needsApproval": "API",
-    "notes": ""
-  },
-  {
-    "id": "F-013",
-    "title": "Backend lacks payment bounce/reversal methods and debit note data structures required for double-entry correction",
-    "severity": "P1",
-    "category": "Core Business Workflow / Finance / Statutory Accounting",
-    "tier": "T1",
-    "cluster": "CLUSTER-03",
-    "dependsOn": [],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "Negotiable Instruments Act",
-      "1881 (Dishonour of Cheque)",
-      "REQ-037",
-      "REQ-039"
-    ],
-    "files": [
-      "payment.service.ts",
-      "///home/snehan/projects/web/mill-ledger/server/src/modules/finance/payment.service.ts",
-      "/audit/scripts/verify-payments.ts",
-      "server/src/modules/finance/payment.service.ts",
-      "../audit/scripts/verify-payments.ts"
-    ],
-    "effort": "M",
-    "owner": "agent",
-    "status": "BLOCKED",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-013.md",
-        "note": "Discovered during audit phase."
-      },
-      {
-        "status": "BLOCKED",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/tracker/owner-decisions.md",
-        "note": "BLOCKED on Owner Decision OD-06: Payment Bounce and Debit Note Data Model Specification."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-013-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'deleteMany' server/src/modules/ | head -n 20",
-      "hits": [
-        "server/src/modules/production/production.service.ts:448:        await tx.productionRunMaterial.deleteMany({"
-      ]
-    },
-    "needsApproval": "schema",
-    "notes": "BLOCKED on Owner Decision OD-06: Payment Bounce and Debit Note Data Model Specification."
-  },
-  {
-    "id": "F-014",
-    "title": "Statutory GST rates are read from static `product.taxRate` columns; the dedicated `TaxRate` master table is never queried",
-    "severity": "P2",
-    "category": "Data Architecture / GST Compliance / Master Data",
-    "tier": "T1",
-    "cluster": "CLUSTER-03",
-    "dependsOn": [],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "Section 9 of CGST Act",
-      "2017 (Levy and collection of GST)",
-      "REQ-006",
-      "REQ-034"
-    ],
-    "files": [
-      "server/prisma/seed.ts",
-      "sales.service.ts",
-      "///home/snehan/projects/web/mill-ledger/server/src/modules/sales/sales.service.ts",
-      "finance.service.ts",
-      "///home/snehan/projects/web/mill-ledger/server/src/modules/finance/finance.service.ts"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "BLOCKED",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-014.md",
-        "note": "Discovered during audit phase."
-      },
-      {
-        "status": "BLOCKED",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/tracker/owner-decisions.md",
-        "note": "BLOCKED on Owner Decision OD-01: Dynamic GST Rate Master Source vs Static Product Column."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-014-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'deleteMany' server/src/modules/ | head -n 20",
-      "hits": [
-        "server/src/modules/production/production.service.ts:448:        await tx.productionRunMaterial.deleteMany({"
-      ]
-    },
-    "needsApproval": "schema",
-    "notes": "BLOCKED on Owner Decision OD-01: Dynamic GST Rate Master Source vs Static Product Column."
-  },
-  {
     "id": "F-015",
     "title": "Idempotency pre-query race condition causes concurrent duplicate submissions to crash with unhandled 500 unique constraint error",
     "severity": "P2",
@@ -1009,6 +523,180 @@
     },
     "needsApproval": "none",
     "notes": ""
+  },
+  {
+    "id": "F-011",
+    "title": "`financeService.getFinancialYear()` relies on Node process timezone, misclassifying April 1st morning invoices into previous financial year on UTC servers",
+    "severity": "P1",
+    "category": "Statutory Compliance / Timezone / Invoicing",
+    "tier": "T1",
+    "cluster": "CLUSTER-03",
+    "dependsOn": [],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "Rule 46 of CGST Rules",
+      "2017",
+      "Section 2(7) of the Income-tax Act",
+      "1961 (Definition of Financial Year)"
+    ],
+    "files": [
+      "finance.service.ts",
+      "///home/snehan/projects/web/mill-ledger/server/src/modules/finance/finance.service.ts",
+      "/audit/scripts/test-tz.ts",
+      "../audit/scripts/test-tz.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-011.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-011-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'deleteMany' server/src/modules/ | head -n 20",
+      "hits": [
+        "server/src/modules/production/production.service.ts:448:        await tx.productionRunMaterial.deleteMany({"
+      ]
+    },
+    "needsApproval": "schema",
+    "notes": ""
+  },
+  {
+    "id": "F-013",
+    "title": "Backend lacks payment bounce/reversal methods and debit note data structures required for double-entry correction",
+    "severity": "P1",
+    "category": "Core Business Workflow / Finance / Statutory Accounting",
+    "tier": "T1",
+    "cluster": "CLUSTER-03",
+    "dependsOn": [],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "Negotiable Instruments Act",
+      "1881 (Dishonour of Cheque)",
+      "REQ-037",
+      "REQ-039"
+    ],
+    "files": [
+      "payment.service.ts",
+      "///home/snehan/projects/web/mill-ledger/server/src/modules/finance/payment.service.ts",
+      "/audit/scripts/verify-payments.ts",
+      "server/src/modules/finance/payment.service.ts",
+      "../audit/scripts/verify-payments.ts"
+    ],
+    "effort": "M",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-013.md",
+        "note": "Discovered during audit phase."
+      },
+      {
+        "status": "BLOCKED",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/tracker/owner-decisions.md",
+        "note": "BLOCKED pending Owner Decision OD-06."
+      },
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/tracker/owner-decisions.md",
+        "note": "Unblocked on 2026-11-20 per Owner Decision OD-06 (Dedicated DebitNote model for supplier returns & PaymentStatus.BOUNCED)."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-013-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'deleteMany' server/src/modules/ | head -n 20",
+      "hits": [
+        "server/src/modules/production/production.service.ts:448:        await tx.productionRunMaterial.deleteMany({"
+      ]
+    },
+    "needsApproval": "schema",
+    "notes": "Unblocked on 2026-11-20 per Owner Decision OD-06 (Dedicated DebitNote model for supplier returns & PaymentStatus.BOUNCED)."
+  },
+  {
+    "id": "F-014",
+    "title": "Statutory GST rates are read from static `product.taxRate` columns; the dedicated `TaxRate` master table is never queried",
+    "severity": "P2",
+    "category": "Data Architecture / GST Compliance / Master Data",
+    "tier": "T1",
+    "cluster": "CLUSTER-03",
+    "dependsOn": [],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "Section 9 of CGST Act",
+      "2017 (Levy and collection of GST)",
+      "REQ-006",
+      "REQ-034"
+    ],
+    "files": [
+      "server/prisma/seed.ts",
+      "sales.service.ts",
+      "///home/snehan/projects/web/mill-ledger/server/src/modules/sales/sales.service.ts",
+      "finance.service.ts",
+      "///home/snehan/projects/web/mill-ledger/server/src/modules/finance/finance.service.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-014.md",
+        "note": "Discovered during audit phase."
+      },
+      {
+        "status": "BLOCKED",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/tracker/owner-decisions.md",
+        "note": "BLOCKED pending Owner Decision OD-01."
+      },
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/tracker/owner-decisions.md",
+        "note": "Unblocked on 2026-11-20 per Owner Decision OD-01 (Dynamic TaxRate master lookup by HSN & effective date, fail-safe if missing)."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-014-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'deleteMany' server/src/modules/ | head -n 20",
+      "hits": [
+        "server/src/modules/production/production.service.ts:448:        await tx.productionRunMaterial.deleteMany({"
+      ]
+    },
+    "needsApproval": "schema",
+    "notes": "Unblocked on 2026-11-20 per Owner Decision OD-01 (Dynamic TaxRate master lookup by HSN & effective date, fail-safe if missing)."
   },
   {
     "id": "F-016",
@@ -1152,7 +840,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "BLOCKED",
+    "status": "OPEN",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -1166,7 +854,14 @@
         "date": "2026-11-20",
         "commit": null,
         "evidenceLink": "audit/tracker/owner-decisions.md",
-        "note": "BLOCKED on Owner Decision OD-03: Multi-tier ABAC Scoping Matrix for Salesmen & Dispatches."
+        "note": "BLOCKED pending Owner Decision OD-03."
+      },
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/tracker/owner-decisions.md",
+        "note": "Unblocked on 2026-11-20 per Owner Decision OD-03 (Scoped Dispatches by salesOrder.createdById === user.id)."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
@@ -1179,7 +874,7 @@
       "hits": []
     },
     "needsApproval": "permission",
-    "notes": "BLOCKED on Owner Decision OD-03: Multi-tier ABAC Scoping Matrix for Salesmen & Dispatches."
+    "notes": "Unblocked on 2026-11-20 per Owner Decision OD-03 (Scoped Dispatches by salesOrder.createdById === user.id)."
   },
   {
     "id": "F-019",
@@ -1265,7 +960,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "BLOCKED",
+    "status": "OPEN",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -1279,7 +974,14 @@
         "date": "2026-11-20",
         "commit": null,
         "evidenceLink": "audit/tracker/owner-decisions.md",
-        "note": "BLOCKED on Owner Decision OD-07: Sales Order Unit Price Discount Bounds and Margin Policy."
+        "note": "BLOCKED pending Owner Decision OD-07."
+      },
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/tracker/owner-decisions.md",
+        "note": "Unblocked on 2026-11-20 per Owner Decision OD-07 (Threshold Discount Guard: <=5% salesman discretion, 5-15% manager approval, >15% reject)."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
@@ -1292,7 +994,7 @@
       "hits": []
     },
     "needsApproval": "permission",
-    "notes": "BLOCKED on Owner Decision OD-07: Sales Order Unit Price Discount Bounds and Margin Policy."
+    "notes": "Unblocked on 2026-11-20 per Owner Decision OD-07 (Threshold Discount Guard: <=5% salesman discretion, 5-15% manager approval, >15% reject)."
   },
   {
     "id": "F-021",
@@ -1341,6 +1043,420 @@
       "hits": []
     },
     "needsApproval": "permission",
+    "notes": ""
+  },
+  {
+    "id": "F-027",
+    "title": "Stock reservations lack TTL and expiration semantics, enabling inventory lockup and order fulfillment denial of service",
+    "severity": "P1",
+    "category": "Business Logic Abuse / Denial of Service",
+    "tier": "T2",
+    "cluster": "CLUSTER-04",
+    "dependsOn": [
+      "F-007",
+      "F-009",
+      "F-010"
+    ],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "OWASP Top 10:2021 A04:2021 (Insecure Design)",
+      "OWASP API Security Top 10:2023 API6:2023 (Unrestricted Access to Sensitive Business Flows)",
+      "OWASP ASVS v4.0.3 Section 13.2.2 (Verify that business logic limits allow only authorized and timely state transitions)"
+    ],
+    "files": [
+      "server/prisma/schema.prisma",
+      "///home/snehan/projects/web/mill-ledger/server/prisma/schema.prisma",
+      "server/src/modules/sales/sales.service.ts",
+      "///home/snehan/projects/web/mill-ledger/server/src/modules/sales/sales.service.ts",
+      "sales.service.ts"
+    ],
+    "effort": "M",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-027.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-027-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'router\\.' server/src/modules/ | grep -v 'requirePermission' | head -n 25",
+      "hits": []
+    },
+    "needsApproval": "permission",
+    "notes": ""
+  },
+  {
+    "id": "F-023",
+    "title": "Backend lacks user and role management API endpoints; super admin accounts rely on hardcoded seeded credentials without last-admin demotion safeguards or MFA",
+    "severity": "P1",
+    "category": "Identity & Access Management / Administration",
+    "tier": "T2",
+    "cluster": "CLUSTER-05",
+    "dependsOn": [
+      "F-017"
+    ],
+    "blocks": [
+      "F-012",
+      "F-022",
+      "F-025",
+      "F-026",
+      "F-030",
+      "F-031"
+    ],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "OWASP Top 10:2021 A01:2021 (Broken Access Control)",
+      "OWASP ASVS v4.0.3 Section 1.4.1",
+      "Section 2.8 (Multi-Factor Authentication)"
+    ],
+    "files": [
+      "server/src/policies/rbac.ts",
+      "///home/snehan/projects/web/mill-ledger/server/src/policies/rbac.ts",
+      "/audit/evidence/routes-runtime.js",
+      "///home/snehan/projects/web/mill-ledger/audit/evidence/routes-runtime.js",
+      "server/src/app.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-023.md",
+        "note": "Discovered during audit phase."
+      },
+      {
+        "status": "BLOCKED",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/tracker/owner-decisions.md",
+        "note": "BLOCKED pending Owner Decision OD-02."
+      },
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/tracker/owner-decisions.md",
+        "note": "Unblocked on 2026-11-20 per Owner Decision OD-02 (Interactive CLI pnpm admin:bootstrap with hidden password entry)."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-023-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'handleSignOut\\|quickLogin' client/src/ | head -n 20",
+      "hits": [
+        "client/src/layouts/authenticated-layout.tsx:58:  const handleSignOut = async () => {",
+        "client/src/layouts/authenticated-layout.tsx:71:    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>"
+      ]
+    },
+    "needsApproval": "API",
+    "notes": "Unblocked on 2026-11-20 per Owner Decision OD-02 (Interactive CLI pnpm admin:bootstrap with hidden password entry)."
+  },
+  {
+    "id": "F-024",
+    "title": "Better Auth password reset endpoint is unconfigured (returns 404); account lockout is not implemented after repeated authentication failures",
+    "severity": "P2",
+    "category": "Authentication / Credential Management",
+    "tier": "T2",
+    "cluster": "CLUSTER-05",
+    "dependsOn": [
+      "F-017"
+    ],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "OWASP Top 10:2021 A07:2021 (Identification and Authentication Failures)",
+      "OWASP ASVS v4.0.3 Section 2.2.1",
+      "Section 2.3.1"
+    ],
+    "files": [
+      "/audit/scripts/verify-sessions-auth.ts",
+      "///home/snehan/projects/web/mill-ledger/audit/scripts/verify-sessions-auth.ts",
+      "server/src/lib/auth.ts",
+      "///home/snehan/projects/web/mill-ledger/server/src/lib/auth.ts",
+      "server/src/auth.integration.test.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-024.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-024-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'handleSignOut\\|quickLogin' client/src/ | head -n 20",
+      "hits": [
+        "client/src/layouts/authenticated-layout.tsx:58:  const handleSignOut = async () => {",
+        "client/src/layouts/authenticated-layout.tsx:71:    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>"
+      ]
+    },
+    "needsApproval": "API",
+    "notes": ""
+  },
+  {
+    "id": "F-028",
+    "title": "Dexie IndexedDB fails to purge sensitive customer PII and pending offline orders upon user sign-out",
+    "severity": "P2",
+    "category": "Cryptographic Failures / Sensitive Data Exposure / Client Storage",
+    "tier": "T2",
+    "cluster": "CLUSTER-05",
+    "dependsOn": [
+      "F-017"
+    ],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "OWASP Top 10:2021 A02:2021 (Cryptographic Failures)",
+      "A01:2021 (Broken Access Control)",
+      "OWASP API Security Top 10:2023 API3:2023 (Broken Object Property Level Authorization)",
+      "OWASP ASVS v4.0.3 Section 3.5.3 (Verify that sensitive session tokens and credentials are deleted upon logout)",
+      "Section 8.3.1 (Verify that sensitive data stored client-side is cleared when no longer required)"
+    ],
+    "files": [
+      "/audit/tests/dexie-security.spec.ts",
+      "///home/snehan/projects/web/mill-ledger/audit/tests/dexie-security.spec.ts",
+      "/audit/evidence/dexie-logout-audit.js",
+      "///home/snehan/projects/web/mill-ledger/audit/evidence/dexie-logout-audit.js",
+      "client/src/layouts/authenticated-layout.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-028.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-028-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'handleSignOut\\|quickLogin' client/src/ | head -n 20",
+      "hits": [
+        "client/src/layouts/authenticated-layout.tsx:58:  const handleSignOut = async () => {",
+        "client/src/layouts/authenticated-layout.tsx:71:    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>"
+      ]
+    },
+    "needsApproval": "API",
+    "notes": ""
+  },
+  {
+    "id": "F-029",
+    "title": "CI pipeline uses mutable GitHub Action references, lacks package manager release-age protection, and exposes unconstrained database seeds",
+    "severity": "P2",
+    "category": "Software & Data Integrity Failures / Supply Chain",
+    "tier": "T2",
+    "cluster": "CLUSTER-05",
+    "dependsOn": [
+      "F-017"
+    ],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "OWASP Top 10:2021 A08:2021 (Software and Data Integrity Failures)",
+      "OWASP API Security Top 10:2023 API8:2023 (Security Misconfiguration)",
+      "OWASP ASVS v4.0.3 Section 10.3.1 (Verify that third-party components are verified for integrity)",
+      "Section 14.2.1 (Verify that all build and deployment pipeline tasks are hardened)"
+    ],
+    "files": [
+      ".github/workflows/ci.yml",
+      "///home/snehan/projects/web/mill-ledger/.github/workflows/ci.yml",
+      "server/prisma/seed.ts",
+      "///home/snehan/projects/web/mill-ledger/server/prisma/seed.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-029.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-029-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'handleSignOut\\|quickLogin' client/src/ | head -n 20",
+      "hits": [
+        "client/src/layouts/authenticated-layout.tsx:58:  const handleSignOut = async () => {",
+        "client/src/layouts/authenticated-layout.tsx:71:    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>"
+      ]
+    },
+    "needsApproval": "API",
+    "notes": ""
+  },
+  {
+    "id": "F-084",
+    "title": "Plaintext Sensitive Customer PII and Outbox Orders Persist in IndexedDB Across User Logout and Account Switches",
+    "severity": "P2",
+    "category": "Data Privacy / Client Storage Security",
+    "tier": "T2",
+    "cluster": "CLUSTER-05",
+    "dependsOn": [
+      "F-017"
+    ],
+    "blocks": [],
+    "relatedFindings": [
+      "F-028"
+    ],
+    "standardsRefs": [
+      "- `docs/offline-sync.md` (\"Dexie/IndexedDB: user-scoped snapshots",
+      "drafts",
+      "and outbox commands\")"
+    ],
+    "files": [
+      "client/src/layouts/authenticated-layout.ts",
+      "///home/snehan/projects/web/mill-ledger/client/src/layouts/authenticated-layout.ts",
+      "///home/snehan/projects/web/mill-ledger/audit/tests/dexie-security.spec.ts",
+      "///home/snehan/projects/web/mill-ledger/audit/evidence/dexie-logout-audit.js"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "WONT-FIX",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-084.md",
+        "note": "Discovered during audit phase."
+      },
+      {
+        "status": "WONT-FIX",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/99-final-report.md",
+        "note": "owner-approved: Merged duplicate into canonical finding F-028 per Phase 15 final report."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-084-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'handleSignOut\\|quickLogin' client/src/ | head -n 20",
+      "hits": [
+        "client/src/layouts/authenticated-layout.tsx:58:  const handleSignOut = async () => {",
+        "client/src/layouts/authenticated-layout.tsx:71:    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>"
+      ]
+    },
+    "needsApproval": "API",
+    "notes": "owner-approved: Merged duplicate into canonical finding F-028 per Phase 15 final report."
+  },
+  {
+    "id": "F-012",
+    "title": "Absence of format and checksum validation allows malformed and counterfeit GSTIN strings in customer records and tax invoices",
+    "severity": "P1",
+    "category": "Statutory Compliance / Input Validation / GST Compliance",
+    "tier": "T3",
+    "cluster": "CLUSTER-06",
+    "dependsOn": [
+      "F-017",
+      "F-023"
+    ],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "Section 25 of CGST Act",
+      "2017",
+      "Rule 8 of CGST Rules",
+      "2017",
+      "GST Portal Specification (gst.gov.in)",
+      "OWASP ASVS v4.0.3 Item 5.1.4"
+    ],
+    "files": [
+      "server/src/modules/sales/sales.routes.ts",
+      "finance.routes.ts",
+      "client/src/pages/customers-page.ts",
+      "/audit/scripts/verify-gstin.ts",
+      "../audit/scripts/verify-gstin.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-012.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-012-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'req\\.query\\|req\\.params' server/src/modules/ | grep -v 'parse' | head -n 25",
+      "hits": [
+        "server/src/modules/production/production.routes.ts:55:      const orgId = req.query.organizationId as string;",
+        "server/src/modules/production/production.routes.ts:76:        (req.query.organizationId as string) ||",
+        "server/src/modules/production/production.routes.ts:95:      const runId = Array.isArray(req.params.id)",
+        "server/src/modules/production/production.routes.ts:96:        ? req.params.id[0]",
+        "server/src/modules/production/production.routes.ts:97:        : req.params.id;",
+        "server/src/modules/production/production.routes.ts:166:      const runId = Array.isArray(req.params.id)",
+        "server/src/modules/production/production.routes.ts:167:        ? req.params.id[0]",
+        "server/src/modules/production/production.routes.ts:168:        : req.params.id;",
+        "server/src/modules/production/production.routes.ts:199:      const runId = Array.isArray(req.params.id)",
+        "server/src/modules/production/production.routes.ts:200:        ? req.params.id[0]",
+        "server/src/modules/production/production.routes.ts:201:        : req.params.id;",
+        "server/src/modules/sales/sales.routes.ts:76:      const orgId = (req.query.organizationId as string) || \"MILL\";",
+        "server/src/modules/sales/sales.routes.ts:92:      const orgId = (req.query.organizationId as string) || \"MILL\";",
+        "server/src/modules/sales/sales.routes.ts:108:      const orgId = (req.query.organizationId as string) || \"MILL\";",
+        "server/src/modules/sales/sales.routes.ts:109:      const status = req.query.status as OrderStatus | undefined;",
+        "server/src/modules/sales/sales.routes.ts:129:      const orderId = Array.isArray(req.params.id)",
+        "server/src/modules/sales/sales.routes.ts:130:        ? req.params.id[0]",
+        "server/src/modules/sales/sales.routes.ts:131:        : req.params.id;",
+        "server/src/modules/sales/sales.routes.ts:177:      const orderId = Array.isArray(req.params.id)",
+        "server/src/modules/sales/sales.routes.ts:178:        ? req.params.id[0]",
+        "server/src/modules/sales/sales.routes.ts:179:        : req.params.id;",
+        "server/src/modules/sales/sales.routes.ts:208:      const orderId = Array.isArray(req.params.id)",
+        "server/src/modules/sales/sales.routes.ts:209:        ? req.params.id[0]",
+        "server/src/modules/sales/sales.routes.ts:210:        : req.params.id;",
+        "server/src/modules/sales/sales.routes.ts:242:      const orderId = Array.isArray(req.params.id)"
+      ]
+    },
+    "needsApproval": "API",
     "notes": ""
   },
   {
@@ -1413,122 +1529,6 @@
         "server/src/modules/sales/sales.routes.ts:209:        ? req.params.id[0]",
         "server/src/modules/sales/sales.routes.ts:210:        : req.params.id;",
         "server/src/modules/sales/sales.routes.ts:242:      const orderId = Array.isArray(req.params.id)"
-      ]
-    },
-    "needsApproval": "API",
-    "notes": ""
-  },
-  {
-    "id": "F-023",
-    "title": "Backend lacks user and role management API endpoints; super admin accounts rely on hardcoded seeded credentials without last-admin demotion safeguards or MFA",
-    "severity": "P1",
-    "category": "Identity & Access Management / Administration",
-    "tier": "T2",
-    "cluster": "CLUSTER-05",
-    "dependsOn": [
-      "F-017"
-    ],
-    "blocks": [
-      "F-012",
-      "F-022",
-      "F-025",
-      "F-026",
-      "F-030",
-      "F-031"
-    ],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "OWASP Top 10:2021 A01:2021 (Broken Access Control)",
-      "OWASP ASVS v4.0.3 Section 1.4.1",
-      "Section 2.8 (Multi-Factor Authentication)"
-    ],
-    "files": [
-      "server/src/policies/rbac.ts",
-      "///home/snehan/projects/web/mill-ledger/server/src/policies/rbac.ts",
-      "/audit/evidence/routes-runtime.js",
-      "///home/snehan/projects/web/mill-ledger/audit/evidence/routes-runtime.js",
-      "server/src/app.ts"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "BLOCKED",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-023.md",
-        "note": "Discovered during audit phase."
-      },
-      {
-        "status": "BLOCKED",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/tracker/owner-decisions.md",
-        "note": "BLOCKED on Owner Decision OD-02: Super Admin Bootstrap and First-Run Credential Policy."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-023-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'handleSignOut\\|quickLogin' client/src/ | head -n 20",
-      "hits": [
-        "client/src/layouts/authenticated-layout.tsx:58:  const handleSignOut = async () => {",
-        "client/src/layouts/authenticated-layout.tsx:71:    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>"
-      ]
-    },
-    "needsApproval": "API",
-    "notes": "BLOCKED on Owner Decision OD-02: Super Admin Bootstrap and First-Run Credential Policy."
-  },
-  {
-    "id": "F-024",
-    "title": "Better Auth password reset endpoint is unconfigured (returns 404); account lockout is not implemented after repeated authentication failures",
-    "severity": "P2",
-    "category": "Authentication / Credential Management",
-    "tier": "T2",
-    "cluster": "CLUSTER-05",
-    "dependsOn": [
-      "F-017"
-    ],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "OWASP Top 10:2021 A07:2021 (Identification and Authentication Failures)",
-      "OWASP ASVS v4.0.3 Section 2.2.1",
-      "Section 2.3.1"
-    ],
-    "files": [
-      "/audit/scripts/verify-sessions-auth.ts",
-      "///home/snehan/projects/web/mill-ledger/audit/scripts/verify-sessions-auth.ts",
-      "server/src/lib/auth.ts",
-      "///home/snehan/projects/web/mill-ledger/server/src/lib/auth.ts",
-      "server/src/auth.integration.test.ts"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-024.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-024-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'handleSignOut\\|quickLogin' client/src/ | head -n 20",
-      "hits": [
-        "client/src/layouts/authenticated-layout.tsx:58:  const handleSignOut = async () => {",
-        "client/src/layouts/authenticated-layout.tsx:71:    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>"
       ]
     },
     "needsApproval": "API",
@@ -1703,160 +1703,6 @@
     "notes": ""
   },
   {
-    "id": "F-027",
-    "title": "Stock reservations lack TTL and expiration semantics, enabling inventory lockup and order fulfillment denial of service",
-    "severity": "P1",
-    "category": "Business Logic Abuse / Denial of Service",
-    "tier": "T2",
-    "cluster": "CLUSTER-04",
-    "dependsOn": [
-      "F-007",
-      "F-009",
-      "F-010"
-    ],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "OWASP Top 10:2021 A04:2021 (Insecure Design)",
-      "OWASP API Security Top 10:2023 API6:2023 (Unrestricted Access to Sensitive Business Flows)",
-      "OWASP ASVS v4.0.3 Section 13.2.2 (Verify that business logic limits allow only authorized and timely state transitions)"
-    ],
-    "files": [
-      "server/prisma/schema.prisma",
-      "///home/snehan/projects/web/mill-ledger/server/prisma/schema.prisma",
-      "server/src/modules/sales/sales.service.ts",
-      "///home/snehan/projects/web/mill-ledger/server/src/modules/sales/sales.service.ts",
-      "sales.service.ts"
-    ],
-    "effort": "M",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-027.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-027-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'router\\.' server/src/modules/ | grep -v 'requirePermission' | head -n 25",
-      "hits": []
-    },
-    "needsApproval": "permission",
-    "notes": ""
-  },
-  {
-    "id": "F-028",
-    "title": "Dexie IndexedDB fails to purge sensitive customer PII and pending offline orders upon user sign-out",
-    "severity": "P2",
-    "category": "Cryptographic Failures / Sensitive Data Exposure / Client Storage",
-    "tier": "T2",
-    "cluster": "CLUSTER-05",
-    "dependsOn": [
-      "F-017"
-    ],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "OWASP Top 10:2021 A02:2021 (Cryptographic Failures)",
-      "A01:2021 (Broken Access Control)",
-      "OWASP API Security Top 10:2023 API3:2023 (Broken Object Property Level Authorization)",
-      "OWASP ASVS v4.0.3 Section 3.5.3 (Verify that sensitive session tokens and credentials are deleted upon logout)",
-      "Section 8.3.1 (Verify that sensitive data stored client-side is cleared when no longer required)"
-    ],
-    "files": [
-      "/audit/tests/dexie-security.spec.ts",
-      "///home/snehan/projects/web/mill-ledger/audit/tests/dexie-security.spec.ts",
-      "/audit/evidence/dexie-logout-audit.js",
-      "///home/snehan/projects/web/mill-ledger/audit/evidence/dexie-logout-audit.js",
-      "client/src/layouts/authenticated-layout.ts"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-028.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-028-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'handleSignOut\\|quickLogin' client/src/ | head -n 20",
-      "hits": [
-        "client/src/layouts/authenticated-layout.tsx:58:  const handleSignOut = async () => {",
-        "client/src/layouts/authenticated-layout.tsx:71:    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>"
-      ]
-    },
-    "needsApproval": "API",
-    "notes": ""
-  },
-  {
-    "id": "F-029",
-    "title": "CI pipeline uses mutable GitHub Action references, lacks package manager release-age protection, and exposes unconstrained database seeds",
-    "severity": "P2",
-    "category": "Software & Data Integrity Failures / Supply Chain",
-    "tier": "T2",
-    "cluster": "CLUSTER-05",
-    "dependsOn": [
-      "F-017"
-    ],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "OWASP Top 10:2021 A08:2021 (Software and Data Integrity Failures)",
-      "OWASP API Security Top 10:2023 API8:2023 (Security Misconfiguration)",
-      "OWASP ASVS v4.0.3 Section 10.3.1 (Verify that third-party components are verified for integrity)",
-      "Section 14.2.1 (Verify that all build and deployment pipeline tasks are hardened)"
-    ],
-    "files": [
-      ".github/workflows/ci.yml",
-      "///home/snehan/projects/web/mill-ledger/.github/workflows/ci.yml",
-      "server/prisma/seed.ts",
-      "///home/snehan/projects/web/mill-ledger/server/prisma/seed.ts"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-029.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-029-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'handleSignOut\\|quickLogin' client/src/ | head -n 20",
-      "hits": [
-        "client/src/layouts/authenticated-layout.tsx:58:  const handleSignOut = async () => {",
-        "client/src/layouts/authenticated-layout.tsx:71:    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>"
-      ]
-    },
-    "needsApproval": "API",
-    "notes": ""
-  },
-  {
     "id": "F-030",
     "title": "Order modification endpoint lacks request body schema validation, accepting unvalidated mutations and crashing with HTTP 500 on malformed status values",
     "severity": "P0",
@@ -2004,6 +1850,110 @@
       ]
     },
     "needsApproval": "API",
+    "notes": ""
+  },
+  {
+    "id": "F-004",
+    "title": "Prisma seed script executes in production mode without guard or confirmation, injecting hardcoded test accounts",
+    "severity": "P0",
+    "category": "Security / Data Integrity / Credential Exposure",
+    "tier": "T4",
+    "cluster": "CLUSTER-07",
+    "dependsOn": [
+      "F-025"
+    ],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "OWASP Top 10:2021 A01 (Broken Access Control)",
+      "A07 (Identification and Authentication Failures)",
+      "OWASP ASVS v4.0.3 Item 2.1.1",
+      "Req 1.14.1",
+      "ISO/IEC 27001:2022 Control 8.31"
+    ],
+    "files": [
+      "server/prisma/seed.ts",
+      "///home/snehan/projects/web/mill-ledger/server/prisma/seed.ts",
+      "seed.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-004.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-004-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",
+      "hits": [
+        "server/src/app.test.ts:48:    it(\"sets helmet security headers on responses\", async () => {",
+        "server/src/app.ts:2:import cors from \"cors\";",
+        "server/src/app.ts:3:import helmet from \"helmet\";",
+        "server/src/app.ts:20:  app.use(helmet());",
+        "server/src/app.ts:22:    cors({"
+      ]
+    },
+    "needsApproval": "none",
+    "notes": ""
+  },
+  {
+    "id": "F-006",
+    "title": "Installed Zod version 3.24.2 is subject to high-severity denial-of-service advisory GHSA-mrhx-c7xc-m3w5",
+    "severity": "P2",
+    "category": "Supply Chain Security / Vulnerability",
+    "tier": "T4",
+    "cluster": "CLUSTER-07",
+    "dependsOn": [
+      "F-025"
+    ],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "OWASP Top 10:2021 A06 (Vulnerable and Outdated Components)",
+      "GHSA-mrhx-c7xc-m3w5"
+    ],
+    "files": [
+      "server/package.js",
+      "client/package.js"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-006.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-006-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",
+      "hits": [
+        "server/src/app.test.ts:48:    it(\"sets helmet security headers on responses\", async () => {",
+        "server/src/app.ts:2:import cors from \"cors\";",
+        "server/src/app.ts:3:import helmet from \"helmet\";",
+        "server/src/app.ts:20:  app.use(helmet());",
+        "server/src/app.ts:22:    cors({"
+      ]
+    },
+    "needsApproval": "none",
     "notes": ""
   },
   {
@@ -2227,23 +2177,24 @@
     "notes": ""
   },
   {
-    "id": "F-036",
-    "title": "Dashboard Sales Revenue Silently Drops Invoices Without Lines (SQL vs API Mismatch)",
-    "severity": "P0",
-    "category": "Domain & Accounting Integrity",
-    "tier": "T1",
-    "cluster": "CLUSTER-01",
+    "id": "F-100",
+    "title": "Missing Fail-Fast Environment Validation on `DATABASE_URL` and Absence of Staging / Production Env Configs",
+    "severity": "P1",
+    "category": "Configuration & Secret Management",
+    "tier": "T4",
+    "cluster": "CLUSTER-07",
     "dependsOn": [
-      "F-010"
+      "F-025"
     ],
     "blocks": [],
     "relatedFindings": [],
     "standardsRefs": [
-      "OWASP ASVS v4.0.3 Section 10.3 (Accounting Integrity)",
-      "REQ-026"
+      "- OWASP Top 10:2021 A05:2021 (Security Misconfiguration)"
     ],
     "files": [
-      "server/src/modules/reporting/reporting.service.ts"
+      "server/src/config/env.ts",
+      "///home/snehan/projects/web/mill-ledger/server/src/config/env.ts",
+      "./src/config/env.js"
     ],
     "effort": "S",
     "owner": "agent",
@@ -2253,52 +2204,156 @@
         "status": "OPEN",
         "date": "2026-11-20",
         "commit": null,
-        "evidenceLink": "audit/findings/F-036.md",
+        "evidenceLink": "audit/findings/F-100.md",
         "note": "Discovered during audit phase."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-036-regression.spec.ts",
+    "regressionTest": "audit/tests/f-100-regression.spec.ts",
     "fixCommit": null,
     "verifyEvidence": [],
     "siblingSweep": {
       "done": true,
-      "queryUsed": "grep -rn '\\.toFixed(' client/src/ server/src/ | head -n 30",
+      "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",
       "hits": [
-        "client/src/pages/invoices-page.tsx:294:                        <span>IGST: ₹{Number(inv.igstAmount).toFixed(2)}</span>",
-        "client/src/pages/invoices-page.tsx:300:                          ).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:435:                          ₹{Number(l.unitPrice).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:438:                          ₹{Number(l.taxableAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:441:                          ₹{Number(l.taxAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:444:                          ₹{Number(l.lineTotal).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:460:                      ₹{Number(selectedInvoice.taxableAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:470:                          ₹{Number(selectedInvoice.cgstAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:478:                          ₹{Number(selectedInvoice.sgstAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:489:                        ₹{Number(selectedInvoice.igstAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:496:                      ₹{Number(selectedInvoice.totalAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:502:                      ₹{Number(selectedInvoice.outstandingAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:567:                  {Number(selectedInvoice.outstandingAmount).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:203:                  Taxable: ₹{salesData.summary.totalTaxable.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:205:                <span>Tax: ₹{salesData.summary.totalTax.toFixed(2)}</span>",
-        "client/src/pages/reports-page.tsx:207:                  Grand total: ₹{salesData.summary.grandTotal.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:260:                        ₹{row.taxableAmount.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:263:                        ₹{row.cgstAmount.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:266:                        ₹{row.sgstAmount.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:269:                        ₹{row.lineTotal.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:289:                ₹{Number(gstData?.summary?.totalTaxable || 0).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:297:                ₹{Number(gstData?.summary?.totalTaxAmount || 0).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:306:                {Number(gstData?.summary?.totalCreditNotesAmount || 0).toFixed(",
-        "client/src/pages/reports-page.tsx:336:                        ₹{r.taxable.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:339:                        ₹{r.cgst.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:342:                        ₹{r.sgst.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:345:                        ₹{r.totalTax.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:374:                        ₹{h.taxable.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:377:                        ₹{(h.cgst + h.sgst + h.igst).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:406:                  ₹{Number(stockData.summary.totalValuation).toFixed(2)}"
+        "server/src/app.test.ts:48:    it(\"sets helmet security headers on responses\", async () => {",
+        "server/src/app.ts:2:import cors from \"cors\";",
+        "server/src/app.ts:3:import helmet from \"helmet\";",
+        "server/src/app.ts:20:  app.use(helmet());",
+        "server/src/app.ts:22:    cors({"
       ]
     },
-    "needsApproval": "schema",
+    "needsApproval": "none",
     "notes": ""
+  },
+  {
+    "id": "F-101",
+    "title": "Benchmark Seed Script Executes Unchecked in Production Without Environment Guard",
+    "severity": "P0",
+    "category": "Operations & Database Integrity",
+    "tier": "T4",
+    "cluster": "CLUSTER-07",
+    "dependsOn": [
+      "F-025"
+    ],
+    "blocks": [],
+    "relatedFindings": [
+      "F-004"
+    ],
+    "standardsRefs": [
+      "- OWASP ASVS v4.0.3 Req 1.14.1 (Verify that test",
+      "demo",
+      "and development data cannot be seeded into production)"
+    ],
+    "files": [
+      "server/prisma/seed.ts",
+      "///home/snehan/projects/web/mill-ledger/server/prisma/seed.ts",
+      "seed.ts",
+      "src/db/seed.ts",
+      "prisma/seed.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "WONT-FIX",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-101.md",
+        "note": "Discovered during audit phase."
+      },
+      {
+        "status": "WONT-FIX",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/99-final-report.md",
+        "note": "owner-approved: Merged duplicate into canonical finding F-004 per Phase 15 final report."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-101-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",
+      "hits": [
+        "server/src/app.test.ts:48:    it(\"sets helmet security headers on responses\", async () => {",
+        "server/src/app.ts:2:import cors from \"cors\";",
+        "server/src/app.ts:3:import helmet from \"helmet\";",
+        "server/src/app.ts:20:  app.use(helmet());",
+        "server/src/app.ts:22:    cors({"
+      ]
+    },
+    "needsApproval": "none",
+    "notes": "owner-approved: Merged duplicate into canonical finding F-004 per Phase 15 final report."
+  },
+  {
+    "id": "F-106",
+    "title": "Lack of Data Protection Policies, Retention Schedules, Erasure/Anonymization Routines, and Subject Access Export Under DPDP Act 2023",
+    "severity": "P2",
+    "category": "Data Protection & Privacy Compliance",
+    "tier": "T4",
+    "cluster": "CLUSTER-07",
+    "dependsOn": [
+      "F-025"
+    ],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "- Digital Personal Data Protection Act",
+      "2023 (DPDP Act 2023",
+      "Act No. 22 of 2023",
+      "Sections 11 & 12)"
+    ],
+    "files": [
+      "server/prisma/schema.prisma",
+      "///home/snehan/projects/web/mill-ledger/server/prisma/schema.prisma"
+    ],
+    "effort": "M",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-106.md",
+        "note": "Discovered during audit phase."
+      },
+      {
+        "status": "BLOCKED",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/tracker/owner-decisions.md",
+        "note": "BLOCKED pending Owner Decision OD-08."
+      },
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/tracker/owner-decisions.md",
+        "note": "Unblocked on 2026-11-20 per Owner Decision OD-08 (PII Anonymization with CGST Section 36 72-month statutory retention safeguards)."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-106-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",
+      "hits": [
+        "server/src/app.test.ts:48:    it(\"sets helmet security headers on responses\", async () => {",
+        "server/src/app.ts:2:import cors from \"cors\";",
+        "server/src/app.ts:3:import helmet from \"helmet\";",
+        "server/src/app.ts:20:  app.use(helmet());",
+        "server/src/app.ts:22:    cors({"
+      ]
+    },
+    "needsApproval": "none",
+    "notes": "Unblocked on 2026-11-20 per Owner Decision OD-08 (PII Anonymization with CGST Section 36 72-month statutory retention safeguards)."
   },
   {
     "id": "F-037",
@@ -2824,87 +2879,6 @@
     "notes": ""
   },
   {
-    "id": "F-044",
-    "title": "Touch Targets Below Minimum 44x44px Across Mobile Viewports",
-    "severity": "P2",
-    "category": "Accessibility / Mobile UX",
-    "tier": "T7",
-    "cluster": "CLUSTER-10",
-    "dependsOn": [
-      "F-045"
-    ],
-    "blocks": [],
-    "relatedFindings": [
-      "F-055"
-    ],
-    "standardsRefs": [
-      "WCAG 2.2 SC 2.5.8 (Target Size (Minimum) - Level AA)",
-      "Apple HIG adapted (Minimum 44x44 px touch targets)",
-      "Phase 7 Specification Check 3"
-    ],
-    "files": [
-      "client/src/components/ui/button.ts",
-      "client/src/components/shell/authenticated-shell.ts",
-      "tests/touch-targets.spec.ts"
-    ],
-    "effort": "M",
-    "owner": "agent",
-    "status": "WONT-FIX",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-044.md",
-        "note": "Discovered during audit phase."
-      },
-      {
-        "status": "WONT-FIX",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/99-final-report.md",
-        "note": "owner-approved: Merged duplicate into canonical finding F-055 per Phase 15 final report."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-044-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",
-      "hits": [
-        "client/src/pages/showcase-page.tsx:169:          aria-label=\"Component inventory sections\"",
-        "client/src/pages/showcase-page.tsx:248:                      aria-label=\"Add item\"",
-        "client/src/pages/showcase-page.tsx:412:                          aria-label=\"Standard review\"",
-        "client/src/pages/showcase-page.tsx:419:                          aria-label=\"Compact review\"",
-        "client/src/pages/login-page.tsx:185:          aria-label={",
-        "client/src/pages/login-page.tsx:300:                    aria-label={",
-        "client/src/layouts/authenticated-layout.tsx:86:      aria-label=\"Loading workspace\"",
-        "client/src/components/shell/authenticated-shell.tsx:225:      aria-label={`Sync state: ${config.label}`}",
-        "client/src/components/shell/authenticated-shell.tsx:295:            aria-label={`${name} ${description ? description + \" - \" : \"\"}Home`}",
-        "client/src/components/shell/authenticated-shell.tsx:354:            aria-label={item.label}",
-        "client/src/components/shell/authenticated-shell.tsx:383:            aria-label={item.label}",
-        "client/src/components/shell/authenticated-shell.tsx:405:                    aria-label={child.label}",
-        "client/src/components/shell/authenticated-shell.tsx:468:          aria-label={isCollapsed ? \"Expand sidebar\" : \"Collapse to icons ⌘B\"}",
-        "client/src/components/shell/authenticated-shell.tsx:608:      aria-label={",
-        "client/src/components/shell/authenticated-shell.tsx:673:        aria-label=\"Global search\"",
-        "client/src/components/shell/authenticated-shell.tsx:738:        aria-label=\"Search (Ctrl+K)\"",
-        "client/src/components/shell/authenticated-shell.tsx:751:        aria-label=\"Search\"",
-        "client/src/components/shell/authenticated-shell.tsx:851:          : \"Skip to main content\"}",
-        "client/src/components/shell/authenticated-shell.tsx:858:          aria-label=\"Open navigation\"",
-        "client/src/components/shell/authenticated-shell.tsx:884:          aria-label={",
-        "client/src/components/shell/authenticated-shell.tsx:917:              aria-label={`Account: ${user.name}`}",
-        "client/src/components/shell/authenticated-shell.tsx:1004:      aria-label=\"Mobile navigation\"",
-        "client/src/components/shell/authenticated-shell.tsx:1018:              aria-label={item.label}",
-        "client/src/components/shell/authenticated-shell.tsx:1088:          Skip to main content",
-        "client/src/components/ui/spinner.tsx:12:      aria-label=\"Loading\""
-      ]
-    },
-    "needsApproval": "none",
-    "notes": "owner-approved: Merged duplicate into canonical finding F-055 per Phase 15 final report."
-  },
-  {
     "id": "F-045",
     "title": "Lack of Skeleton Loaders and Omission of Request IDs in UI Error States",
     "severity": "P2",
@@ -3201,6 +3175,171 @@
     },
     "needsApproval": "none",
     "notes": ""
+  },
+  {
+    "id": "F-001",
+    "title": "Duplicate \"Skip to main content\" links violate Playwright strict mode and degrade keyboard navigation",
+    "severity": "P1",
+    "category": "Accessibility / Test Failure",
+    "tier": "T7",
+    "cluster": "CLUSTER-10",
+    "dependsOn": [
+      "F-045"
+    ],
+    "blocks": [
+      "F-062",
+      "F-063",
+      "F-064",
+      "F-065",
+      "F-066",
+      "F-067",
+      "F-068",
+      "F-069"
+    ],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "WCAG 2.2 SC 2.4.1 (Bypass Blocks",
+      "Level A)",
+      "SC 2.4.3 (Focus Order",
+      "Level A)",
+      "Playwright Strict Mode"
+    ],
+    "files": [
+      "authenticated-shell.ts",
+      "e2e/app-shell.spec.ts",
+      "client/src/components/shell/authenticated-shell.ts",
+      "///home/snehan/projects/web/mill-ledger/client/src/components/shell/authenticated-shell.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-001.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-001-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",
+      "hits": [
+        "client/src/pages/showcase-page.tsx:169:          aria-label=\"Component inventory sections\"",
+        "client/src/pages/showcase-page.tsx:248:                      aria-label=\"Add item\"",
+        "client/src/pages/showcase-page.tsx:412:                          aria-label=\"Standard review\"",
+        "client/src/pages/showcase-page.tsx:419:                          aria-label=\"Compact review\"",
+        "client/src/pages/login-page.tsx:185:          aria-label={",
+        "client/src/pages/login-page.tsx:300:                    aria-label={",
+        "client/src/layouts/authenticated-layout.tsx:86:      aria-label=\"Loading workspace\"",
+        "client/src/components/shell/authenticated-shell.tsx:225:      aria-label={`Sync state: ${config.label}`}",
+        "client/src/components/shell/authenticated-shell.tsx:295:            aria-label={`${name} ${description ? description + \" - \" : \"\"}Home`}",
+        "client/src/components/shell/authenticated-shell.tsx:354:            aria-label={item.label}",
+        "client/src/components/shell/authenticated-shell.tsx:383:            aria-label={item.label}",
+        "client/src/components/shell/authenticated-shell.tsx:405:                    aria-label={child.label}",
+        "client/src/components/shell/authenticated-shell.tsx:468:          aria-label={isCollapsed ? \"Expand sidebar\" : \"Collapse to icons ⌘B\"}",
+        "client/src/components/shell/authenticated-shell.tsx:608:      aria-label={",
+        "client/src/components/shell/authenticated-shell.tsx:673:        aria-label=\"Global search\"",
+        "client/src/components/shell/authenticated-shell.tsx:738:        aria-label=\"Search (Ctrl+K)\"",
+        "client/src/components/shell/authenticated-shell.tsx:751:        aria-label=\"Search\"",
+        "client/src/components/shell/authenticated-shell.tsx:851:          : \"Skip to main content\"}",
+        "client/src/components/shell/authenticated-shell.tsx:858:          aria-label=\"Open navigation\"",
+        "client/src/components/shell/authenticated-shell.tsx:884:          aria-label={",
+        "client/src/components/shell/authenticated-shell.tsx:917:              aria-label={`Account: ${user.name}`}",
+        "client/src/components/shell/authenticated-shell.tsx:1004:      aria-label=\"Mobile navigation\"",
+        "client/src/components/shell/authenticated-shell.tsx:1018:              aria-label={item.label}",
+        "client/src/components/shell/authenticated-shell.tsx:1088:          Skip to main content",
+        "client/src/components/ui/spinner.tsx:12:      aria-label=\"Loading\""
+      ]
+    },
+    "needsApproval": "none",
+    "notes": ""
+  },
+  {
+    "id": "F-044",
+    "title": "Touch Targets Below Minimum 44x44px Across Mobile Viewports",
+    "severity": "P2",
+    "category": "Accessibility / Mobile UX",
+    "tier": "T7",
+    "cluster": "CLUSTER-10",
+    "dependsOn": [
+      "F-045"
+    ],
+    "blocks": [],
+    "relatedFindings": [
+      "F-055"
+    ],
+    "standardsRefs": [
+      "WCAG 2.2 SC 2.5.8 (Target Size (Minimum) - Level AA)",
+      "Apple HIG adapted (Minimum 44x44 px touch targets)",
+      "Phase 7 Specification Check 3"
+    ],
+    "files": [
+      "client/src/components/ui/button.ts",
+      "client/src/components/shell/authenticated-shell.ts",
+      "tests/touch-targets.spec.ts"
+    ],
+    "effort": "M",
+    "owner": "agent",
+    "status": "WONT-FIX",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-044.md",
+        "note": "Discovered during audit phase."
+      },
+      {
+        "status": "WONT-FIX",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/99-final-report.md",
+        "note": "owner-approved: Merged duplicate into canonical finding F-055 per Phase 15 final report."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-044-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",
+      "hits": [
+        "client/src/pages/showcase-page.tsx:169:          aria-label=\"Component inventory sections\"",
+        "client/src/pages/showcase-page.tsx:248:                      aria-label=\"Add item\"",
+        "client/src/pages/showcase-page.tsx:412:                          aria-label=\"Standard review\"",
+        "client/src/pages/showcase-page.tsx:419:                          aria-label=\"Compact review\"",
+        "client/src/pages/login-page.tsx:185:          aria-label={",
+        "client/src/pages/login-page.tsx:300:                    aria-label={",
+        "client/src/layouts/authenticated-layout.tsx:86:      aria-label=\"Loading workspace\"",
+        "client/src/components/shell/authenticated-shell.tsx:225:      aria-label={`Sync state: ${config.label}`}",
+        "client/src/components/shell/authenticated-shell.tsx:295:            aria-label={`${name} ${description ? description + \" - \" : \"\"}Home`}",
+        "client/src/components/shell/authenticated-shell.tsx:354:            aria-label={item.label}",
+        "client/src/components/shell/authenticated-shell.tsx:383:            aria-label={item.label}",
+        "client/src/components/shell/authenticated-shell.tsx:405:                    aria-label={child.label}",
+        "client/src/components/shell/authenticated-shell.tsx:468:          aria-label={isCollapsed ? \"Expand sidebar\" : \"Collapse to icons ⌘B\"}",
+        "client/src/components/shell/authenticated-shell.tsx:608:      aria-label={",
+        "client/src/components/shell/authenticated-shell.tsx:673:        aria-label=\"Global search\"",
+        "client/src/components/shell/authenticated-shell.tsx:738:        aria-label=\"Search (Ctrl+K)\"",
+        "client/src/components/shell/authenticated-shell.tsx:751:        aria-label=\"Search\"",
+        "client/src/components/shell/authenticated-shell.tsx:851:          : \"Skip to main content\"}",
+        "client/src/components/shell/authenticated-shell.tsx:858:          aria-label=\"Open navigation\"",
+        "client/src/components/shell/authenticated-shell.tsx:884:          aria-label={",
+        "client/src/components/shell/authenticated-shell.tsx:917:              aria-label={`Account: ${user.name}`}",
+        "client/src/components/shell/authenticated-shell.tsx:1004:      aria-label=\"Mobile navigation\"",
+        "client/src/components/shell/authenticated-shell.tsx:1018:              aria-label={item.label}",
+        "client/src/components/shell/authenticated-shell.tsx:1088:          Skip to main content",
+        "client/src/components/ui/spinner.tsx:12:      aria-label=\"Loading\""
+      ]
+    },
+    "needsApproval": "none",
+    "notes": "owner-approved: Merged duplicate into canonical finding F-055 per Phase 15 final report."
   },
   {
     "id": "F-051",
@@ -5512,7 +5651,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "BLOCKED",
+    "status": "OPEN",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -5526,7 +5665,14 @@
         "date": "2026-11-20",
         "commit": null,
         "evidenceLink": "audit/tracker/owner-decisions.md",
-        "note": "BLOCKED on Owner Decision OD-04: Offline Outbox Stock Shortage Conflict Queue Policy (REQ-052)."
+        "note": "BLOCKED pending Owner Decision OD-04."
+      },
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/tracker/owner-decisions.md",
+        "note": "Unblocked on 2026-11-20 per Owner Decision OD-04 (STOCK_SHORTAGE_CONFLICT state with row locking and partial reservation)."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
@@ -5546,66 +5692,7 @@
       ]
     },
     "needsApproval": "none",
-    "notes": "BLOCKED on Owner Decision OD-04: Offline Outbox Stock Shortage Conflict Queue Policy (REQ-052)."
-  },
-  {
-    "id": "F-084",
-    "title": "Plaintext Sensitive Customer PII and Outbox Orders Persist in IndexedDB Across User Logout and Account Switches",
-    "severity": "P2",
-    "category": "Data Privacy / Client Storage Security",
-    "tier": "T2",
-    "cluster": "CLUSTER-05",
-    "dependsOn": [
-      "F-017"
-    ],
-    "blocks": [],
-    "relatedFindings": [
-      "F-028"
-    ],
-    "standardsRefs": [
-      "- `docs/offline-sync.md` (\"Dexie/IndexedDB: user-scoped snapshots",
-      "drafts",
-      "and outbox commands\")"
-    ],
-    "files": [
-      "client/src/layouts/authenticated-layout.ts",
-      "///home/snehan/projects/web/mill-ledger/client/src/layouts/authenticated-layout.ts",
-      "///home/snehan/projects/web/mill-ledger/audit/tests/dexie-security.spec.ts",
-      "///home/snehan/projects/web/mill-ledger/audit/evidence/dexie-logout-audit.js"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "WONT-FIX",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-084.md",
-        "note": "Discovered during audit phase."
-      },
-      {
-        "status": "WONT-FIX",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/99-final-report.md",
-        "note": "owner-approved: Merged duplicate into canonical finding F-028 per Phase 15 final report."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-084-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'handleSignOut\\|quickLogin' client/src/ | head -n 20",
-      "hits": [
-        "client/src/layouts/authenticated-layout.tsx:58:  const handleSignOut = async () => {",
-        "client/src/layouts/authenticated-layout.tsx:71:    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>"
-      ]
-    },
-    "needsApproval": "API",
-    "notes": "owner-approved: Merged duplicate into canonical finding F-028 per Phase 15 final report."
+    "notes": "Unblocked on 2026-11-20 per Owner Decision OD-04 (STOCK_SHORTAGE_CONFLICT state with row locking and partial reservation)."
   },
   {
     "id": "F-085",
@@ -6199,6 +6286,215 @@
     "notes": ""
   },
   {
+    "id": "F-002",
+    "title": "README instructions specify nonexistent `server/.env.example` path and incorrect backend port 3000",
+    "severity": "P2",
+    "category": "Documentation Drift / Onboarding",
+    "tier": "T11",
+    "cluster": "CLUSTER-15",
+    "dependsOn": [
+      "F-070"
+    ],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "NN/g Heuristic #10 (Help and Documentation)"
+    ],
+    "files": [
+      "client/vite.config.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-002.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-002-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
+      "hits": [
+        "server/src/purchases.test.ts:154:      (b: any) => b.sku === \"RM-FLOUR\",",
+        "server/src/auth.integration.test.ts:28:  ): Promise<{ cookie: string; user: any }> {",
+        "server/src/payments.test.ts:252:      (e: any) => e.documentType === \"INVOICE\",",
+        "server/src/payments.test.ts:255:      (e: any) => e.documentType === \"PAYMENT\",",
+        "server/src/reports.test.ts:275:    const flourRow = stock.rows.find((r: any) => r.sku === \"RM-FLOUR\");",
+        "server/src/reports.test.ts:281:    const fgRow = stock.rows.find((r: any) => r.sku === \"FG-MURUKKU-200G\");",
+        "server/src/reports.test.ts:314:    const retARow = rec.rows.find((r: any) => r.customerCode === \"CUST-RET-A\");",
+        "server/src/reports.test.ts:356:    const exportLog = auditData.logs.find((l: any) => l.action === \"EXPORT\");",
+        "server/src/reports.test.ts:405:    const customerCodes = sales1Rec.rows.map((r: any) => r.customerCode);",
+        "server/src/reports.test.ts:418:    const spoofCodes = spoofRec.rows.map((r: any) => r.customerCode);",
+        "server/src/modules/reporting/reporting.routes.ts:140:        let data: any;",
+        "server/src/modules/reporting/reporting.routes.ts:239:      let result: any;",
+        "server/src/modules/reporting/reporting.service.ts:35:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:68:    const rows: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:147:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:169:    const b2bSupplies: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:171:    const b2cSupplies: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:173:    const creditNotes: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:328:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:358:    const rows: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:513:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:625:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:919:    userContext?: any,",
+        "server/src/modules/reporting/reporting.service.ts:921:    let reportData: any;",
+        "server/src/modules/reporting/reporting.service.ts:960:    const rows: any[] = reportData.rows || reportData.b2bSupplies || [];"
+      ]
+    },
+    "needsApproval": "none",
+    "notes": ""
+  },
+  {
+    "id": "F-003",
+    "title": "README command `pnpm --filter @mill-ledger/server prisma db seed` fails silently without seeding records",
+    "severity": "P1",
+    "category": "Core Workflow / Seed Reliability",
+    "tier": "T11",
+    "cluster": "CLUSTER-15",
+    "dependsOn": [
+      "F-070"
+    ],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "MLD-001 Baseline Operations",
+      "Prisma 7 Migration Guide"
+    ],
+    "files": [
+      "server/prisma.config.ts",
+      "///home/snehan/projects/web/mill-ledger/server/prisma.config.ts",
+      "./prisma/seed.ts"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-003.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-003-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
+      "hits": [
+        "server/src/purchases.test.ts:154:      (b: any) => b.sku === \"RM-FLOUR\",",
+        "server/src/auth.integration.test.ts:28:  ): Promise<{ cookie: string; user: any }> {",
+        "server/src/payments.test.ts:252:      (e: any) => e.documentType === \"INVOICE\",",
+        "server/src/payments.test.ts:255:      (e: any) => e.documentType === \"PAYMENT\",",
+        "server/src/reports.test.ts:275:    const flourRow = stock.rows.find((r: any) => r.sku === \"RM-FLOUR\");",
+        "server/src/reports.test.ts:281:    const fgRow = stock.rows.find((r: any) => r.sku === \"FG-MURUKKU-200G\");",
+        "server/src/reports.test.ts:314:    const retARow = rec.rows.find((r: any) => r.customerCode === \"CUST-RET-A\");",
+        "server/src/reports.test.ts:356:    const exportLog = auditData.logs.find((l: any) => l.action === \"EXPORT\");",
+        "server/src/reports.test.ts:405:    const customerCodes = sales1Rec.rows.map((r: any) => r.customerCode);",
+        "server/src/reports.test.ts:418:    const spoofCodes = spoofRec.rows.map((r: any) => r.customerCode);",
+        "server/src/modules/reporting/reporting.routes.ts:140:        let data: any;",
+        "server/src/modules/reporting/reporting.routes.ts:239:      let result: any;",
+        "server/src/modules/reporting/reporting.service.ts:35:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:68:    const rows: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:147:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:169:    const b2bSupplies: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:171:    const b2cSupplies: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:173:    const creditNotes: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:328:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:358:    const rows: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:513:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:625:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:919:    userContext?: any,",
+        "server/src/modules/reporting/reporting.service.ts:921:    let reportData: any;",
+        "server/src/modules/reporting/reporting.service.ts:960:    const rows: any[] = reportData.rows || reportData.b2bSupplies || [];"
+      ]
+    },
+    "needsApproval": "none",
+    "notes": ""
+  },
+  {
+    "id": "F-005",
+    "title": "Unused dependency `cn@^0.5.2` installed in client package.json alongside `clsx` and `tailwind-merge`",
+    "severity": "P3",
+    "category": "Dependency Hygiene / Dead Code",
+    "tier": "T11",
+    "cluster": "CLUSTER-15",
+    "dependsOn": [
+      "F-070"
+    ],
+    "blocks": [],
+    "relatedFindings": [],
+    "standardsRefs": [
+      "MLD Architecture Guidelines (Package boundaries and dependency hygiene)"
+    ],
+    "files": [
+      "client/package.js",
+      "client/src/lib/utils.ts",
+      "///home/snehan/projects/web/mill-ledger/client/package.js"
+    ],
+    "effort": "S",
+    "owner": "agent",
+    "status": "OPEN",
+    "statusHistory": [
+      {
+        "status": "OPEN",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-005.md",
+        "note": "Discovered during audit phase."
+      }
+    ],
+    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "regressionTest": "audit/tests/f-005-regression.spec.ts",
+    "fixCommit": null,
+    "verifyEvidence": [],
+    "siblingSweep": {
+      "done": true,
+      "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
+      "hits": [
+        "server/src/purchases.test.ts:154:      (b: any) => b.sku === \"RM-FLOUR\",",
+        "server/src/auth.integration.test.ts:28:  ): Promise<{ cookie: string; user: any }> {",
+        "server/src/payments.test.ts:252:      (e: any) => e.documentType === \"INVOICE\",",
+        "server/src/payments.test.ts:255:      (e: any) => e.documentType === \"PAYMENT\",",
+        "server/src/reports.test.ts:275:    const flourRow = stock.rows.find((r: any) => r.sku === \"RM-FLOUR\");",
+        "server/src/reports.test.ts:281:    const fgRow = stock.rows.find((r: any) => r.sku === \"FG-MURUKKU-200G\");",
+        "server/src/reports.test.ts:314:    const retARow = rec.rows.find((r: any) => r.customerCode === \"CUST-RET-A\");",
+        "server/src/reports.test.ts:356:    const exportLog = auditData.logs.find((l: any) => l.action === \"EXPORT\");",
+        "server/src/reports.test.ts:405:    const customerCodes = sales1Rec.rows.map((r: any) => r.customerCode);",
+        "server/src/reports.test.ts:418:    const spoofCodes = spoofRec.rows.map((r: any) => r.customerCode);",
+        "server/src/modules/reporting/reporting.routes.ts:140:        let data: any;",
+        "server/src/modules/reporting/reporting.routes.ts:239:      let result: any;",
+        "server/src/modules/reporting/reporting.service.ts:35:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:68:    const rows: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:147:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:169:    const b2bSupplies: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:171:    const b2cSupplies: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:173:    const creditNotes: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:328:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:358:    const rows: any[] = [];",
+        "server/src/modules/reporting/reporting.service.ts:513:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:625:    const where: any = {",
+        "server/src/modules/reporting/reporting.service.ts:919:    userContext?: any,",
+        "server/src/modules/reporting/reporting.service.ts:921:    let reportData: any;",
+        "server/src/modules/reporting/reporting.service.ts:960:    const rows: any[] = reportData.rows || reportData.b2bSupplies || [];"
+      ]
+    },
+    "needsApproval": "none",
+    "notes": ""
+  },
+  {
     "id": "F-094",
     "title": "Dead Code, Orphaned Stubs, and Dependency Bloat (10 Unused Dependencies, Orphaned Dictionary, and 22 Dead Placeholder Pages)",
     "severity": "P2",
@@ -6417,81 +6713,6 @@
     "notes": ""
   },
   {
-    "id": "F-097",
-    "title": "Architectural Inconsistency: Zero Centralized Currency & Date Formatters across 7 Financial Surfaces (Ad-hoc `.toFixed(2)` & Fragmented Locales)",
-    "severity": "P2",
-    "category": "Architectural Consistency & Maintainability",
-    "tier": "T1",
-    "cluster": "CLUSTER-01",
-    "dependsOn": [],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "- Jakob Nielsen's 10 Usability Heuristics: Heuristic #4 (Consistency and Standards)"
-    ],
-    "files": [
-      "client/src/pages/invoices-page.ts",
-      "///home/snehan/projects/web/mill-ledger/client/src/pages/invoices-page.ts",
-      "client/src/pages/reports-page.ts",
-      "///home/snehan/projects/web/mill-ledger/client/src/pages/reports-page.ts",
-      "client/src/pages/stock-page.ts"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-097.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-097-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn '\\.toFixed(' client/src/ server/src/ | head -n 30",
-      "hits": [
-        "client/src/pages/invoices-page.tsx:294:                        <span>IGST: ₹{Number(inv.igstAmount).toFixed(2)}</span>",
-        "client/src/pages/invoices-page.tsx:300:                          ).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:435:                          ₹{Number(l.unitPrice).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:438:                          ₹{Number(l.taxableAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:441:                          ₹{Number(l.taxAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:444:                          ₹{Number(l.lineTotal).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:460:                      ₹{Number(selectedInvoice.taxableAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:470:                          ₹{Number(selectedInvoice.cgstAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:478:                          ₹{Number(selectedInvoice.sgstAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:489:                        ₹{Number(selectedInvoice.igstAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:496:                      ₹{Number(selectedInvoice.totalAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:502:                      ₹{Number(selectedInvoice.outstandingAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:567:                  {Number(selectedInvoice.outstandingAmount).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:203:                  Taxable: ₹{salesData.summary.totalTaxable.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:205:                <span>Tax: ₹{salesData.summary.totalTax.toFixed(2)}</span>",
-        "client/src/pages/reports-page.tsx:207:                  Grand total: ₹{salesData.summary.grandTotal.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:260:                        ₹{row.taxableAmount.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:263:                        ₹{row.cgstAmount.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:266:                        ₹{row.sgstAmount.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:269:                        ₹{row.lineTotal.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:289:                ₹{Number(gstData?.summary?.totalTaxable || 0).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:297:                ₹{Number(gstData?.summary?.totalTaxAmount || 0).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:306:                {Number(gstData?.summary?.totalCreditNotesAmount || 0).toFixed(",
-        "client/src/pages/reports-page.tsx:336:                        ₹{r.taxable.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:339:                        ₹{r.cgst.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:342:                        ₹{r.sgst.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:345:                        ₹{r.totalTax.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:374:                        ₹{h.taxable.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:377:                        ₹{(h.cgst + h.sgst + h.igst).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:406:                  ₹{Number(stockData.summary.totalValuation).toFixed(2)}"
-      ]
-    },
-    "needsApproval": "schema",
-    "notes": ""
-  },
-  {
     "id": "F-098",
     "title": "Documentation Drift and False Claims: \"Modular Monolog\" Typo, False API Port, and Overstated Deliverables in README",
     "severity": "P3",
@@ -6635,119 +6856,6 @@
     },
     "needsApproval": "none",
     "notes": ""
-  },
-  {
-    "id": "F-100",
-    "title": "Missing Fail-Fast Environment Validation on `DATABASE_URL` and Absence of Staging / Production Env Configs",
-    "severity": "P1",
-    "category": "Configuration & Secret Management",
-    "tier": "T4",
-    "cluster": "CLUSTER-07",
-    "dependsOn": [
-      "F-025"
-    ],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "- OWASP Top 10:2021 A05:2021 (Security Misconfiguration)"
-    ],
-    "files": [
-      "server/src/config/env.ts",
-      "///home/snehan/projects/web/mill-ledger/server/src/config/env.ts",
-      "./src/config/env.js"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "OPEN",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-100.md",
-        "note": "Discovered during audit phase."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-100-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",
-      "hits": [
-        "server/src/app.test.ts:48:    it(\"sets helmet security headers on responses\", async () => {",
-        "server/src/app.ts:2:import cors from \"cors\";",
-        "server/src/app.ts:3:import helmet from \"helmet\";",
-        "server/src/app.ts:20:  app.use(helmet());",
-        "server/src/app.ts:22:    cors({"
-      ]
-    },
-    "needsApproval": "none",
-    "notes": ""
-  },
-  {
-    "id": "F-101",
-    "title": "Benchmark Seed Script Executes Unchecked in Production Without Environment Guard",
-    "severity": "P0",
-    "category": "Operations & Database Integrity",
-    "tier": "T4",
-    "cluster": "CLUSTER-07",
-    "dependsOn": [
-      "F-025"
-    ],
-    "blocks": [],
-    "relatedFindings": [
-      "F-004"
-    ],
-    "standardsRefs": [
-      "- OWASP ASVS v4.0.3 Req 1.14.1 (Verify that test",
-      "demo",
-      "and development data cannot be seeded into production)"
-    ],
-    "files": [
-      "server/prisma/seed.ts",
-      "///home/snehan/projects/web/mill-ledger/server/prisma/seed.ts",
-      "seed.ts",
-      "src/db/seed.ts",
-      "prisma/seed.ts"
-    ],
-    "effort": "S",
-    "owner": "agent",
-    "status": "WONT-FIX",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-101.md",
-        "note": "Discovered during audit phase."
-      },
-      {
-        "status": "WONT-FIX",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/99-final-report.md",
-        "note": "owner-approved: Merged duplicate into canonical finding F-004 per Phase 15 final report."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-101-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",
-      "hits": [
-        "server/src/app.test.ts:48:    it(\"sets helmet security headers on responses\", async () => {",
-        "server/src/app.ts:2:import cors from \"cors\";",
-        "server/src/app.ts:3:import helmet from \"helmet\";",
-        "server/src/app.ts:20:  app.use(helmet());",
-        "server/src/app.ts:22:    cors({"
-      ]
-    },
-    "needsApproval": "none",
-    "notes": "owner-approved: Merged duplicate into canonical finding F-004 per Phase 15 final report."
   },
   {
     "id": "F-102",
@@ -7030,64 +7138,5 @@
     },
     "needsApproval": "none",
     "notes": ""
-  },
-  {
-    "id": "F-106",
-    "title": "Lack of Data Protection Policies, Retention Schedules, Erasure/Anonymization Routines, and Subject Access Export Under DPDP Act 2023",
-    "severity": "P2",
-    "category": "Data Protection & Privacy Compliance",
-    "tier": "T4",
-    "cluster": "CLUSTER-07",
-    "dependsOn": [
-      "F-025"
-    ],
-    "blocks": [],
-    "relatedFindings": [],
-    "standardsRefs": [
-      "- Digital Personal Data Protection Act",
-      "2023 (DPDP Act 2023",
-      "Act No. 22 of 2023",
-      "Sections 11 & 12)"
-    ],
-    "files": [
-      "server/prisma/schema.prisma",
-      "///home/snehan/projects/web/mill-ledger/server/prisma/schema.prisma"
-    ],
-    "effort": "M",
-    "owner": "agent",
-    "status": "BLOCKED",
-    "statusHistory": [
-      {
-        "status": "OPEN",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/findings/F-106.md",
-        "note": "Discovered during audit phase."
-      },
-      {
-        "status": "BLOCKED",
-        "date": "2026-11-20",
-        "commit": null,
-        "evidenceLink": "audit/tracker/owner-decisions.md",
-        "note": "BLOCKED on Owner Decision OD-08: DPDP Act 2023 Customer Data Retention, Anonymization & Erasure Schedule."
-      }
-    ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-106-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
-    "siblingSweep": {
-      "done": true,
-      "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",
-      "hits": [
-        "server/src/app.test.ts:48:    it(\"sets helmet security headers on responses\", async () => {",
-        "server/src/app.ts:2:import cors from \"cors\";",
-        "server/src/app.ts:3:import helmet from \"helmet\";",
-        "server/src/app.ts:20:  app.use(helmet());",
-        "server/src/app.ts:22:    cors({"
-      ]
-    },
-    "needsApproval": "none",
-    "notes": "BLOCKED on Owner Decision OD-08: DPDP Act 2023 Customer Data Retention, Anonymization & Erasure Schedule."
   }
 ]
