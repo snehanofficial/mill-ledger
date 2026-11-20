@@ -2,6 +2,7 @@ import { createServer, type Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
 import { prisma } from "./db/client.js";
+import { resetOperationalData } from "./db/reset.js";
 import { seedBenchmarkMasters } from "./db/seed.js";
 import { inventoryService } from "./modules/inventory/inventory.service.js";
 
@@ -11,17 +12,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
 
   beforeAll(async () => {
     // 1. Reset any existing production and purchase runs and restore opening stock
-    await prisma.productionRunReversal.deleteMany();
-    await prisma.productionRunMaterial.deleteMany();
-    await prisma.productionRun.deleteMany();
-    await prisma.purchaseReceiptLine.deleteMany();
-    await prisma.purchaseReceipt.deleteMany();
-    await prisma.stockMovement.deleteMany({
-      where: {
-        movementType: { not: "OPENING_BALANCE" },
-      },
-    });
-
+    await resetOperationalData();
     await seedBenchmarkMasters();
 
     const app = createApp();

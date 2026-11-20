@@ -41,22 +41,25 @@ describe("MLD-011: Inventory atomic concurrency and non-negative constraints", (
 
   afterAll(async () => {
     // Clean up test purchase receipts
-    await prisma.purchaseReceiptLine.deleteMany({
-      where: {
-        purchaseReceipt: {
+    await prisma.$transaction(async (tx) => {
+      await tx.$executeRawUnsafe("SET LOCAL mill_ledger.bypass_immutability = 'on'");
+      await tx.purchaseReceiptLine.deleteMany({
+        where: {
+          purchaseReceipt: {
+            receiptNumber: { startsWith: "PR-CONCURRENCY-" },
+          },
+        },
+      });
+      await tx.purchaseReceipt.deleteMany({
+        where: {
           receiptNumber: { startsWith: "PR-CONCURRENCY-" },
         },
-      },
-    });
-    await prisma.purchaseReceipt.deleteMany({
-      where: {
-        receiptNumber: { startsWith: "PR-CONCURRENCY-" },
-      },
-    });
-    await prisma.stockMovement.deleteMany({
-      where: {
-        notes: { contains: "PR-CONCURRENCY-" },
-      },
+      });
+      await tx.stockMovement.deleteMany({
+        where: {
+          notes: { contains: "PR-CONCURRENCY-" },
+        },
+      });
     });
   });
 

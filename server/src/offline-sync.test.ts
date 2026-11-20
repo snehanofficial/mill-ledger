@@ -2,6 +2,7 @@ import { beforeAll, afterAll, describe, expect, it } from "vitest";
 import { createServer, type Server } from "node:http";
 import { createApp } from "./app.js";
 import { prisma } from "./db/client.js";
+import { resetOperationalData } from "./db/reset.js";
 import { seedBenchmarkMasters } from "./db/seed.js";
 import { inventoryService } from "./modules/inventory/inventory.service.js";
 
@@ -11,28 +12,7 @@ describe("M9: Offline synchronization and idempotency verification", () => {
 
   beforeAll(async () => {
     // Clean up dependent records in proper foreign key order
-    await prisma.auditLog.deleteMany();
-    await prisma.paymentAllocation.deleteMany();
-    await prisma.payment.deleteMany();
-    await prisma.creditNote.deleteMany();
-    await prisma.dispatchLine.deleteMany();
-    await prisma.dispatch.deleteMany();
-    await prisma.salesInvoiceLine.deleteMany();
-    await prisma.salesInvoice.deleteMany();
-    await prisma.stockReservation.deleteMany();
-    await prisma.salesOrderLine.deleteMany();
-    await prisma.salesOrder.deleteMany();
-    await prisma.productionRunReversal.deleteMany();
-    await prisma.productionRunMaterial.deleteMany();
-    await prisma.productionRun.deleteMany();
-    await prisma.purchaseReceiptLine.deleteMany();
-    await prisma.purchaseReceipt.deleteMany();
-    await prisma.stockMovement.deleteMany({
-      where: {
-        movementType: { not: "OPENING_BALANCE" },
-      },
-    });
-
+    await resetOperationalData();
     await seedBenchmarkMasters();
 
     const app = createApp();

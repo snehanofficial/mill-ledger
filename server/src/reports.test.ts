@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { createApp } from "./app.js";
 import { createServer, type Server } from "node:http";
 import { prisma } from "./db/client.js";
+import { resetOperationalData } from "./db/reset.js";
 import { seedBenchmarkMasters } from "./db/seed.js";
 
 describe("M8: Reporting, audit logs, and owner dashboard", () => {
@@ -10,28 +11,7 @@ describe("M8: Reporting, audit logs, and owner dashboard", () => {
 
   beforeAll(async () => {
     // 1. Reset all operational data in correct order
-    await prisma.auditLog.deleteMany();
-    await prisma.paymentAllocation.deleteMany();
-    await prisma.payment.deleteMany();
-    await prisma.creditNote.deleteMany();
-    await prisma.dispatchLine.deleteMany();
-    await prisma.dispatch.deleteMany();
-    await prisma.salesInvoiceLine.deleteMany();
-    await prisma.salesInvoice.deleteMany();
-    await prisma.stockReservation.deleteMany();
-    await prisma.salesOrderLine.deleteMany();
-    await prisma.salesOrder.deleteMany();
-    await prisma.productionRunReversal.deleteMany();
-    await prisma.productionRunMaterial.deleteMany();
-    await prisma.productionRun.deleteMany();
-    await prisma.purchaseReceiptLine.deleteMany();
-    await prisma.purchaseReceipt.deleteMany();
-    await prisma.stockMovement.deleteMany({
-      where: {
-        movementType: { not: "OPENING_BALANCE" },
-      },
-    });
-
+    await resetOperationalData();
     await seedBenchmarkMasters();
 
     const app = createApp();

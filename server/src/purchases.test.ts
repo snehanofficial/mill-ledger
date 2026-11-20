@@ -2,6 +2,7 @@ import { createServer, type Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
 import { prisma } from "./db/client.js";
+import { resetOperationalData } from "./db/reset.js";
 import { seedBenchmarkMasters } from "./db/seed.js";
 
 describe("M3: Purchases and inventory ledger integration", () => {
@@ -10,16 +11,7 @@ describe("M3: Purchases and inventory ledger integration", () => {
 
   beforeAll(async () => {
     // Reset test receipts and restore benchmark opening balances
-    await prisma.purchaseReceipt.deleteMany({
-      where: {
-        receiptNumber: { in: ["PR-BENCHMARK-001", "PR-ILLEGAL-001"] },
-      },
-    });
-    await prisma.stockMovement.deleteMany({
-      where: {
-        movementType: { not: "OPENING_BALANCE" },
-      },
-    });
+    await resetOperationalData();
     await seedBenchmarkMasters();
 
     const app = createApp();
