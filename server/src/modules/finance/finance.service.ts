@@ -19,12 +19,18 @@ export interface IssueCreditNoteInput {
 
 export class FinanceService {
   /**
-   * Helper to derive Indian financial year (e.g. 2025-26) from a date
+   * Helper to derive Indian financial year (e.g. 2025-26) from a date, strictly in IST (Asia/Kolkata)
    */
   getFinancialYear(date: Date = new Date()): string {
-    const year = date.getFullYear();
-    const month = date.getMonth(); // 0-indexed: 0 = Jan, 3 = Apr
-    if (month >= 3) {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+    });
+    const parts = formatter.formatToParts(date);
+    const year = parseInt(parts.find((p) => p.type === "year")!.value, 10);
+    const month = parseInt(parts.find((p) => p.type === "month")!.value, 10); // 1-indexed: 4 = April
+    if (month >= 4) {
       // April to Dec
       return `${year}-${(year + 1).toString().slice(-2)}`;
     } else {
