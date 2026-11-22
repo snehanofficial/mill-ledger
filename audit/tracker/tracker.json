@@ -121,7 +121,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "REJECTED",
+    "status": "FIXED-UNVERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -150,11 +150,25 @@
         "commit": "af12729225d5acc2312118d99080a1c8a72f557f",
         "evidenceLink": "audit/evidence/verify/F-009/10-expected-vs-actual.txt",
         "note": "REJECTED at Step 2, Step 4, and Step 5: (1) Broken column reference in migration.sql line 81: sales_invoice_line uses \"invoiceId\" not \"salesInvoiceId\", causing PL/pgSQL runtime crash on all line UPDATE/DELETE; (2) Status downgrade bypass: enforce_sales_invoice_immutability() allows updating status from POSTED to DRAFT, enabling subsequent unconditional DELETE of posted invoices; (3) Snapshot fields (customerNameSnapshot, companyGstinSnapshot) are unconstrained on POSTED invoices; (4) Mutant 3 survived because server/src/db-immutability.test.ts contains 0 tests for sales_invoice_line."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-22",
+        "commit": null,
+        "evidenceLink": "audit/evidence/before-F-009-refix.txt",
+        "note": "Re-fixing F-009 to address 4 verifier rejection points."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-22",
+        "commit": "ba71207ae75581b11bd721c95c3a00cfa8730500",
+        "evidenceLink": "audit/evidence/after-F-009-refix.txt",
+        "note": "Fixed sales_invoice_line column name, blocked status downgrade from POSTED to DRAFT, locked snapshot fields, and expanded tests in server/src/db-immutability.test.ts."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
     "regressionTest": "server/src/db-immutability.test.ts",
-    "fixCommit": "af12729225d5acc2312118d99080a1c8a72f557f",
+    "fixCommit": "ba71207ae75581b11bd721c95c3a00cfa8730500",
     "verifyEvidence": [
       "audit/evidence/verify/F-009/01-fresh-environment.txt",
       "audit/evidence/verify/F-009/02-original-repro.txt",
@@ -595,7 +609,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "FIXED-UNVERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -603,11 +617,25 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-011.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-22",
+        "commit": null,
+        "evidenceLink": "audit/evidence/before-F-011.txt",
+        "note": "Fixing financial year calculation timezone issue."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-22",
+        "commit": "bfd9d049f50f28eec4c2aa27dbf88c3a9a1ff0e6",
+        "evidenceLink": "audit/evidence/after-F-011.txt",
+        "note": "Updated financeService.getFinancialYear() to strictly parse dates in Asia/Kolkata (IST)."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-011-regression.spec.ts",
-    "fixCommit": null,
+    "regressionTest": "server/src/financial-year-tz.test.ts",
+    "fixCommit": "bfd9d049f50f28eec4c2aa27dbf88c3a9a1ff0e6",
     "verifyEvidence": [],
     "siblingSweep": {
       "done": true,

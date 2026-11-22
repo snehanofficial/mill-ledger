@@ -12,9 +12,9 @@
 ### By Status
 | Status | Count | Percentage |
 |---|---|---|
-| OPEN | 100 | 94.3% |
+| OPEN | 99 | 93.4% |
 | IN-PROGRESS | 0 | 0.0% |
-| FIXED-UNVERIFIED | 0 | 0.0% |
+| FIXED-UNVERIFIED | 2 | 1.9% |
 | VERIFIED | 1 | 0.9% |
 | BLOCKED | 0 | 0.0% |
 | WONT-FIX | 4 | 3.8% |
@@ -43,13 +43,13 @@
 | ID | Tier | Sev | Cluster | Status | Approval | Depends On | Title |
 |---|---|---|---|---|---|---|---|
 | **F-097** | T1 | P2 | CLUSTER-01 | `VERIFIED` | schema | - | Architectural Inconsistency: Zero Centralized Currency & Date Formatters across 7 Financial Surfaces (Ad-hoc `.toFixed(2)` & Fragmented Locales) |
-| **F-009** | T1 | P1 | CLUSTER-03 | `REJECTED` | schema | - | Application database role retains full UPDATE and DELETE privileges on stock movements and posted invoices without database triggers or rules |
+| **F-009** | T1 | P1 | CLUSTER-03 | `FIXED-UNVERIFIED` | schema | - | Application database role retains full UPDATE and DELETE privileges on stock movements and posted invoices without database triggers or rules |
 | **F-010** | T1 | P1 | CLUSTER-01 | `OPEN` | schema | F-009 | Invoice tax and totals calculated with unrounded JS float math produce 1-2 paise rounding drift in 46.4% of invoices |
 | **F-036** | T1 | P0 | CLUSTER-01 | `OPEN` | schema | F-010 | Dashboard Sales Revenue Silently Drops Invoices Without Lines (SQL vs API Mismatch) |
 | **F-007** | T1 | P0 | CLUSTER-02 | `OPEN` | none | F-009 | Missing row-level lock in sales order approval allows concurrent orders to exceed ATP stock by over 100% |
 | **F-008** | T1 | P0 | CLUSTER-02 | `OPEN` | none | F-009 | Non-atomic `count()` based dispatch sequence generation causes unique constraint crashes on concurrent dispatches |
 | **F-015** | T1 | P2 | CLUSTER-02 | `OPEN` | none | F-009, F-008 | Idempotency pre-query race condition causes concurrent duplicate submissions to crash with unhandled 500 unique constraint error |
-| **F-011** | T1 | P1 | CLUSTER-03 | `OPEN` | schema | - | `financeService.getFinancialYear()` relies on Node process timezone, misclassifying April 1st morning invoices into previous financial year on UTC servers |
+| **F-011** | T1 | P1 | CLUSTER-03 | `FIXED-UNVERIFIED` | schema | - | `financeService.getFinancialYear()` relies on Node process timezone, misclassifying April 1st morning invoices into previous financial year on UTC servers |
 | **F-013** | T1 | P1 | CLUSTER-03 | `OPEN` | schema | - | Backend lacks payment bounce/reversal methods and debit note data structures required for double-entry correction |
 | **F-014** | T1 | P2 | CLUSTER-03 | `OPEN` | schema | - | Statutory GST rates are read from static `product.taxRate` columns; the dedicated `TaxRate` master table is never queried |
 | **F-016** | T1 | P2 | CLUSTER-03 | `OPEN` | schema | - | Packaging capacity mismatch warning is hardcoded to specific SKU and multiplier, and is never persisted to database |
