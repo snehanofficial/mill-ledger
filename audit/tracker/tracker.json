@@ -13,15 +13,25 @@
       "- Jakob Nielsen's 10 Usability Heuristics: Heuristic #4 (Consistency and Standards)"
     ],
     "files": [
-      "client/src/pages/invoices-page.ts",
-      "///home/snehan/projects/web/mill-ledger/client/src/pages/invoices-page.ts",
-      "client/src/pages/reports-page.ts",
-      "///home/snehan/projects/web/mill-ledger/client/src/pages/reports-page.ts",
-      "client/src/pages/stock-page.ts"
+      "shared/src/formatters.ts",
+      "shared/src/index.ts",
+      "shared/package.json",
+      "client/src/lib/formatters.ts",
+      "client/src/lib/formatters.test.ts",
+      "client/src/pages/invoices-page.tsx",
+      "client/src/pages/reports-page.tsx",
+      "client/src/pages/stock-page.tsx",
+      "client/src/pages/purchases-page.tsx",
+      "client/src/pages/payments-page.tsx",
+      "client/src/pages/dashboard-page.tsx",
+      "client/src/pages/orders-page.tsx",
+      "client/src/pages/dispatch-page.tsx",
+      "client/src/pages/production-page.tsx",
+      "client/src/components/shell/device-outbox-sheet.tsx"
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -29,50 +39,55 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-097.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-22",
+        "commit": null,
+        "evidenceLink": "audit/evidence/before-F-097.txt",
+        "note": "Starting fix for centralized currency and date/time formatters across all financial surfaces."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-22",
+        "commit": "e0047aadb565ba164ff07f8ad499b6c8b5bbe988",
+        "evidenceLink": "audit/evidence/after-F-097.txt",
+        "note": "Created centralized currency and date/time formatters in @mill-ledger/shared and re-exported via @/lib/formatters; refactored all 7 operational financial surfaces and auxiliary sheets away from ad-hoc .toFixed(2) and fragmented locales to canonical formatINR, formatQuantity, formatDate, and formatDateTime."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-22",
+        "commit": "e0047aadb565ba164ff07f8ad499b6c8b5bbe988",
+        "evidenceLink": "audit/evidence/verify/F-097/10-expected-vs-actual.txt",
+        "note": "VERIFIED in run 009: Verified by independent audit verifier across all 10 protocol checks. Clean checkout and fresh migrations pass, original repro defect eliminated across all 10 UI surfaces (0 toLocaleString and 0 toFixed remain in client/src/pages/), revert test proves regression test sensitivity, 4/4 mutants killed (0 survived), 16 adversarial probes pass, sibling sweep verified, 18/18 benchmark assertions pass, 10/10 SQL invariants hold, 123/123 tests pass, 0 typecheck/lint errors, production build clean, diff review clean, and Jakob Nielsen Heuristic #4 / WCAG 2.2 SC 3.2.4 satisfied."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-097-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "client/src/lib/formatters.test.ts",
+    "fixCommit": "e0047aadb565ba164ff07f8ad499b6c8b5bbe988",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-097/01-fresh-environment.txt",
+      "audit/evidence/verify/F-097/02-original-repro.txt",
+      "audit/evidence/verify/F-097/03-test-validity.txt",
+      "audit/evidence/verify/F-097/04-mutation-check.txt",
+      "audit/evidence/verify/F-097/05-adversarial-probes.txt",
+      "audit/evidence/verify/F-097/06-sibling-sweep.txt",
+      "audit/evidence/verify/F-097/07-regression-radius.txt",
+      "audit/evidence/verify/F-097/08-diff-review.txt",
+      "audit/evidence/verify/F-097/09-standards-check.txt",
+      "audit/evidence/verify/F-097/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
-      "queryUsed": "grep -rn '\\.toFixed(' client/src/ server/src/ | head -n 30",
+      "queryUsed": "git grep -n -E \"\\.toLocale(String|DateString|TimeString)\\(\" client/src/ shared/src/ ; git grep -n -E \"\\.toFixed\\(\" client/src/ shared/src/ ; git grep -n -E \"₹\" client/src/ ; git grep -n -E \"Intl\\.(NumberFormat|DateTimeFormat)\" client/src/ server/src/ shared/src/",
       "hits": [
-        "client/src/pages/invoices-page.tsx:294:                        <span>IGST: ₹{Number(inv.igstAmount).toFixed(2)}</span>",
-        "client/src/pages/invoices-page.tsx:300:                          ).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:435:                          ₹{Number(l.unitPrice).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:438:                          ₹{Number(l.taxableAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:441:                          ₹{Number(l.taxAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:444:                          ₹{Number(l.lineTotal).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:460:                      ₹{Number(selectedInvoice.taxableAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:470:                          ₹{Number(selectedInvoice.cgstAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:478:                          ₹{Number(selectedInvoice.sgstAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:489:                        ₹{Number(selectedInvoice.igstAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:496:                      ₹{Number(selectedInvoice.totalAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:502:                      ₹{Number(selectedInvoice.outstandingAmount).toFixed(2)}",
-        "client/src/pages/invoices-page.tsx:567:                  {Number(selectedInvoice.outstandingAmount).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:203:                  Taxable: ₹{salesData.summary.totalTaxable.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:205:                <span>Tax: ₹{salesData.summary.totalTax.toFixed(2)}</span>",
-        "client/src/pages/reports-page.tsx:207:                  Grand total: ₹{salesData.summary.grandTotal.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:260:                        ₹{row.taxableAmount.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:263:                        ₹{row.cgstAmount.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:266:                        ₹{row.sgstAmount.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:269:                        ₹{row.lineTotal.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:289:                ₹{Number(gstData?.summary?.totalTaxable || 0).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:297:                ₹{Number(gstData?.summary?.totalTaxAmount || 0).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:306:                {Number(gstData?.summary?.totalCreditNotesAmount || 0).toFixed(",
-        "client/src/pages/reports-page.tsx:336:                        ₹{r.taxable.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:339:                        ₹{r.cgst.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:342:                        ₹{r.sgst.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:345:                        ₹{r.totalTax.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:374:                        ₹{h.taxable.toFixed(2)}",
-        "client/src/pages/reports-page.tsx:377:                        ₹{(h.cgst + h.sgst + h.igst).toFixed(2)}",
-        "client/src/pages/reports-page.tsx:406:                  ₹{Number(stockData.summary.totalValuation).toFixed(2)}"
+        "client/src/pages/payments-page.tsx:272: Total manual allocations (₹${totalManual}) exceed payment amount (₹${amountNum}) [residual string interpolation in toast error]",
+        "client/src/pages/production-page.tsx:683: hardcoded benchmark direct materials display ₹4,055.00",
+        "server/src/scripts/run-benchmark.ts: 10 locations formatting benchmark comparison outputs"
       ]
     },
     "needsApproval": "schema",
-    "notes": ""
+    "notes": "VERIFIED in verification run 009: All 10 verification protocol gates passed cleanly with raw evidence recorded under audit/evidence/verify/F-097/. Surviving mutants: 0. Benchmark 18/18 pass, invariants 10/10 pass, tests 123/123 pass."
   },
   {
     "id": "F-009",
@@ -106,7 +121,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "REJECTED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -114,21 +129,53 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-009.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-20",
+        "commit": null,
+        "evidenceLink": "audit/evidence/before-F-009.txt",
+        "note": "Starting fix for ledger immutability triggers."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-20",
+        "commit": "af12729225d5acc2312118d99080a1c8a72f557f",
+        "evidenceLink": "audit/evidence/after-F-009.txt",
+        "note": "Added PostgreSQL immutability triggers for stock_movement, sales_invoice, and sales_invoice_line with bypass setting for test resets."
+      },
+      {
+        "status": "REJECTED",
+        "date": "2026-11-20",
+        "commit": "af12729225d5acc2312118d99080a1c8a72f557f",
+        "evidenceLink": "audit/evidence/verify/F-009/10-expected-vs-actual.txt",
+        "note": "REJECTED at Step 2, Step 4, and Step 5: (1) Broken column reference in migration.sql line 81: sales_invoice_line uses \"invoiceId\" not \"salesInvoiceId\", causing PL/pgSQL runtime crash on all line UPDATE/DELETE; (2) Status downgrade bypass: enforce_sales_invoice_immutability() allows updating status from POSTED to DRAFT, enabling subsequent unconditional DELETE of posted invoices; (3) Snapshot fields (customerNameSnapshot, companyGstinSnapshot) are unconstrained on POSTED invoices; (4) Mutant 3 survived because server/src/db-immutability.test.ts contains 0 tests for sales_invoice_line."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-009-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "server/src/db-immutability.test.ts",
+    "fixCommit": "af12729225d5acc2312118d99080a1c8a72f557f",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-009/01-fresh-environment.txt",
+      "audit/evidence/verify/F-009/02-original-repro.txt",
+      "audit/evidence/verify/F-009/03-test-validity.txt",
+      "audit/evidence/verify/F-009/04-mutation-check-file.txt",
+      "audit/evidence/verify/F-009/05-adversarial-probes.txt",
+      "audit/evidence/verify/F-009/06-sibling-sweep.txt",
+      "audit/evidence/verify/F-009/07-regression-radius.txt",
+      "audit/evidence/verify/F-009/08-diff-review.txt",
+      "audit/evidence/verify/F-009/09-standards-check.txt",
+      "audit/evidence/verify/F-009/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
-      "queryUsed": "grep -rn 'deleteMany' server/src/modules/ | head -n 20",
+      "queryUsed": "grep -rn deleteMany server/src/modules/ ; grep -rn \"prisma\\..*\\.delete\" server/src/modules/",
       "hits": [
-        "server/src/modules/production/production.service.ts:448:        await tx.productionRunMaterial.deleteMany({"
+        "server/src/modules/production/production.service.ts:448: await tx.productionRunMaterial.deleteMany({"
       ]
     },
     "needsApproval": "schema",
-    "notes": ""
+    "notes": "REJECTED in verification run 004: Fix commit af12729 failed Step 2 (repro/syntax), Step 4 (mutations), and Step 5 (adversarial). Failing points: (1) Migration 20261120000002 line 81 queries non-existent column \"salesInvoiceId\" on \"sales_invoice_line\" instead of \"invoiceId\", causing runtime error on line UPDATE/DELETE; (2) Status downgrade vulnerability: trigger fails to prevent updating status from POSTED to DRAFT, which allows posted invoices to be deleted without bypass; (3) Snapshot fields (customerNameSnapshot, companyGstinSnapshot, deliveryStateSnapshot) are not protected on POSTED invoices; (4) Zero tests for sales_invoice_line in db-immutability.test.ts allowed Mutant 3 to survive. Expected fix: Use correct column \"invoiceId\", disallow changing status away from POSTED/PARTIALLY_PAID/PAID/CANCELLED_BY_CREDIT_NOTE or protect status transitions, protect snapshot fields, add tests for sales_invoice_line."
   },
   {
     "id": "F-010",
