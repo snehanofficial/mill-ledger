@@ -399,6 +399,25 @@ export class SalesService {
       // Track whether admin changed price or quantity
       let hasOverrides = false;
 
+      // Acquire row-level locks on all involved inventory items in deterministic order (prevents concurrent overselling & deadlocks - F-007)
+      const involvedItemIds = [
+        ...new Set(
+          order.lines
+            .map((l) => l.inventoryItemId)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      ].sort();
+
+      const lockedItems = new Map<string, number>();
+      for (const itemId of involvedItemIds) {
+        const rows = await tx.$queryRaw<
+          Array<{ id: string; currentStock: unknown }>
+        >`SELECT id, "currentStock" FROM "inventory_item" WHERE id = ${itemId} FOR UPDATE`;
+        if (rows[0]) {
+          lockedItems.set(itemId, Number(rows[0].currentStock));
+        }
+      }
+
       for (const line of order.lines) {
         const override = input.lineOverrides?.find((o) => o.lineId === line.id);
         const approvedQty = override
@@ -425,10 +444,7 @@ export class SalesService {
 
         // Verify stock availability
         if (line.inventoryItemId) {
-          const invItem = await tx.inventoryItem.findUnique({
-            where: { id: line.inventoryItemId },
-          });
-          const onHand = Number(invItem?.currentStock ?? 0);
+          const onHand = lockedItems.get(line.inventoryItemId) ?? 0;
 
           const resAgg = await tx.stockReservation.aggregate({
             where: {
