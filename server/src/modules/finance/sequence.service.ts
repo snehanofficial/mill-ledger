@@ -39,6 +39,15 @@ export class SequenceService {
       existingCount = await tx.salesInvoice.count({
         where: { organizationId, financialYear },
       });
+    } else if (type === "DISPATCH") {
+      existingCount = await tx.dispatch.count({
+        where: {
+          organizationId,
+          dispatchNumber: {
+            startsWith: `DSP-${financialYear}-`,
+          },
+        },
+      });
     }
 
     const initialVal = existingCount + 1;
@@ -72,6 +81,23 @@ export class SequenceService {
       financialYear,
     );
     return `INV-${financialYear}-${seq.toString().padStart(4, "0")}`;
+  }
+
+  /**
+   * Format dispatch number: DSP-{YYYY}-{XXXX}
+   */
+  async getNextDispatchNumber(
+    tx: Prisma.TransactionClient,
+    organizationId: string,
+    year: string = new Date().getFullYear().toString(),
+  ): Promise<string> {
+    const seq = await this.getNextSequence(
+      tx,
+      organizationId,
+      "DISPATCH",
+      year,
+    );
+    return `DSP-${year}-${seq.toString().padStart(4, "0")}`;
   }
 }
 

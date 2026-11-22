@@ -6,6 +6,7 @@ import {
   ReservationStatus,
 } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
+import { sequenceService } from "../finance/sequence.service.js";
 
 export interface CreateDispatchLineInput {
   salesOrderLineId: string;
@@ -80,10 +81,10 @@ export class DispatchService {
       }
 
       const warehouseId = input.warehouseId || order.warehouseId;
-      const count = await tx.dispatch.count({
-        where: { organizationId: order.organizationId },
-      });
-      const dispatchNumber = `DSP-${new Date().getFullYear()}-${(count + 1).toString().padStart(4, "0")}`;
+      const dispatchNumber = await sequenceService.getNextDispatchNumber(
+        tx,
+        order.organizationId,
+      );
 
       const linkedInvoiceId = order.invoices[0]?.id;
 
