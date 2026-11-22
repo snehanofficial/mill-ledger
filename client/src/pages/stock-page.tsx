@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { formatINR, formatQuantity } from "@/lib/formatters";
 import {
   Table,
   TableBody,
@@ -150,9 +151,7 @@ export function StockPage() {
           <span className="text-2xl font-bold text-foreground">
             {isLoading
               ? "—"
-              : `₹${totalInventoryValue.toLocaleString("en-IN", {
-                  maximumFractionDigits: 2,
-                })}`}
+              : formatINR(totalInventoryValue)}
           </span>
         </div>
       </div>
@@ -236,23 +235,19 @@ export function StockPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {item.onHand.toLocaleString("en-IN")}{" "}
+                      {formatQuantity(item.onHand)}{" "}
                       <span className="text-xs text-muted-foreground">
                         {item.baseUom.symbol}
                       </span>
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">
-                      ₹
-                      {item.weightedAverageCost.toFixed(
-                        item.weightedAverageCost % 1 === 0 ? 2 : 3,
-                      )}
+                      {formatINR(item.weightedAverageCost, {
+                        maximumFractionDigits:
+                          item.weightedAverageCost % 1 === 0 ? 2 : 3,
+                      })}
                     </TableCell>
                     <TableCell className="text-right font-medium text-foreground">
-                      ₹
-                      {totalValue.toLocaleString("en-IN", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                      {formatINR(totalValue)}
                     </TableCell>
                     <TableCell className="text-center">
                       {item.reconciled ? (

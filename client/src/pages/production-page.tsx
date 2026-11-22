@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { formatINR, formatQuantity } from "@/lib/formatters";
 import {
   Table,
   TableBody,
@@ -302,7 +303,7 @@ export function ProductionPage() {
             <BoxesIcon className="h-4 w-4" />
           </div>
           <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            {totalPacketsProduced.toLocaleString()}
+            {formatQuantity(totalPacketsProduced)}
           </div>
           <div className="text-xs text-muted-foreground">
             Finished goods credited to warehouse
@@ -317,10 +318,7 @@ export function ProductionPage() {
             <IndianRupeeIcon className="h-4 w-4" />
           </div>
           <div className="text-2xl font-bold">
-            ₹
-            {totalProductionCost.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
+            {formatINR(totalProductionCost)}
           </div>
           <div className="text-xs text-muted-foreground">
             Materials, labour, and utilities included
@@ -430,7 +428,7 @@ export function ProductionPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right font-semibold">
-                        {Number(r.actualGoodQty).toLocaleString()}
+                        {formatQuantity(r.actualGoodQty)}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1.5">
@@ -449,22 +447,13 @@ export function ProductionPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        ₹
-                        {Number(r.directMaterialCost).toLocaleString(
-                          undefined,
-                          {
-                            minimumFractionDigits: 2,
-                          },
-                        )}
+                        {formatINR(r.directMaterialCost)}
                       </TableCell>
                       <TableCell className="text-right font-semibold">
-                        ₹
-                        {Number(r.totalRunCost).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                        {formatINR(r.totalRunCost)}
                       </TableCell>
                       <TableCell className="text-right font-mono font-medium text-emerald-600 dark:text-emerald-400">
-                        ₹{Number(r.costPerGoodUnit).toFixed(2)}
+                        {formatINR(r.costPerGoodUnit)}
                       </TableCell>
                       <TableCell className="text-right">
                         {r.status === "POSTED" ? (
@@ -695,26 +684,25 @@ export function ProductionPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Direct labour:</span>
-                  <span className="font-semibold">₹{laborCost.toFixed(2)}</span>
+                  <span className="font-semibold">{formatINR(laborCost)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Gas and power:</span>
                   <span className="font-semibold">
-                    ₹{utilityCost.toFixed(2)}
+                    {formatINR(utilityCost)}
                   </span>
                 </div>
                 <div className="flex justify-between border-t pt-1 font-bold">
                   <span>Total run cost:</span>
                   <span className="text-foreground">
-                    ₹{(4055 + laborCost + utilityCost).toFixed(2)}
+                    {formatINR(4055 + laborCost + utilityCost)}
                   </span>
                 </div>
                 <div className="flex justify-between text-emerald-600 font-bold">
                   <span>Cost per good packet:</span>
                   <span>
-                    ₹
-                    {((4055 + laborCost + utilityCost) / actualGoodQty).toFixed(
-                      2,
+                    {formatINR(
+                      (4055 + laborCost + utilityCost) / actualGoodQty
                     )}
                   </span>
                 </div>

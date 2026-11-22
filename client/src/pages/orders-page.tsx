@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { formatINR, formatQuantity } from "@/lib/formatters";
 import {
   Table,
   TableBody,
@@ -436,10 +437,7 @@ export function OrdersPage() {
             <IndianRupeeIcon className="h-4 w-4" />
           </div>
           <div className="text-2xl font-bold">
-            ₹
-            {totalRevenueBooked.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
+            {formatINR(totalRevenueBooked)}
           </div>
           <div className="text-xs text-muted-foreground">
             Approved orders inclusive of GST
@@ -454,7 +452,7 @@ export function OrdersPage() {
             <CheckCircle2Icon className="h-4 w-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-bold font-mono">
-            {availablePackets.toLocaleString()} pkts
+            {formatQuantity(availablePackets, { unit: "pkts" })}
           </div>
           <div className="text-xs text-muted-foreground">
             Murukku 200g net of active reservations
@@ -605,16 +603,16 @@ export function OrdersPage() {
                         You (Device outbox)
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        {qty.toLocaleString()} pkts
+                        {formatQuantity(qty, { unit: "pkts" })}
                       </TableCell>
                       <TableCell className="text-right">
-                        ₹{taxable.toFixed(2)}
+                        {formatINR(taxable)}
                       </TableCell>
                       <TableCell className="text-right text-xs">
-                        ₹{gst.toFixed(2)}
+                        {formatINR(gst)}
                       </TableCell>
                       <TableCell className="text-right font-bold">
-                        ₹{total.toFixed(2)}
+                        {formatINR(total)}
                       </TableCell>
                       <TableCell>
                         <span className="text-2xs text-amber-700 dark:text-amber-400 font-medium">
@@ -702,33 +700,27 @@ export function OrdersPage() {
                           {o.salesman.name}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          {qty.toLocaleString()} pkts
+                          {formatQuantity(qty, { unit: "pkts" })}
                         </TableCell>
                         <TableCell className="text-right">
-                          ₹
-                          {Number(o.taxableAmount).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                          })}
+                          {formatINR(o.taxableAmount)}
                         </TableCell>
                         <TableCell className="text-right text-xs">
                           {Number(o.igstAmount) > 0 ? (
                             <span>
-                              IGST: ₹{Number(o.igstAmount).toFixed(2)}
+                              IGST: {formatINR(o.igstAmount)}
                             </span>
                           ) : (
                             <span>
-                              CGST/SGST: ₹
-                              {(
+                              CGST/SGST:{" "}
+                              {formatINR(
                                 Number(o.cgstAmount) + Number(o.sgstAmount)
-                              ).toFixed(2)}
+                              )}
                             </span>
                           )}
                         </TableCell>
                         <TableCell className="text-right font-bold text-foreground">
-                          ₹
-                          {Number(o.totalAmount).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                          })}
+                          {formatINR(o.totalAmount)}
                         </TableCell>
                         <TableCell>
                           {shortage > 0 ? (
@@ -861,12 +853,12 @@ export function OrdersPage() {
                   >
                     {productsList.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.name} (₹{Number(p.defaultPrice).toFixed(2)})
+                        {p.name} ({formatINR(p.defaultPrice)})
                       </option>
                     ))}
                   </select>
                   <span className="text-xs text-muted-foreground">
-                    Standard price: ₹{unitPrice.toFixed(2)} / pkt
+                    Standard price: {formatINR(unitPrice)} / pkt
                   </span>
                 </div>
 
@@ -914,7 +906,7 @@ export function OrdersPage() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Taxable amount:</span>
                   <span className="font-semibold">
-                    ₹{calculatedTaxable.toFixed(2)}
+                    {formatINR(calculatedTaxable)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -922,13 +914,13 @@ export function OrdersPage() {
                     GST (5% {isIntraState ? "CGST + SGST" : "IGST"}):
                   </span>
                   <span className="font-semibold">
-                    ₹{calculatedTax.toFixed(2)}
+                    {formatINR(calculatedTax)}
                   </span>
                 </div>
                 <div className="flex justify-between border-t pt-1 font-bold text-sm">
                   <span>Total order amount:</span>
                   <span className="text-foreground">
-                    ₹{calculatedTotal.toFixed(2)}
+                    {formatINR(calculatedTotal)}
                   </span>
                 </div>
               </div>

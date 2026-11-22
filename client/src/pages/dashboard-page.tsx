@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { formatINR, formatQuantity, formatTime } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -106,11 +107,7 @@ export function DashboardPage() {
           {data?.asOf && (
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <ClockIcon className="h-3.5 w-3.5" />
-              As of{" "}
-              {new Date(data.asOf).toLocaleTimeString("en-IN", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              As of {formatTime(data.asOf)}
             </span>
           )}
           <Button
@@ -154,10 +151,7 @@ export function DashboardPage() {
                 <IndianRupeeIcon className="h-4 w-4 text-primary" />
               </div>
               <div className="text-2xl font-bold text-foreground">
-                ₹
-                {Number(metrics?.totalRevenue || 0).toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                })}
+                {formatINR(metrics?.totalRevenue || 0)}
               </div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <span>
@@ -175,14 +169,10 @@ export function DashboardPage() {
                 <TrendingUpIcon className="h-4 w-4 text-amber-600" />
               </div>
               <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                ₹
-                {Number(
-                  metrics?.totalOutstandingReceivables || 0,
-                ).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                {formatINR(metrics?.totalOutstandingReceivables || 0)}
               </div>
               <div className="text-xs text-muted-foreground">
-                Collections: ₹
-                {Number(metrics?.totalCollections || 0).toLocaleString()}
+                Collections: {formatINR(metrics?.totalCollections || 0)}
               </div>
             </div>
 
@@ -195,11 +185,7 @@ export function DashboardPage() {
                 <WarehouseIcon className="h-4 w-4 text-emerald-600" />
               </div>
               <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                ₹
-                {Number(metrics?.totalStockValuation || 0).toLocaleString(
-                  undefined,
-                  { minimumFractionDigits: 2 },
-                )}
+                {formatINR(metrics?.totalStockValuation || 0)}
               </div>
               <div className="flex items-center gap-1.5 text-xs">
                 {metrics?.stockReconciliationOk ? (
@@ -225,12 +211,12 @@ export function DashboardPage() {
                 <PackageCheckIcon className="h-4 w-4 text-blue-600" />
               </div>
               <div className="text-2xl font-bold text-foreground">
-                {Number(metrics?.totalProductionUnits || 0).toLocaleString()}{" "}
-                units
+                {formatQuantity(metrics?.totalProductionUnits || 0, {
+                  unit: "units",
+                })}
               </div>
               <div className="text-xs text-muted-foreground">
-                Run cost: ₹
-                {Number(metrics?.totalProductionCost || 0).toLocaleString()}
+                Run cost: {formatINR(metrics?.totalProductionCost || 0)}
               </div>
             </div>
           </div>
@@ -283,7 +269,7 @@ export function DashboardPage() {
                             {inv.customerName}
                           </TableCell>
                           <TableCell className="text-right font-mono text-xs font-medium">
-                            ₹{Number(inv.lineTotal).toFixed(2)}
+                            {formatINR(inv.lineTotal)}
                           </TableCell>
                           <TableCell className="text-right">
                             <Badge
@@ -360,13 +346,10 @@ export function DashboardPage() {
                             {item.onHand}
                           </TableCell>
                           <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                            ₹{item.weightedAverageCost.toFixed(2)}
+                            {formatINR(item.weightedAverageCost)}
                           </TableCell>
                           <TableCell className="text-right font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                            ₹
-                            {item.totalValuation.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                            })}
+                            {formatINR(item.totalValuation)}
                           </TableCell>
                         </TableRow>
                       ))

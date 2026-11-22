@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
 import {
   Table,
   TableBody,
@@ -272,11 +273,7 @@ export function PurchasesPage() {
                       {rec.receiptNumber}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {new Date(rec.postedAt).toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {formatDate(rec.postedAt)}
                     </TableCell>
                     <TableCell className="font-medium text-sm">
                       {rec.supplier.name}
@@ -285,14 +282,14 @@ export function PurchasesPage() {
                       {firstLine?.inventoryItem.name || "Multiple items"}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs tabular-nums">
-                      {Number(firstLine?.quantity || 0).toLocaleString("en-IN")}{" "}
+                      {formatQuantity(firstLine?.quantity || 0)}{" "}
                       {firstLine?.inventoryItem.baseUom?.symbol || "kg"}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs tabular-nums">
-                      ₹{Number(firstLine?.unitPrice || 0).toFixed(2)}
+                      {formatINR(firstLine?.unitPrice || 0)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs font-semibold tabular-nums">
-                      ₹{totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      {formatINR(totalAmount)}
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge variant="success" className="text-[10px] gap-1">
@@ -435,7 +432,7 @@ export function PurchasesPage() {
                   Total Payable:
                 </span>
                 <span className="text-sm font-bold text-foreground font-mono tabular-nums">
-                  ₹{lineTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  {formatINR(lineTotal)}
                 </span>
               </div>
 

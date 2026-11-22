@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { formatINR } from "@/lib/formatters";
 import {
   Table,
   TableBody,
@@ -178,10 +179,7 @@ export function InvoicesPage() {
             <IndianRupeeIcon className="h-4 w-4" />
           </div>
           <div className="text-2xl font-bold">
-            ₹
-            {totalBilled.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
+            {formatINR(totalBilled)}
           </div>
           <div className="text-xs text-muted-foreground">
             Gross invoiced value inclusive of GST
@@ -196,10 +194,7 @@ export function InvoicesPage() {
             <IndianRupeeIcon className="h-4 w-4 text-amber-600" />
           </div>
           <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-            ₹
-            {totalOutstanding.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
+            {formatINR(totalOutstanding)}
           </div>
           <div className="text-xs text-muted-foreground">
             Awaiting payment settlement
@@ -284,34 +279,25 @@ export function InvoicesPage() {
                       {inv.deliveryStateSnapshot}
                     </TableCell>
                     <TableCell className="text-right">
-                      ₹
-                      {Number(inv.taxableAmount).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                      })}
+                      {formatINR(inv.taxableAmount)}
                     </TableCell>
                     <TableCell className="text-right text-xs">
                       {Number(inv.igstAmount) > 0 ? (
-                        <span>IGST: ₹{Number(inv.igstAmount).toFixed(2)}</span>
+                        <span>IGST: {formatINR(inv.igstAmount)}</span>
                       ) : (
                         <span>
-                          CGST/SGST: ₹
-                          {(
+                          CGST/SGST:{" "}
+                          {formatINR(
                             Number(inv.cgstAmount) + Number(inv.sgstAmount)
-                          ).toFixed(2)}
+                          )}
                         </span>
                       )}
                     </TableCell>
                     <TableCell className="text-right font-bold text-foreground">
-                      ₹
-                      {Number(inv.totalAmount).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                      })}
+                      {formatINR(inv.totalAmount)}
                     </TableCell>
                     <TableCell className="text-right font-semibold text-amber-600 dark:text-amber-400">
-                      ₹
-                      {Number(inv.outstandingAmount).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                      })}
+                      {formatINR(inv.outstandingAmount)}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">
@@ -432,16 +418,16 @@ export function InvoicesPage() {
                           {Number(l.quantity)}
                         </TableCell>
                         <TableCell className="text-right">
-                          ₹{Number(l.unitPrice).toFixed(2)}
+                          {formatINR(l.unitPrice)}
                         </TableCell>
                         <TableCell className="text-right">
-                          ₹{Number(l.taxableAmount).toFixed(2)}
+                          {formatINR(l.taxableAmount)}
                         </TableCell>
                         <TableCell className="text-right">
-                          ₹{Number(l.taxAmount).toFixed(2)}
+                          {formatINR(l.taxAmount)}
                         </TableCell>
                         <TableCell className="text-right font-bold">
-                          ₹{Number(l.lineTotal).toFixed(2)}
+                          {formatINR(l.lineTotal)}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -457,7 +443,7 @@ export function InvoicesPage() {
                       Taxable value:
                     </span>
                     <span className="font-semibold">
-                      ₹{Number(selectedInvoice.taxableAmount).toFixed(2)}
+                      {formatINR(selectedInvoice.taxableAmount)}
                     </span>
                   </div>
                   {Number(selectedInvoice.cgstAmount) > 0 && (
@@ -467,7 +453,7 @@ export function InvoicesPage() {
                           CGST (2.5%):
                         </span>
                         <span className="font-semibold">
-                          ₹{Number(selectedInvoice.cgstAmount).toFixed(2)}
+                          {formatINR(selectedInvoice.cgstAmount)}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -475,7 +461,7 @@ export function InvoicesPage() {
                           SGST (2.5%):
                         </span>
                         <span className="font-semibold">
-                          ₹{Number(selectedInvoice.sgstAmount).toFixed(2)}
+                          {formatINR(selectedInvoice.sgstAmount)}
                         </span>
                       </div>
                     </>
@@ -486,20 +472,20 @@ export function InvoicesPage() {
                         IGST (5.0%):
                       </span>
                       <span className="font-semibold">
-                        ₹{Number(selectedInvoice.igstAmount).toFixed(2)}
+                        {formatINR(selectedInvoice.igstAmount)}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between border-t pt-1 font-bold text-sm">
                     <span>Invoice total:</span>
                     <span className="text-foreground">
-                      ₹{Number(selectedInvoice.totalAmount).toFixed(2)}
+                      {formatINR(selectedInvoice.totalAmount)}
                     </span>
                   </div>
                   <div className="flex justify-between text-amber-600 font-semibold">
                     <span>Outstanding:</span>
                     <span>
-                      ₹{Number(selectedInvoice.outstandingAmount).toFixed(2)}
+                      {formatINR(selectedInvoice.outstandingAmount)}
                     </span>
                   </div>
                 </div>
@@ -563,8 +549,8 @@ export function InvoicesPage() {
                   className="rounded-md border bg-background px-3 py-2 text-sm font-semibold"
                 />
                 <span className="text-xs text-muted-foreground">
-                  Maximum adjustable: ₹
-                  {Number(selectedInvoice.outstandingAmount).toFixed(2)}
+                  Maximum adjustable:{" "}
+                  {formatINR(selectedInvoice.outstandingAmount)}
                 </span>
               </div>
             </div>

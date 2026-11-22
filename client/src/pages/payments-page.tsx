@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { formatDate, formatINR } from "@/lib/formatters";
 import {
   Table,
   TableBody,
@@ -344,10 +345,7 @@ export function PaymentsPage() {
             <IndianRupeeIcon className="h-4 w-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            ₹
-            {totalCollected.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
+            {formatINR(totalCollected)}
           </div>
           <div className="text-xs text-muted-foreground">
             Total receipts recorded across all modes
@@ -362,10 +360,7 @@ export function PaymentsPage() {
             <IndianRupeeIcon className="h-4 w-4 text-amber-600" />
           </div>
           <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-            ₹
-            {totalNetOutstanding.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
+            {formatINR(totalNetOutstanding)}
           </div>
           <div className="text-xs text-muted-foreground">
             Pending customer dues derived from ledger
@@ -380,10 +375,7 @@ export function PaymentsPage() {
             <LayersIcon className="h-4 w-4 text-primary" />
           </div>
           <div className="text-2xl font-bold text-primary">
-            ₹
-            {totalUnallocated.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
+            {formatINR(totalUnallocated)}
           </div>
           <div className="text-xs text-muted-foreground">
             Advance payments awaiting invoice allocation
@@ -467,9 +459,7 @@ export function PaymentsPage() {
                         {p.paymentNumber}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {new Date(p.paymentDate).toLocaleDateString("en-IN", {
-                          dateStyle: "medium",
-                        })}
+                        {formatDate(p.paymentDate)}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
@@ -494,15 +484,12 @@ export function PaymentsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right font-mono font-semibold">
-                        ₹
-                        {Number(p.amount).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                        {formatINR(p.amount)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
                         {Number(p.unallocatedAmount) > 0 ? (
                           <span className="text-amber-600 dark:text-amber-400">
-                            ₹{Number(p.unallocatedAmount).toFixed(2)}
+                            {formatINR(p.unallocatedAmount)}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">₹0.00</span>
@@ -523,7 +510,7 @@ export function PaymentsPage() {
                                 <span>
                                   {a.salesInvoice?.invoiceNumber || "Invoice"}:
                                 </span>
-                                <span>₹{Number(a.amount).toFixed(2)}</span>
+                                <span>{formatINR(a.amount)}</span>
                               </div>
                             ))
                           )}
@@ -604,30 +591,18 @@ export function PaymentsPage() {
                         {r.state}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹
-                        {r.totalInvoiced.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                        {formatINR(r.totalInvoiced)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                        ₹
-                        {r.totalCreditNotes.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                        {formatINR(r.totalCreditNotes)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs text-emerald-600 dark:text-emerald-400">
-                        ₹
-                        {r.totalPaid.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                        {formatINR(r.totalPaid)}
                       </TableCell>
                       <TableCell className="text-right font-mono font-semibold">
                         {r.netOutstanding > 0 ? (
                           <span className="text-amber-600 dark:text-amber-400">
-                            ₹
-                            {r.netOutstanding.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                            })}
+                            {formatINR(r.netOutstanding)}
                           </span>
                         ) : (
                           <span className="text-emerald-600 dark:text-emerald-400">
@@ -708,11 +683,7 @@ export function PaymentsPage() {
                         Current balance
                       </div>
                       <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                        ₹
-                        {customerLedger.summary.netOutstanding.toLocaleString(
-                          undefined,
-                          { minimumFractionDigits: 2 },
-                        )}
+                        {formatINR(customerLedger.summary.netOutstanding)}
                       </div>
                     </div>
                   </div>
@@ -724,7 +695,7 @@ export function PaymentsPage() {
                         0 to 30 days
                       </div>
                       <div className="font-mono text-xs font-semibold">
-                        ₹{customerLedger.summary.ageing.current0to30.toFixed(2)}
+                        {formatINR(customerLedger.summary.ageing.current0to30)}
                       </div>
                     </div>
                     <div className="rounded-md border bg-card p-2 text-center">
@@ -732,7 +703,7 @@ export function PaymentsPage() {
                         31 to 60 days
                       </div>
                       <div className="font-mono text-xs font-semibold">
-                        ₹{customerLedger.summary.ageing.days31to60.toFixed(2)}
+                        {formatINR(customerLedger.summary.ageing.days31to60)}
                       </div>
                     </div>
                     <div className="rounded-md border bg-card p-2 text-center">
@@ -740,7 +711,7 @@ export function PaymentsPage() {
                         61 to 90 days
                       </div>
                       <div className="font-mono text-xs font-semibold">
-                        ₹{customerLedger.summary.ageing.days61to90.toFixed(2)}
+                        {formatINR(customerLedger.summary.ageing.days61to90)}
                       </div>
                     </div>
                     <div className="rounded-md border bg-card p-2 text-center">
@@ -748,7 +719,7 @@ export function PaymentsPage() {
                         Over 90 days
                       </div>
                       <div className="font-mono text-xs font-semibold">
-                        ₹{customerLedger.summary.ageing.over90days.toFixed(2)}
+                        {formatINR(customerLedger.summary.ageing.over90days)}
                       </div>
                     </div>
                   </div>
@@ -779,12 +750,7 @@ export function PaymentsPage() {
                         {customerLedger.ledgerEntries.map((entry, idx) => (
                           <TableRow key={idx}>
                             <TableCell className="text-xs text-muted-foreground">
-                              {new Date(entry.date).toLocaleDateString(
-                                "en-IN",
-                                {
-                                  dateStyle: "medium",
-                                },
-                              )}
+                              {formatDate(entry.date)}
                             </TableCell>
                             <TableCell>
                               <Badge
@@ -805,16 +771,16 @@ export function PaymentsPage() {
                             </TableCell>
                             <TableCell className="text-right font-mono text-xs">
                               {entry.debit > 0
-                                ? `₹${entry.debit.toFixed(2)}`
+                                ? formatINR(entry.debit)
                                 : "-"}
                             </TableCell>
                             <TableCell className="text-right font-mono text-xs text-emerald-600 dark:text-emerald-400">
                               {entry.credit > 0
-                                ? `₹${entry.credit.toFixed(2)}`
+                                ? formatINR(entry.credit)
                                 : "-"}
                             </TableCell>
                             <TableCell className="text-right font-mono text-xs font-bold">
-                              ₹{entry.balance.toFixed(2)}
+                              {formatINR(entry.balance)}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -877,8 +843,8 @@ export function PaymentsPage() {
                   <option value="">Choose customer...</option>
                   {receivables.map((cust) => (
                     <option key={cust.customerId} value={cust.customerId}>
-                      {cust.customerName} ({cust.customerCode}) | Outstanding: ₹
-                      {cust.netOutstanding.toFixed(2)}
+                      {cust.customerName} ({cust.customerCode}) | Outstanding:{" "}
+                      {formatINR(cust.netOutstanding)}
                     </option>
                   ))}
                 </select>
@@ -990,8 +956,8 @@ export function PaymentsPage() {
                                 {inv.invoiceNumber}
                               </span>
                               <span className="text-[10px] text-muted-foreground">
-                                Outstanding: ₹
-                                {Number(inv.outstandingAmount).toFixed(2)}
+                                Outstanding:{" "}
+                                {formatINR(inv.outstandingAmount)}
                               </span>
                             </div>
                             <Input

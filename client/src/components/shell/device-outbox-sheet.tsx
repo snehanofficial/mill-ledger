@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useSyncManager } from "@/offline/use-offline";
 import { toast } from "sonner";
+import { formatINR, formatTime } from "@/lib/formatters";
 
 interface DeviceOutboxSheetProps {
   open: boolean;
@@ -181,11 +182,7 @@ export function DeviceOutboxSheet({
                         {ord.customerName}
                       </div>
                       <div className="text-muted-foreground text-2xs">
-                        {ord.customerState} •{" "}
-                        {new Date(ord.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {ord.customerState} • {formatTime(ord.createdAt)}
                       </div>
                     </div>
 
@@ -229,13 +226,13 @@ export function DeviceOutboxSheet({
                           {it.name || it.sku} × {it.quantity}
                         </span>
                         <span className="font-medium text-foreground">
-                          ₹{(it.quantity * it.quotedUnitPrice).toFixed(2)}
+                          {formatINR(it.quantity * it.quotedUnitPrice)}
                         </span>
                       </div>
                     ))}
                     <div className="border-t pt-1 flex justify-between font-semibold text-foreground">
                       <span>Total ({totalItems} pkts)</span>
-                      <span>₹{totalQuoted.toFixed(2)}</span>
+                      <span>{formatINR(totalQuoted)}</span>
                     </div>
                   </div>
 

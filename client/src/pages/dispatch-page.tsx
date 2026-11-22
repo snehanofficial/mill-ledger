@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { formatDateTime, formatQuantity } from "@/lib/formatters";
 import {
   Table,
   TableBody,
@@ -247,7 +248,7 @@ export function DispatchPage() {
             <PackageCheckIcon className="h-4 w-4" />
           </div>
           <div className="text-2xl font-bold">
-            {totalUnitsDispatched.toLocaleString()} units
+            {formatQuantity(totalUnitsDispatched, { unit: "units" })}
           </div>
           <div className="text-xs text-muted-foreground">
             Deducted from finished goods stock
@@ -262,7 +263,7 @@ export function DispatchPage() {
             <CheckCircle2Icon className="h-4 w-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            {totalUnitsDispatched.toLocaleString()} units
+            {formatQuantity(totalUnitsDispatched, { unit: "units" })}
           </div>
           <div className="text-xs text-muted-foreground">
             Atomic reservation release on dispatch
@@ -323,10 +324,7 @@ export function DispatchPage() {
                       {disp.dispatchNumber}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {new Date(disp.dispatchedAt).toLocaleString("en-IN", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
+                      {formatDateTime(disp.dispatchedAt)}
                     </TableCell>
                     <TableCell>
                       <span className="font-mono text-xs font-medium">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -200,11 +201,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
             {salesData?.summary && (
               <div className="flex items-center gap-4 text-xs font-mono">
                 <span>
-                  Taxable: ₹{salesData.summary.totalTaxable.toFixed(2)}
+                  Taxable: {formatINR(salesData.summary.totalTaxable)}
                 </span>
-                <span>Tax: ₹{salesData.summary.totalTax.toFixed(2)}</span>
+                <span>Tax: {formatINR(salesData.summary.totalTax)}</span>
                 <span className="font-bold text-foreground">
-                  Grand total: ₹{salesData.summary.grandTotal.toFixed(2)}
+                  Grand total: {formatINR(salesData.summary.grandTotal)}
                 </span>
               </div>
             )}
@@ -238,7 +239,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                         {row.invoiceNumber}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {new Date(row.invoiceDate).toLocaleDateString("en-IN")}
+                        {formatDate(row.invoiceDate)}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col text-xs">
@@ -257,16 +258,16 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                         {row.quantity}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{row.taxableAmount.toFixed(2)}
+                        {formatINR(row.taxableAmount)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{row.cgstAmount.toFixed(2)}
+                        {formatINR(row.cgstAmount)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{row.sgstAmount.toFixed(2)}
+                        {formatINR(row.sgstAmount)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs font-bold">
-                        ₹{row.lineTotal.toFixed(2)}
+                        {formatINR(row.lineTotal)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -286,7 +287,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 Total outward taxable
               </span>
               <div className="mt-1 text-2xl font-bold font-mono">
-                ₹{Number(gstData?.summary?.totalTaxable || 0).toFixed(2)}
+                {formatINR(gstData?.summary?.totalTaxable || 0)}
               </div>
             </div>
             <div className="rounded-xl border bg-card p-4 shadow-xs">
@@ -294,7 +295,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 Total tax liability
               </span>
               <div className="mt-1 text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
-                ₹{Number(gstData?.summary?.totalTaxAmount || 0).toFixed(2)}
+                {formatINR(gstData?.summary?.totalTaxAmount || 0)}
               </div>
             </div>
             <div className="rounded-xl border bg-card p-4 shadow-xs">
@@ -302,10 +303,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 Credit note deductions
               </span>
               <div className="mt-1 text-2xl font-bold font-mono text-amber-600 dark:text-amber-400">
-                ₹
-                {Number(gstData?.summary?.totalCreditNotesAmount || 0).toFixed(
-                  2,
-                )}
+                {formatINR(gstData?.summary?.totalCreditNotesAmount || 0)}
               </div>
             </div>
           </div>
@@ -333,16 +331,16 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                         {r.ratePct}%
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{r.taxable.toFixed(2)}
+                        {formatINR(r.taxable)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{r.cgst.toFixed(2)}
+                        {formatINR(r.cgst)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{r.sgst.toFixed(2)}
+                        {formatINR(r.sgst)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs font-semibold">
-                        ₹{r.totalTax.toFixed(2)}
+                        {formatINR(r.totalTax)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -371,10 +369,10 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                         {h.quantity}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{h.taxable.toFixed(2)}
+                        {formatINR(h.taxable)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs font-semibold">
-                        ₹{(h.cgst + h.sgst + h.igst).toFixed(2)}
+                        {formatINR(h.cgst + h.sgst + h.igst)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -403,7 +401,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                   Total valuation
                 </div>
                 <div className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
-                  ₹{Number(stockData.summary.totalValuation).toFixed(2)}
+                  {formatINR(stockData.summary.totalValuation)}
                 </div>
               </div>
             )}
@@ -444,10 +442,10 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                       {row.available}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                      ₹{row.weightedAverageCost.toFixed(2)}
+                      {formatINR(row.weightedAverageCost)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs font-bold">
-                      ₹{row.totalValuation.toFixed(2)}
+                      {formatINR(row.totalValuation)}
                     </TableCell>
                     <TableCell className="text-center">
                       {row.isReconciled ? (
@@ -489,7 +487,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                   Output: {prodData.summary.totalGoodQuantity} units |{" "}
                 </span>
                 <span className="font-bold">
-                  Total cost: ₹{prodData.summary.totalRunCost.toFixed(2)}
+                  Total cost: {formatINR(prodData.summary.totalRunCost)}
                 </span>
               </div>
             )}
@@ -531,16 +529,16 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                       </span>
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs">
-                      ₹{row.directLaborCost.toFixed(2)}
+                      {formatINR(row.directLaborCost)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs">
-                      ₹{row.gasPowerCost.toFixed(2)}
+                      {formatINR(row.gasPowerCost)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs font-semibold">
-                      ₹{row.totalCost.toFixed(2)}
+                      {formatINR(row.totalCost)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                      ₹{row.unitCost.toFixed(2)}
+                      {formatINR(row.unitCost)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -568,7 +566,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                   Total outstanding
                 </div>
                 <div className="text-xl font-bold font-mono text-amber-600 dark:text-amber-400">
-                  ₹{Number(recData.summary.totalOutstanding).toFixed(2)}
+                  {formatINR(recData.summary.totalOutstanding)}
                 </div>
               </div>
             )}
@@ -605,22 +603,22 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                       {row.state}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs">
-                      ₹{row.totalInvoiced.toFixed(2)}
+                      {formatINR(row.totalInvoiced)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-emerald-600">
-                      ₹{row.totalPaid.toFixed(2)}
+                      {formatINR(row.totalPaid)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs font-bold text-amber-600 dark:text-amber-400">
-                      ₹{row.netOutstanding.toFixed(2)}
+                      {formatINR(row.netOutstanding)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs">
-                      ₹{row.ageing.current0to30.toFixed(2)}
+                      {formatINR(row.ageing.current0to30)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                      ₹{row.ageing.days31to60.toFixed(2)}
+                      {formatINR(row.ageing.days31to60)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                      ₹{row.ageing.over90days.toFixed(2)}
+                      {formatINR(row.ageing.over90days)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -670,7 +668,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                   auditData?.logs.map((log: any) => (
                     <TableRow key={log.id}>
                       <TableCell className="text-xs font-mono text-muted-foreground">
-                        {new Date(log.timestamp).toLocaleString("en-IN")}
+                        {formatDateTime(log.timestamp)}
                       </TableCell>
                       <TableCell className="text-xs font-medium">
                         {log.userEmail || "System"}
