@@ -40,6 +40,7 @@ BEGIN
 
   IF TG_OP = 'UPDATE' THEN
     IF OLD.status IN ('POSTED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED_BY_CREDIT_NOTE') THEN
+      -- Block financial and identification field mutation
       IF (OLD."totalAmount" IS DISTINCT FROM NEW."totalAmount") OR
          (OLD."taxableAmount" IS DISTINCT FROM NEW."taxableAmount") OR
          (OLD."cgstAmount" IS DISTINCT FROM NEW."cgstAmount") OR
@@ -51,6 +52,17 @@ BEGIN
          (OLD."customerId" IS DISTINCT FROM NEW."customerId") OR
          (OLD."organizationId" IS DISTINCT FROM NEW."organizationId") THEN
         RAISE EXCEPTION 'Posted sales invoice financial and identification fields are immutable';
+      END IF;
+      -- Block snapshot field mutation (forgery prevention)
+      IF (OLD."customerNameSnapshot" IS DISTINCT FROM NEW."customerNameSnapshot") OR
+         (OLD."companyGstinSnapshot" IS DISTINCT FROM NEW."companyGstinSnapshot") OR
+         (OLD."deliveryStateSnapshot" IS DISTINCT FROM NEW."deliveryStateSnapshot") THEN
+        RAISE EXCEPTION 'Posted sales invoice snapshot fields are immutable';
+      END IF;
+      -- Block status downgrade (POSTED/PAID/etc -> DRAFT would allow DELETE bypass)
+      IF OLD.status IN ('POSTED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED_BY_CREDIT_NOTE') AND
+         NEW.status NOT IN ('POSTED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED_BY_CREDIT_NOTE') THEN
+        RAISE EXCEPTION 'Posted sales invoice status cannot be downgraded from % to %', OLD.status, NEW.status;
       END IF;
     END IF;
     RETURN NEW;
@@ -66,6 +78,7 @@ BEFORE UPDATE OR DELETE ON "sales_invoice"
 FOR EACH ROW EXECUTE FUNCTION enforce_sales_invoice_immutability();
 
 -- Trigger to enforce immutability on lines of posted sales_invoice
+-- NOTE: The FK column on sales_invoice_line is "invoiceId" (not "salesInvoiceId")
 CREATE OR REPLACE FUNCTION enforce_sales_invoice_line_immutability()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -79,7 +92,7 @@ BEGIN
     END IF;
   END IF;
 
-  SELECT status INTO v_status FROM "sales_invoice" WHERE id = COALESCE(OLD."salesInvoiceId", NEW."salesInvoiceId");
+  SELECT status INTO v_status FROM "sales_invoice" WHERE id = COALESCE(OLD."invoiceId", NEW."invoiceId");
   IF v_status IN ('POSTED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED_BY_CREDIT_NOTE') THEN
     RAISE EXCEPTION 'Lines belonging to posted sales invoices are immutable';
   END IF;

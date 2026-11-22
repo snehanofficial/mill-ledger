@@ -19,6 +19,7 @@ describe("F-009: Database-Level Immutability Enforcement", () => {
   afterAll(async () => {
     await resetOperationalData();
   });
+
   it("rejects direct SQL UPDATE on stock_movement", async () => {
     const sm = await prisma.stockMovement.findFirst();
     expect(sm).toBeDefined();
@@ -30,7 +31,6 @@ describe("F-009: Database-Level Immutability Enforcement", () => {
   });
 
   it("rejects direct SQL DELETE on stock_movement", async () => {
-    // Create a temporary movement to attempt deleting
     const item = await prisma.inventoryItem.findFirstOrThrow();
     const wh = await prisma.warehouse.findFirstOrThrow();
 
@@ -106,6 +106,164 @@ describe("F-009: Database-Level Immutability Enforcement", () => {
 
     await expect(
       prisma.$executeRaw`DELETE FROM "sales_invoice" WHERE "id" = ${testInv.id}`
+    ).rejects.toThrow();
+  });
+
+  it("rejects status downgrade from POSTED to DRAFT on sales_invoice", async () => {
+    const org = await prisma.organization.findFirstOrThrow();
+    const cust = await prisma.customer.findFirstOrThrow();
+
+    const testInv = await prisma.salesInvoice.create({
+      data: {
+        organizationId: org.id,
+        invoiceNumber: `INV-DOWNGRADE-${Date.now()}`,
+        financialYear: "2026-27",
+        customerId: cust.id,
+        customerNameSnapshot: cust.name,
+        deliveryStateSnapshot: "Tamil Nadu",
+        companyGstinSnapshot: "33AAAAA0000A1Z5",
+        status: "POSTED",
+        taxableAmount: 100,
+        cgstAmount: 2.5,
+        sgstAmount: 2.5,
+        igstAmount: 0,
+        totalTaxAmount: 5,
+        totalAmount: 105,
+        outstandingAmount: 105,
+      },
+    });
+
+    // Status downgrade must be blocked
+    await expect(
+      prisma.$executeRaw`UPDATE "sales_invoice" SET "status" = 'DRAFT' WHERE "id" = ${testInv.id}`
+    ).rejects.toThrow();
+  });
+
+  it("rejects mutation of snapshot fields on POSTED sales_invoice", async () => {
+    const org = await prisma.organization.findFirstOrThrow();
+    const cust = await prisma.customer.findFirstOrThrow();
+
+    const testInv = await prisma.salesInvoice.create({
+      data: {
+        organizationId: org.id,
+        invoiceNumber: `INV-SNAPSHOT-${Date.now()}`,
+        financialYear: "2026-27",
+        customerId: cust.id,
+        customerNameSnapshot: cust.name,
+        deliveryStateSnapshot: "Tamil Nadu",
+        companyGstinSnapshot: "33AAAAA0000A1Z5",
+        status: "POSTED",
+        taxableAmount: 100,
+        cgstAmount: 2.5,
+        sgstAmount: 2.5,
+        igstAmount: 0,
+        totalTaxAmount: 5,
+        totalAmount: 105,
+        outstandingAmount: 105,
+      },
+    });
+
+    // Forging GSTIN snapshot must be blocked
+    await expect(
+      prisma.$executeRaw`UPDATE "sales_invoice" SET "companyGstinSnapshot" = 'FORGED123' WHERE "id" = ${testInv.id}`
+    ).rejects.toThrow();
+  });
+
+  it("rejects DELETE on a line belonging to a POSTED sales_invoice", async () => {
+    const org = await prisma.organization.findFirstOrThrow();
+    const cust = await prisma.customer.findFirstOrThrow();
+    const variant = await prisma.productVariant.findFirstOrThrow();
+
+    const testInv = await prisma.salesInvoice.create({
+      data: {
+        organizationId: org.id,
+        invoiceNumber: `INV-LINE-DEL-${Date.now()}`,
+        financialYear: "2026-27",
+        customerId: cust.id,
+        customerNameSnapshot: cust.name,
+        deliveryStateSnapshot: "Tamil Nadu",
+        companyGstinSnapshot: "33AAAAA0000A1Z5",
+        status: "POSTED",
+        taxableAmount: 100,
+        cgstAmount: 2.5,
+        sgstAmount: 2.5,
+        igstAmount: 0,
+        totalTaxAmount: 5,
+        totalAmount: 105,
+        outstandingAmount: 105,
+      },
+    });
+
+    const testLine = await prisma.salesInvoiceLine.create({
+      data: {
+        invoiceId: testInv.id,
+        productVariantId: variant.id,
+        productNameSnapshot: variant.name,
+        hsnCodeSnapshot: "21069099",
+        quantity: 10,
+        unitPrice: 10,
+        taxRate: 5,
+        taxableAmount: 100,
+        cgstAmount: 2.5,
+        sgstAmount: 2.5,
+        igstAmount: 0,
+        taxAmount: 5,
+        lineTotal: 105,
+      },
+    });
+
+    // DELETE on line of a POSTED invoice must be blocked
+    await expect(
+      prisma.$executeRaw`DELETE FROM "sales_invoice_line" WHERE "id" = ${testLine.id}`
+    ).rejects.toThrow();
+  });
+
+  it("rejects UPDATE on a line belonging to a POSTED sales_invoice", async () => {
+    const org = await prisma.organization.findFirstOrThrow();
+    const cust = await prisma.customer.findFirstOrThrow();
+    const variant = await prisma.productVariant.findFirstOrThrow();
+
+    const testInv = await prisma.salesInvoice.create({
+      data: {
+        organizationId: org.id,
+        invoiceNumber: `INV-LINE-UPD-${Date.now()}`,
+        financialYear: "2026-27",
+        customerId: cust.id,
+        customerNameSnapshot: cust.name,
+        deliveryStateSnapshot: "Tamil Nadu",
+        companyGstinSnapshot: "33AAAAA0000A1Z5",
+        status: "POSTED",
+        taxableAmount: 100,
+        cgstAmount: 2.5,
+        sgstAmount: 2.5,
+        igstAmount: 0,
+        totalTaxAmount: 5,
+        totalAmount: 105,
+        outstandingAmount: 105,
+      },
+    });
+
+    const testLine = await prisma.salesInvoiceLine.create({
+      data: {
+        invoiceId: testInv.id,
+        productVariantId: variant.id,
+        productNameSnapshot: variant.name,
+        hsnCodeSnapshot: "21069099",
+        quantity: 10,
+        unitPrice: 10,
+        taxRate: 5,
+        taxableAmount: 100,
+        cgstAmount: 2.5,
+        sgstAmount: 2.5,
+        igstAmount: 0,
+        taxAmount: 5,
+        lineTotal: 105,
+      },
+    });
+
+    // UPDATE on line of a POSTED invoice must be blocked
+    await expect(
+      prisma.$executeRaw`UPDATE "sales_invoice_line" SET "lineTotal" = 9999 WHERE "id" = ${testLine.id}`
     ).rejects.toThrow();
   });
 });
