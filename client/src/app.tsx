@@ -52,7 +52,7 @@ const ReportsAuditPage = lazy(() =>
   import("@/pages/reports-page").then((m) => ({ default: m.ReportsAuditPage })),
 );
 const NewOrderPage = lazy(() =>
-  import("@/pages/placeholder-pages").then((m) => ({ default: m.NewOrderPage })),
+  import("@/pages/new-order-page").then((m) => ({ default: m.NewOrderPage })),
 );
 const PurchasesPage = lazy(() =>
   import("@/pages/purchases-page").then((m) => ({ default: m.PurchasesPage })),
