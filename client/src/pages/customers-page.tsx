@@ -16,6 +16,7 @@ import {
   CheckCircle2Icon,
   MapPinIcon,
 } from "lucide-react";
+import { validateGstin } from "@mill-ledger/shared";
 
 interface Customer {
   id: string;
@@ -153,7 +154,28 @@ export function CustomersPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="font-mono text-xs">
-                      {c.gstin || "—"}
+                      {c.gstin ? (
+                        <div className="flex items-center gap-1.5">
+                          <span>{c.gstin}</span>
+                          {validateGstin(c.gstin).isValid ? (
+                            <Badge
+                              variant="success"
+                              className="text-[9px] px-1 py-0"
+                            >
+                              Valid
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="danger"
+                              className="text-[9px] px-1 py-0"
+                            >
+                              Invalid
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge

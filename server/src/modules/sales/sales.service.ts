@@ -1064,6 +1064,76 @@ export class SalesService {
   }
 
   /**
+   * Create customer with validated GSTIN
+   */
+  async createCustomer(
+    data: {
+      organizationId?: string;
+      code: string;
+      name: string;
+      phone?: string | null;
+      email?: string | null;
+      state?: string;
+      gstin?: string | null;
+      isActive?: boolean;
+    },
+    _user: UserContext,
+  ) {
+    const orgId = await this.resolveOrgId(data.organizationId);
+    return await prisma.customer.create({
+      data: {
+        organizationId: orgId,
+        code: data.code,
+        name: data.name,
+        phone: data.phone ?? null,
+        email: data.email ?? null,
+        state: data.state || "Tamil Nadu",
+        gstin: data.gstin ? data.gstin.trim().toUpperCase() : null,
+        isActive: data.isActive ?? true,
+      },
+    });
+  }
+
+  /**
+   * Update customer with validated GSTIN
+   */
+  async updateCustomer(
+    id: string,
+    data: {
+      name?: string;
+      phone?: string | null;
+      email?: string | null;
+      state?: string;
+      gstin?: string | null;
+      isActive?: boolean;
+    },
+    _user: UserContext,
+  ) {
+    const customer = await prisma.customer.findUnique({
+      where: { id },
+    });
+    if (!customer) {
+      throw new AppError(`Customer ${id} not found`, 404);
+    }
+    return await prisma.customer.update({
+      where: { id },
+      data: {
+        name: data.name !== undefined ? data.name : undefined,
+        phone: data.phone !== undefined ? data.phone : undefined,
+        email: data.email !== undefined ? data.email : undefined,
+        state: data.state !== undefined ? data.state : undefined,
+        gstin:
+          data.gstin !== undefined
+            ? data.gstin
+              ? data.gstin.trim().toUpperCase()
+              : null
+            : undefined,
+        isActive: data.isActive !== undefined ? data.isActive : undefined,
+      },
+    });
+  }
+
+  /**
    * Get sellable products and default price list snapshot for offline cache
    */
   async getProducts(organizationId: string) {

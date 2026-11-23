@@ -9,8 +9,33 @@ import { dispatchService } from "./dispatch.service.js";
 import { z } from "zod";
 import { AppError } from "../../middleware/error.middleware.js";
 import { OrderStatus } from "@prisma/client";
+import { gstinSchema } from "@mill-ledger/shared";
 
 export const salesRouter = Router();
+
+const createCustomerSchema = z
+  .object({
+    organizationId: z.string().min(1).optional(),
+    code: z.string().min(1, "Customer code is required"),
+    name: z.string().min(1, "Customer name is required"),
+    phone: z.string().nullable().optional(),
+    email: z.string().email("Invalid email format").nullable().optional(),
+    state: z.string().min(1, "State is required").default("Tamil Nadu"),
+    gstin: gstinSchema.nullable().optional(),
+    isActive: z.boolean().optional().default(true),
+  })
+  .strict();
+
+const updateCustomerSchema = z
+  .object({
+    name: z.string().min(1).optional(),
+    phone: z.string().nullable().optional(),
+    email: z.string().email("Invalid email format").nullable().optional(),
+    state: z.string().min(1).optional(),
+    gstin: gstinSchema.nullable().optional(),
+    isActive: z.boolean().optional(),
+  })
+  .strict();
 
 const createOrderSchema = z.object({
   organizationId: z.string().min(1).optional(),
@@ -112,6 +137,66 @@ salesRouter.get(
       const orgId = (req.query.organizationId as string) || "MILL";
       const customers = await salesService.getCustomers(orgId, req.user!);
       res.json({ customers });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/sales/customers - Create a customer with validated GSTIN
+salesRouter.post(
+  "/customers",
+  requireAuth,
+  authorize("customer", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const parsed = createCustomerSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new AppError(
+          `Invalid customer data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
+          400,
+        );
+      }
+
+      const customer = await salesService.createCustomer(
+        parsed.data,
+        req.user!,
+      );
+      res.status(201).json({ status: "created", customer });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// PUT /api/v1/sales/customers/:id - Update a customer with validated GSTIN
+salesRouter.put(
+  "/customers/:id",
+  requireAuth,
+  authorize("customer", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const customerId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!customerId) {
+        throw new AppError("Customer ID is required", 400);
+      }
+
+      const parsed = updateCustomerSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new AppError(
+          `Invalid customer data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
+          400,
+        );
+      }
+
+      const customer = await salesService.updateCustomer(
+        customerId,
+        parsed.data,
+        req.user!,
+      );
+      res.json({ status: "updated", customer });
     } catch (err) {
       next(err);
     }
