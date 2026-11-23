@@ -28,9 +28,13 @@ export interface ApproveOrderLineOverride {
   approvedUnitPrice?: number;
 }
 
+export const DEFAULT_RESERVATION_TTL_HOURS = 48; // 48-hour policy window per F-027
+
 export interface ApproveOrderInput {
   overrideReason?: string;
   lineOverrides?: ApproveOrderLineOverride[];
+  reservationTtlHours?: number;
+  reservationExpiresAt?: Date;
 }
 
 export interface RejectOrderInput {
@@ -52,10 +56,66 @@ export class SalesService {
   }
 
   /**
+   * Sweeps and transitions stale active stock reservations that have exceeded their TTL.
+   * Restores committed stock back to available-to-promise inventory.
+   */
+  async expireStaleReservations(referenceTime: Date = new Date()): Promise<{
+    expiredCount: number;
+    expiredReservationIds: string[];
+  }> {
+    return await prisma.$transaction(async (tx) => {
+      const staleReservations = await tx.stockReservation.findMany({
+        where: {
+          status: ReservationStatus.ACTIVE,
+          expiresAt: { lte: referenceTime },
+        },
+        select: {
+          id: true,
+          salesOrderId: true,
+        },
+      });
+
+      if (staleReservations.length === 0) {
+        return { expiredCount: 0, expiredReservationIds: [] };
+      }
+
+      const ids = staleReservations.map((r) => r.id);
+      await tx.stockReservation.updateMany({
+        where: { id: { in: ids } },
+        data: { status: ReservationStatus.EXPIRED },
+      });
+
+      // Update notes on orders where all reservations have expired
+      const orderIds = [...new Set(staleReservations.map((r) => r.salesOrderId))];
+      for (const orderId of orderIds) {
+        const remainingActive = await tx.stockReservation.count({
+          where: {
+            salesOrderId: orderId,
+            status: ReservationStatus.ACTIVE,
+          },
+        });
+        if (remainingActive === 0) {
+          await tx.salesOrder.update({
+            where: { id: orderId },
+            data: {
+              notes: "Reservation expired due to exceeding policy TTL window",
+            },
+          });
+        }
+      }
+
+      return { expiredCount: ids.length, expiredReservationIds: ids };
+    });
+  }
+
+  /**
    * Helper to compute available stock for an inventory item in a warehouse
    * available = onHand - activeReservations
    */
-  async getAvailableStock(inventoryItemId: string, warehouseId?: string) {
+  async getAvailableStock(inventoryItemId: string, warehouseId?: string, referenceTime: Date = new Date()) {
+    // Automatically sweep expired reservations
+    await this.expireStaleReservations(referenceTime);
+
     const item = await prisma.inventoryItem.findUnique({
       where: { id: inventoryItemId },
     });
@@ -66,6 +126,7 @@ export class SalesService {
     const reservationWhere: Prisma.StockReservationWhereInput = {
       inventoryItemId,
       status: ReservationStatus.ACTIVE,
+      OR: [{ expiresAt: null }, { expiresAt: { gt: referenceTime } }],
     };
     if (warehouseId) {
       reservationWhere.warehouseId = warehouseId;
@@ -340,6 +401,7 @@ export class SalesService {
               inventoryItemId: variant.inventoryItemId,
               warehouseId,
               status: ReservationStatus.ACTIVE,
+              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
             },
             _sum: {
               reservedQuantity: true,
@@ -609,6 +671,7 @@ export class SalesService {
               inventoryItemId: line.inventoryItemId,
               warehouseId: order.warehouseId,
               status: ReservationStatus.ACTIVE,
+              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
             },
             _sum: {
               reservedQuantity: true,
@@ -630,7 +693,18 @@ export class SalesService {
             );
           }
 
-          // Create active Stock Reservation
+          const expiresAt =
+            input.reservationExpiresAt !== undefined
+              ? input.reservationExpiresAt
+              : new Date(
+                  Date.now() +
+                    (input.reservationTtlHours ?? DEFAULT_RESERVATION_TTL_HOURS) *
+                      60 *
+                      60 *
+                      1000,
+                );
+
+          // Create active Stock Reservation with TTL policy (F-027)
           await tx.stockReservation.create({
             data: {
               salesOrderId: order.id,
@@ -639,6 +713,7 @@ export class SalesService {
               warehouseId: order.warehouseId,
               reservedQuantity: approvedQty,
               status: ReservationStatus.ACTIVE,
+              expiresAt,
             },
           });
         }

@@ -5,6 +5,7 @@ import { prisma } from "./db/client.js";
 import { resetOperationalData } from "./db/reset.js";
 import { seedBenchmarkMasters } from "./db/seed.js";
 import { inventoryService } from "./modules/inventory/inventory.service.js";
+import { salesService } from "./modules/sales/sales.service.js";
 
 describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations", () => {
   let server: Server;
@@ -761,5 +762,144 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
     expect(invalidStatusErr.error || invalidStatusErr.message).toContain(
       "Draft orders can only be updated to DRAFT or SUBMITTED status",
     );
+  });
+
+  it("F-027: enforces stock reservation TTL expiration and releases locked inventory back to available stock (OWASP A04:2021 & ASVS 13.2.2)", async () => {
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { code: "MILL" },
+    });
+    const retailerA = await prisma.customer.findFirstOrThrow({
+      where: { code: "CUST-RET-A" },
+    });
+    const murukkuVariant = await prisma.productVariant.findFirstOrThrow({
+      where: { sku: "VAR-MURUKKU-200G" },
+    });
+    const flourItem = await prisma.inventoryItem.findFirstOrThrow({
+      where: { sku: "FG-MURUKKU-200G" },
+    });
+
+    const salesmanCookie = await loginAndGetCookie(
+      "salesman1@millledger.local",
+      "SalesmanPassword123!",
+    );
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+
+    // 1. Check initial available stock for Murukku
+    const initialAvailability = await salesService.getAvailableStock(flourItem.id);
+    const initialAvailable = initialAvailability.available;
+    expect(initialAvailable).toBeGreaterThanOrEqual(10);
+
+    // 2. Submit an order for 10 units
+    const orderRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesmanCookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        lines: [
+          {
+            productVariantId: murukkuVariant.id,
+            quantity: 10,
+          },
+        ],
+      }),
+    });
+    expect(orderRes.status).toBe(201);
+    const orderData = (await orderRes.json()) as { order: { id: string } };
+    const orderId = orderData.order.id;
+
+    // 3. Admin approves order with short TTL (e.g. 1 hour)
+    const approveRes = await fetch(
+      `${baseUrl}/api/v1/sales/orders/${orderId}/approve`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          reservationTtlHours: 1,
+        }),
+      },
+    );
+    expect(approveRes.status).toBe(200);
+
+    // 4. Verify reservation was created with active status and an expiresAt timestamp approx 1 hour in the future
+    const activeReservation = await prisma.stockReservation.findFirstOrThrow({
+      where: {
+        salesOrderId: orderId,
+        status: "ACTIVE",
+      },
+    });
+    expect(activeReservation.expiresAt).toBeDefined();
+    expect(activeReservation.expiresAt!.getTime()).toBeGreaterThan(Date.now());
+
+    // 5. Verify available stock decreased by 10
+    const reservedAvailability = await salesService.getAvailableStock(flourItem.id);
+    expect(reservedAvailability.available).toBe(initialAvailable - 10);
+
+    // 6. Sweep before expiration: reservation remains active
+    const nowTime = new Date();
+    const earlySweepRes = await fetch(
+      `${baseUrl}/api/v1/sales/reservations/expire-stale`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({ referenceTime: nowTime.toISOString() }),
+      },
+    );
+    expect(earlySweepRes.status).toBe(200);
+    const earlySweepData = (await earlySweepRes.json()) as { expiredReservationIds: string[] };
+    expect(earlySweepData.expiredReservationIds).not.toContain(activeReservation.id);
+
+    // 7. Simulate passage of time past TTL (e.g. 2 hours in the future) and sweep
+    const futureTime = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    const expiredSweepRes = await fetch(
+      `${baseUrl}/api/v1/sales/reservations/expire-stale`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({ referenceTime: futureTime.toISOString() }),
+      },
+    );
+    expect(expiredSweepRes.status).toBe(200);
+    const expiredSweepData = (await expiredSweepRes.json()) as {
+      expiredCount: number;
+      expiredReservationIds: string[];
+    };
+    expect(expiredSweepData.expiredCount).toBeGreaterThanOrEqual(1);
+    expect(expiredSweepData.expiredReservationIds).toContain(activeReservation.id);
+
+    // 8. Verify the reservation status is now EXPIRED
+    const updatedReservation = await prisma.stockReservation.findUniqueOrThrow({
+      where: { id: activeReservation.id },
+    });
+    expect(updatedReservation.status).toBe("EXPIRED");
+
+    // 9. Verify available stock is restored back to original level
+    const restoredAvailability = await salesService.getAvailableStock(
+      flourItem.id,
+      undefined,
+      futureTime,
+    );
+    expect(restoredAvailability.available).toBe(initialAvailable);
+
+    // 10. Verify order note reflects the expiration
+    const updatedOrder = await prisma.salesOrder.findUniqueOrThrow({
+      where: { id: orderId },
+    });
+    expect(updatedOrder.notes).toContain("Reservation expired");
   });
 });

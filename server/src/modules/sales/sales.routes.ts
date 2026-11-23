@@ -43,6 +43,12 @@ const approveOrderSchema = z.object({
       }),
     )
     .optional(),
+  reservationTtlHours: z.number().positive().optional(),
+  reservationExpiresAt: z
+    .string()
+    .datetime()
+    .optional()
+    .transform((v) => (v ? new Date(v) : undefined)),
 });
 
 const rejectOrderSchema = z.object({
@@ -261,6 +267,24 @@ salesRouter.post(
         req.user!,
       );
       res.status(200).json(rejected);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/sales/reservations/expire-stale - Sweep and expire timed-out reservations (F-027)
+salesRouter.post(
+  "/reservations/expire-stale",
+  requireAuth,
+  authorize("order", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const refTime = req.body?.referenceTime
+        ? new Date(req.body.referenceTime)
+        : new Date();
+      const result = await salesService.expireStaleReservations(refTime);
+      res.json({ status: "success", ...result });
     } catch (err) {
       next(err);
     }

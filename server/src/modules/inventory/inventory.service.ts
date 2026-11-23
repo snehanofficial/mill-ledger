@@ -272,10 +272,12 @@ export class InventoryService {
       movementMap.set(m.inventoryItemId, Number(m._sum.quantity ?? 0));
     }
 
-    // 2. Group active stock reservations by item in 1 single SQL query
+    // 2. Group active stock reservations by item in 1 single SQL query (excluding expired ones - F-027)
+    const now = new Date();
     const reservationWhere: Prisma.StockReservationWhereInput = {
       inventoryItemId: { in: itemIds },
       status: "ACTIVE",
+      OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
       ...(warehouseId ? { warehouseId } : {}),
     };
 

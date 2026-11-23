@@ -600,6 +600,7 @@ enum ReservationStatus {
   ACTIVE
   RELEASED
   CANCELLED
+  EXPIRED
 }
 
 model SalesOrder {
@@ -681,10 +682,12 @@ model StockReservation {
   reservedQuantity Decimal           @db.Decimal(18, 6)
   releasedQuantity Decimal           @default(0) @db.Decimal(18, 6)
   status           ReservationStatus @default(ACTIVE)
+  expiresAt        DateTime?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
   @@index([inventoryItemId, warehouseId, status])
+  @@index([status, expiresAt])
   @@map("stock_reservation")
 }
 
