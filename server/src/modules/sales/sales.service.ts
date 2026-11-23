@@ -17,7 +17,7 @@ export interface CreateOrderInput {
   orderNumber?: string;
   notes?: string;
   idempotencyKey?: string;
-  status?: OrderStatus;
+  status?: "DRAFT" | "SUBMITTED";
   orderDate?: Date;
   lines: CreateOrderLineInput[];
 }
@@ -329,7 +329,21 @@ export class SalesService {
       }
 
       const totalAmount = Number((taxableAmount + totalTaxAmount).toFixed(2));
-      const initialStatus = input.status ?? OrderStatus.SUBMITTED;
+
+      if (
+        input.status &&
+        input.status !== OrderStatus.DRAFT &&
+        input.status !== OrderStatus.SUBMITTED
+      ) {
+        throw new AppError(
+          "New sales orders can only be created with DRAFT or SUBMITTED status",
+          400,
+        );
+      }
+      const initialStatus =
+        input.status === OrderStatus.DRAFT
+          ? OrderStatus.DRAFT
+          : OrderStatus.SUBMITTED;
 
       // Create Sales Order header
       const order = await tx.salesOrder.create({

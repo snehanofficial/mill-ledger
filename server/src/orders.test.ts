@@ -411,4 +411,111 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
     });
     expect(reservations.every((r) => r.status === "CANCELLED")).toBe(true);
   });
+
+  it("F-017: blocks mass assignment of status in sales order creation payload (OWASP API3:2023)", async () => {
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { code: "MILL" },
+    });
+    const retailerA = await prisma.customer.findFirstOrThrow({
+      where: { code: "CUST-RET-A" },
+    });
+    const murukkuVariant = await prisma.productVariant.findFirstOrThrow({
+      where: { sku: "VAR-MURUKKU-200G" },
+    });
+    const salesman1Cookie = await loginAndGetCookie(
+      "salesman1@millledger.local",
+      "SalesmanPassword123!",
+    );
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+
+    // 1. Salesman attempts to create order directly with status: "APPROVED" -> must be rejected with 400
+    const massAssignSmRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        status: "APPROVED",
+        notes: "Malicious pre-approved order bypass",
+        lines: [{ productVariantId: murukkuVariant.id, quantity: 5 }],
+      }),
+    });
+    expect(massAssignSmRes.status).toBe(400);
+    const smErr = (await massAssignSmRes.json()) as { error?: string; message?: string };
+    expect(smErr.error || smErr.message).toBeDefined();
+
+    // 2. Admin attempts to create order directly with status: "APPROVED" -> must also be rejected with 400
+    const massAssignAdminRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: adminCookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        status: "APPROVED",
+        notes: "Admin direct creation without ATP check",
+        lines: [{ productVariantId: murukkuVariant.id, quantity: 5 }],
+      }),
+    });
+    expect(massAssignAdminRes.status).toBe(400);
+
+    // 3. Salesman attempts to create order with arbitrary status: "DISPATCHED" -> 400
+    const dispatchedStatusRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        status: "DISPATCHED",
+        lines: [{ productVariantId: murukkuVariant.id, quantity: 5 }],
+      }),
+    });
+    expect(dispatchedStatusRes.status).toBe(400);
+
+    // 4. Legitimate creation with status: "DRAFT" is permitted
+    const draftRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        status: "DRAFT",
+        lines: [{ productVariantId: murukkuVariant.id, quantity: 5 }],
+      }),
+    });
+    expect(draftRes.status).toBe(201);
+    const draftData = (await draftRes.json()) as { order: { status: string } };
+    expect(draftData.order.status).toBe("DRAFT");
+
+    // 5. Creation without status defaults to "SUBMITTED"
+    const defaultRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        lines: [{ productVariantId: murukkuVariant.id, quantity: 5 }],
+      }),
+    });
+    expect(defaultRes.status).toBe(201);
+    const defaultData = (await defaultRes.json()) as { order: { status: string } };
+    expect(defaultData.order.status).toBe("SUBMITTED");
+  });
 });
