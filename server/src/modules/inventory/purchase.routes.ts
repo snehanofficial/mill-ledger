@@ -5,30 +5,12 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { inventoryService } from "./inventory.service.js";
-import { z } from "zod";
 import { AppError } from "../../middleware/error.middleware.js";
+import { createPurchaseReceiptSchema } from "@mill-ledger/shared";
+
+export { createPurchaseReceiptSchema };
 
 export const purchaseRouter = Router();
-
-export const createPurchaseReceiptSchema = z.object({
-  organizationId: z.string().min(1),
-  supplierId: z.string().min(1),
-  warehouseId: z.string().min(1),
-  receiptNumber: z.string().min(1),
-  supplierInvoiceNumber: z.string().optional(),
-  notes: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-  items: z
-    .array(
-      z.object({
-        inventoryItemId: z.string().min(1),
-        quantity: z.number().positive(),
-        uomId: z.string().min(1),
-        unitPrice: z.number().min(0),
-      }),
-    )
-    .min(1),
-});
 
 export async function handlePostPurchaseReceipt(
   req: AuthenticatedRequest,

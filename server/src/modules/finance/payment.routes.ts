@@ -5,29 +5,10 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { paymentService } from "./payment.service.js";
-import { z } from "zod";
 import { AppError } from "../../middleware/error.middleware.js";
-import { PaymentMode } from "@prisma/client";
+import { recordPaymentSchema, bouncePaymentSchema } from "@mill-ledger/shared";
 
 export const paymentRouter = Router();
-
-const recordPaymentSchema = z.object({
-  customerId: z.string().min(1, "Customer ID is required"),
-  amount: z.number().positive("Amount must be greater than zero"),
-  paymentMode: z.nativeEnum(PaymentMode).optional(),
-  referenceNumber: z.string().optional(),
-  paymentDate: z.coerce.date().optional(),
-  notes: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-  allocations: z
-    .array(
-      z.object({
-        salesInvoiceId: z.string().min(1),
-        amount: z.number().positive(),
-      }),
-    )
-    .optional(),
-});
 
 // GET /api/v1/payments - List payments
 paymentRouter.get(
@@ -135,13 +116,6 @@ paymentRouter.post(
     }
   },
 );
-
-const bouncePaymentSchema = z.object({
-  reason: z.string().min(1, "Bounce reason is required"),
-  referenceNumber: z.string().optional(),
-  bouncedAt: z.coerce.date().optional(),
-  idempotencyKey: z.string().optional(),
-});
 
 // POST /api/v1/payments/:id/bounce - Bounce payment and restore allocations
 paymentRouter.post(

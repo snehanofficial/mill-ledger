@@ -6,126 +6,19 @@ import {
 } from "../../middleware/auth.middleware.js";
 import { salesService } from "./sales.service.js";
 import { dispatchService } from "./dispatch.service.js";
-import { z } from "zod";
 import { AppError } from "../../middleware/error.middleware.js";
 import { OrderStatus } from "@prisma/client";
-import { gstinSchema } from "@mill-ledger/shared";
+import {
+  createCustomerSchema,
+  updateCustomerSchema,
+  createOrderSchema,
+  updateOrderSchema,
+  approveOrderSchema,
+  rejectOrderSchema,
+  createDispatchSchema,
+} from "@mill-ledger/shared";
 
 export const salesRouter = Router();
-
-const createCustomerSchema = z
-  .object({
-    organizationId: z.string().min(1).optional(),
-    code: z.string().min(1, "Customer code is required"),
-    name: z.string().min(1, "Customer name is required"),
-    phone: z.string().nullable().optional(),
-    email: z.string().email("Invalid email format").nullable().optional(),
-    state: z.string().min(1, "State is required").default("Tamil Nadu"),
-    gstin: gstinSchema.nullable().optional(),
-    isActive: z.boolean().optional().default(true),
-  })
-  .strict();
-
-const updateCustomerSchema = z
-  .object({
-    name: z.string().min(1).optional(),
-    phone: z.string().nullable().optional(),
-    email: z.string().email("Invalid email format").nullable().optional(),
-    state: z.string().min(1).optional(),
-    gstin: gstinSchema.nullable().optional(),
-    isActive: z.boolean().optional(),
-  })
-  .strict();
-
-const createOrderSchema = z.object({
-  organizationId: z.string().min(1).optional(),
-  customerId: z.string().min(1),
-  warehouseId: z.string().min(1).optional(),
-  orderNumber: z.string().min(1).optional(),
-  notes: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-  status: z.enum([OrderStatus.DRAFT, OrderStatus.SUBMITTED]).optional(),
-  orderDate: z.coerce.date().optional(),
-  lines: z
-    .array(
-      z.object({
-        productVariantId: z.string().min(1),
-        quantity: z.number().positive(),
-        unitPrice: z.number().min(0).optional(),
-      }),
-    )
-    .min(1),
-});
-
-const updateOrderSchema = z
-  .object({
-    creatorId: z.string().optional(),
-    notes: z
-      .string()
-      .max(500, "Notes cannot exceed 500 characters")
-      .nullable()
-      .optional(),
-    status: z
-      .enum([OrderStatus.DRAFT, OrderStatus.SUBMITTED], {
-        errorMap: () => ({
-          message:
-            "Draft orders can only be updated to DRAFT or SUBMITTED status",
-        }),
-      })
-      .optional(),
-    lines: z
-      .array(
-        z.object({
-          productVariantId: z.string().min(1),
-          quantity: z.number().positive(),
-          unitPrice: z.number().min(0).optional(),
-        }),
-      )
-      .min(1)
-      .optional(),
-  })
-  .strict();
-
-const approveOrderSchema = z.object({
-  overrideReason: z.string().optional(),
-  lineOverrides: z
-    .array(
-      z.object({
-        lineId: z.string().min(1),
-        approvedQuantity: z.number().positive(),
-        approvedUnitPrice: z.number().min(0).optional(),
-      }),
-    )
-    .optional(),
-  reservationTtlHours: z.number().positive().optional(),
-  reservationExpiresAt: z
-    .string()
-    .datetime()
-    .optional()
-    .transform((v) => (v ? new Date(v) : undefined)),
-});
-
-const rejectOrderSchema = z.object({
-  reason: z.string().min(1, "Rejection reason is required"),
-});
-
-const createDispatchSchema = z.object({
-  salesOrderId: z.string().min(1),
-  warehouseId: z.string().optional(),
-  vehicleNumber: z.string().optional(),
-  driverName: z.string().optional(),
-  driverPhone: z.string().optional(),
-  notes: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-  lines: z
-    .array(
-      z.object({
-        salesOrderLineId: z.string().min(1),
-        quantity: z.number().positive().optional(),
-      }),
-    )
-    .optional(),
-});
 
 // GET /api/v1/sales/customers - List accessible customers (Salesman assigned or Admin all)
 salesRouter.get(

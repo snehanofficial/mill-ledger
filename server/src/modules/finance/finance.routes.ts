@@ -5,25 +5,15 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { financeService } from "./finance.service.js";
-import { z } from "zod";
 import { AppError } from "../../middleware/error.middleware.js";
+import {
+  createInvoiceSchema,
+  creditNoteSchema,
+  debitNoteSchema,
+  setTaxRateSchema,
+} from "@mill-ledger/shared";
 
 export const financeRouter = Router();
-
-const createInvoiceSchema = z.object({
-  salesOrderId: z.string().min(1),
-  notes: z.string().optional(),
-  dueDate: z.coerce.date().optional(),
-  invoiceDate: z.coerce.date().optional(),
-  idempotencyKey: z.string().optional(),
-});
-
-const creditNoteSchema = z.object({
-  reason: z.string().min(1, "Reason is required"),
-  taxableAmount: z.number().positive().optional(),
-  taxAmount: z.number().positive().optional(),
-  totalAmount: z.number().positive().optional(),
-});
 
 // GET /api/v1/finance/invoices
 financeRouter.get(
@@ -124,29 +114,6 @@ financeRouter.post(
   },
 );
 
-const debitNoteSchema = z.object({
-  supplierId: z.string().min(1, "Supplier ID is required"),
-  purchaseReceiptId: z.string().optional(),
-  reason: z.string().min(1, "Reason is required"),
-  totalAmount: z.number().positive().optional(),
-  taxableAmount: z.number().positive().optional(),
-  taxAmount: z.number().positive().optional(),
-  lines: z
-    .array(
-      z.object({
-        inventoryItemId: z.string().optional(),
-        description: z.string().optional(),
-        quantity: z.number().positive().optional(),
-        uomId: z.string().optional(),
-        unitPrice: z.number().positive().optional(),
-        taxableAmount: z.number(),
-        taxAmount: z.number(),
-        totalAmount: z.number().positive(),
-      }),
-    )
-    .optional(),
-});
-
 // POST /api/v1/finance/debit-notes - Issue supplier debit note
 financeRouter.post(
   "/debit-notes",
@@ -193,16 +160,6 @@ financeRouter.get(
     }
   },
 );
-
-const setTaxRateSchema = z.object({
-  hsnCode: z.string().min(1, "HSN code is required"),
-  rate: z.number().min(0, "Rate must be non-negative"),
-  cgstRate: z.number().min(0).optional(),
-  sgstRate: z.number().min(0).optional(),
-  igstRate: z.number().min(0).optional(),
-  effectiveFrom: z.coerce.date(),
-  effectiveTo: z.coerce.date().nullable().optional(),
-});
 
 // GET /api/v1/finance/tax-rates - List statutory tax rates
 financeRouter.get(

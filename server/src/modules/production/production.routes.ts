@@ -5,45 +5,14 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { productionService } from "./production.service.js";
-import { z } from "zod";
 import { AppError } from "../../middleware/error.middleware.js";
+import {
+  createDraftRunSchema,
+  postProductionRunSchema,
+  reverseRunSchema,
+} from "@mill-ledger/shared";
 
 export const productionRouter = Router();
-
-const createDraftRunSchema = z.object({
-  organizationId: z.string().min(1),
-  warehouseId: z.string().min(1),
-  recipeId: z.string().min(1),
-  runNumber: z.string().min(1),
-  batchCount: z.number().positive().optional(),
-  notes: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-});
-
-const consumedMaterialSchema = z.object({
-  inventoryItemId: z.string().min(1),
-  actualQty: z.number().min(0),
-  damagedQty: z.number().min(0).optional(),
-});
-
-const postProductionRunSchema = z.object({
-  organizationId: z.string().min(1),
-  warehouseId: z.string().min(1).optional(),
-  recipeId: z.string().min(1).optional(),
-  runNumber: z.string().min(1).optional(),
-  batchCount: z.number().positive().optional(),
-  actualGoodQty: z.number().positive(),
-  actualRejectedQty: z.number().min(0).optional(),
-  directLaborCost: z.number().min(0).optional(),
-  utilityCost: z.number().min(0).optional(),
-  notes: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-  consumedMaterials: z.array(consumedMaterialSchema).min(1),
-});
-
-const reverseRunSchema = z.object({
-  reason: z.string().min(1, "Reversal reason is required"),
-});
 
 // GET /api/v1/production-runs - List runs
 productionRouter.get(
