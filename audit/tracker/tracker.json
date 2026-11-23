@@ -2988,7 +2988,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "BLOCKED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -2996,6 +2996,13 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-033.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "BLOCKED",
+        "date": "2026-11-24",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-033.md",
+        "note": "BLOCKED pending explicit approval for schema migrations (Customer.pinCode, Customer.creditLimit) and credit limit policy definition."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
@@ -3013,8 +3020,8 @@
         "server/src/app.ts:22:    cors({"
       ]
     },
-    "needsApproval": "none",
-    "notes": ""
+    "needsApproval": "owner",
+    "notes": "BLOCKED pending explicit approval for schema migrations (Customer.pinCode, Customer.creditLimit) and credit limit policy definition."
   },
   {
     "id": "F-034",
