@@ -102,6 +102,12 @@ export function createApp() {
   // Backward compatibility alias for health check
   app.use("/api/health", healthRouter);
 
+  // RFC 9309: Standard robots.txt response for backend API server
+  app.get("/robots.txt", (_req, res) => {
+    res.type("text/plain");
+    res.send("User-agent: *\nDisallow: /\n");
+  });
+
   // 404 catch-all for unmatched routes
   app.use((req, res) => {
     const requestId =
