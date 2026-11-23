@@ -1,7 +1,11 @@
 import { prisma } from "../../db/client.js";
 import { MovementType, Prisma } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
-import type { UserContext } from "@mill-ledger/shared";
+import type {
+  UserContext,
+  CreateSupplierInput,
+  UpdateSupplierInput,
+} from "@mill-ledger/shared";
 import { auditService } from "../reporting/audit.service.js";
 
 export interface CreatePurchaseReceiptInput {
@@ -38,6 +42,19 @@ export interface InventoryBalanceRow {
 }
 
 export class InventoryService {
+  private async resolveOrgId(
+    orgIdOrCode?: string,
+    client: Prisma.TransactionClient | typeof prisma = prisma,
+  ): Promise<string> {
+    const target = orgIdOrCode || "MILL";
+    const org = await client.organization.findFirst({
+      where: {
+        OR: [{ id: target }, { code: target }],
+      },
+    });
+    return org ? org.id : target;
+  }
+
   /**
    * Post a purchase receipt transactionally:
    * 1. Idempotency check
@@ -423,13 +440,126 @@ export class InventoryService {
   }
 
   /**
-   * List active suppliers
+   * List suppliers
    */
-  async getSuppliers(organizationId: string) {
+  async getSuppliers(organizationId: string, includeInactive = false) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const where: Prisma.SupplierWhereInput = { organizationId: orgId };
+    if (!includeInactive) {
+      where.isActive = true;
+    }
     return await prisma.supplier.findMany({
-      where: { organizationId, isActive: true },
+      where,
       orderBy: { name: "asc" },
     });
+  }
+
+  /**
+   * Get supplier by ID
+   */
+  async getSupplierById(id: string) {
+    const supplier = await prisma.supplier.findUnique({
+      where: { id },
+      include: {
+        purchaseReceipts: {
+          take: 10,
+          orderBy: { postedAt: "desc" },
+        },
+      },
+    });
+    if (!supplier) {
+      throw new AppError("Supplier not found", 404);
+    }
+    return supplier;
+  }
+
+  /**
+   * Create a new raw material / mandi vendor supplier (F-038)
+   */
+  async createSupplier(input: CreateSupplierInput, user?: UserContext) {
+    const orgId = await this.resolveOrgId(input.organizationId);
+
+    const existing = await prisma.supplier.findFirst({
+      where: {
+        organizationId: orgId,
+        code: input.code,
+      },
+    });
+
+    if (existing) {
+      throw new AppError(`Supplier code ${input.code} already exists`, 409);
+    }
+
+    const supplier = await prisma.supplier.create({
+      data: {
+        organizationId: orgId,
+        code: input.code,
+        name: input.name,
+        phone: input.phone,
+        email: input.email,
+        state: input.state,
+        gstin: input.gstin,
+        isActive: input.isActive ?? true,
+      },
+    });
+
+    await auditService.log({
+      organizationId: orgId,
+      userId: user?.id,
+      userEmail: user?.email,
+      action: "CREATE",
+      entity: "Supplier",
+      entityId: supplier.id,
+      details: {
+        code: supplier.code,
+        name: supplier.name,
+        state: supplier.state,
+        gstin: supplier.gstin,
+      },
+    });
+
+    return supplier;
+  }
+
+  /**
+   * Update an existing supplier (F-038)
+   */
+  async updateSupplier(
+    id: string,
+    input: UpdateSupplierInput,
+    user?: UserContext,
+  ) {
+    const existing = await prisma.supplier.findUnique({ where: { id } });
+    if (!existing) {
+      throw new AppError("Supplier not found", 404);
+    }
+
+    const updated = await prisma.supplier.update({
+      where: { id },
+      data: {
+        name: input.name ?? existing.name,
+        phone: input.phone !== undefined ? input.phone : existing.phone,
+        email: input.email !== undefined ? input.email : existing.email,
+        state: input.state ?? existing.state,
+        gstin: input.gstin !== undefined ? input.gstin : existing.gstin,
+        isActive:
+          input.isActive !== undefined ? input.isActive : existing.isActive,
+      },
+    });
+
+    await auditService.log({
+      organizationId: existing.organizationId,
+      userId: user?.id,
+      userEmail: user?.email,
+      action: "UPDATE",
+      entity: "Supplier",
+      entityId: updated.id,
+      details: {
+        changes: input,
+      },
+    });
+
+    return updated;
   }
 }
 

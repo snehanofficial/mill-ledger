@@ -119,6 +119,12 @@ export function getNavSections(role: UserRole): NavSection[] {
           href: "/purchases",
         },
         {
+          label: "Suppliers",
+          icon: <TruckIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
+          href: "/suppliers",
+        },
+        {
           label: "Production",
           icon: <ArchiveIcon className="size-4" aria-hidden />,
           roles: ["PRODUCTION", "ADMIN", "OWNER"],

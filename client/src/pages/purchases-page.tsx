@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
@@ -336,9 +337,17 @@ export function PurchasesPage() {
             <div className="mt-4 flex flex-col gap-4">
               {/* Supplier Selection */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Supplier / Mandi Vendor
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Supplier / Mandi Vendor
+                  </label>
+                  <Link
+                    to="/suppliers"
+                    className="text-xs text-primary hover:underline font-medium"
+                  >
+                    + Manage Suppliers
+                  </Link>
+                </div>
                 <select
                   value={selectedSupplierId}
                   onChange={(e) => setSelectedSupplierId(e.target.value)}

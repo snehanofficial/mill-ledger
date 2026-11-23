@@ -1,4 +1,32 @@
 import { z } from "zod";
+import { gstinSchema } from "./gstin.schema.js";
+
+export const createSupplierSchema = z
+  .object({
+    organizationId: z.string().min(1).optional(),
+    code: z.string().min(1, "Supplier code is required"),
+    name: z.string().min(1, "Supplier name is required"),
+    phone: z.string().nullable().optional(),
+    email: z.string().email("Invalid email format").nullable().optional(),
+    state: z.string().min(1, "State is required").default("Tamil Nadu"),
+    gstin: gstinSchema.nullable().optional(),
+    isActive: z.boolean().optional().default(true),
+  })
+  .strict();
+
+export const updateSupplierSchema = z
+  .object({
+    name: z.string().min(1).optional(),
+    phone: z.string().nullable().optional(),
+    email: z.string().email("Invalid email format").nullable().optional(),
+    state: z.string().min(1).optional(),
+    gstin: gstinSchema.nullable().optional(),
+    isActive: z.boolean().optional(),
+  })
+  .strict();
+
+export type CreateSupplierInput = z.infer<typeof createSupplierSchema>;
+export type UpdateSupplierInput = z.infer<typeof updateSupplierSchema>;
 
 export const purchaseReceiptItemSchema = z
   .object({

@@ -7,6 +7,10 @@ import {
 import { inventoryService } from "./inventory.service.js";
 import { AppError } from "../../middleware/error.middleware.js";
 import {
+  createSupplierSchema,
+  updateSupplierSchema,
+} from "@mill-ledger/shared";
+import {
   handlePostPurchaseReceipt,
   handleGetPurchaseReceipts,
   handleGetSuppliers,
@@ -36,6 +40,78 @@ inventoryRouter.get(
   requireAuth,
   authorize("purchase", "read"),
   handleGetSuppliers,
+);
+
+// POST /suppliers (create new supplier - F-038)
+inventoryRouter.post(
+  "/suppliers",
+  requireAuth,
+  authorize("purchase", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const parsed = createSupplierSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw parsed.error;
+      }
+      const supplier = await inventoryService.createSupplier(
+        parsed.data,
+        req.user,
+      );
+      res.status(201).json({ status: "created", supplier });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /suppliers/:id (get supplier by ID - F-038)
+inventoryRouter.get(
+  "/suppliers/:id",
+  requireAuth,
+  authorize("purchase", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!id) {
+        throw new AppError("Supplier ID parameter is required", 400);
+      }
+      const supplier = await inventoryService.getSupplierById(id);
+      res.json({ supplier });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// PUT /suppliers/:id (update existing supplier - F-038)
+inventoryRouter.put(
+  "/suppliers/:id",
+  requireAuth,
+  authorize("purchase", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!id) {
+        throw new AppError("Supplier ID parameter is required", 400);
+      }
+      const parsed = updateSupplierSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw parsed.error;
+      }
+      const supplier = await inventoryService.updateSupplier(
+        id,
+        parsed.data,
+        req.user,
+      );
+      res.json({ status: "updated", supplier });
+    } catch (err) {
+      next(err);
+    }
+  },
 );
 
 // GET /balances

@@ -24,3 +24,4 @@ export const reportsGSTHandle: RouteHandle = { breadcrumb: "GST" };
 export const reportsAuditHandle: RouteHandle = { breadcrumb: "Audit log" };
 export const exportsHandle: RouteHandle = { breadcrumb: "Exports" };
 export const settingsHandle: RouteHandle = { breadcrumb: "Settings" };
+export const suppliersHandle: RouteHandle = { breadcrumb: "Suppliers" };

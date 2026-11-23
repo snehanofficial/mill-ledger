@@ -5,9 +5,13 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { inventoryService } from "./inventory.service.js";
-import { createPurchaseReceiptSchema } from "@mill-ledger/shared";
+import {
+  createPurchaseReceiptSchema,
+  createSupplierSchema,
+  updateSupplierSchema,
+} from "@mill-ledger/shared";
 
-export { createPurchaseReceiptSchema };
+export { createPurchaseReceiptSchema, createSupplierSchema, updateSupplierSchema };
 
 export const purchaseRouter = Router();
 
@@ -66,6 +70,26 @@ export async function handleGetSuppliers(
   }
 }
 
+export async function handleCreateSupplier(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const parsed = createSupplierSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+    const supplier = await inventoryService.createSupplier(
+      parsed.data,
+      req.user,
+    );
+    res.status(201).json({ status: "created", supplier });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // Router-level authentication & authorization for purchase subsystem
 // Requires 'purchase' resource permissions (OWASP A01:2021 & API5:2023 - F-021)
 purchaseRouter.use(requireAuth);
@@ -83,3 +107,4 @@ purchaseRouter.post("/purchase-receipts", handlePostPurchaseReceipt);
 purchaseRouter.get("/purchase-receipts", handleGetPurchaseReceipts);
 
 purchaseRouter.get("/suppliers", handleGetSuppliers);
+purchaseRouter.post("/suppliers", handleCreateSupplier);
