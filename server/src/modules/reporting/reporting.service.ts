@@ -75,22 +75,20 @@ export class ReportingService {
     let totalQuantity = 0;
 
     for (const inv of invoices) {
-      for (const line of inv.lines) {
-        const taxable = Number(line.taxableAmount);
-        const cgst = Number(line.cgstAmount);
-        const sgst = Number(line.sgstAmount);
-        const igst = Number(line.igstAmount);
-        const lineTax = Number(line.taxAmount);
-        const total = Number(line.lineTotal);
-        const qty = Number(line.quantity);
+      if (!inv.lines || inv.lines.length === 0) {
+        const taxable = Number(inv.taxableAmount);
+        const cgst = Number(inv.cgstAmount);
+        const sgst = Number(inv.sgstAmount);
+        const igst = Number(inv.igstAmount);
+        const lineTax = Number(inv.totalTaxAmount);
+        const total = Number(inv.totalAmount);
 
-        totalTaxable += taxable;
-        totalCGST += cgst;
-        totalSGST += sgst;
-        totalIGST += igst;
-        totalTax += lineTax;
-        grandTotal += total;
-        totalQuantity += qty;
+        totalTaxable = Number((totalTaxable + taxable).toFixed(2));
+        totalCGST = Number((totalCGST + cgst).toFixed(2));
+        totalSGST = Number((totalSGST + sgst).toFixed(2));
+        totalIGST = Number((totalIGST + igst).toFixed(2));
+        totalTax = Number((totalTax + lineTax).toFixed(2));
+        grandTotal = Number((grandTotal + total).toFixed(2));
 
         rows.push({
           invoiceId: inv.id,
@@ -103,12 +101,12 @@ export class ReportingService {
           deliveryState: inv.deliveryStateSnapshot,
           salesmanName: inv.salesOrder?.salesman?.name || "Direct",
           orderNumber: inv.salesOrder?.orderNumber || "Direct",
-          productSku: line.productVariantId || "VAR-MURUKKU-200G",
-          productName: line.productNameSnapshot,
-          hsnCode: line.hsnCodeSnapshot,
-          quantity: qty,
-          unitPrice: Number(line.unitPrice),
-          taxRate: Number(line.taxRate),
+          productSku: "N/A",
+          productName: "Direct / Line-less Invoice",
+          hsnCode: "N/A",
+          quantity: 0,
+          unitPrice: taxable,
+          taxRate: 0,
           taxableAmount: taxable,
           cgstAmount: cgst,
           sgstAmount: sgst,
@@ -117,6 +115,50 @@ export class ReportingService {
           lineTotal: total,
           status: inv.status,
         });
+      } else {
+        for (const line of inv.lines) {
+          const taxable = Number(line.taxableAmount);
+          const cgst = Number(line.cgstAmount);
+          const sgst = Number(line.sgstAmount);
+          const igst = Number(line.igstAmount);
+          const lineTax = Number(line.taxAmount);
+          const total = Number(line.lineTotal);
+          const qty = Number(line.quantity);
+
+          totalTaxable = Number((totalTaxable + taxable).toFixed(2));
+          totalCGST = Number((totalCGST + cgst).toFixed(2));
+          totalSGST = Number((totalSGST + sgst).toFixed(2));
+          totalIGST = Number((totalIGST + igst).toFixed(2));
+          totalTax = Number((totalTax + lineTax).toFixed(2));
+          grandTotal = Number((grandTotal + total).toFixed(2));
+          totalQuantity += qty;
+
+          rows.push({
+            invoiceId: inv.id,
+            invoiceNumber: inv.invoiceNumber,
+            financialYear: inv.financialYear,
+            invoiceDate: inv.postedAt,
+            customerCode: inv.customer?.code || "N/A",
+            customerName: inv.customerNameSnapshot,
+            customerGstin: inv.customerGstinSnapshot || "Unregistered",
+            deliveryState: inv.deliveryStateSnapshot,
+            salesmanName: inv.salesOrder?.salesman?.name || "Direct",
+            orderNumber: inv.salesOrder?.orderNumber || "Direct",
+            productSku: line.productVariantId || "VAR-MURUKKU-200G",
+            productName: line.productNameSnapshot,
+            hsnCode: line.hsnCodeSnapshot,
+            quantity: qty,
+            unitPrice: Number(line.unitPrice),
+            taxRate: Number(line.taxRate),
+            taxableAmount: taxable,
+            cgstAmount: cgst,
+            sgstAmount: sgst,
+            igstAmount: igst,
+            taxAmount: lineTax,
+            lineTotal: total,
+            status: inv.status,
+          });
+        }
       }
     }
 

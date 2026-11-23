@@ -86,6 +86,13 @@ export class FinanceService {
         );
       }
 
+      if (!order.lines || order.lines.length === 0) {
+        throw new AppError(
+          `Cannot invoice order ${order.orderNumber} with zero line items`,
+          400,
+        );
+      }
+
       const fy = this.getFinancialYear();
       const invoiceNumber = await sequenceService.getNextInvoiceNumber(
         tx,
