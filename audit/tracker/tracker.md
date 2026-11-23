@@ -60,7 +60,7 @@
 | **F-021** | T2 | P1 | CLUSTER-04 | `VERIFIED` | none | F-007, F-009, F-010 | Multi-mount of `inventoryRouter` exposes `GET /api/v1/purchase-receipts/items/:id/ledger` to salesmen due to broad `inventory:read` privilege |
 | **F-027** | T2 | P1 | CLUSTER-04 | `VERIFIED` | none | F-007, F-009, F-010 | Stock reservations lack TTL and expiration semantics, enabling inventory lockup and order fulfillment denial of service |
 | **F-023** | T2 | P1 | CLUSTER-05 | `VERIFIED` | API | F-017 | Backend lacks user and role management API endpoints; super admin accounts rely on hardcoded seeded credentials without last-admin demotion safeguards or MFA |
-| **F-024** | T2 | P2 | CLUSTER-05 | `OPEN` | API | F-017 | Better Auth password reset endpoint is unconfigured (returns 404); account lockout is not implemented after repeated authentication failures |
+| **F-024** | T2 | P2 | CLUSTER-05 | `VERIFIED` | API | F-017 | Better Auth password reset endpoint is unconfigured (returns 404); account lockout is not implemented after repeated authentication failures |
 | **F-028** | T2 | P2 | CLUSTER-05 | `OPEN` | API | F-017 | Dexie IndexedDB fails to purge sensitive customer PII and pending offline orders upon user sign-out |
 | **F-029** | T2 | P2 | CLUSTER-05 | `OPEN` | API | F-017 | CI pipeline uses mutable GitHub Action references, lacks package manager release-age protection, and exposes unconstrained database seeds |
 | **F-084** | T2 | P2 | CLUSTER-05 | `WONT-FIX` | API | F-017 | Plaintext Sensitive Customer PII and Outbox Orders Persist in IndexedDB Across User Logout and Account Switches |

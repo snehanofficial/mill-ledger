@@ -1,0 +1,7 @@
+=== F-024 Verification: 08 Concurrency & Security Resilience ===
+1. Identity-Scoped Lockout:
+   Lockout operates at the identity level (per user email), not solely at the IP layer. Distributed brute-force attacks across varying proxies or botnets targeting a specific user account are effectively blocked once the 5-attempt threshold is reached.
+2. In-Memory Thread Safety:
+   In-memory Map lookups and mutations execute synchronously in the Node.js event loop, preventing race conditions during concurrent authentication attempts.
+3. Anti-Enumeration Integrity:
+   Password recovery does not leak whether an account exists, returning identical HTTP 200 generic responses for both existing and non-existing accounts.

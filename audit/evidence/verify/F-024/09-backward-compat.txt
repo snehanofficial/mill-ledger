@@ -1,0 +1,7 @@
+=== F-024 Verification: 09 Backward Compatibility ===
+1. Better Auth Native Routes:
+   POST /api/auth/request-password-reset remains supported as the native Better Auth route.
+2. Endpoint Aliases:
+   POST /api/auth/forget-password and POST /api/auth/forgot-password route to the password reset handler to support existing clients, test scripts, and audit harnesses.
+3. Successful Logins:
+   Valid user authentication continues uninterrupted with identical session token issuance and cookie attributes.

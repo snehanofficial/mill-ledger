@@ -1,0 +1,20 @@
+=== F-024 Verification: 10 Expected vs Actual ===
+
+EXPECTED (Source: OWASP ASVS v4.0.3 Section 2.2.1, Section 2.3.1, OWASP Top 10:2021 A07:2021):
+1. Configured password recovery endpoint returning HTTP 200 and generating secure reset tokens.
+2. Anti-enumeration defense returning consistent responses regardless of whether an email exists.
+3. Account-level lockout triggering after 5 consecutive failed login attempts on a single user identity.
+4. Subsequent logins (even with valid credentials) blocked with HTTP 403 Forbidden while account is locked.
+5. Automated reset of failed attempt counters upon successful login.
+
+ACTUAL:
+1. Configured emailAndPassword.sendResetPassword in Better Auth and mounted aliases at /api/auth/forget-password and /api/auth/forgot-password.
+2. Verified anti-enumeration: both registered and non-existent emails return HTTP 200 with generic confirmation.
+3. Implemented LockoutService and Better Auth lockoutPlugin enforcing 5-attempt threshold and 15-minute temporary lockout duration.
+4. Verified that after 5 failed attempts, login requests are blocked with HTTP 403 Forbidden ("code": "ACCOUNT_LOCKED").
+5. Verified counter resets upon successful authentication.
+6. All 4 targeted regression tests in server/src/auth-lockout.test.ts pass. Full test suite (34 files, 199 tests) passes. All 18 benchmark assertions pass. All 10 SQL invariants return 0 rows.
+
+DELTA:
+None. All expected criteria fully satisfied.
+Status: VERIFIED-PASS
