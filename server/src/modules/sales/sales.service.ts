@@ -936,6 +936,7 @@ export class SalesService {
         customer: true,
         salesman: true,
         reservations: true,
+        invoices: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -996,6 +997,7 @@ export class SalesService {
         customer: true,
         salesman: true,
         reservations: true,
+        invoices: true,
       },
     });
 
