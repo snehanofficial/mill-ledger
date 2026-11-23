@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
 import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
 import {
   Table,
   TableBody,
@@ -63,6 +64,7 @@ interface Supplier {
 export function PurchasesPage() {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+  const { t } = useLanguage();
   const canRecordPurchase =
     user?.role === "ADMIN" || user?.role === "PRODUCTION";
   const [showModal, setShowModal] = useState(false);
@@ -257,14 +259,14 @@ export function PurchasesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[140px]">Receipt #</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Supplier</TableHead>
-                <TableHead>Item</TableHead>
-                <TableHead className="text-right">Quantity</TableHead>
-                <TableHead className="text-right">Unit Rate</TableHead>
-                <TableHead className="text-right">Total Amount</TableHead>
-                <TableHead className="w-[100px] text-center">Status</TableHead>
+                <TableHead className="w-[140px]">{t("Receipt #")}</TableHead>
+                <TableHead>{t("Date")}</TableHead>
+                <TableHead>{t("Supplier")}</TableHead>
+                <TableHead>{t("Item")}</TableHead>
+                <TableHead className="text-right">{t("Quantity")}</TableHead>
+                <TableHead className="text-right">{t("Unit Rate")}</TableHead>
+                <TableHead className="text-right">{t("Total Amount")}</TableHead>
+                <TableHead className="w-[100px] text-center">{t("Status")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

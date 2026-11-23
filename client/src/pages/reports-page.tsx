@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,7 @@ const REPORT_TABS: ReportTabItem[] = [
 
 export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   const { user } = useCurrentUser();
+  const { t } = useLanguage();
   const allowedTabs = REPORT_TABS.filter((t) =>
     user ? t.roles.includes(user.role) : true,
   );
@@ -248,7 +250,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            {tab.label}
+            {t(tab.label)}
           </button>
         ))}
       </div>
@@ -288,15 +290,15 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Invoice</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Product</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Taxable</TableHead>
-                    <TableHead className="text-right">CGST</TableHead>
-                    <TableHead className="text-right">SGST</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead>{t("Invoice")}</TableHead>
+                    <TableHead>{t("Date")}</TableHead>
+                    <TableHead>{t("Customer")}</TableHead>
+                    <TableHead>{t("Product")}</TableHead>
+                    <TableHead className="text-right">{t("Qty")}</TableHead>
+                    <TableHead className="text-right">{t("Taxable")}</TableHead>
+                    <TableHead className="text-right">{t("CGST")}</TableHead>
+                    <TableHead className="text-right">{t("SGST")}</TableHead>
+                    <TableHead className="text-right">{t("Total")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

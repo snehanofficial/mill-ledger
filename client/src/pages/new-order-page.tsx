@@ -5,6 +5,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSyncManager } from "@/offline/use-offline";
 import { apiClient } from "@/lib/api-client";
 import { formatINR } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -54,6 +55,7 @@ export function NewOrderPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+  const { t } = useLanguage();
   const customerSelectId = useId();
   const notesInputId = useId();
   const syncManager = useSyncManager(user?.id);
@@ -264,11 +266,11 @@ export function NewOrderPage() {
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeftIcon className="size-3.5" />
-              <span>Back to Orders</span>
+              <span>{t("Back", "Back to Orders")}</span>
             </Link>
             <span className="text-muted-foreground/40">/</span>
             <span className="text-xs font-semibold text-foreground">
-              New Wholesale Order
+              {t("New order", "New Wholesale Order")}
             </span>
           </div>
 

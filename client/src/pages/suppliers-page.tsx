@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useLanguage } from "@/lib/i18n";
 import {
   Table,
   TableBody,
@@ -41,6 +42,7 @@ interface Supplier {
 export function SuppliersPage() {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+  const { t } = useLanguage();
   const canManageSuppliers =
     user?.role === "ADMIN" || user?.role === "PRODUCTION" || user?.role === "OWNER";
 
@@ -279,14 +281,14 @@ export function SuppliersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Vendor Code</TableHead>
-                <TableHead>Legal / Trade Name</TableHead>
-                <TableHead>State / Jurisdiction</TableHead>
-                <TableHead>GSTIN Status</TableHead>
-                <TableHead>Contact Info</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t("Vendor Code")}</TableHead>
+                <TableHead>{t("Legal / Trade Name")}</TableHead>
+                <TableHead>{t("State / Jurisdiction")}</TableHead>
+                <TableHead>{t("GSTIN Status")}</TableHead>
+                <TableHead>{t("Contact Info")}</TableHead>
+                <TableHead>{t("Status")}</TableHead>
                 {canManageSuppliers && (
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead className="text-right">{t("Action")}</TableHead>
                 )}
               </TableRow>
             </TableHeader>

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { formatINR, formatQuantity, formatTime } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -76,6 +77,7 @@ interface DashboardData {
 }
 
 export function DashboardPage() {
+  const { t } = useLanguage();
   const { data, isLoading, isError, error, refetch, isFetching } =
     useQuery<DashboardData>({
       queryKey: ["owner-dashboard"],
@@ -146,7 +148,7 @@ export function DashboardPage() {
             <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-medium uppercase tracking-wider">
-                  Total revenue
+                  {t("Total revenue")}
                 </span>
                 <IndianRupeeIcon className="h-4 w-4 text-primary" />
               </div>
@@ -164,7 +166,7 @@ export function DashboardPage() {
             <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-medium uppercase tracking-wider">
-                  Receivables outstanding
+                  {t("Receivables outstanding")}
                 </span>
                 <TrendingUpIcon className="h-4 w-4 text-amber-600" />
               </div>
@@ -180,7 +182,7 @@ export function DashboardPage() {
             <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-medium uppercase tracking-wider">
-                  Stock valuation
+                  {t("Stock valuation")}
                 </span>
                 <WarehouseIcon className="h-4 w-4 text-emerald-600" />
               </div>
@@ -191,12 +193,12 @@ export function DashboardPage() {
                 {metrics?.stockReconciliationOk ? (
                   <span className="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2Icon className="h-3.5 w-3.5" />
-                    Ledger balanced
+                    {t("Ledger balanced")}
                   </span>
                 ) : (
                   <span className="flex items-center gap-1 font-medium text-destructive">
                     <AlertTriangleIcon className="h-3.5 w-3.5" />
-                    Discrepancy flagged
+                    {t("Discrepancy flagged")}
                   </span>
                 )}
               </div>
@@ -206,7 +208,7 @@ export function DashboardPage() {
             <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-medium uppercase tracking-wider">
-                  Good output units
+                  {t("Production output", "Good output units")}
                 </span>
                 <PackageCheckIcon className="h-4 w-4 text-blue-600" />
               </div>
@@ -243,10 +245,10 @@ export function DashboardPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Invoice</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
-                      <TableHead className="text-right">Status</TableHead>
+                      <TableHead>{t("Invoice")}</TableHead>
+                      <TableHead>{t("Customer")}</TableHead>
+                      <TableHead className="text-right">{t("Total")}</TableHead>
+                      <TableHead className="text-right">{t("Status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -313,10 +315,10 @@ export function DashboardPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Item</TableHead>
-                      <TableHead className="text-right">On hand</TableHead>
-                      <TableHead className="text-right">Unit cost</TableHead>
-                      <TableHead className="text-right">Valuation</TableHead>
+                      <TableHead>{t("Item")}</TableHead>
+                      <TableHead className="text-right">{t("On hand")}</TableHead>
+                      <TableHead className="text-right">{t("Unit cost")}</TableHead>
+                      <TableHead className="text-right">{t("Valuation")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

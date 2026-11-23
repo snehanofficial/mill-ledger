@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { formatINR, formatQuantity } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
 import {
   Table,
   TableBody,
@@ -90,6 +91,7 @@ interface SalesOrder {
 export function OrdersPage() {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+  const { t } = useLanguage();
   const syncManager = useSyncManager(user?.id);
   const {
     isOnline,
@@ -564,16 +566,16 @@ export function OrdersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order number</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Salesman</TableHead>
-                  <TableHead className="text-right">Ordered</TableHead>
-                  <TableHead className="text-right">Taxable</TableHead>
-                  <TableHead className="text-right">GST</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead>Shortage status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("Order number")}</TableHead>
+                  <TableHead>{t("Status")}</TableHead>
+                  <TableHead>{t("Customer")}</TableHead>
+                  <TableHead>{t("Salesman")}</TableHead>
+                  <TableHead className="text-right">{t("Ordered")}</TableHead>
+                  <TableHead className="text-right">{t("Taxable")}</TableHead>
+                  <TableHead className="text-right">{t("GST")}</TableHead>
+                  <TableHead className="text-right">{t("Total")}</TableHead>
+                  <TableHead>{t("Shortage status")}</TableHead>
+                  <TableHead className="text-right">{t("Actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

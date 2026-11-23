@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n";
 import {
   Table,
   TableBody,
@@ -30,6 +31,7 @@ interface Customer {
 }
 
 export function CustomersPage() {
+  const { t } = useLanguage();
   const { data, isLoading, isError, refetch, isFetching } = useQuery<{
     customers: Customer[];
   }>({
@@ -117,12 +119,12 @@ export function CustomersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[120px]">Account Code</TableHead>
-                <TableHead>Customer Name</TableHead>
-                <TableHead>Place of Supply</TableHead>
-                <TableHead>Tax Regime</TableHead>
-                <TableHead>GSTIN</TableHead>
-                <TableHead className="w-[100px] text-center">Status</TableHead>
+                <TableHead className="w-[120px]">{t("Account Code")}</TableHead>
+                <TableHead>{t("Customer Name")}</TableHead>
+                <TableHead>{t("Place of Supply")}</TableHead>
+                <TableHead>{t("Tax Regime")}</TableHead>
+                <TableHead>{t("GSTIN")}</TableHead>
+                <TableHead className="w-[100px] text-center">{t("Status")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

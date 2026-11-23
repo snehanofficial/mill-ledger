@@ -323,6 +323,7 @@ interface NavItemProps {
 
 function AppNavItem({ item, pathname }: NavItemProps) {
   const { state, isMobile, setOpenMobile } = useSidebar();
+  const { t } = useLanguage();
   const isCollapsed = state === "collapsed" && !isMobile;
 
   const closeOnMobile = useCallback(() => {
@@ -341,6 +342,8 @@ function AppNavItem({ item, pathname }: NavItemProps) {
     }
   }
 
+  const translatedLabel = t(item.label, item.label);
+
   // No subitems: render as link with directed tooltip in collapsed mode
   if (!item.items?.length) {
     const active = item.href !== undefined && isActiveHref(item.href, pathname);
@@ -349,17 +352,17 @@ function AppNavItem({ item, pathname }: NavItemProps) {
         <SidebarMenuButton
           asChild
           isActive={active}
-          tooltip={isCollapsed ? item.label : undefined}
+          tooltip={isCollapsed ? translatedLabel : undefined}
         >
           <Link
             to={item.href ?? "#"}
-            aria-label={item.label}
+            aria-label={translatedLabel}
             aria-current={item.href === pathname ? "page" : undefined}
             onClick={closeOnMobile}
           >
             {item.icon}
             <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate">
-              {item.label}
+              {translatedLabel}
             </span>
           </Link>
         </SidebarMenuButton>
@@ -381,12 +384,12 @@ function AppNavItem({ item, pathname }: NavItemProps) {
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
-            tooltip={isCollapsed ? item.label : undefined}
-            aria-label={item.label}
+            tooltip={isCollapsed ? translatedLabel : undefined}
+            aria-label={translatedLabel}
           >
             {item.icon}
             <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate">
-              {item.label}
+              {translatedLabel}
             </span>
             <ChevronRightIcon
               className="ml-auto size-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden transition-transform duration-200 group-data-open/collapsible:rotate-90"
@@ -396,28 +399,31 @@ function AppNavItem({ item, pathname }: NavItemProps) {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub>
-            {item.items.map((child) => (
-              <SidebarMenuSubItem key={child.href}>
-                <SidebarMenuSubButton
-                  asChild
-                  isActive={isActiveHref(child.href, pathname)}
-                >
-                  <Link
-                    to={child.href}
-                    aria-label={child.label}
-                    aria-current={child.href === pathname ? "page" : undefined}
-                    onClick={closeOnMobile}
+            {item.items.map((child) => {
+              const childLabel = t(child.label, child.label);
+              return (
+                <SidebarMenuSubItem key={child.href}>
+                  <SidebarMenuSubButton
+                    asChild
+                    isActive={isActiveHref(child.href, pathname)}
                   >
-                    {child.icon && (
-                      <span className="shrink-0">{child.icon}</span>
-                    )}
-                    <span className="min-w-0 flex-1 truncate">
-                      {child.label}
-                    </span>
-                  </Link>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
-            ))}
+                    <Link
+                      to={child.href}
+                      aria-label={childLabel}
+                      aria-current={child.href === pathname ? "page" : undefined}
+                      onClick={closeOnMobile}
+                    >
+                      {child.icon && (
+                        <span className="shrink-0">{child.icon}</span>
+                      )}
+                      <span className="min-w-0 flex-1 truncate">
+                        {childLabel}
+                      </span>
+                    </Link>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              );
+            })}
           </SidebarMenuSub>
         </CollapsibleContent>
       </SidebarMenuItem>
@@ -434,12 +440,13 @@ function AppNav({
   sections: NavSection[];
   pathname: string;
 }) {
+  const { t } = useLanguage();
   return (
     <>
       {sections.map((section, index) => (
         <SidebarGroup key={section.label ?? index}>
           {section.label && (
-            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+            <SidebarGroupLabel>{t(section.label, section.label)}</SidebarGroupLabel>
           )}
           <SidebarMenu>
             {section.items.map((item) => (
@@ -457,6 +464,7 @@ function AppNav({
 
 function SidebarCollapseToggle() {
   const { state, isMobile, toggleSidebar } = useSidebar();
+  const { t } = useLanguage();
   if (isMobile) return null;
   const isCollapsed = state === "collapsed";
 
@@ -466,8 +474,8 @@ function SidebarCollapseToggle() {
         <SidebarMenuButton
           size="default"
           onClick={toggleSidebar}
-          tooltip={isCollapsed ? "Expand sidebar (Ctrl+B)" : undefined}
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse to icons ⌘B"}
+          tooltip={isCollapsed ? t("Expand sidebar (Ctrl+B)", "Expand sidebar (Ctrl+B)") : undefined}
+          aria-label={isCollapsed ? t("Expand sidebar", "Expand sidebar") : t("Collapse to icons ⌘B", "Collapse to icons ⌘B")}
           className="text-muted-foreground hover:text-foreground h-8 px-2"
         >
           {isCollapsed ? (
@@ -479,7 +487,7 @@ function SidebarCollapseToggle() {
             <>
               <PanelLeftCloseIcon className="size-4 shrink-0" aria-hidden />
               <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate text-xs font-normal">
-                Collapse to icons
+                {t("Collapse to icons", "Collapse to icons")}
               </span>
               <Kbd className="group-data-[collapsible=icon]:hidden ml-auto">
                 ⌘B
@@ -503,6 +511,7 @@ interface SidebarUserMenuProps {
 function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
   const navigate = useNavigate();
   const { isMobile, setOpenMobile, state } = useSidebar();
+  const { t } = useLanguage();
   const isCollapsed = state === "collapsed" && !isMobile;
 
   return (
@@ -573,7 +582,7 @@ function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
                 className="mr-2 size-4 text-muted-foreground"
                 aria-hidden
               />
-              Account settings
+              {t("Account settings", "Account settings")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -581,7 +590,7 @@ function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
               className="cursor-pointer text-destructive focus:text-destructive"
             >
               <LogOutIcon className="mr-2 size-4" aria-hidden />
-              Sign out
+              {t("Sign out", "Sign out")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -720,6 +729,7 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
 // DashboardBlocks SearchButton with ⌘K badge and responsive behavior
 
 function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
+  const { t } = useLanguage();
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
@@ -737,12 +747,12 @@ function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
         variant="outline"
         size="sm"
         onClick={onOpen}
-        aria-label="Search (Ctrl+K)"
+        aria-label={t("Search (Ctrl+K)", "Search (Ctrl+K)")}
         aria-keyshortcuts="Meta+K Control+K"
         className="hidden sm:flex w-52 justify-start text-muted-foreground hover:text-foreground h-9 px-3"
       >
         <SearchIcon className="mr-2 size-4 shrink-0" aria-hidden />
-        <span className="flex-1 text-left truncate font-normal">Search</span>
+        <span className="flex-1 text-left truncate font-normal">{t("Search", "Search")}</span>
         <Kbd className="ml-auto">⌘K</Kbd>
       </Button>
 
@@ -750,7 +760,7 @@ function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
         variant="ghost"
         size="icon"
         onClick={onOpen}
-        aria-label="Search"
+        aria-label={t("Search", "Search")}
         className="sm:hidden size-9"
       >
         <SearchIcon className="size-4 shrink-0" aria-hidden />
@@ -764,6 +774,7 @@ function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
 function ShellBreadcrumbs({ role }: { role: UserRole }) {
   const allLinks = getAllLinks(role);
   const crumbs = useBreadcrumbs(allLinks);
+  const { t } = useLanguage();
 
   if (!crumbs.length) return null;
 
@@ -772,6 +783,7 @@ function ShellBreadcrumbs({ role }: { role: UserRole }) {
       <BreadcrumbList className="flex-nowrap">
         {crumbs.map((crumb, index) => {
           const isLast = index === crumbs.length - 1;
+          const translatedCrumb = t(crumb.label, crumb.label);
           return (
             <Fragment key={`${crumb.label}-${index}`}>
               <BreadcrumbItem
@@ -782,20 +794,20 @@ function ShellBreadcrumbs({ role }: { role: UserRole }) {
               >
                 {isLast ? (
                   <BreadcrumbPage className="truncate">
-                    {crumb.label}
+                    {translatedCrumb}
                   </BreadcrumbPage>
                 ) : crumb.href ? (
                   <BreadcrumbLink asChild className="truncate">
                     <Link to={crumb.href} className="truncate">
-                      {crumb.label}
+                      {translatedCrumb}
                     </Link>
                   </BreadcrumbLink>
                 ) : (
                   <span
                     className="truncate text-muted-foreground"
-                    title={crumb.label}
+                    title={translatedCrumb}
                   >
-                    {crumb.label}
+                    {translatedCrumb}
                   </span>
                 )}
               </BreadcrumbItem>

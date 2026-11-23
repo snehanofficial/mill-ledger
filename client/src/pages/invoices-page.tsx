@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
 import { formatINR } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
 import {
   Table,
   TableBody,
@@ -70,6 +71,7 @@ interface SalesInvoice {
 export function InvoicesPage() {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+  const { t } = useLanguage();
   const canIssueCreditNote = user?.role === "ADMIN";
   const canCreateInvoice = user?.role === "ADMIN";
   const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(
@@ -316,16 +318,16 @@ export function InvoicesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Invoice number</TableHead>
-                  <TableHead>FY</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Place of supply</TableHead>
-                  <TableHead className="text-right">Taxable</TableHead>
-                  <TableHead className="text-right">GST</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-right">Outstanding</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("Invoice number")}</TableHead>
+                  <TableHead>{t("FY")}</TableHead>
+                  <TableHead>{t("Status")}</TableHead>
+                  <TableHead>{t("Customer")}</TableHead>
+                  <TableHead>{t("Place of supply")}</TableHead>
+                  <TableHead className="text-right">{t("Taxable")}</TableHead>
+                  <TableHead className="text-right">{t("GST")}</TableHead>
+                  <TableHead className="text-right">{t("Total")}</TableHead>
+                  <TableHead className="text-right">{t("Outstanding")}</TableHead>
+                  <TableHead className="text-right">{t("Actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -476,13 +478,13 @@ export function InvoicesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Item description</TableHead>
-                      <TableHead>HSN</TableHead>
-                      <TableHead className="text-right">Qty</TableHead>
-                      <TableHead className="text-right">Rate</TableHead>
-                      <TableHead className="text-right">Taxable</TableHead>
-                      <TableHead className="text-right">Tax</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
+                      <TableHead>{t("Item description")}</TableHead>
+                      <TableHead>{t("HSN")}</TableHead>
+                      <TableHead className="text-right">{t("Qty")}</TableHead>
+                      <TableHead className="text-right">{t("Rate")}</TableHead>
+                      <TableHead className="text-right">{t("Taxable")}</TableHead>
+                      <TableHead className="text-right">{t("Tax")}</TableHead>
+                      <TableHead className="text-right">{t("Total")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

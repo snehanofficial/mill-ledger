@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
 import { formatDateTime, formatQuantity } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
 import {
   Table,
   TableBody,
@@ -87,6 +88,7 @@ interface EligibleOrder {
 export function DispatchPage() {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+  const { t } = useLanguage();
   const canRecordDispatch = user?.role === "ADMIN";
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState("");
@@ -312,14 +314,14 @@ export function DispatchPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Dispatch number</TableHead>
-                  <TableHead>Date and time</TableHead>
-                  <TableHead>Sales order</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Vehicle and driver</TableHead>
-                  <TableHead>Dispatched items</TableHead>
-                  <TableHead>Invoice link</TableHead>
-                  <TableHead className="text-right">Status</TableHead>
+                  <TableHead>{t("Dispatch number")}</TableHead>
+                  <TableHead>{t("Date and time")}</TableHead>
+                  <TableHead>{t("Sales order")}</TableHead>
+                  <TableHead>{t("Customer")}</TableHead>
+                  <TableHead>{t("Vehicle and driver")}</TableHead>
+                  <TableHead>{t("Dispatched items")}</TableHead>
+                  <TableHead>{t("Invoice link")}</TableHead>
+                  <TableHead className="text-right">{t("Status")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

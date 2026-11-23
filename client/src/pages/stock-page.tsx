@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { formatINR, formatQuantity } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
 import {
   Table,
   TableBody,
@@ -45,6 +46,7 @@ const CATEGORY_LABELS: Record<
 };
 
 export function StockPage() {
+  const { t } = useLanguage();
   const { data, isLoading, isError, refetch, isFetching } = useQuery<{
     balances: InventoryBalance[];
   }>({
@@ -199,14 +201,14 @@ export function StockPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[120px]">SKU</TableHead>
-                <TableHead>Item Name</TableHead>
-                <TableHead className="w-[140px]">Category</TableHead>
-                <TableHead className="text-right">On Hand</TableHead>
-                <TableHead className="text-right">Avg Unit Cost</TableHead>
-                <TableHead className="text-right">Total Value</TableHead>
+                <TableHead className="w-[120px]">{t("SKU")}</TableHead>
+                <TableHead>{t("Item Name")}</TableHead>
+                <TableHead className="w-[140px]">{t("Category")}</TableHead>
+                <TableHead className="text-right">{t("On Hand")}</TableHead>
+                <TableHead className="text-right">{t("Avg Unit Cost")}</TableHead>
+                <TableHead className="text-right">{t("Total Value")}</TableHead>
                 <TableHead className="w-[120px] text-center">
-                  Ledger Status
+                  {t("Ledger Status")}
                 </TableHead>
               </TableRow>
             </TableHeader>

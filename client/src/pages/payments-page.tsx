@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
 import { formatDate, formatINR } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
 import {
   Table,
   TableBody,
@@ -112,6 +113,7 @@ interface OpenInvoice {
 export function PaymentsPage() {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+  const { t } = useLanguage();
   const canRecordPayment = user?.role === "ADMIN";
   const [activeTab, setActiveTab] = useState<"ledger" | "receivables">(
     "ledger",
@@ -447,14 +449,14 @@ export function PaymentsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Receipt number</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Mode and reference</TableHead>
-                    <TableHead className="text-right">Total amount</TableHead>
-                    <TableHead className="text-right">Unallocated</TableHead>
-                    <TableHead>Allocated invoices</TableHead>
-                    <TableHead className="text-right">Status</TableHead>
+                    <TableHead>{t("Receipt number")}</TableHead>
+                    <TableHead>{t("Date")}</TableHead>
+                    <TableHead>{t("Customer")}</TableHead>
+                    <TableHead>{t("Mode and reference")}</TableHead>
+                    <TableHead className="text-right">{t("Total amount")}</TableHead>
+                    <TableHead className="text-right">{t("Unallocated")}</TableHead>
+                    <TableHead>{t("Allocated invoices")}</TableHead>
+                    <TableHead className="text-right">{t("Status")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -565,18 +567,18 @@ export function PaymentsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>State</TableHead>
-                    <TableHead className="text-right">Total invoiced</TableHead>
-                    <TableHead className="text-right">Credit notes</TableHead>
+                    <TableHead>{t("Customer")}</TableHead>
+                    <TableHead>{t("State")}</TableHead>
+                    <TableHead className="text-right">{t("Total invoiced")}</TableHead>
+                    <TableHead className="text-right">{t("Credit notes")}</TableHead>
                     <TableHead className="text-right">
-                      Total collections
+                      {t("Total collections")}
                     </TableHead>
                     <TableHead className="text-right">
-                      Net outstanding
+                      {t("Net outstanding")}
                     </TableHead>
-                    <TableHead className="text-center">Open invoices</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-center">{t("Open invoices")}</TableHead>
+                    <TableHead className="text-right">{t("Actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -739,16 +741,16 @@ export function PaymentsPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Reference number</TableHead>
+                          <TableHead>{t("Date")}</TableHead>
+                          <TableHead>{t("Type")}</TableHead>
+                          <TableHead>{t("Reference number")}</TableHead>
                           <TableHead className="text-right">
-                            Debit (+)
+                            {t("Debit (+)")}
                           </TableHead>
                           <TableHead className="text-right">
-                            Credit (-)
+                            {t("Credit (-)")}
                           </TableHead>
-                          <TableHead className="text-right">Balance</TableHead>
+                          <TableHead className="text-right">{t("Balance")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>

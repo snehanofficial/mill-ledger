@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
 import { formatINR, formatQuantity } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
 import {
   Table,
   TableBody,
@@ -79,6 +80,7 @@ interface ProductionRun {
 export function ProductionPage() {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
+  const { t } = useLanguage();
   const canRecordProduction =
     user?.role === "ADMIN" || user?.role === "PRODUCTION";
   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
@@ -393,15 +395,15 @@ export function ProductionPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Run number</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead className="text-right">Good packets</TableHead>
-                  <TableHead className="text-right">Yield variance</TableHead>
-                  <TableHead className="text-right">Materials cost</TableHead>
-                  <TableHead className="text-right">Total cost</TableHead>
-                  <TableHead className="text-right">Cost / packet</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("Run number")}</TableHead>
+                  <TableHead>{t("Status")}</TableHead>
+                  <TableHead>{t("Product")}</TableHead>
+                  <TableHead className="text-right">{t("Good packets")}</TableHead>
+                  <TableHead className="text-right">{t("Yield variance")}</TableHead>
+                  <TableHead className="text-right">{t("Materials cost")}</TableHead>
+                  <TableHead className="text-right">{t("Total cost")}</TableHead>
+                  <TableHead className="text-right">{t("Cost / packet")}</TableHead>
+                  <TableHead className="text-right">{t("Actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
