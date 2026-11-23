@@ -3573,14 +3573,18 @@
     ],
     "files": [
       "server/src/modules/inventory/inventory.routes.ts",
-      "client/src/pages/purchases-page.ts",
-      "inventory.routes.ts",
-      "client/src/app.ts",
-      "client/src/pages/suppliers-page.ts"
+      "server/src/modules/inventory/inventory.service.ts",
+      "server/src/modules/inventory/purchase.routes.ts",
+      "shared/src/schemas/inventory.schema.ts",
+      "client/src/pages/suppliers-page.tsx",
+      "client/src/pages/purchases-page.tsx",
+      "client/src/app.tsx",
+      "client/src/lib/role-routing.ts",
+      "client/src/components/shell/nav-config.tsx"
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -3588,12 +3592,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-038.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "fdc26b7",
+        "evidenceLink": "audit/evidence/verify/F-038/10-summary.txt",
+        "note": "Added supplier master API (POST /suppliers, PUT /suppliers/:id, GET /suppliers/:id) and frontend SuppliersPage with nav integration and full 10-point verification."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-038-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "npx vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-038-regression.test.ts",
+    "regressionTest": "audit/tests/f-038-regression.test.ts",
+    "fixCommit": "fdc26b7",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-038/01-pre-fix-repro.txt",
+      "audit/evidence/verify/F-038/02-regression-test.txt",
+      "audit/evidence/verify/F-038/03-typecheck.txt",
+      "audit/evidence/verify/F-038/04-lint.txt",
+      "audit/evidence/verify/F-038/05-build.txt",
+      "audit/evidence/verify/F-038/06-unit-tests.txt",
+      "audit/evidence/verify/F-038/07-benchmark.txt",
+      "audit/evidence/verify/F-038/08-invariants.txt",
+      "audit/evidence/verify/F-038/09-git-diff.txt",
+      "audit/evidence/verify/F-038/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'placeholder\\|TODO' client/src/ server/src/ | head -n 25",

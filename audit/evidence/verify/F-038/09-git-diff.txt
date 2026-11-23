@@ -1,0 +1,460 @@
+diff --git a/client/src/app.tsx b/client/src/app.tsx
+index 74685e8..34e9c8f 100644
+--- a/client/src/app.tsx
++++ b/client/src/app.tsx
+@@ -57,6 +57,9 @@ const NewOrderPage = lazy(() =>
+ const PurchasesPage = lazy(() =>
+   import("@/pages/purchases-page").then((m) => ({ default: m.PurchasesPage })),
+ );
++const SuppliersPage = lazy(() =>
++  import("@/pages/suppliers-page").then((m) => ({ default: m.SuppliersPage })),
++);
+ const CustomersPage = lazy(() =>
+   import("@/pages/customers-page").then((m) => ({ default: m.CustomersPage })),
+ );
+@@ -91,6 +94,7 @@ import {
+   reportsAuditHandle,
+   exportsHandle,
+   settingsHandle,
++  suppliersHandle,
+ } from "@/routes/route-handles";
+ 
+ const router = createBrowserRouter([
+@@ -210,6 +214,17 @@ const router = createBrowserRouter([
+         handle: purchasesHandle,
+       },
+ 
++      // Suppliers
++      {
++        path: "suppliers",
++        element: (
++          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/suppliers"]}>
++            <SuppliersPage />
++          </RoleGuard>
++        ),
++        handle: suppliersHandle,
++      },
++
+       // Production
+       {
+         path: "production",
+diff --git a/client/src/components/shell/nav-config.tsx b/client/src/components/shell/nav-config.tsx
+index 31d5a75..07e78c3 100644
+--- a/client/src/components/shell/nav-config.tsx
++++ b/client/src/components/shell/nav-config.tsx
+@@ -118,6 +118,12 @@ export function getNavSections(role: UserRole): NavSection[] {
+           roles: ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
+           href: "/purchases",
+         },
++        {
++          label: "Suppliers",
++          icon: <TruckIcon className="size-4" aria-hidden />,
++          roles: ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
++          href: "/suppliers",
++        },
+         {
+           label: "Production",
+           icon: <ArchiveIcon className="size-4" aria-hidden />,
+diff --git a/client/src/lib/role-routing.ts b/client/src/lib/role-routing.ts
+index b8fee77..e31ba5c 100644
+--- a/client/src/lib/role-routing.ts
++++ b/client/src/lib/role-routing.ts
+@@ -37,6 +37,7 @@ export const ROUTE_PERMISSIONS: Record<string, Role[]> = {
+   "/payments": ["ADMIN", "ACCOUNTANT", "OWNER"],
+   "/stock": ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
+   "/purchases": ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
++  "/suppliers": ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
+   "/production/today": ["ADMIN", "PRODUCTION", "OWNER"],
+   "/production/new": ["ADMIN", "PRODUCTION"],
+   "/production/history": ["ADMIN", "PRODUCTION", "OWNER"],
+diff --git a/client/src/pages/purchases-page.tsx b/client/src/pages/purchases-page.tsx
+index 21a44fd..186c246 100644
+--- a/client/src/pages/purchases-page.tsx
++++ b/client/src/pages/purchases-page.tsx
+@@ -1,4 +1,5 @@
+ import { useState } from "react";
++import { Link } from "react-router-dom";
+ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ import { useCurrentUser } from "@/hooks/use-current-user";
+ import { apiClient } from "@/lib/api-client";
+@@ -336,9 +337,17 @@ export function PurchasesPage() {
+             <div className="mt-4 flex flex-col gap-4">
+               {/* Supplier Selection */}
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
+-                  Supplier / Mandi Vendor
+-                </label>
++                <div className="flex items-center justify-between">
++                  <label className="text-xs font-semibold text-muted-foreground">
++                    Supplier / Mandi Vendor
++                  </label>
++                  <Link
++                    to="/suppliers"
++                    className="text-xs text-primary hover:underline font-medium"
++                  >
++                    + Manage Suppliers
++                  </Link>
++                </div>
+                 <select
+                   value={selectedSupplierId}
+                   onChange={(e) => setSelectedSupplierId(e.target.value)}
+diff --git a/client/src/routes/route-handles.ts b/client/src/routes/route-handles.ts
+index 3a91317..f283a1f 100644
+--- a/client/src/routes/route-handles.ts
++++ b/client/src/routes/route-handles.ts
+@@ -24,3 +24,4 @@ export const reportsGSTHandle: RouteHandle = { breadcrumb: "GST" };
+ export const reportsAuditHandle: RouteHandle = { breadcrumb: "Audit log" };
+ export const exportsHandle: RouteHandle = { breadcrumb: "Exports" };
+ export const settingsHandle: RouteHandle = { breadcrumb: "Settings" };
++export const suppliersHandle: RouteHandle = { breadcrumb: "Suppliers" };
+diff --git a/server/src/modules/inventory/inventory.routes.ts b/server/src/modules/inventory/inventory.routes.ts
+index 44381d6..4a6a86c 100644
+--- a/server/src/modules/inventory/inventory.routes.ts
++++ b/server/src/modules/inventory/inventory.routes.ts
+@@ -6,6 +6,10 @@ import {
+ } from "../../middleware/auth.middleware.js";
+ import { inventoryService } from "./inventory.service.js";
+ import { AppError } from "../../middleware/error.middleware.js";
++import {
++  createSupplierSchema,
++  updateSupplierSchema,
++} from "@mill-ledger/shared";
+ import {
+   handlePostPurchaseReceipt,
+   handleGetPurchaseReceipts,
+@@ -38,6 +42,78 @@ inventoryRouter.get(
+   handleGetSuppliers,
+ );
+ 
++// POST /suppliers (create new supplier - F-038)
++inventoryRouter.post(
++  "/suppliers",
++  requireAuth,
++  authorize("purchase", "create"),
++  async (req: AuthenticatedRequest, res, next) => {
++    try {
++      const parsed = createSupplierSchema.safeParse(req.body);
++      if (!parsed.success) {
++        throw parsed.error;
++      }
++      const supplier = await inventoryService.createSupplier(
++        parsed.data,
++        req.user,
++      );
++      res.status(201).json({ status: "created", supplier });
++    } catch (err) {
++      next(err);
++    }
++  },
++);
++
++// GET /suppliers/:id (get supplier by ID - F-038)
++inventoryRouter.get(
++  "/suppliers/:id",
++  requireAuth,
++  authorize("purchase", "read"),
++  async (req: AuthenticatedRequest, res, next) => {
++    try {
++      const id = Array.isArray(req.params.id)
++        ? req.params.id[0]
++        : req.params.id;
++      if (!id) {
++        throw new AppError("Supplier ID parameter is required", 400);
++      }
++      const supplier = await inventoryService.getSupplierById(id);
++      res.json({ supplier });
++    } catch (err) {
++      next(err);
++    }
++  },
++);
++
++// PUT /suppliers/:id (update existing supplier - F-038)
++inventoryRouter.put(
++  "/suppliers/:id",
++  requireAuth,
++  authorize("purchase", "update"),
++  async (req: AuthenticatedRequest, res, next) => {
++    try {
++      const id = Array.isArray(req.params.id)
++        ? req.params.id[0]
++        : req.params.id;
++      if (!id) {
++        throw new AppError("Supplier ID parameter is required", 400);
++      }
++      const parsed = updateSupplierSchema.safeParse(req.body);
++      if (!parsed.success) {
++        throw parsed.error;
++      }
++      const supplier = await inventoryService.updateSupplier(
++        id,
++        parsed.data,
++        req.user,
++      );
++      res.json({ status: "updated", supplier });
++    } catch (err) {
++      next(err);
++    }
++  },
++);
++
+ // GET /balances
+ inventoryRouter.get(
+   "/balances",
+diff --git a/server/src/modules/inventory/inventory.service.ts b/server/src/modules/inventory/inventory.service.ts
+index 8faeae1..d4b08a0 100644
+--- a/server/src/modules/inventory/inventory.service.ts
++++ b/server/src/modules/inventory/inventory.service.ts
+@@ -1,7 +1,11 @@
+ import { prisma } from "../../db/client.js";
+ import { MovementType, Prisma } from "@prisma/client";
+ import { AppError } from "../../middleware/error.middleware.js";
+-import type { UserContext } from "@mill-ledger/shared";
++import type {
++  UserContext,
++  CreateSupplierInput,
++  UpdateSupplierInput,
++} from "@mill-ledger/shared";
+ import { auditService } from "../reporting/audit.service.js";
+ 
+ export interface CreatePurchaseReceiptInput {
+@@ -38,6 +42,19 @@ export interface InventoryBalanceRow {
+ }
+ 
+ export class InventoryService {
++  private async resolveOrgId(
++    orgIdOrCode?: string,
++    client: Prisma.TransactionClient | typeof prisma = prisma,
++  ): Promise<string> {
++    const target = orgIdOrCode || "MILL";
++    const org = await client.organization.findFirst({
++      where: {
++        OR: [{ id: target }, { code: target }],
++      },
++    });
++    return org ? org.id : target;
++  }
++
+   /**
+    * Post a purchase receipt transactionally:
+    * 1. Idempotency check
+@@ -423,14 +440,127 @@ export class InventoryService {
+   }
+ 
+   /**
+-   * List active suppliers
++   * List suppliers
+    */
+-  async getSuppliers(organizationId: string) {
++  async getSuppliers(organizationId: string, includeInactive = false) {
++    const orgId = await this.resolveOrgId(organizationId);
++    const where: Prisma.SupplierWhereInput = { organizationId: orgId };
++    if (!includeInactive) {
++      where.isActive = true;
++    }
+     return await prisma.supplier.findMany({
+-      where: { organizationId, isActive: true },
++      where,
+       orderBy: { name: "asc" },
+     });
+   }
++
++  /**
++   * Get supplier by ID
++   */
++  async getSupplierById(id: string) {
++    const supplier = await prisma.supplier.findUnique({
++      where: { id },
++      include: {
++        purchaseReceipts: {
++          take: 10,
++          orderBy: { postedAt: "desc" },
++        },
++      },
++    });
++    if (!supplier) {
++      throw new AppError("Supplier not found", 404);
++    }
++    return supplier;
++  }
++
++  /**
++   * Create a new raw material / mandi vendor supplier (F-038)
++   */
++  async createSupplier(input: CreateSupplierInput, user?: UserContext) {
++    const orgId = await this.resolveOrgId(input.organizationId);
++
++    const existing = await prisma.supplier.findFirst({
++      where: {
++        organizationId: orgId,
++        code: input.code,
++      },
++    });
++
++    if (existing) {
++      throw new AppError(`Supplier code ${input.code} already exists`, 409);
++    }
++
++    const supplier = await prisma.supplier.create({
++      data: {
++        organizationId: orgId,
++        code: input.code,
++        name: input.name,
++        phone: input.phone,
++        email: input.email,
++        state: input.state,
++        gstin: input.gstin,
++        isActive: input.isActive ?? true,
++      },
++    });
++
++    await auditService.log({
++      organizationId: orgId,
++      userId: user?.id,
++      userEmail: user?.email,
++      action: "CREATE",
++      entity: "Supplier",
++      entityId: supplier.id,
++      details: {
++        code: supplier.code,
++        name: supplier.name,
++        state: supplier.state,
++        gstin: supplier.gstin,
++      },
++    });
++
++    return supplier;
++  }
++
++  /**
++   * Update an existing supplier (F-038)
++   */
++  async updateSupplier(
++    id: string,
++    input: UpdateSupplierInput,
++    user?: UserContext,
++  ) {
++    const existing = await prisma.supplier.findUnique({ where: { id } });
++    if (!existing) {
++      throw new AppError("Supplier not found", 404);
++    }
++
++    const updated = await prisma.supplier.update({
++      where: { id },
++      data: {
++        name: input.name ?? existing.name,
++        phone: input.phone !== undefined ? input.phone : existing.phone,
++        email: input.email !== undefined ? input.email : existing.email,
++        state: input.state ?? existing.state,
++        gstin: input.gstin !== undefined ? input.gstin : existing.gstin,
++        isActive:
++          input.isActive !== undefined ? input.isActive : existing.isActive,
++      },
++    });
++
++    await auditService.log({
++      organizationId: existing.organizationId,
++      userId: user?.id,
++      userEmail: user?.email,
++      action: "UPDATE",
++      entity: "Supplier",
++      entityId: updated.id,
++      details: {
++        changes: input,
++      },
++    });
++
++    return updated;
++  }
+ }
+ 
+ export const inventoryService = new InventoryService();
+diff --git a/server/src/modules/inventory/purchase.routes.ts b/server/src/modules/inventory/purchase.routes.ts
+index 6ee0160..7963b82 100644
+--- a/server/src/modules/inventory/purchase.routes.ts
++++ b/server/src/modules/inventory/purchase.routes.ts
+@@ -5,9 +5,13 @@ import {
+   type AuthenticatedRequest,
+ } from "../../middleware/auth.middleware.js";
+ import { inventoryService } from "./inventory.service.js";
+-import { createPurchaseReceiptSchema } from "@mill-ledger/shared";
++import {
++  createPurchaseReceiptSchema,
++  createSupplierSchema,
++  updateSupplierSchema,
++} from "@mill-ledger/shared";
+ 
+-export { createPurchaseReceiptSchema };
++export { createPurchaseReceiptSchema, createSupplierSchema, updateSupplierSchema };
+ 
+ export const purchaseRouter = Router();
+ 
+@@ -66,6 +70,26 @@ export async function handleGetSuppliers(
+   }
+ }
+ 
++export async function handleCreateSupplier(
++  req: AuthenticatedRequest,
++  res: Response,
++  next: NextFunction,
++) {
++  try {
++    const parsed = createSupplierSchema.safeParse(req.body);
++    if (!parsed.success) {
++      throw parsed.error;
++    }
++    const supplier = await inventoryService.createSupplier(
++      parsed.data,
++      req.user,
++    );
++    res.status(201).json({ status: "created", supplier });
++  } catch (err) {
++    next(err);
++  }
++}
++
+ // Router-level authentication & authorization for purchase subsystem
+ // Requires 'purchase' resource permissions (OWASP A01:2021 & API5:2023 - F-021)
+ purchaseRouter.use(requireAuth);
+@@ -83,3 +107,4 @@ purchaseRouter.post("/purchase-receipts", handlePostPurchaseReceipt);
+ purchaseRouter.get("/purchase-receipts", handleGetPurchaseReceipts);
+ 
+ purchaseRouter.get("/suppliers", handleGetSuppliers);
++purchaseRouter.post("/suppliers", handleCreateSupplier);
+diff --git a/shared/src/schemas/inventory.schema.ts b/shared/src/schemas/inventory.schema.ts
+index cd58685..382be3d 100644
+--- a/shared/src/schemas/inventory.schema.ts
++++ b/shared/src/schemas/inventory.schema.ts
+@@ -1,4 +1,32 @@
+ import { z } from "zod";
++import { gstinSchema } from "./gstin.schema.js";
++
++export const createSupplierSchema = z
++  .object({
++    organizationId: z.string().min(1).optional(),
++    code: z.string().min(1, "Supplier code is required"),
++    name: z.string().min(1, "Supplier name is required"),
++    phone: z.string().nullable().optional(),
++    email: z.string().email("Invalid email format").nullable().optional(),
++    state: z.string().min(1, "State is required").default("Tamil Nadu"),
++    gstin: gstinSchema.nullable().optional(),
++    isActive: z.boolean().optional().default(true),
++  })
++  .strict();
++
++export const updateSupplierSchema = z
++  .object({
++    name: z.string().min(1).optional(),
++    phone: z.string().nullable().optional(),
++    email: z.string().email("Invalid email format").nullable().optional(),
++    state: z.string().min(1).optional(),
++    gstin: gstinSchema.nullable().optional(),
++    isActive: z.boolean().optional(),
++  })
++  .strict();
++
++export type CreateSupplierInput = z.infer<typeof createSupplierSchema>;
++export type UpdateSupplierInput = z.infer<typeof updateSupplierSchema>;
+ 
+ export const purchaseReceiptItemSchema = z
+   .object({
