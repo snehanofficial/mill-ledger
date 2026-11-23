@@ -7414,7 +7414,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -7422,12 +7422,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-093.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "4afa7a0",
+        "evidenceLink": "audit/evidence/verify/F-093/",
+        "note": "Added Schema.org JSON-LD SoftwareApplication / Organization markup in client/index.html and added semantic main and footer landmarks on login page."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-093-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-093-regression.test.ts",
+    "fixCommit": "4afa7a0",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-093/01-test-suite.txt",
+      "audit/evidence/verify/F-093/02-typecheck.txt",
+      "audit/evidence/verify/F-093/03-lint.txt",
+      "audit/evidence/verify/F-093/04-build.txt",
+      "audit/evidence/verify/F-093/05-benchmark.txt",
+      "audit/evidence/verify/F-093/06-invariants.txt",
+      "audit/evidence/verify/F-093/07-regression-test.txt",
+      "audit/evidence/verify/F-093/08-json-ld-html.txt",
+      "audit/evidence/verify/F-093/09-main-landmark-login.txt",
+      "audit/evidence/verify/F-093/10-git-diff.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'robots\\|sitemap\\|meta' client/ server/ | head -n 25",

@@ -510,7 +510,7 @@ client/src/components/shell/authenticated-shell.tsx:976:  const { t } = useLangu
 | **F-090** | P1 | `VERIFIED` | Soft 404 Status and Unauthenticated Redirect Hijacking on Non-Existent Routes |
 | **F-091** | P1 | `VERIFIED` | Statically Frozen `<title>` and Total Omission of Essential SEO & Social Metadata |
 | **F-092** | P2 | `OPEN` | Missing Public Marketing, Landing, Catalog, and Contact Surfaces |
-| **F-093** | P2 | `OPEN` | Absence of Schema.org JSON-LD Structured Data and Semantic `<main>` Landmark on Login Surface |
+| **F-093** | P2 | `VERIFIED` | Absence of Schema.org JSON-LD Structured Data and Semantic `<main>` Landmark on Login Surface |
 
 #### Sibling Sweep Record
 
