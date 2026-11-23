@@ -5,7 +5,6 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { inventoryService } from "./inventory.service.js";
-import { AppError } from "../../middleware/error.middleware.js";
 import { createPurchaseReceiptSchema } from "@mill-ledger/shared";
 
 export { createPurchaseReceiptSchema };
@@ -20,10 +19,7 @@ export async function handlePostPurchaseReceipt(
   try {
     const parsed = createPurchaseReceiptSchema.safeParse(req.body);
     if (!parsed.success) {
-      throw new AppError(
-        `Invalid receipt data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-        400,
-      );
+      throw parsed.error;
     }
 
     const receipt = await inventoryService.postPurchaseReceipt(

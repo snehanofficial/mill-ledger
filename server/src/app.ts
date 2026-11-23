@@ -96,10 +96,17 @@ export function createApp() {
   app.use("/api/health", healthRouter);
 
   // 404 catch-all for unmatched routes
-  app.use((_req, res) => {
+  app.use((req, res) => {
+    const requestId =
+      req.id ||
+      (typeof req.headers["x-request-id"] === "string"
+        ? req.headers["x-request-id"]
+        : (res.getHeader("X-Request-Id") as string) || undefined);
     res.status(404).json({
-      error: "Not Found",
+      code: "NOT_FOUND",
       message: "Route not found",
+      error: "Not Found",
+      requestId,
     });
   });
 

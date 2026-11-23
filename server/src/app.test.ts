@@ -82,10 +82,12 @@ describe("Express application HTTP integration", () => {
       expect(response.headers.get("content-type")).toContain("application/json");
 
       const data = await response.json();
-      expect(data).toEqual({
+      expect(data).toMatchObject({
+        code: "NOT_FOUND",
         error: "Not Found",
         message: "Route not found",
       });
+      expect(data.requestId).toBeTruthy();
     });
 
     it("assigns X-Request-Id header when none is provided", async () => {
@@ -124,10 +126,12 @@ describe("Express application HTTP integration", () => {
       expect(response.status).toBe(413);
 
       const data = await response.json();
-      expect(data).toEqual({
+      expect(data).toMatchObject({
+        code: "PAYLOAD_TOO_LARGE",
         error: "Payload Too Large",
         message: "Request entity too large",
       });
+      expect(data.requestId).toBeTruthy();
     });
   });
 });

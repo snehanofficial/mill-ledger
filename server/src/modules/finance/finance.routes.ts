@@ -63,10 +63,7 @@ financeRouter.post(
     try {
       const parsed = createInvoiceSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid invoice data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const invoice = await financeService.createInvoiceFromOrder(
@@ -96,10 +93,7 @@ financeRouter.post(
 
       const parsed = creditNoteSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid credit note data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const creditNote = await financeService.issueCreditNote(
@@ -123,10 +117,7 @@ financeRouter.post(
     try {
       const parsed = debitNoteSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid debit note data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const orgId = (req.query.organizationId as string) || "MILL";
@@ -187,10 +178,7 @@ financeRouter.post(
     try {
       const parsed = setTaxRateSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid tax rate data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const orgId = (req.query.organizationId as string) || "MILL";

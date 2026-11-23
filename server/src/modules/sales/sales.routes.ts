@@ -45,10 +45,7 @@ salesRouter.post(
     try {
       const parsed = createCustomerSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid customer data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const customer = await salesService.createCustomer(
@@ -78,10 +75,7 @@ salesRouter.put(
 
       const parsed = updateCustomerSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid customer data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const customer = await salesService.updateCustomer(
@@ -164,10 +158,7 @@ salesRouter.post(
     try {
       const parsed = createOrderSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid order data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const result = await salesService.createSalesOrder(
@@ -202,10 +193,7 @@ salesRouter.put(
 
       const parsed = updateOrderSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid order data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const updated = await salesService.updateDraftOrder(
@@ -236,10 +224,7 @@ salesRouter.post(
 
       const parsed = approveOrderSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid approval data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const approved = await salesService.approveSalesOrder(
@@ -270,10 +255,7 @@ salesRouter.post(
 
       const parsed = rejectOrderSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid rejection data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const rejected = await salesService.rejectSalesOrder(
@@ -315,10 +297,7 @@ salesRouter.post(
     try {
       const parsed = createDispatchSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid dispatch data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const dispatch = await dispatchService.postDispatch(parsed.data, req.user);

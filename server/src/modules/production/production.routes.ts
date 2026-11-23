@@ -85,10 +85,7 @@ productionRouter.post(
     try {
       const parsed = createDraftRunSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid draft run data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const run = await productionService.createDraftRun(parsed.data, req.user);
@@ -108,10 +105,7 @@ productionRouter.post(
     try {
       const parsed = postProductionRunSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid production run data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const result = await productionService.postProductionRun(
@@ -142,10 +136,7 @@ productionRouter.post(
 
       const parsed = postProductionRunSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid production run data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const result = await productionService.postProductionRun(
@@ -176,10 +167,7 @@ productionRouter.post(
 
       const parsed = reverseRunSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid reversal data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const reversedRun = await productionService.reverseProductionRun(

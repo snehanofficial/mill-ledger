@@ -307,7 +307,11 @@ export function OrdersPage() {
         );
         setShowNewOrderModal(false);
       } else {
-        toast.error(err.response?.data?.message || "Failed to create order");
+        toast.error(
+          err.response?.data?.message ||
+            err.response?.data?.error ||
+            "Failed to create order",
+        );
       }
     } finally {
       setIsSubmittingOrder(false);

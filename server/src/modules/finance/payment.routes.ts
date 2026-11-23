@@ -95,10 +95,7 @@ paymentRouter.post(
     try {
       const parsed = recordPaymentSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid payment data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const orgId = (req.query.organizationId as string) || "MILL";
@@ -133,10 +130,7 @@ paymentRouter.post(
 
       const parsed = bouncePaymentSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid bounce data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const payment = await paymentService.bouncePayment(
