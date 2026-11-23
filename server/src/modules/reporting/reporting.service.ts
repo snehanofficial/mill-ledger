@@ -955,6 +955,22 @@ export class ReportingService {
   }
 
   /**
+   * Neutralize potential formula injection characters for CSV export per CWE-1236 & OWASP
+   */
+  sanitizeCSVCell(val: unknown): string {
+    if (val === null || val === undefined) return '""';
+    let str = String(val).replace(/"/g, '""');
+    if (
+      typeof val !== "number" &&
+      typeof val !== "boolean" &&
+      /^[=+\-@\t\r]/.test(str)
+    ) {
+      str = `'${str}`;
+    }
+    return `"${str}"`;
+  }
+
+  /**
    * 9. Export Report to CSV format
    */
   async exportToCSV(
@@ -1016,12 +1032,7 @@ export class ReportingService {
     ];
 
     for (const r of rows) {
-      const line = headers.map((h) => {
-        const val = r[h];
-        if (val === null || val === undefined) return '""';
-        const str = String(val).replace(/"/g, '""');
-        return `"${str}"`;
-      });
+      const line = headers.map((h) => this.sanitizeCSVCell(r[h]));
       csvLines.push(line.join(","));
     }
 
