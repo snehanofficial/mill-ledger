@@ -7087,7 +7087,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -7095,12 +7095,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-089.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "caa858d",
+        "evidenceLink": "audit/evidence/verify/F-089/",
+        "note": "Added static robots.txt and sitemap.xml in client/public and added RFC 9309 GET /robots.txt disallow endpoint in server/src/app.ts."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-089-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-089-regression.test.ts",
+    "fixCommit": "caa858d",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-089/01-test-suite.txt",
+      "audit/evidence/verify/F-089/02-typecheck.txt",
+      "audit/evidence/verify/F-089/03-lint.txt",
+      "audit/evidence/verify/F-089/04-build.txt",
+      "audit/evidence/verify/F-089/05-benchmark.txt",
+      "audit/evidence/verify/F-089/06-invariants.txt",
+      "audit/evidence/verify/F-089/07-regression-test.txt",
+      "audit/evidence/verify/F-089/08-robots-txt-content.txt",
+      "audit/evidence/verify/F-089/09-sitemap-xml-content.txt",
+      "audit/evidence/verify/F-089/10-git-diff.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'robots\\|sitemap\\|meta' client/ server/ | head -n 25",

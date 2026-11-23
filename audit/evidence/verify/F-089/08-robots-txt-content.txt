@@ -1,0 +1,19 @@
+User-agent: *
+Disallow: /dashboard
+Disallow: /orders
+Disallow: /stock
+Disallow: /purchases
+Disallow: /production
+Disallow: /invoices
+Disallow: /dispatch
+Disallow: /payments
+Disallow: /customers
+Disallow: /reports
+Disallow: /settings
+Disallow: /exports
+Disallow: /showcase
+Disallow: /api/
+Allow: /auth/login
+Allow: /
+
+Sitemap: https://millledger.local/sitemap.xml
