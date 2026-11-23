@@ -2084,7 +2084,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -2092,12 +2092,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-012.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-012.md",
+        "note": "Commencing GSTIN Luhn Mod 36 checksum schema and route validation integration."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "81cbb07",
+        "evidenceLink": "audit/evidence/verify/F-012/03-regression-reproduction.txt",
+        "note": "Implemented statutory Mod 36 checksum and regex format validator in @mill-ledger/shared, integrated into customer management routes, and added client status badge."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "81cbb07",
+        "evidenceLink": "audit/evidence/verify/F-012/10-expected-vs-actual.txt",
+        "note": "Verified across all 10 protocol checks: 8/8 regression tests pass, 36/36 test files (205 tests) pass, 0 typecheck/lint errors, 18/18 benchmark assertions pass, 10/10 SQL invariants hold, client build clean."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
     "regressionTest": "audit/tests/f-012-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "fixCommit": "81cbb07",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-012/01-fresh-environment.txt",
+      "audit/evidence/verify/F-012/02-test-execution.txt",
+      "audit/evidence/verify/F-012/03-regression-reproduction.txt",
+      "audit/evidence/verify/F-012/04-full-suite-pass.txt",
+      "audit/evidence/verify/F-012/05-typecheck-lint.txt",
+      "audit/evidence/verify/F-012/06-benchmark-invariants.txt",
+      "audit/evidence/verify/F-012/07-authorization-checks.txt",
+      "audit/evidence/verify/F-012/08-concurrency-safety.txt",
+      "audit/evidence/verify/F-012/09-backward-compat.txt",
+      "audit/evidence/verify/F-012/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'req\\.query\\|req\\.params' server/src/modules/ | grep -v 'parse' | head -n 25",
