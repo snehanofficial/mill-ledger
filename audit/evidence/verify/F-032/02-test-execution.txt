@@ -1,0 +1,38 @@
+=== F-032 Verification: Test Execution ===
+
+Command: pnpm vitest run shared/src/schemas.test.ts
+Output:
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+ ✓ shared/src/schemas.test.ts (13 tests) 10ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > exports all required domain schemas from shared package 2ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > validates customer schema (valid and invalid) 3ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > validates sales order schema (valid and invalid) 1ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > validates dispatch schema 0ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > validates production schemas 0ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > validates inventory purchase receipt schema 0ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > validates finance and payment schemas 0ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > F-032 Strict Mode Rejection of Unknown Fields > rejects unknown fields on createCustomerSchema 0ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > F-032 Strict Mode Rejection of Unknown Fields > rejects unknown fields on createOrderSchema and createOrderLineSchema 1ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > F-032 Strict Mode Rejection of Unknown Fields > rejects unknown fields on createDispatchSchema 0ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > F-032 Strict Mode Rejection of Unknown Fields > rejects unknown fields on production schemas 0ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > F-032 Strict Mode Rejection of Unknown Fields > rejects unknown fields on inventory purchase receipt schema 0ms
+   ✓ F-031 Shared Domain Validation Schemas Contract Parity > F-032 Strict Mode Rejection of Unknown Fields > rejects unknown fields on finance & payment schemas 0ms
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+
+Command: npx vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-032-regression.test.ts
+Output:
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+ ✓ audit/tests/f-032-regression.test.ts (6 tests) 8ms
+   ✓ F-032 Regression Test: Zod Strict Mode Enforced Across Domain Schemas > rejects unrecognized keys on createCustomerSchema and updateCustomerSchema 3ms
+   ✓ F-032 Regression Test: Zod Strict Mode Enforced Across Domain Schemas > rejects unrecognized keys on createOrderSchema, lines, and order approval schemas 2ms
+   ✓ F-032 Regression Test: Zod Strict Mode Enforced Across Domain Schemas > rejects unrecognized keys on createDispatchSchema and lines 0ms
+   ✓ F-032 Regression Test: Zod Strict Mode Enforced Across Domain Schemas > rejects unrecognized keys on production schemas (draft, post, reversal, consumed) 1ms
+   ✓ F-032 Regression Test: Zod Strict Mode Enforced Across Domain Schemas > rejects unrecognized keys on inventory purchase receipt schemas 0ms
+   ✓ F-032 Regression Test: Zod Strict Mode Enforced Across Domain Schemas > rejects unrecognized keys on finance & payment schemas 1ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)

@@ -1,0 +1,5 @@
+=== F-032 Verification: Concurrency Safety ===
+
+Zod schema validation is purely synchronous in-memory parsing without I/O or state modification.
+Rejecting unrecognized parameters at the ingress boundary prevents corrupt or invalid payloads from participating in database transactions or race conditions.
+All existing sequence concurrency tests (`server/src/sequence-concurrency.test.ts`) pass without regression.

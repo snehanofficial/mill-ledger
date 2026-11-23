@@ -9,8 +9,8 @@
     "hasHeaderSchema": false,
     "schemaName": "createOrderSchema",
     "isSharedWithClient": false,
-    "rejectsUnknownFields": false,
-    "unknownFieldsStatus": 500,
+    "rejectsUnknownFields": true,
+    "unknownFieldsStatus": 400,
     "notes": "Body schema strips unknown fields by default; .strict() not enabled"
   },
   {
@@ -23,8 +23,8 @@
     "hasHeaderSchema": false,
     "schemaName": "createDispatchSchema",
     "isSharedWithClient": false,
-    "rejectsUnknownFields": false,
-    "unknownFieldsStatus": 500,
+    "rejectsUnknownFields": true,
+    "unknownFieldsStatus": 400,
     "notes": "Unknown fields stripped"
   },
   {
@@ -37,8 +37,8 @@
     "hasHeaderSchema": false,
     "schemaName": "createDraftRunSchema",
     "isSharedWithClient": false,
-    "rejectsUnknownFields": false,
-    "unknownFieldsStatus": 500,
+    "rejectsUnknownFields": true,
+    "unknownFieldsStatus": 400,
     "notes": "Unknown fields stripped"
   },
   {
@@ -51,8 +51,8 @@
     "hasHeaderSchema": false,
     "schemaName": "postProductionRunSchema",
     "isSharedWithClient": false,
-    "rejectsUnknownFields": false,
-    "unknownFieldsStatus": 500,
+    "rejectsUnknownFields": true,
+    "unknownFieldsStatus": 400,
     "notes": "Unknown fields stripped"
   },
   {
@@ -65,8 +65,8 @@
     "hasHeaderSchema": false,
     "schemaName": "createPurchaseReceiptSchema",
     "isSharedWithClient": false,
-    "rejectsUnknownFields": false,
-    "unknownFieldsStatus": 500,
+    "rejectsUnknownFields": true,
+    "unknownFieldsStatus": 400,
     "notes": "Unknown fields stripped"
   },
   {
@@ -79,8 +79,8 @@
     "hasHeaderSchema": false,
     "schemaName": "createInvoiceSchema",
     "isSharedWithClient": false,
-    "rejectsUnknownFields": false,
-    "unknownFieldsStatus": 201,
+    "rejectsUnknownFields": true,
+    "unknownFieldsStatus": 400,
     "notes": "Unknown fields stripped"
   },
   {
@@ -93,8 +93,8 @@
     "hasHeaderSchema": false,
     "schemaName": "recordPaymentSchema",
     "isSharedWithClient": false,
-    "rejectsUnknownFields": false,
-    "unknownFieldsStatus": 500,
+    "rejectsUnknownFields": true,
+    "unknownFieldsStatus": 400,
     "notes": "Unknown fields stripped"
   }
 ]

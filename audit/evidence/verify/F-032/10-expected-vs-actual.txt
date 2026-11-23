@@ -1,0 +1,13 @@
+=== F-032 Verification: Expected vs Actual ===
+
+EXPECTED (source: docs/architecture.md, OWASP API Security Top 10 API3:2023, OWASP ASVS v4.0.3 Sec 5.1.4):
+All API validation schemas must configure `.strict()` to reject unknown or unrecognized properties with HTTP 400 Bad Request, preventing parameter tampering, silent data loss, and client typos.
+
+ACTUAL:
+All domain validation schemas in `@mill-ledger/shared` (`shared/src/schemas/*.ts`) are configured with `.strict()`.
+Execution of `audit/scripts/verify-validation-inventory.ts` demonstrates that 100% of tested mutating endpoints reject payloads containing unrecognized properties with HTTP 400 Bad Request and issue code 'unrecognized_keys'.
+Zero regressions observed across all 38 test suites (227 tests), 18/18 benchmark assertions, and 10/10 SQL database invariants.
+
+DELTA:
+None. Verified pass.
+Status: VERIFIED-PASS.

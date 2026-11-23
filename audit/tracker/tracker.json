@@ -2870,15 +2870,18 @@
       "OWASP ASVS v4.0.3 Sec 5.1.4"
     ],
     "files": [
-      "/audit/scripts/verify-validation-inventory.ts",
-      "///home/snehan/projects/web/mill-ledger/audit/scripts/verify-validation-inventory.ts",
-      "/audit/evidence/validation-inventory-results.js",
-      "///home/snehan/projects/web/mill-ledger/audit/evidence/validation-inventory-results.js",
-      "server/node_modules/tsx/dist/cli.mjs"
+      "shared/src/schemas/customer.schema.ts",
+      "shared/src/schemas/order.schema.ts",
+      "shared/src/schemas/dispatch.schema.ts",
+      "shared/src/schemas/production.schema.ts",
+      "shared/src/schemas/inventory.schema.ts",
+      "shared/src/schemas/finance.schema.ts",
+      "shared/src/schemas/payment.schema.ts",
+      "shared/src/schemas.test.ts"
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -2886,12 +2889,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-032.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": null,
+        "note": "Configured .strict() on domain schemas in shared/src/schemas/."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "e2f427eb809f6ec7b870147c6c8f6fd9e4973a66",
+        "evidenceLink": null,
+        "note": "All schemas set to .strict(); API endpoints reject unrecognized properties with HTTP 400."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "e2f427eb809f6ec7b870147c6c8f6fd9e4973a66",
+        "evidenceLink": "audit/evidence/verify/F-032/",
+        "note": "Verified with 13 shared schema tests, 6 regression tests, verify-validation-inventory script, 38 Vitest suites (227 tests pass), 18 benchmark assertions, and 10 SQL invariants."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-032-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm vitest run shared/src/schemas.test.ts",
+    "regressionTest": "shared/src/schemas.test.ts",
+    "fixCommit": "e2f427eb809f6ec7b870147c6c8f6fd9e4973a66",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-032/01-fresh-environment.txt",
+      "audit/evidence/verify/F-032/02-test-execution.txt",
+      "audit/evidence/verify/F-032/03-regression-reproduction.txt",
+      "audit/evidence/verify/F-032/04-full-suite-pass.txt",
+      "audit/evidence/verify/F-032/05-typecheck-lint.txt",
+      "audit/evidence/verify/F-032/06-benchmark-invariants.txt",
+      "audit/evidence/verify/F-032/07-authorization-checks.txt",
+      "audit/evidence/verify/F-032/08-concurrency-safety.txt",
+      "audit/evidence/verify/F-032/09-backward-compat.txt",
+      "audit/evidence/verify/F-032/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",
