@@ -35,7 +35,26 @@ export function errorHandler(
     return;
   }
 
-  const errObj = err as unknown as { code?: string; message?: string };
+  const errObj = err as unknown as {
+    status?: number;
+    statusCode?: number;
+    type?: string;
+    code?: string;
+    message?: string;
+  };
+
+  if (
+    errObj.status === 413 ||
+    errObj.statusCode === 413 ||
+    errObj.type === "entity.too.large" ||
+    err.name === "PayloadTooLargeError"
+  ) {
+    res.status(413).json({
+      error: "Payload Too Large",
+      message: "Request entity too large",
+    });
+    return;
+  }
   if (
     errObj.code === "P2004" ||
     errObj.code === "23514" ||

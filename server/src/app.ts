@@ -15,9 +15,14 @@ import { paymentRouter } from "./modules/finance/payment.routes.js";
 import { reportingRouter } from "./modules/reporting/reporting.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 import { isAllowedOrigin } from "./lib/origins.js";
+import { requestIdMiddleware } from "./middleware/request-id.middleware.js";
+import { createRateLimiter } from "./middleware/rate-limit.middleware.js";
 
 export function createApp() {
   const app = express();
+
+  // Request correlation ID
+  app.use(requestIdMiddleware);
 
   app.use(helmet());
   app.use(
@@ -62,6 +67,13 @@ export function createApp() {
 
   app.use(express.json());
 
+  // API rate limiting
+  const apiRateLimiter = createRateLimiter({
+    windowMs: 60 * 1000,
+    max: 1000,
+  });
+  app.use(["/api/v1", "/api/health"], apiRateLimiter);
+
   // API v1 routes
   app.use("/api/v1", authRouter);
   app.use("/api/v1/users", userRouter);
@@ -82,6 +94,14 @@ export function createApp() {
 
   // Backward compatibility alias for health check
   app.use("/api/health", healthRouter);
+
+  // 404 catch-all for unmatched routes
+  app.use((_req, res) => {
+    res.status(404).json({
+      error: "Not Found",
+      message: "Route not found",
+    });
+  });
 
   // Centralized error handler
   app.use(errorHandler);

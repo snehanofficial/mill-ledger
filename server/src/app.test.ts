@@ -74,4 +74,60 @@ describe("Express application HTTP integration", () => {
       expect(response.headers.get("access-control-allow-origin")).toBeNull();
     });
   });
+
+  describe("F-025 Middleware pipeline & error handling", () => {
+    it("returns JSON 404 envelope on unmapped routes", async () => {
+      const response = await fetch(`${baseUrl}/api/v1/does-not-exist`);
+      expect(response.status).toBe(404);
+      expect(response.headers.get("content-type")).toContain("application/json");
+
+      const data = await response.json();
+      expect(data).toEqual({
+        error: "Not Found",
+        message: "Route not found",
+      });
+    });
+
+    it("assigns X-Request-Id header when none is provided", async () => {
+      const response = await fetch(`${baseUrl}/api/v1/health`);
+      const reqId = response.headers.get("x-request-id");
+      expect(reqId).toBeTruthy();
+      expect(typeof reqId).toBe("string");
+      expect(reqId?.length).toBeGreaterThan(10);
+    });
+
+    it("preserves client-provided X-Request-Id correlation header", async () => {
+      const response = await fetch(`${baseUrl}/api/v1/health`, {
+        headers: {
+          "X-Request-Id": "client-correlation-abc-123",
+        },
+      });
+      expect(response.headers.get("x-request-id")).toBe(
+        "client-correlation-abc-123",
+      );
+    });
+
+    it("attaches rate limiting headers on /api/v1 requests", async () => {
+      const response = await fetch(`${baseUrl}/api/v1/health`);
+      expect(response.headers.get("ratelimit-limit")).toBe("1000");
+      expect(response.headers.get("x-ratelimit-limit")).toBe("1000");
+      expect(response.headers.get("ratelimit-remaining")).toBeTruthy();
+    });
+
+    it("returns HTTP 413 Payload Too Large on oversized request bodies", async () => {
+      const largeData = "x".repeat(150 * 1024);
+      const response = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes: largeData }),
+      });
+      expect(response.status).toBe(413);
+
+      const data = await response.json();
+      expect(data).toEqual({
+        error: "Payload Too Large",
+        message: "Request entity too large",
+      });
+    });
+  });
 });
