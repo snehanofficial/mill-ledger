@@ -2825,7 +2825,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -2833,12 +2833,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-006.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "f863a85",
+        "evidenceLink": "audit/evidence/verify/F-006/",
+        "note": "Verified workspace override to zod>=4.6.7 completely eliminates GHSA-mrhx-c7xc-m3w5 with 0 high audit findings and 100% test pass."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-006-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-006-regression.test.ts",
+    "fixCommit": "f863a85",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-006/01-test-suite.txt",
+      "audit/evidence/verify/F-006/02-typecheck.txt",
+      "audit/evidence/verify/F-006/03-lint.txt",
+      "audit/evidence/verify/F-006/04-build.txt",
+      "audit/evidence/verify/F-006/05-benchmark.txt",
+      "audit/evidence/verify/F-006/06-invariants.txt",
+      "audit/evidence/verify/F-006/07-regression-test.txt",
+      "audit/evidence/verify/F-006/08-pnpm-why-zod.txt",
+      "audit/evidence/verify/F-006/09-pnpm-audit.txt",
+      "audit/evidence/verify/F-006/10-git-diff.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",
