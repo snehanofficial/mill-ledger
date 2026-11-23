@@ -27,6 +27,11 @@ export function createApp() {
   app.use(requestLogger);
 
   app.use(helmet());
+  // REQ-062 & Owner Decision 2: Prevent search engine indexing of authenticated ERP APIs and endpoints
+  app.use((_req, res, next) => {
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    next();
+  });
   app.use(
     cors({
       origin: (requestOrigin, callback) => {

@@ -46,6 +46,27 @@ export function AuthenticatedLayout() {
     };
   }, [navigate, queryClient, location]);
 
+  // REQ-062 & Owner Decision 2: Keep authenticated ERP pages noindex, nofollow
+  useEffect(() => {
+    let meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    const created = !meta;
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "robots";
+      document.head.appendChild(meta);
+    }
+    const previousContent = meta.content;
+    meta.content = "noindex, nofollow";
+
+    return () => {
+      if (created) {
+        meta?.remove();
+      } else if (previousContent) {
+        meta!.content = previousContent;
+      }
+    };
+  }, []);
+
   // Show loading shell to prevent layout shift during initial session verification
   if (isLoading) {
     return <AuthenticatedShellSkeleton />;
