@@ -81,6 +81,10 @@ export async function seedUsers() {
   });
 
   for (const user of SEED_USERS) {
+    if (process.env.NODE_ENV === "production" && user.role === "ADMIN") {
+      console.warn("Skipping default admin user creation in production environment per OD-02. Use pnpm admin:bootstrap.");
+      continue;
+    }
     const existing = await prisma.user.findUnique({
       where: { email: user.email },
     });

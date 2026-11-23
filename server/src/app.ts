@@ -5,6 +5,7 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
 import { healthRouter } from "./modules/health/health.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
+import { userRouter } from "./modules/auth/user.routes.js";
 import { salesRouter } from "./modules/sales/sales.routes.js";
 import { productionRouter } from "./modules/production/production.routes.js";
 import { inventoryRouter } from "./modules/inventory/inventory.routes.js";
@@ -39,6 +40,8 @@ export function createApp() {
 
   // API v1 routes
   app.use("/api/v1", authRouter);
+  app.use("/api/v1/users", userRouter);
+  app.use("/api/v1/admin/users", userRouter);
   app.use("/api/v1/health", healthRouter);
   app.use("/api/v1/sales", salesRouter);
   app.use("/api/v1/orders", salesRouter);
