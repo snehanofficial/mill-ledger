@@ -524,6 +524,8 @@ model ProductionRun {
   yieldVarianceQty   Decimal             @default(0) @db.Decimal(18, 6)
   yieldVariancePct   Decimal             @default(0) @db.Decimal(5, 2)
   isYieldFlagged     Boolean             @default(false)
+  packagingMismatch  Boolean             @default(false)
+  packagingWarning   String?
   directMaterialCost Decimal             @default(0) @db.Decimal(18, 2)
   directLaborCost    Decimal             @default(0) @db.Decimal(18, 2)
   utilityCost        Decimal             @default(0) @db.Decimal(18, 2)

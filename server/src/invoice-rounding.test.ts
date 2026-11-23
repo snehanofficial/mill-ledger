@@ -19,7 +19,9 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
     const org = await prisma.organization.findUniqueOrThrow({ where: { code: "MILL" } });
     orgId = org.id;
 
-    const uom = await prisma.unitOfMeasure.findFirstOrThrow();
+    const uom = await prisma.unitOfMeasure.findFirstOrThrow({
+      where: { organizationId: org.id, code: "PACKET" },
+    });
     uomId = uom.id;
 
     const custTn = await prisma.customer.findFirstOrThrow({ where: { code: "CUST-RET-A" } });

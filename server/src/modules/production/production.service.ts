@@ -1,5 +1,6 @@
 import { prisma } from "../../db/client.js";
 import {
+  ItemCategory,
   MovementType,
   ProductionRunStatus,
   RecipeItemType,
@@ -331,10 +332,12 @@ export class ProductionService {
             id: string;
             name: string;
             sku: string;
+            category: string;
+            baseUomId: string;
             currentStock: unknown;
             weightedAverageCost: unknown;
           }>
-        >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${consumed.inventoryItemId} FOR UPDATE`;
+        >`SELECT id, name, sku, category, "baseUomId", "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${consumed.inventoryItemId} FOR UPDATE`;
         const invItem = invItems[0];
 
         if (!invItem) {
@@ -382,13 +385,61 @@ export class ProductionService {
         const lineTotalCost = actualQty * unitCost;
         directMaterialCost += lineTotalCost;
 
-        // Check non-blocking carton packaging capacity warning
-        if (invItem.sku === "PKG-CARTON" && actualQty > 0) {
-          const packetsHeld = actualQty * 20;
-          if (packetsHeld < actualGoodQty) {
-            warnings.push(
-              `${actualQty} cartons represent ${packetsHeld} of ${actualGoodQty} packets.`,
-            );
+        // Check non-blocking packaging capacity warning for packaging items
+        if (
+          (itemType === RecipeItemType.PACKAGING ||
+            invItem.category === ItemCategory.PACKAGING ||
+            invItem.sku === "PKG-CARTON") &&
+          actualQty > 0
+        ) {
+          const itemUomId = invItem.baseUomId ?? recipeItem?.uomId;
+          let conversion = itemUomId
+            ? await tx.unitConversion.findFirst({
+                where: {
+                  fromUomId: itemUomId,
+                  toUomId: recipe.outputUomId,
+                },
+                include: {
+                  fromUom: true,
+                  toUom: true,
+                },
+              })
+            : null;
+
+          if (
+            !conversion &&
+            (invItem.sku === "PKG-CARTON" ||
+              invItem.name.toLowerCase().includes("carton"))
+          ) {
+            conversion = await tx.unitConversion.findFirst({
+              where: {
+                fromUom: { code: "CARTON" },
+                toUomId: recipe.outputUomId,
+              },
+              include: {
+                fromUom: true,
+                toUom: true,
+              },
+            });
+          }
+
+          if (conversion) {
+            const factor = Number(conversion.factor);
+            const unitsHeld = actualQty * factor;
+            if (unitsHeld < actualGoodQty) {
+              const fromUnit = conversion.fromUom.name.toLowerCase() + "s";
+              const toUnit = conversion.toUom.name.toLowerCase() + "s";
+              warnings.push(
+                `${actualQty} ${fromUnit} represent ${unitsHeld} of ${actualGoodQty} ${toUnit}.`,
+              );
+            }
+          } else if (invItem.sku === "PKG-CARTON") {
+            const packetsHeld = actualQty * 20;
+            if (packetsHeld < actualGoodQty) {
+              warnings.push(
+                `${actualQty} cartons represent ${packetsHeld} of ${actualGoodQty} packets.`,
+              );
+            }
           }
         }
 
@@ -418,6 +469,9 @@ export class ProductionService {
         input.runNumber ??
         `RUN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
 
+      const packagingMismatch = warnings.length > 0;
+      const packagingWarning = packagingMismatch ? warnings.join("; ") : null;
+
       let runId = runRecord?.id;
       if (!runId) {
         const createdRun = await tx.productionRun.create({
@@ -435,6 +489,8 @@ export class ProductionService {
             yieldVarianceQty: yieldVarianceQty,
             yieldVariancePct: yieldVariancePct,
             isYieldFlagged: isYieldFlagged,
+            packagingMismatch,
+            packagingWarning,
             directMaterialCost: directMaterialCost,
             directLaborCost: directLaborCost,
             utilityCost: utilityCost,
@@ -457,6 +513,8 @@ export class ProductionService {
             yieldVarianceQty: yieldVarianceQty,
             yieldVariancePct: yieldVariancePct,
             isYieldFlagged: isYieldFlagged,
+            packagingMismatch,
+            packagingWarning,
             directMaterialCost: directMaterialCost,
             directLaborCost: directLaborCost,
             utilityCost: utilityCost,

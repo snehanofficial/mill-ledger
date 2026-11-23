@@ -51,6 +51,8 @@ interface ProductionRun {
   yieldVarianceQty: number;
   yieldVariancePct: number;
   isYieldFlagged: boolean;
+  packagingMismatch?: boolean;
+  packagingWarning?: string | null;
   directMaterialCost: number;
   directLaborCost: number;
   utilityCost: number;
@@ -425,6 +427,15 @@ export function ProductionPage() {
                           <span className="text-xs text-muted-foreground">
                             {r.recipe.name}
                           </span>
+                          {r.packagingMismatch && (
+                            <span
+                              className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400"
+                              title={r.packagingWarning || "Packaging capacity mismatch"}
+                            >
+                              <AlertTriangleIcon className="h-3 w-3 shrink-0" />
+                              {r.packagingWarning || "Packaging mismatch"}
+                            </span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="text-right font-semibold">
