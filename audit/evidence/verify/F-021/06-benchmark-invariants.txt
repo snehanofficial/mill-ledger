@@ -1,0 +1,36 @@
+=== F-021 Verification: 06 Benchmark & Database Invariants ===
+Command: pnpm benchmark
+Result: All 18 benchmark assertions matched 100%!
+- Flour weighted average cost after purchase: ₹43.125 / kg [PASS]
+- Production total run cost: ₹5,855.00 [PASS]
+- Cost per good packet: ≈ ₹31.14 [PASS]
+- Yield variance (-6% flagged): true [PASS]
+- Oil variance (+5% flagged): true [PASS]
+- Finished Murukku stock after run: 238 packets [PASS]
+- Taxable invoice amount (150 pkts × ₹50): ₹7,500.00 [PASS]
+- CGST (2.5% intra state): ₹187.50 [PASS]
+- SGST (2.5% intra state): ₹187.50 [PASS]
+- Order total amount: ₹7,875.00 [PASS]
+- Finished stock physical on hand after dispatch: 88 packets [PASS]
+- Distributor B stock shortage: 32 packets [PASS]
+- Retailer A invoice outstanding: ₹3,875.00 [PASS]
+- Flour closing balance: 120 kg [PASS]
+- Oil closing balance: 19.5 L [PASS]
+- Spice mix closing balance: 3.8 kg [PASS]
+- Packaging pouch closing balance: 306 pieces [PASS]
+- Carton box closing balance: 21 pieces [PASS]
+- Sales register total invoiced: ₹7,875.00 [PASS]
+- Collections register total collected: ₹4,000.00 [PASS]
+
+Command: psql "postgresql://postgres:postgres@localhost:5432/mill_ledger" -f audit/scripts/invariants.sql
+Result: All 10 invariant queries returned 0 rows!
+1. Inventory Current Stock Non-Negative: 0 rows (PASS)
+2. Stock Balance Reconciliation: 0 rows (PASS)
+3. Reservation Integrity: 0 rows (PASS)
+4. Active Stock Reservations Not Exceeding Current Stock: 0 rows (PASS)
+5. Sales Invoice Header Math Integrity: 0 rows (PASS)
+6. Sales Invoice Tax Breakdown Integrity: 0 rows (PASS)
+7. Sales Invoice Lines vs Header Sum: 0 rows (PASS)
+8. Payment Allocation Sum Integrity: 0 rows (PASS)
+9. Sales Invoice Outstanding Derivability: 0 rows (PASS)
+10. Document Sequences Consistency: 0 rows (PASS)

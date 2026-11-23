@@ -1,0 +1,3 @@
+=== F-021 Verification: 08 Concurrency Safety ===
+1. Separation of routing concerns does not alter existing database transactions or row-level locking mechanisms in `inventoryService.postPurchaseReceipt`.
+2. Purchase receipt posting preserves transactional atomicity, idempotency key verification, and inventory weighted-average costing integrity without race hazards.

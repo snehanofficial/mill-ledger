@@ -1,0 +1,11 @@
+=== F-021 Verification: 03 Regression Reproduction ===
+Vulnerability / Defect:
+Previously, server/src/app.ts multi-mounted the entire inventoryRouter at both `/api/v1/inventory` and `/api/v1/purchase-receipts`. Because inventoryRouter endpoints only checked broad `inventory:read` permissions, a salesman possessing `inventory:read` could query `GET /api/v1/purchase-receipts/items/:id/ledger` and receive HTTP 200 OK with full procurement and raw material intake history, bypassing the `purchase:read` permission restriction.
+
+Reproduction Test Suite in server/src/purchases.test.ts ("F-021: prevents exposure of item movement ledger under /api/v1/purchase-receipts and enforces purchase permission scoping (OWASP A01:2021 & API5:2023)"):
+1. Salesman attempting to query item movement ledger under /api/v1/purchase-receipts is denied with HTTP 403 Forbidden ("Forbidden: Role SALESMAN lacks permission read on purchase").
+2. Salesman attempting to list purchase receipts under /api/v1/purchase-receipts is denied with HTTP 403 Forbidden.
+3. Salesman attempting to post purchase receipts under /api/v1/purchase-receipts is denied with HTTP 403 Forbidden.
+4. Admin querying non-existent ledger route on /api/v1/purchase-receipts receives HTTP 404 Not Found (item ledger does not belong on purchase router).
+5. Admin can access purchase receipts list under /api/v1/purchase-receipts with HTTP 200 OK.
+6. Authorized inventory ledger access remains intact under official /api/v1/inventory prefix with HTTP 200 OK.

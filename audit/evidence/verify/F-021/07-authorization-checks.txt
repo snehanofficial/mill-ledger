@@ -1,0 +1,12 @@
+=== F-021 Verification: 07 Authorization & Scoping Checks ===
+Standard: OWASP Top 10:2021 A01:2021 (Broken Access Control) & OWASP API Security Top 10:2023 API5:2023 (Broken Function Level Authorization)
+
+1. Purchase Subsystem Scoping:
+   - Created dedicated `purchaseRouter` in server/src/modules/inventory/purchase.routes.ts mounted exclusively at `/api/v1/purchase-receipts`.
+   - Router-level middleware enforces `requireAuth` and `authorize("purchase", action)`.
+   - Any query by SALESMAN (who lacks `purchase` resource permissions) to `/api/v1/purchase-receipts/*` is denied with HTTP 403 Forbidden.
+2. Separation of Concerns:
+   - Removed generic inventoryRouter multi-mount from `/api/v1/purchase-receipts`.
+   - `items/:id/ledger` and `balances` routes no longer exist under the `/api/v1/purchase-receipts` domain, returning HTTP 404 for authorized roles and HTTP 403 for unauthorized roles.
+3. Inventory Subsystem Isolation:
+   - `inventoryRouter` mounted at `/api/v1/inventory` retains `items/:id/ledger` for inventory stock tracking under `inventory:read` authorization.
