@@ -76,6 +76,24 @@ export class MillLedgerDatabase extends Dexie {
       meta: "key, updatedAt",
     });
   }
+
+  /**
+   * Purge all sensitive cached customer PII, offline outbox, products, and metadata upon sign-out (OWASP ASVS 8.3.1 / 3.5.3)
+   */
+  async purgeOnSignOut(): Promise<void> {
+    await this.transaction(
+      "rw",
+      [this.customers, this.products, this.outbox, this.meta],
+      async () => {
+        await Promise.all([
+          this.customers.clear(),
+          this.products.clear(),
+          this.outbox.clear(),
+          this.meta.clear(),
+        ]);
+      },
+    );
+  }
 }
 
 export const offlineDb = new MillLedgerDatabase();

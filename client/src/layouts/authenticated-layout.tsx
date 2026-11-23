@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AuthenticatedShell } from "@/components/shell/authenticated-shell";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { authClient } from "@/lib/auth-client";
+import { offlineDb } from "@/offline/db";
 
 function RouteLoadingFallback() {
   return (
@@ -61,7 +62,12 @@ export function AuthenticatedLayout() {
     } catch (err) {
       console.warn("Sign out error:", err);
     } finally {
-      // OWASP: Purge all cached sensitive domain and session state from client memory
+      // OWASP ASVS 8.3.1 & 3.5.3: Purge all cached sensitive enterprise data, customer PII, and offline outbox
+      try {
+        await offlineDb.purgeOnSignOut();
+      } catch (dbErr) {
+        console.warn("Failed to purge offline database on logout:", dbErr);
+      }
       queryClient.clear();
       navigate("/auth/login", { replace: true });
     }
