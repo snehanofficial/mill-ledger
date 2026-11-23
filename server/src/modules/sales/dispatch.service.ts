@@ -9,6 +9,7 @@ import {
 import { AppError } from "../../middleware/error.middleware.js";
 import { sequenceService } from "../finance/sequence.service.js";
 import type { UserContext } from "@mill-ledger/shared";
+import { auditService } from "../reporting/audit.service.js";
 
 export interface CreateDispatchLineInput {
   salesOrderLineId: string;
@@ -34,9 +35,9 @@ export class DispatchService {
    * 3. Creates append-only DISPATCH stock movement
    * 4. Updates order fulfilment status to FULFILLED
    */
-  async postDispatch(input: CreateDispatchInput) {
+  async postDispatch(input: CreateDispatchInput, user?: UserContext) {
     try {
-      return await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existing = await tx.dispatch.findUnique({
@@ -264,6 +265,25 @@ export class DispatchService {
         },
       });
     });
+
+    if (result) {
+      await auditService.log({
+        organizationId: result.organizationId,
+        userId: user?.id,
+        userEmail: user?.email,
+        action: "DISPATCH",
+        entity: "Dispatch",
+        entityId: result.id,
+        details: {
+          dispatchNumber: result.dispatchNumber,
+          salesOrderId: result.salesOrderId,
+          salesInvoiceId: result.salesInvoiceId,
+          lineCount: result.lines?.length ?? 0,
+        },
+      });
+    }
+
+    return result;
     } catch (err: unknown) {
       if (
         input.idempotencyKey &&

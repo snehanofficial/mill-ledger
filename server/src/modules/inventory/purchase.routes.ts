@@ -44,7 +44,10 @@ export async function handlePostPurchaseReceipt(
       );
     }
 
-    const receipt = await inventoryService.postPurchaseReceipt(parsed.data);
+    const receipt = await inventoryService.postPurchaseReceipt(
+      parsed.data,
+      req.user,
+    );
     res.status(201).json(receipt);
   } catch (err) {
     next(err);

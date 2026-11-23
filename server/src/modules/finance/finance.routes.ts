@@ -79,7 +79,10 @@ financeRouter.post(
         );
       }
 
-      const invoice = await financeService.createInvoiceFromOrder(parsed.data);
+      const invoice = await financeService.createInvoiceFromOrder(
+        parsed.data,
+        req.user,
+      );
       res.status(201).json(invoice);
     } catch (err) {
       next(err);
@@ -112,6 +115,7 @@ financeRouter.post(
       const creditNote = await financeService.issueCreditNote(
         invoiceId,
         parsed.data,
+        req.user,
       );
       res.status(201).json(creditNote);
     } catch (err) {
@@ -159,10 +163,13 @@ financeRouter.post(
       }
 
       const orgId = (req.query.organizationId as string) || "MILL";
-      const debitNote = await financeService.issueDebitNote({
-        ...parsed.data,
-        organizationId: orgId,
-      });
+      const debitNote = await financeService.issueDebitNote(
+        {
+          ...parsed.data,
+          organizationId: orgId,
+        },
+        req.user,
+      );
       res.status(201).json(debitNote);
     } catch (err) {
       next(err);

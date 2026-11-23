@@ -1,6 +1,8 @@
 import { prisma } from "../../db/client.js";
 import { Prisma, InvoiceStatus, PaymentMode, PaymentStatus } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
+import type { UserContext } from "@mill-ledger/shared";
+import { auditService } from "../reporting/audit.service.js";
 
 export interface PaymentAllocationInput {
   salesInvoiceId: string;
@@ -30,7 +32,7 @@ export class PaymentService {
   /**
    * Record a customer payment receipt and allocate to invoices
    */
-  async recordPayment(input: RecordPaymentInput) {
+  async recordPayment(input: RecordPaymentInput, user?: UserContext) {
     if (!input.customerId) {
       throw new AppError("Customer ID is required", 400);
     }
@@ -39,7 +41,7 @@ export class PaymentService {
     }
 
     try {
-      return await prisma.$transaction(async (tx) => {
+      const payment = await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existing = await tx.payment.findUnique({
@@ -236,6 +238,26 @@ export class PaymentService {
 
       return payment;
     });
+
+    if (payment) {
+      await auditService.log({
+        organizationId: payment.organizationId,
+        userId: user?.id,
+        userEmail: user?.email,
+        action: "CREATE",
+        entity: "Payment",
+        entityId: payment.id,
+        details: {
+          paymentNumber: payment.paymentNumber,
+          customerId: payment.customerId,
+          amount: payment.amount,
+          unallocatedAmount: payment.unallocatedAmount,
+          paymentMode: payment.paymentMode,
+        },
+      });
+    }
+
+    return payment;
     } catch (err: unknown) {
       if (
         input.idempotencyKey &&
@@ -269,6 +291,7 @@ export class PaymentService {
     paymentId: string,
     input: BouncePaymentInput,
     targetStatus: PaymentStatus = PaymentStatus.BOUNCED,
+    user?: UserContext,
   ) {
     if (!input.reason || input.reason.trim() === "") {
       throw new AppError("Reversal reason is required", 400);
@@ -377,6 +400,8 @@ export class PaymentService {
       await tx.auditLog.create({
         data: {
           organizationId: payment.organizationId,
+          userId: user?.id,
+          userEmail: user?.email,
           action:
             targetStatus === PaymentStatus.BOUNCED
               ? "PAYMENT_BOUNCED"
@@ -400,22 +425,32 @@ export class PaymentService {
   /**
    * Mark a payment as bounced (e.g. cheque/NACH dishonour) and restore invoice balances
    */
-  async bouncePayment(paymentId: string, input: BouncePaymentInput) {
+  async bouncePayment(
+    paymentId: string,
+    input: BouncePaymentInput,
+    user?: UserContext,
+  ) {
     return await this.processPaymentReversal(
       paymentId,
       input,
       PaymentStatus.BOUNCED,
+      user,
     );
   }
 
   /**
    * Reverse an online or electronic payment (e.g. chargeback or erroneous entry)
    */
-  async reversePayment(paymentId: string, input: BouncePaymentInput) {
+  async reversePayment(
+    paymentId: string,
+    input: BouncePaymentInput,
+    user?: UserContext,
+  ) {
     return await this.processPaymentReversal(
       paymentId,
       input,
       PaymentStatus.REVERSED,
+      user,
     );
   }
 

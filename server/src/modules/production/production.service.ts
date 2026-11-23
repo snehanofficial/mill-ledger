@@ -6,6 +6,8 @@ import {
   RecipeItemType,
 } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
+import type { UserContext } from "@mill-ledger/shared";
+import { auditService } from "../reporting/audit.service.js";
 
 export interface ConsumedMaterialInput {
   inventoryItemId: string;
@@ -68,7 +70,7 @@ export class ProductionService {
   /**
    * Create a draft production run with pre populated recipe BOM lines
    */
-  async createDraftRun(input: CreateDraftRunInput) {
+  async createDraftRun(input: CreateDraftRunInput, user?: UserContext) {
     const recipe = await prisma.recipe.findUnique({
       where: { id: input.recipeId },
       include: {
@@ -98,7 +100,7 @@ export class ProductionService {
     const expectedOutputQty = Number(recipe.expectedOutputQty) * batchCount;
 
     try {
-      return await prisma.$transaction(async (tx) => {
+      const txResult = await prisma.$transaction(async (tx) => {
       if (input.idempotencyKey) {
         const existing = await tx.productionRun.findUnique({
           where: { idempotencyKey: input.idempotencyKey },
@@ -159,6 +161,25 @@ export class ProductionService {
         },
       });
     });
+
+    if (txResult) {
+      await auditService.log({
+        organizationId: txResult.organizationId,
+        userId: user?.id,
+        userEmail: user?.email,
+        action: "CREATE",
+        entity: "ProductionRun",
+        entityId: txResult.id,
+        details: {
+          runNumber: txResult.runNumber,
+          status: txResult.status,
+          recipeId: txResult.recipeId,
+          warehouseId: txResult.warehouseId,
+        },
+      });
+    }
+
+    return txResult;
     } catch (err: unknown) {
       if (
         input.idempotencyKey &&
@@ -198,6 +219,7 @@ export class ProductionService {
   async postProductionRun(
     runIdOrDraft: string | undefined,
     input: PostProductionRunInput,
+    user?: UserContext,
   ) {
     if (input.actualGoodQty <= 0) {
       throw new AppError(
@@ -209,7 +231,7 @@ export class ProductionService {
       throw new AppError("Production run must include consumed materials", 400);
     }
 
-    return await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existingRun = await tx.productionRun.findUnique({
@@ -634,18 +656,41 @@ export class ProductionService {
         warnings,
       };
     });
+
+    if (result?.run) {
+      await auditService.log({
+        organizationId: result.run.organizationId,
+        userId: user?.id,
+        userEmail: user?.email,
+        action: "POST",
+        entity: "ProductionRun",
+        entityId: result.run.id,
+        details: {
+          runNumber: result.run.runNumber,
+          status: result.run.status,
+          actualYieldQuantity: Number(result.run.actualGoodQty),
+          totalCost: Number(result.run.totalRunCost),
+        },
+      });
+    }
+
+    return result;
   }
 
   /**
    * Reverses a posted production run with compensating stock movements
    * Restores consumed materials and removes output finished goods
    */
-  async reverseProductionRun(runId: string, input: ReverseProductionRunInput) {
+  async reverseProductionRun(
+    runId: string,
+    input: ReverseProductionRunInput,
+    user?: UserContext,
+  ) {
     if (!input.reason) {
       throw new AppError("Reversal reason is required", 400);
     }
 
-    return await prisma.$transaction(async (tx) => {
+    const reversed = await prisma.$transaction(async (tx) => {
       const run = await tx.productionRun.findUnique({
         where: { id: runId },
         include: {
@@ -782,6 +827,24 @@ export class ProductionService {
 
       return updatedRun;
     });
+
+    if (reversed) {
+      await auditService.log({
+        organizationId: reversed.organizationId,
+        userId: user?.id ?? input.reversedByUserId,
+        userEmail: user?.email,
+        action: "REVERSE",
+        entity: "ProductionRun",
+        entityId: reversed.id,
+        reason: input.reason,
+        details: {
+          runNumber: reversed.runNumber,
+          status: reversed.status,
+        },
+      });
+    }
+
+    return reversed;
   }
 
   /**

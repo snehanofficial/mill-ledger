@@ -3,6 +3,7 @@ import { OrderStatus, ReservationStatus, Prisma } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
 import type { UserContext } from "@mill-ledger/shared";
 import { calculateLineTax } from "../finance/tax.util.js";
+import { auditService } from "../reporting/audit.service.js";
 
 export interface CreateOrderLineInput {
   productVariantId: string;
@@ -157,7 +158,7 @@ export class SalesService {
     }
 
     try {
-      return await prisma.$transaction(async (tx) => {
+      const txResult = await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existing = await tx.salesOrder.findUnique({
@@ -512,14 +513,33 @@ export class SalesService {
         },
       });
 
-      return {
+      const result = {
         order: fullOrder!,
         shortages: preparedLines.map((l) => ({
           productVariantId: l.productVariantId,
           shortage: l.shortage,
         })),
       };
+
+      return result;
     });
+
+    await auditService.log({
+      organizationId: user.organizationId ?? undefined,
+      userId: user.id,
+      userEmail: user.email,
+      action: "CREATE",
+      entity: "SalesOrder",
+      entityId: txResult.order.id,
+      details: {
+        orderNumber: txResult.order.orderNumber,
+        status: txResult.order.status,
+        customerId: txResult.order.customerId,
+        totalAmount: txResult.order.totalAmount,
+      },
+    });
+
+    return txResult;
     } catch (err: unknown) {
       if (
         input.idempotencyKey &&
@@ -556,7 +576,7 @@ export class SalesService {
     input: ApproveOrderInput,
     adminUser: UserContext,
   ) {
-    return await prisma.$transaction(async (tx) => {
+    const updatedOrder = await prisma.$transaction(async (tx) => {
       const order = await tx.salesOrder.findUnique({
         where: { id: orderId },
         include: {
@@ -794,6 +814,22 @@ export class SalesService {
 
       return updatedOrder;
     });
+
+    await auditService.log({
+      organizationId: adminUser.organizationId ?? undefined,
+      userId: adminUser.id,
+      userEmail: adminUser.email,
+      action: "APPROVE",
+      entity: "SalesOrder",
+      entityId: updatedOrder.id,
+      details: {
+        orderNumber: updatedOrder.orderNumber,
+        status: updatedOrder.status,
+        totalAmount: updatedOrder.totalAmount,
+      },
+    });
+
+    return updatedOrder;
   }
 
   /**
@@ -802,13 +838,13 @@ export class SalesService {
   async rejectSalesOrder(
     orderId: string,
     input: RejectOrderInput,
-    _adminUser: UserContext,
+    adminUser: UserContext,
   ) {
     if (!input.reason) {
       throw new AppError("Rejection reason is required", 400);
     }
 
-    return await prisma.$transaction(async (tx) => {
+    const rejected = await prisma.$transaction(async (tx) => {
       const order = await tx.salesOrder.findUnique({
         where: { id: orderId },
       });
@@ -849,6 +885,22 @@ export class SalesService {
         },
       });
     });
+
+    await auditService.log({
+      organizationId: adminUser.organizationId ?? undefined,
+      userId: adminUser.id,
+      userEmail: adminUser.email,
+      action: "REJECT",
+      entity: "SalesOrder",
+      entityId: rejected.id,
+      reason: input.reason,
+      details: {
+        orderNumber: rejected.orderNumber,
+        status: rejected.status,
+      },
+    });
+
+    return rejected;
   }
 
   /**
@@ -1028,7 +1080,7 @@ export class SalesService {
       );
     }
 
-    return await prisma.salesOrder.update({
+    const updated = await prisma.salesOrder.update({
       where: { id: orderId },
       data: {
         notes: input.notes !== undefined ? (input.notes ?? null) : undefined,
@@ -1040,6 +1092,22 @@ export class SalesService {
         lines: true,
       },
     });
+
+    await auditService.log({
+      organizationId: user.organizationId ?? undefined,
+      userId: user.id,
+      userEmail: user.email,
+      action: "UPDATE",
+      entity: "SalesOrder",
+      entityId: updated.id,
+      details: {
+        orderNumber: updated.orderNumber,
+        status: updated.status,
+        notes: updated.notes,
+      },
+    });
+
+    return updated;
   }
 
   /**
@@ -1077,10 +1145,10 @@ export class SalesService {
       gstin?: string | null;
       isActive?: boolean;
     },
-    _user: UserContext,
+    user: UserContext,
   ) {
     const orgId = await this.resolveOrgId(data.organizationId);
-    return await prisma.customer.create({
+    const customer = await prisma.customer.create({
       data: {
         organizationId: orgId,
         code: data.code,
@@ -1092,6 +1160,22 @@ export class SalesService {
         isActive: data.isActive ?? true,
       },
     });
+
+    await auditService.log({
+      organizationId: orgId,
+      userId: user.id,
+      userEmail: user.email,
+      action: "CREATE",
+      entity: "Customer",
+      entityId: customer.id,
+      details: {
+        code: customer.code,
+        name: customer.name,
+        gstin: customer.gstin,
+      },
+    });
+
+    return customer;
   }
 
   /**
@@ -1107,7 +1191,7 @@ export class SalesService {
       gstin?: string | null;
       isActive?: boolean;
     },
-    _user: UserContext,
+    user: UserContext,
   ) {
     const customer = await prisma.customer.findUnique({
       where: { id },
@@ -1115,7 +1199,7 @@ export class SalesService {
     if (!customer) {
       throw new AppError(`Customer ${id} not found`, 404);
     }
-    return await prisma.customer.update({
+    const updated = await prisma.customer.update({
       where: { id },
       data: {
         name: data.name !== undefined ? data.name : undefined,
@@ -1131,6 +1215,22 @@ export class SalesService {
         isActive: data.isActive !== undefined ? data.isActive : undefined,
       },
     });
+
+    await auditService.log({
+      organizationId: customer.organizationId,
+      userId: user.id,
+      userEmail: user.email,
+      action: "UPDATE",
+      entity: "Customer",
+      entityId: updated.id,
+      details: {
+        name: updated.name,
+        gstin: updated.gstin,
+        isActive: updated.isActive,
+      },
+    });
+
+    return updated;
   }
 
   /**

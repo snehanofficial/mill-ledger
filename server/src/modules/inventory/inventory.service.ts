@@ -1,6 +1,8 @@
 import { prisma } from "../../db/client.js";
 import { MovementType, Prisma } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
+import type { UserContext } from "@mill-ledger/shared";
+import { auditService } from "../reporting/audit.service.js";
 
 export interface CreatePurchaseReceiptInput {
   organizationId: string;
@@ -44,7 +46,10 @@ export class InventoryService {
    * 4. Record append-only stock movement
    * 5. Create receipt and line records
    */
-  async postPurchaseReceipt(input: CreatePurchaseReceiptInput) {
+  async postPurchaseReceipt(
+    input: CreatePurchaseReceiptInput,
+    user?: UserContext,
+  ) {
     if (!input.items || input.items.length === 0) {
       throw new AppError(
         "Purchase receipt must contain at least one item line",
@@ -53,7 +58,7 @@ export class InventoryService {
     }
 
     try {
-      return await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existingReceipt = await tx.purchaseReceipt.findUnique({
@@ -203,6 +208,25 @@ export class InventoryService {
         },
       });
     });
+
+    if (result) {
+      await auditService.log({
+        organizationId: result.organizationId,
+        userId: user?.id,
+        userEmail: user?.email,
+        action: "CREATE",
+        entity: "PurchaseReceipt",
+        entityId: result.id,
+        details: {
+          receiptNumber: result.receiptNumber,
+          supplierId: result.supplierId,
+          warehouseId: result.warehouseId,
+          lineCount: result.lines?.length ?? 0,
+        },
+      });
+    }
+
+    return result;
     } catch (err: unknown) {
       if (
         input.idempotencyKey &&

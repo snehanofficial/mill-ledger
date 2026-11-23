@@ -3,6 +3,8 @@ import { InvoiceStatus, type Prisma } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
 import { sequenceService } from "./sequence.service.js";
 import { calculateLineTax } from "./tax.util.js";
+import type { UserContext } from "@mill-ledger/shared";
+import { auditService } from "../reporting/audit.service.js";
 
 export interface CreateInvoiceInput {
   salesOrderId: string;
@@ -66,9 +68,9 @@ export class FinanceService {
   /**
    * Post an immutable sales invoice from an approved sales order
    */
-  async createInvoiceFromOrder(input: CreateInvoiceInput) {
+  async createInvoiceFromOrder(input: CreateInvoiceInput, user?: UserContext) {
     try {
-      return await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existing = await tx.salesInvoice.findUnique({
@@ -286,6 +288,25 @@ export class FinanceService {
         },
       });
     });
+
+    if (result) {
+      await auditService.log({
+        organizationId: result.organizationId,
+        userId: user?.id,
+        userEmail: user?.email,
+        action: "POST",
+        entity: "SalesInvoice",
+        entityId: result.id,
+        details: {
+          invoiceNumber: result.invoiceNumber,
+          salesOrderId: result.salesOrderId,
+          customerId: result.customerId,
+          totalAmount: result.totalAmount,
+        },
+      });
+    }
+
+    return result;
     } catch (err: unknown) {
       if (
         input.idempotencyKey &&
@@ -312,12 +333,16 @@ export class FinanceService {
   /**
    * Issue a credit note against a posted sales invoice
    */
-  async issueCreditNote(invoiceId: string, input: IssueCreditNoteInput) {
+  async issueCreditNote(
+    invoiceId: string,
+    input: IssueCreditNoteInput,
+    user?: UserContext,
+  ) {
     if (!input.reason) {
       throw new AppError("Credit note reason is required", 400);
     }
 
-    return await prisma.$transaction(async (tx) => {
+    const creditNote = await prisma.$transaction(async (tx) => {
       const invoice = await tx.salesInvoice.findUnique({
         where: { id: invoiceId },
       });
@@ -374,6 +399,25 @@ export class FinanceService {
 
       return creditNote;
     });
+
+    if (creditNote) {
+      await auditService.log({
+        organizationId: creditNote.organizationId,
+        userId: user?.id,
+        userEmail: user?.email,
+        action: "CREATE",
+        entity: "CreditNote",
+        entityId: creditNote.id,
+        reason: input.reason,
+        details: {
+          creditNoteNumber: creditNote.creditNoteNumber,
+          salesInvoiceId: creditNote.salesInvoiceId,
+          totalAmount: creditNote.totalAmount,
+        },
+      });
+    }
+
+    return creditNote;
   }
 
   /**
@@ -428,7 +472,7 @@ export class FinanceService {
   /**
    * Issue an immutable debit note against a supplier (e.g. purchase returns, damage deductions)
    */
-  async issueDebitNote(input: IssueDebitNoteInput) {
+  async issueDebitNote(input: IssueDebitNoteInput, user?: UserContext) {
     if (!input.supplierId) {
       throw new AppError("Supplier ID is required", 400);
     }
@@ -530,6 +574,8 @@ export class FinanceService {
       await tx.auditLog.create({
         data: {
           organizationId,
+          userId: user?.id,
+          userEmail: user?.email,
           action: "DEBIT_NOTE_ISSUED",
           entity: "debit_note",
           entityId: debitNote.id,

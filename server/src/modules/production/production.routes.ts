@@ -122,7 +122,7 @@ productionRouter.post(
         );
       }
 
-      const run = await productionService.createDraftRun(parsed.data);
+      const run = await productionService.createDraftRun(parsed.data, req.user);
       res.status(201).json(run);
     } catch (err) {
       next(err);
@@ -148,6 +148,7 @@ productionRouter.post(
       const result = await productionService.postProductionRun(
         undefined,
         parsed.data,
+        req.user,
       );
       res.status(201).json(result);
     } catch (err) {
@@ -181,6 +182,7 @@ productionRouter.post(
       const result = await productionService.postProductionRun(
         runId,
         parsed.data,
+        req.user,
       );
       res.status(200).json(result);
     } catch (err) {
@@ -211,10 +213,14 @@ productionRouter.post(
         );
       }
 
-      const reversedRun = await productionService.reverseProductionRun(runId, {
-        reason: parsed.data.reason,
-        reversedByUserId: req.user?.id,
-      });
+      const reversedRun = await productionService.reverseProductionRun(
+        runId,
+        {
+          reason: parsed.data.reason,
+          reversedByUserId: req.user?.id,
+        },
+        req.user,
+      );
       res.status(200).json(reversedRun);
     } catch (err) {
       next(err);

@@ -121,10 +121,13 @@ paymentRouter.post(
       }
 
       const orgId = (req.query.organizationId as string) || "MILL";
-      const payment = await paymentService.recordPayment({
-        ...parsed.data,
-        organizationId: orgId,
-      });
+      const payment = await paymentService.recordPayment(
+        {
+          ...parsed.data,
+          organizationId: orgId,
+        },
+        req.user,
+      );
 
       res.status(201).json(payment);
     } catch (err) {
@@ -162,7 +165,11 @@ paymentRouter.post(
         );
       }
 
-      const payment = await paymentService.bouncePayment(paymentId, parsed.data);
+      const payment = await paymentService.bouncePayment(
+        paymentId,
+        parsed.data,
+        req.user,
+      );
       res.json(payment);
     } catch (err) {
       next(err);

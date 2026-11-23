@@ -428,7 +428,7 @@ salesRouter.post(
         );
       }
 
-      const dispatch = await dispatchService.postDispatch(parsed.data);
+      const dispatch = await dispatchService.postDispatch(parsed.data, req.user);
       res.status(201).json(dispatch);
     } catch (err) {
       next(err);
