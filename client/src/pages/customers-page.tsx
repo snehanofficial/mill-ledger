@@ -2,6 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n";
 import {
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
+import {
   Table,
   TableBody,
   TableCell,
@@ -32,7 +36,7 @@ interface Customer {
 
 export function CustomersPage() {
   const { t } = useLanguage();
-  const { data, isLoading, isError, refetch, isFetching } = useQuery<{
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     customers: Customer[];
   }>({
     queryKey: ["sales-customers"],
@@ -93,17 +97,19 @@ export function CustomersPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex h-48 items-center justify-center">
-            <div className="flex flex-col items-center gap-2">
-              <RefreshCwIcon className="size-6 animate-spin text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Loading customer directory...</span>
-            </div>
+          <div className="p-4">
+            <SkeletonTable rows={5} columns={6} />
           </div>
         ) : isError ? (
-          <div className="flex h-48 items-center justify-center p-6 text-center">
-            <p className="text-sm text-destructive">
-              Failed to load customers. Please verify connection and permissions.
-            </p>
+          <div className="p-4">
+            <ErrorState
+              title={t("Failed to load customer directory", "Failed to load customer directory")}
+              description={
+                error instanceof Error ? error.message : "Failed to load customers. Please verify connection and permissions."
+              }
+              error={error}
+              onRetry={() => refetch()}
+            />
           </div>
         ) : customers.length === 0 ? (
           <div className="flex h-48 flex-col items-center justify-center p-6 text-center">

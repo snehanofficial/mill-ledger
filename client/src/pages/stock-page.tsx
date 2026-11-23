@@ -3,6 +3,10 @@ import { apiClient } from "@/lib/api-client";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
+import {
   Table,
   TableBody,
   TableCell,
@@ -47,7 +51,7 @@ const CATEGORY_LABELS: Record<
 
 export function StockPage() {
   const { t } = useLanguage();
-  const { data, isLoading, isError, refetch, isFetching } = useQuery<{
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     balances: InventoryBalance[];
   }>({
     queryKey: ["inventory-balances"],
@@ -177,20 +181,19 @@ export function StockPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex min-h-48 items-center justify-center p-8 text-sm text-muted-foreground">
-            <RefreshCwIcon
-              className="mr-2 size-4 animate-spin"
-              aria-hidden="true"
-            />
-            Loading stock balances...
+          <div className="p-4">
+            <SkeletonTable rows={6} columns={7} />
           </div>
         ) : isError ? (
-          <div className="flex min-h-48 flex-col items-center justify-center p-8 text-center text-sm text-destructive">
-            <AlertTriangleIcon className="mb-2 size-6" aria-hidden="true" />
-            <p className="font-medium">Failed to load inventory balances</p>
-            <p className="text-xs text-muted-foreground">
-              Ensure the server is running and database seed is completed.
-            </p>
+          <div className="p-4">
+            <ErrorState
+              title={t("Failed to load inventory balances", "Failed to load inventory balances")}
+              description={
+                error instanceof Error ? error.message : "Ensure the server is running and database seed is completed."
+              }
+              error={error}
+              onRetry={() => refetch()}
+            />
           </div>
         ) : balances.length === 0 ? (
           <div className="flex min-h-48 items-center justify-center p-8 text-sm text-muted-foreground">

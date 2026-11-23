@@ -5,6 +5,10 @@ import { apiClient } from "@/lib/api-client";
 import { formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
+import {
   Table,
   TableBody,
   TableCell,
@@ -18,7 +22,6 @@ import { toast } from "sonner";
 import {
   FileTextIcon,
   RefreshCwIcon,
-  AlertTriangleIcon,
   FileCheck2Icon,
   PrinterIcon,
   IndianRupeeIcon,
@@ -146,7 +149,7 @@ export function InvoicesPage() {
   });
 
   // Fetch invoices
-  const { data, isLoading, isError, refetch, isFetching } = useQuery<{
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     invoices: SalesInvoice[];
   }>({
     queryKey: ["sales-invoices"],
@@ -296,17 +299,19 @@ export function InvoicesPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-            <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
-            Loading invoices...
+          <div className="p-4">
+            <SkeletonTable rows={6} columns={8} />
           </div>
         ) : isError ? (
-          <div className="flex flex-col items-center justify-center gap-2 p-12 text-sm text-destructive">
-            <AlertTriangleIcon className="h-6 w-6" />
-            <span>Failed to load invoices</span>
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
-              Retry
-            </Button>
+          <div className="p-4">
+            <ErrorState
+              title={t("Failed to load invoices", "Failed to load invoices")}
+              description={
+                error instanceof Error ? error.message : "An unexpected server error occurred."
+              }
+              error={error}
+              onRetry={() => refetch()}
+            />
           </div>
         ) : invoices.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 p-12 text-center text-sm text-muted-foreground">

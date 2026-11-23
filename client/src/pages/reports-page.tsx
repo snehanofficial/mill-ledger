@@ -4,6 +4,7 @@ import { apiClient } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
+import { SkeletonTable } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -281,9 +282,8 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
           </div>
 
           {loadingSales ? (
-            <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-              <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
-              Loading sales register...
+            <div className="p-4">
+              <SkeletonTable rows={5} columns={9} />
             </div>
           ) : (
             <div className="overflow-x-auto">

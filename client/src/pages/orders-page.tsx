@@ -4,6 +4,10 @@ import { apiClient } from "@/lib/api-client";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
+import {
   Table,
   TableBody,
   TableCell,
@@ -122,7 +126,7 @@ export function OrdersPage() {
   const [orderNotes, setOrderNotes] = useState("Benchmark wholesale order");
 
   // Fetch orders
-  const { data, isLoading, isError, refetch, isFetching } = useQuery<{
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     orders: SalesOrder[];
   }>({
     queryKey: ["sales-orders"],
@@ -532,17 +536,19 @@ export function OrdersPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-            <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
-            Loading orders...
+          <div className="p-4">
+            <SkeletonTable rows={6} columns={8} />
           </div>
         ) : isError ? (
-          <div className="flex flex-col items-center justify-center gap-2 p-12 text-sm text-destructive">
-            <AlertTriangleIcon className="h-6 w-6" />
-            <span>Failed to load sales orders</span>
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
-              Retry
-            </Button>
+          <div className="p-4">
+            <ErrorState
+              title={t("Failed to load sales orders", "Failed to load sales orders")}
+              description={
+                error instanceof Error ? error.message : "An unexpected server error occurred."
+              }
+              error={error}
+              onRetry={() => refetch()}
+            />
           </div>
         ) : activeTab === "stream" &&
           orders.length === 0 &&

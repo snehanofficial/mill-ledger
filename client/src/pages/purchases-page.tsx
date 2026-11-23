@@ -6,6 +6,10 @@ import { apiClient } from "@/lib/api-client";
 import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
+import {
   Table,
   TableBody,
   TableCell,
@@ -81,7 +85,7 @@ export function PurchasesPage() {
   const [notes, setNotes] = useState("Direct mandi intake");
 
   // Query receipts
-  const { data, isLoading, isError, refetch, isFetching } = useQuery<{
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     receipts: PurchaseReceipt[];
   }>({
     queryKey: ["purchase-receipts"],
@@ -233,17 +237,19 @@ export function PurchasesPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex h-48 items-center justify-center">
-            <div className="flex flex-col items-center gap-2">
-              <RefreshCwIcon className="size-6 animate-spin text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Loading receipts...</span>
-            </div>
+          <div className="p-4">
+            <SkeletonTable rows={5} columns={8} />
           </div>
         ) : isError ? (
-          <div className="flex h-48 items-center justify-center p-6 text-center">
-            <p className="text-sm text-destructive">
-              Failed to load purchase receipts. Please verify network connection.
-            </p>
+          <div className="p-4">
+            <ErrorState
+              title={t("Failed to load purchase receipts", "Failed to load purchase receipts")}
+              description={
+                error instanceof Error ? error.message : "Failed to load purchase receipts. Please verify network connection."
+              }
+              error={error}
+              onRetry={() => refetch()}
+            />
           </div>
         ) : receipts.length === 0 ? (
           <div className="flex h-48 flex-col items-center justify-center p-6 text-center">

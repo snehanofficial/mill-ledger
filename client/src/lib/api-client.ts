@@ -22,3 +22,19 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+/**
+ * Extracts correlation request ID from API errors across Axios response structures,
+ * headers, or standard error objects.
+ */
+export function extractRequestId(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  const e = error as any;
+  return (
+    e.response?.data?.requestId ||
+    e.response?.data?.error?.requestId ||
+    e.response?.headers?.["x-request-id"] ||
+    e.requestId
+  );
+}
+

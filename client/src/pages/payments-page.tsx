@@ -5,6 +5,10 @@ import { apiClient } from "@/lib/api-client";
 import { formatDate, formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
+import {
   Table,
   TableBody,
   TableCell,
@@ -140,6 +144,8 @@ export function PaymentsPage() {
   const {
     data: paymentsData,
     isLoading: loadingPayments,
+    isError: errorPayments,
+    error: paymentsError,
     refetch: refetchPayments,
     isFetching: fetchingPayments,
   } = useQuery<{ payments: Payment[] }>({
@@ -429,9 +435,19 @@ export function PaymentsPage() {
           </div>
 
           {loadingPayments ? (
-            <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-              <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
-              Loading payments...
+            <div className="p-4">
+              <SkeletonTable rows={5} columns={8} />
+            </div>
+          ) : errorPayments ? (
+            <div className="p-4">
+              <ErrorState
+                title={t("Failed to load payments", "Failed to load payments")}
+                description={
+                  paymentsError instanceof Error ? paymentsError.message : "Failed to load payments."
+                }
+                error={paymentsError}
+                onRetry={() => refetchPayments()}
+              />
             </div>
           ) : payments.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 text-center text-sm text-muted-foreground">

@@ -2,6 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { formatINR, formatQuantity, formatTime } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
+import {
+  SkeletonTable,
+  SkeletonKPIs,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -128,18 +133,22 @@ export function DashboardPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center p-16 text-sm text-muted-foreground">
-          <RefreshCwIcon className="mr-2 h-5 w-5 animate-spin" />
-          Loading dashboard metrics...
+        <div className="flex flex-col gap-6">
+          <SkeletonKPIs count={4} />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <SkeletonTable rows={4} columns={4} />
+            <SkeletonTable rows={4} columns={4} />
+          </div>
         </div>
       ) : isError ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border bg-card p-12 text-center text-destructive">
-          <AlertTriangleIcon className="mb-2 h-8 w-8" />
-          <p className="font-semibold">Failed to load overview data</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {error instanceof Error ? error.message : "Unknown error occurred"}
-          </p>
-        </div>
+        <ErrorState
+          title={t("Failed to load overview data", "Failed to load overview data")}
+          description={
+            error instanceof Error ? error.message : "Unknown error occurred"
+          }
+          error={error}
+          onRetry={() => refetch()}
+        />
       ) : (
         <>
           {/* Top KPI Cards Grid */}

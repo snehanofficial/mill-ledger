@@ -4,6 +4,10 @@ import { apiClient } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useLanguage } from "@/lib/i18n";
 import {
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
+import {
   Table,
   TableBody,
   TableCell,
@@ -60,7 +64,7 @@ export function SuppliersPage() {
   const [isActive, setIsActive] = useState(true);
 
   // Fetch suppliers
-  const { data, isLoading, isError, refetch, isFetching } = useQuery<{
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     suppliers: Supplier[];
   }>({
     queryKey: ["inventory-suppliers"],
@@ -266,12 +270,19 @@ export function SuppliersPage() {
       {/* Table */}
       <div className="overflow-hidden rounded-xl border bg-card shadow-xs">
         {isLoading ? (
-          <div className="flex h-48 items-center justify-center">
-            <RefreshCwIcon className="size-6 animate-spin text-muted-foreground" />
+          <div className="p-4">
+            <SkeletonTable rows={5} columns={6} />
           </div>
         ) : isError ? (
-          <div className="p-8 text-center text-sm text-destructive">
-            Failed to load supplier records. Please refresh.
+          <div className="p-4">
+            <ErrorState
+              title={t("Failed to load supplier directory", "Failed to load supplier directory")}
+              description={
+                error instanceof Error ? error.message : "Failed to load supplier records. Please refresh."
+              }
+              error={error}
+              onRetry={() => refetch()}
+            />
           </div>
         ) : filteredSuppliers.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">

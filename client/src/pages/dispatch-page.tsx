@@ -5,6 +5,10 @@ import { apiClient } from "@/lib/api-client";
 import { formatDateTime, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
+import {
   Table,
   TableBody,
   TableCell,
@@ -290,15 +294,19 @@ export function DispatchPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-            <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
-            Loading dispatches...
+          <div className="p-4">
+            <SkeletonTable rows={5} columns={8} />
           </div>
         ) : isError ? (
-          <div className="flex flex-col items-center justify-center p-8 text-center text-sm text-destructive">
-            <AlertTriangleIcon className="mb-2 h-6 w-6" />
-            Failed to load dispatches:{" "}
-            {error instanceof Error ? error.message : "Unknown error"}
+          <div className="p-4">
+            <ErrorState
+              title={t("Failed to load dispatches", "Failed to load dispatches")}
+              description={
+                error instanceof Error ? error.message : "Failed to load dispatches."
+              }
+              error={error}
+              onRetry={() => refetch()}
+            />
           </div>
         ) : dispatches.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center text-sm text-muted-foreground">
