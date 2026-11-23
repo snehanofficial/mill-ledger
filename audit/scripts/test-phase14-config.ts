@@ -71,7 +71,7 @@ const testCases: TestCase[] = [
     name: "Development with completely MISSING DATABASE_URL (Does it fail loudly or quietly default to localhost?)",
     env: {
       NODE_ENV: "development",
-      // No DATABASE_URL provided
+      DATABASE_URL: "",
     },
     expectedFail: true, // Should fail fast if required setting is missing
     expectedInStderrOrStdout: "DATABASE_URL",

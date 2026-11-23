@@ -3164,12 +3164,18 @@
     ],
     "files": [
       "server/src/config/env.ts",
-      "///home/snehan/projects/web/mill-ledger/server/src/config/env.ts",
-      "./src/config/env.js"
+      "server/src/config/env.test.ts",
+      "server/src/db/seed.test.ts",
+      ".env.development.example",
+      ".env.staging.example",
+      ".env.production.example",
+      "server/.env.development.example",
+      "server/.env.staging.example",
+      "server/.env.production.example"
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -3177,12 +3183,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-100.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-24",
+        "commit": null,
+        "evidenceLink": null,
+        "note": "Removed silent default on DATABASE_URL and added production rejection for localhost"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-24",
+        "commit": "e3674ce",
+        "evidenceLink": null,
+        "note": "Enforced required DATABASE_URL and added environment templates"
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "e3674ce",
+        "evidenceLink": "audit/evidence/verify/F-100/",
+        "note": "Verified with env unit tests, regression test, config boot script, 39 Vitest suites (239 tests pass), 18 benchmark assertions, and 10 SQL invariants."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-100-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "npx vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-100-regression.test.ts",
+    "regressionTest": "audit/tests/f-100-regression.test.ts",
+    "fixCommit": "e3674ce",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-100/01-test-suite.txt",
+      "audit/evidence/verify/F-100/02-typecheck.txt",
+      "audit/evidence/verify/F-100/03-lint.txt",
+      "audit/evidence/verify/F-100/04-build.txt",
+      "audit/evidence/verify/F-100/05-benchmark.txt",
+      "audit/evidence/verify/F-100/06-invariants.txt",
+      "audit/evidence/verify/F-100/07-regression-test.txt",
+      "audit/evidence/verify/F-100/08-targeted-env-test.txt",
+      "audit/evidence/verify/F-100/09-config-boot-results.txt",
+      "audit/evidence/verify/F-100/10-git-diff.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",

@@ -5,7 +5,7 @@
       "exitCode": 1,
       "passedValidation": false,
       "expectedFail": true,
-      "outputSummary": "Invalid environment variables configuration: {\n  _errors: [],\n  BETTER_AUTH_SECRET: {\n    _errors: [\n      'BETTER_AUTH_SECRET must not use the default development secret in production'\n    ]\n  }\n}\n/home/snehan/projects/web/mill-ledger/server/src/config/env.ts:65\n  throw new Error(\"Invalid server en",
+      "outputSummary": "Invalid environment variables configuration: {\n  _errors: [],\n  BETTER_AUTH_SECRET: {\n    _errors: [\n      'BETTER_AUTH_SECRET must not use the default development secret in production'\n    ]\n  },\n  DATABASE_URL: {\n    _errors: [\n      'DATABASE_URL must be explicitly configured with a non-localhost",
       "verdict": "PASS"
     },
     {
@@ -13,7 +13,7 @@
       "exitCode": 1,
       "passedValidation": false,
       "expectedFail": true,
-      "outputSummary": "Invalid environment variables configuration: {\n  _errors: [],\n  BETTER_AUTH_SECRET: {\n    _errors: [\n      'BETTER_AUTH_SECRET must be at least 32 characters in production'\n    ]\n  }\n}\n/home/snehan/projects/web/mill-ledger/server/src/config/env.ts:65\n  throw new Error(\"Invalid server environment con",
+      "outputSummary": "Invalid environment variables configuration: {\n  _errors: [],\n  BETTER_AUTH_SECRET: {\n    _errors: [\n      'BETTER_AUTH_SECRET must be at least 32 characters in production'\n    ]\n  },\n  DATABASE_URL: {\n    _errors: [\n      'DATABASE_URL must be explicitly configured with a non-localhost production d",
       "verdict": "PASS"
     },
     {
@@ -21,30 +21,30 @@
       "exitCode": 1,
       "passedValidation": false,
       "expectedFail": true,
-      "outputSummary": "Invalid environment variables configuration: {\n  _errors: [],\n  CORS_ORIGIN: {\n    _errors: [\n      'CORS_ORIGIN must be explicitly configured with non-local production origin(s) in production'\n    ]\n  }\n}\n/home/snehan/projects/web/mill-ledger/server/src/config/env.ts:65\n  throw new Error(\"Invalid s",
+      "outputSummary": "Invalid environment variables configuration: {\n  _errors: [],\n  CORS_ORIGIN: {\n    _errors: [\n      'CORS_ORIGIN must be explicitly configured with non-local production origin(s) in production'\n    ]\n  },\n  DATABASE_URL: {\n    _errors: [\n      'DATABASE_URL must be explicitly configured with a non-l",
       "verdict": "PASS"
     },
     {
       "test": "Production with completely MISSING DATABASE_URL (Does it fail loudly or quietly default?)",
-      "exitCode": 0,
-      "passedValidation": true,
+      "exitCode": 1,
+      "passedValidation": false,
       "expectedFail": true,
-      "outputSummary": "PARSED_SUCCESS: NODE_ENV=production, DB=postgresql://postgres:postgres@localhost:5432/mill_ledger?schema=public",
-      "verdict": "FAIL"
+      "outputSummary": "Invalid environment variables configuration: {\n  _errors: [],\n  DATABASE_URL: {\n    _errors: [\n      'DATABASE_URL must be explicitly configured with a non-localhost production database in production'\n    ]\n  }\n}\n/home/snehan/projects/web/mill-ledger/server/src/config/env.ts:82\n  throw new Error(\"In",
+      "verdict": "PASS"
     },
     {
       "test": "Development with completely MISSING DATABASE_URL (Does it fail loudly or quietly default to localhost?)",
-      "exitCode": 0,
-      "passedValidation": true,
+      "exitCode": 1,
+      "passedValidation": false,
       "expectedFail": true,
-      "outputSummary": "PARSED_SUCCESS: NODE_ENV=development, DB=postgresql://postgres:postgres@localhost:5432/mill_ledger?schema=public",
-      "verdict": "FAIL"
+      "outputSummary": "Invalid environment variables configuration: {\n  _errors: [],\n  DATABASE_URL: {\n    _errors: [ 'DATABASE_URL is required', 'DATABASE_URL must be a valid URL' ]\n  }\n}\n/home/snehan/projects/web/mill-ledger/server/src/config/env.ts:82\n  throw new Error(\"Invalid server environment configuration\");\n  ^\n\n",
+      "verdict": "PASS"
     }
   ],
   "seedInProduction": {
-    "exitCode": 0,
-    "refused": false,
-    "stdout": "Seeding test users for M1...\nSeeding benchmark master data and opening stock (M2)...\nM2 benchmark master data seed successfully completed.\n",
-    "stderr": ""
+    "exitCode": 1,
+    "refused": true,
+    "stdout": "",
+    "stderr": "Invalid environment variables configuration: {\n  _errors: [],\n  DATABASE_URL: {\n    _errors: [\n      'DATABASE_URL must be explicitly configured with a non-localhost production database in production'\n    ]\n  }\n}\n/home/snehan/projects/web/mill-ledger/server/src/config/env.ts:82\n  throw new Error(\"In"
   }
 }
