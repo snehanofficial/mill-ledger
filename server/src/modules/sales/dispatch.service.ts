@@ -4,9 +4,11 @@ import {
   FulfilmentStatus,
   MovementType,
   ReservationStatus,
+  type Prisma,
 } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
 import { sequenceService } from "../finance/sequence.service.js";
+import type { UserContext } from "@mill-ledger/shared";
 
 export interface CreateDispatchLineInput {
   salesOrderLineId: string;
@@ -289,11 +291,20 @@ export class DispatchService {
   }
 
   /**
-   * List dispatches for an organization
+   * List dispatches for an organization (with optional ABAC user-scoping per OD-03)
    */
-  async getDispatches(organizationId: string) {
+  async getDispatches(organizationId: string, user?: UserContext) {
+    const where: Prisma.DispatchWhereInput = { organizationId };
+
+    // ABAC rule per OD-03: Salesman sees only dispatches for orders they submitted
+    if (user?.role === "SALESMAN") {
+      where.salesOrder = {
+        salesmanId: user.id,
+      };
+    }
+
     return await prisma.dispatch.findMany({
-      where: { organizationId },
+      where,
       include: {
         lines: {
           include: { inventoryItem: true },
@@ -306,6 +317,40 @@ export class DispatchService {
       },
       orderBy: { dispatchedAt: "desc" },
     });
+  }
+
+  /**
+   * Get single dispatch by ID (with ABAC user-scoping per OD-03)
+   */
+  async getDispatchById(dispatchId: string, user?: UserContext) {
+    const where: Prisma.DispatchWhereInput = { id: dispatchId };
+
+    // ABAC rule per OD-03: Salesman can only access dispatches for orders they submitted
+    if (user?.role === "SALESMAN") {
+      where.salesOrder = {
+        salesmanId: user.id,
+      };
+    }
+
+    const dispatch = await prisma.dispatch.findFirst({
+      where,
+      include: {
+        lines: {
+          include: { inventoryItem: true },
+        },
+        salesOrder: {
+          include: { customer: true },
+        },
+        salesInvoice: true,
+        warehouse: true,
+      },
+    });
+
+    if (!dispatch) {
+      throw new AppError("Dispatch not found", 404);
+    }
+
+    return dispatch;
   }
 }
 

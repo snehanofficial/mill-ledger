@@ -290,16 +290,35 @@ salesRouter.post(
   },
 );
 
-// GET /api/v1/sales/dispatches - List dispatches
+// GET /api/v1/sales/dispatches - List dispatches (ABAC scoped per OD-03)
 salesRouter.get(
   "/dispatches",
   requireAuth,
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
-      const dispatches = await dispatchService.getDispatches(orgId);
+      const orgId = req.user?.organizationId || (req.query.organizationId as string) || "MILL";
+      const dispatches = await dispatchService.getDispatches(orgId, req.user);
       res.json({ dispatches });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /api/v1/sales/dispatches/:id - Get single dispatch by ID (ABAC scoped per OD-03)
+salesRouter.get(
+  "/dispatches/:id",
+  requireAuth,
+  authorize("order", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const dispatchId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!dispatchId) {
+        throw new AppError("Dispatch ID is required", 400);
+      }
+      const dispatch = await dispatchService.getDispatchById(dispatchId, req.user);
+      res.json({ dispatch });
     } catch (err) {
       next(err);
     }

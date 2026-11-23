@@ -363,4 +363,145 @@ describe("M6: Invoice generation, physical dispatch, reservation release, and cr
     });
     expect(aGetInv.status).toBe(200);
   });
+
+  it("F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)", async () => {
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { code: "MILL" },
+    });
+    const retailerA = await prisma.customer.findFirstOrThrow({
+      where: { code: "CUST-RET-A" },
+    });
+    const distributorB = await prisma.customer.findFirstOrThrow({
+      where: { code: "CUST-DIST-B" },
+    });
+    const murukkuVariant = await prisma.productVariant.findFirstOrThrow({
+      where: { sku: "VAR-MURUKKU-200G" },
+    });
+
+    const sm1Cookie = await loginAndGetCookie(
+      "salesman1@millledger.local",
+      "SalesmanPassword123!",
+    );
+    const sm2Cookie = await loginAndGetCookie(
+      "salesman2@millledger.local",
+      "SalesmanPassword123!",
+    );
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+
+    // 1. Salesman 1 creates Order 1 (Retailer A)
+    const order1Res = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: sm1Cookie },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        lines: [{ productVariantId: murukkuVariant.id, quantity: 5 }],
+      }),
+    });
+    expect(order1Res.status).toBe(201);
+    const order1Data = (await order1Res.json()) as { order: { id: string } };
+
+    // Admin approves and dispatches Order 1
+    await fetch(`${baseUrl}/api/v1/sales/orders/${order1Data.order.id}/approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: adminCookie },
+      body: JSON.stringify({}),
+    });
+    const disp1Res = await fetch(`${baseUrl}/api/v1/sales/dispatches`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: adminCookie },
+      body: JSON.stringify({
+        salesOrderId: order1Data.order.id,
+        vehicleNumber: "TN-38-SM1-001",
+      }),
+    });
+    expect(disp1Res.status).toBe(201);
+    const disp1Data = (await disp1Res.json()) as { id: string };
+    const dispatch1Id = disp1Data.id;
+
+    // 2. Salesman 2 creates Order 2 (Distributor B)
+    const order2Res = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: sm2Cookie },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: distributorB.id,
+        lines: [{ productVariantId: murukkuVariant.id, quantity: 5 }],
+      }),
+    });
+    expect(order2Res.status).toBe(201);
+    const order2Data = (await order2Res.json()) as { order: { id: string } };
+
+    // Admin approves and dispatches Order 2
+    await fetch(`${baseUrl}/api/v1/sales/orders/${order2Data.order.id}/approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: adminCookie },
+      body: JSON.stringify({}),
+    });
+    const disp2Res = await fetch(`${baseUrl}/api/v1/sales/dispatches`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: adminCookie },
+      body: JSON.stringify({
+        salesOrderId: order2Data.order.id,
+        vehicleNumber: "KA-01-SM2-002",
+      }),
+    });
+    expect(disp2Res.status).toBe(201);
+    const disp2Data = (await disp2Res.json()) as { id: string };
+    const dispatch2Id = disp2Data.id;
+
+    // 3. Admin lists dispatches -> sees BOTH Dispatch 1 and Dispatch 2
+    const adminListRes = await fetch(`${baseUrl}/api/v1/sales/dispatches`, {
+      headers: { Cookie: adminCookie },
+    });
+    expect(adminListRes.status).toBe(200);
+    const adminListData = (await adminListRes.json()) as { dispatches: Array<{ id: string }> };
+    const adminDispatchIds = adminListData.dispatches.map((d) => d.id);
+    expect(adminDispatchIds).toContain(dispatch1Id);
+    expect(adminDispatchIds).toContain(dispatch2Id);
+
+    // 4. Salesman 1 lists dispatches -> sees ONLY Dispatch 1, NOT Dispatch 2
+    const sm1ListRes = await fetch(`${baseUrl}/api/v1/sales/dispatches`, {
+      headers: { Cookie: sm1Cookie },
+    });
+    expect(sm1ListRes.status).toBe(200);
+    const sm1ListData = (await sm1ListRes.json()) as { dispatches: Array<{ id: string }> };
+    const sm1DispatchIds = sm1ListData.dispatches.map((d) => d.id);
+    expect(sm1DispatchIds).toContain(dispatch1Id);
+    expect(sm1DispatchIds).not.toContain(dispatch2Id);
+
+    // 5. Salesman 1 fetches individual dispatch by ID:
+    // Own dispatch -> 200 OK
+    const sm1GetOwnRes = await fetch(`${baseUrl}/api/v1/sales/dispatches/${dispatch1Id}`, {
+      headers: { Cookie: sm1Cookie },
+    });
+    expect(sm1GetOwnRes.status).toBe(200);
+    const sm1OwnData = (await sm1GetOwnRes.json()) as { dispatch: { id: string } };
+    expect(sm1OwnData.dispatch.id).toBe(dispatch1Id);
+
+    // Other salesman's dispatch -> 404 Not Found (scoped access denied)
+    const sm1GetOtherRes = await fetch(`${baseUrl}/api/v1/sales/dispatches/${dispatch2Id}`, {
+      headers: { Cookie: sm1Cookie },
+    });
+    expect(sm1GetOtherRes.status).toBe(404);
+
+    // 6. Salesman 2 lists dispatches -> sees ONLY Dispatch 2, NOT Dispatch 1
+    const sm2ListRes = await fetch(`${baseUrl}/api/v1/sales/dispatches`, {
+      headers: { Cookie: sm2Cookie },
+    });
+    expect(sm2ListRes.status).toBe(200);
+    const sm2ListData = (await sm2ListRes.json()) as { dispatches: Array<{ id: string }> };
+    const sm2DispatchIds = sm2ListData.dispatches.map((d) => d.id);
+    expect(sm2DispatchIds).toContain(dispatch2Id);
+    expect(sm2DispatchIds).not.toContain(dispatch1Id);
+
+    // 7. Salesman 2 fetches other salesman's dispatch -> 404
+    const sm2GetOtherRes = await fetch(`${baseUrl}/api/v1/sales/dispatches/${dispatch1Id}`, {
+      headers: { Cookie: sm2Cookie },
+    });
+    expect(sm2GetOtherRes.status).toBe(404);
+  });
 });
