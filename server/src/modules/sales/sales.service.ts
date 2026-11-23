@@ -995,7 +995,7 @@ export class SalesService {
    */
   async updateDraftOrder(
     orderId: string,
-    input: Partial<CreateOrderInput>,
+    input: Omit<Partial<CreateOrderInput>, "notes"> & { notes?: string | null },
     user: UserContext,
   ) {
     const order = await prisma.salesOrder.findUnique({
@@ -1031,7 +1031,7 @@ export class SalesService {
     return await prisma.salesOrder.update({
       where: { id: orderId },
       data: {
-        notes: input.notes,
+        notes: input.notes !== undefined ? (input.notes ?? null) : undefined,
         status: input.status
           ? (String(input.status).toUpperCase() as OrderStatus)
           : order.status,

@@ -32,6 +32,35 @@ const createOrderSchema = z.object({
     .min(1),
 });
 
+const updateOrderSchema = z
+  .object({
+    creatorId: z.string().optional(),
+    notes: z
+      .string()
+      .max(500, "Notes cannot exceed 500 characters")
+      .nullable()
+      .optional(),
+    status: z
+      .enum([OrderStatus.DRAFT, OrderStatus.SUBMITTED], {
+        errorMap: () => ({
+          message:
+            "Draft orders can only be updated to DRAFT or SUBMITTED status",
+        }),
+      })
+      .optional(),
+    lines: z
+      .array(
+        z.object({
+          productVariantId: z.string().min(1),
+          quantity: z.number().positive(),
+          unitPrice: z.number().min(0).optional(),
+        }),
+      )
+      .min(1)
+      .optional(),
+  })
+  .strict();
+
 const approveOrderSchema = z.object({
   overrideReason: z.string().optional(),
   lineOverrides: z
@@ -193,9 +222,17 @@ salesRouter.put(
         await salesService.getSalesOrderById(orderId, req.user);
       }
 
+      const parsed = updateOrderSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new AppError(
+          `Invalid order data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
+          400,
+        );
+      }
+
       const updated = await salesService.updateDraftOrder(
         orderId,
-        req.body,
+        parsed.data,
         req.user!,
       );
       res.json({ status: "updated", order: updated });
