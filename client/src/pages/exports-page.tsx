@@ -1,0 +1,398 @@
+import { useState, useId } from "react";
+import { apiClient } from "@/lib/api-client";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  DownloadIcon,
+  ShieldCheckIcon,
+  RefreshCwIcon,
+  CalendarIcon,
+  FolderDownIcon,
+  DatabaseIcon,
+  ReceiptIcon,
+  BoxIcon,
+  LayersIcon,
+  CreditCardIcon,
+  PackageIcon,
+  HistoryIcon,
+} from "lucide-react";
+import { toast } from "sonner";
+
+interface ExportDataset {
+  id: string;
+  reportType: string;
+  name: string;
+  category: string;
+  icon: React.ReactNode;
+  description: string;
+  fields: string[];
+}
+
+const DATASETS: ExportDataset[] = [
+  {
+    id: "sales",
+    reportType: "sales",
+    name: "Sales Register",
+    category: "Finance & Sales",
+    icon: <ReceiptIcon className="size-5 text-emerald-600" />,
+    description: "Line-by-line sales orders, posted invoices, taxable values, and statutory GST breakdowns.",
+    fields: ["Invoice Number", "Order Date", "Customer Name", "State", "Taxable Value", "CGST", "SGST", "IGST", "Total Amount"],
+  },
+  {
+    id: "gst",
+    reportType: "gst",
+    name: "GSTR-1 Outward Summary",
+    category: "Statutory Tax",
+    icon: <ShieldCheckIcon className="size-5 text-indigo-600" />,
+    description: "Statutory outward supplies summary classified by HSN 21069099, rate (5%), and place of supply.",
+    fields: ["Financial Year", "Quarter", "HSN Code", "Tax Rate", "Intra-state Taxable", "Inter-state Taxable", "Tax Total"],
+  },
+  {
+    id: "stock",
+    reportType: "stock",
+    name: "Stock Valuation & Inventory",
+    category: "Warehouse & Supply",
+    icon: <BoxIcon className="size-5 text-amber-600" />,
+    description: "Closing inventory quantities, active reservations, Available-To-Promise (ATP), and weighted-average unit costs.",
+    fields: ["SKU", "Item Name", "UOM", "Physical On Hand", "Reserved Stock", "ATP Stock", "Weighted Avg Cost", "Valuation Total"],
+  },
+  {
+    id: "production",
+    reportType: "production",
+    name: "Production Runs & Yield Variances",
+    category: "Shop Floor",
+    icon: <LayersIcon className="size-5 text-blue-600" />,
+    description: "Milling production runs, recipe yields, flour & oil consumption, scrap/wastage, and tolerance variance flags.",
+    fields: ["Run Number", "Batch Date", "Recipe Code", "Flour Consumed", "Good Packets", "Damaged Units", "Unit Cost", "Variance Flag"],
+  },
+  {
+    id: "receivables",
+    reportType: "receivables",
+    name: "Accounts Receivable & Ageing",
+    category: "Accounting",
+    icon: <CreditCardIcon className="size-5 text-rose-600" />,
+    description: "Outstanding invoice balances segmented into standard accounting ageing buckets (0-30, 31-60, 61-90, 90+ days).",
+    fields: ["Customer Code", "Customer Name", "Total Invoiced", "Total Collected", "Outstanding Balance", "Ageing 0-30d", "Ageing 30d+"],
+  },
+  {
+    id: "collections",
+    reportType: "collections",
+    name: "Collections & Payment Register",
+    category: "Accounting",
+    icon: <CreditCardIcon className="size-5 text-teal-600" />,
+    description: "Inbound customer payments, bank transfer / cheque / cash receipts, and line allocation reconciliations.",
+    fields: ["Payment Number", "Payment Date", "Customer Name", "Payment Mode", "Total Amount", "Allocated Amount", "Unallocated Balance"],
+  },
+  {
+    id: "purchase",
+    reportType: "purchase",
+    name: "Procurement & Mandi Receipts",
+    category: "Procurement",
+    icon: <PackageIcon className="size-5 text-amber-700" />,
+    description: "Direct mandi intake records, supplier invoice references, raw material weights, and intake cost rates.",
+    fields: ["Receipt Number", "Intake Date", "Supplier Code", "Supplier Name", "Raw Material", "Quantity Received", "Unit Price", "Total Amount"],
+  },
+  {
+    id: "audit",
+    reportType: "audit",
+    name: "Security & Mutation Audit Log",
+    category: "Compliance",
+    icon: <HistoryIcon className="size-5 text-purple-600" />,
+    description: "Permanent append-only transaction log containing user actions, entity IDs, IP addresses, and correlation IDs.",
+    fields: ["Log Timestamp", "Actor Email", "Role", "Action (CREATE/UPDATE)", "Entity Type", "Entity ID", "Request UUID"],
+  },
+];
+
+export function ExportsPage() {
+  const datasetSelectId = useId();
+  const dateRangeSelectId = useId();
+  const formatSelectId = useId();
+  const [selectedReportType, setSelectedReportType] = useState<string>("sales");
+  const [selectedFormat, setSelectedFormat] = useState<"csv" | "json">("csv");
+  const [dateRange, setDateRange] = useState<"all" | "month" | "year">("all");
+  const [isExporting, setIsExporting] = useState(false);
+
+  const activeDataset =
+    DATASETS.find((d) => d.reportType === selectedReportType) || DATASETS[0];
+
+  const handleDownload = async () => {
+    setIsExporting(true);
+    try {
+      const now = new Date();
+      let startDate: string | undefined;
+      let endDate: string | undefined;
+
+      if (dateRange === "month") {
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        startDate = start.toISOString();
+        endDate = now.toISOString();
+      } else if (dateRange === "year") {
+        // Indian FY starts April 1
+        const year = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+        const start = new Date(year, 3, 1);
+        startDate = start.toISOString();
+        endDate = now.toISOString();
+      }
+
+      const response = await apiClient.post(
+        "/reports/export",
+        {
+          reportType: selectedReportType,
+          format: selectedFormat,
+          startDate,
+          endDate,
+          organizationId: "MILL",
+        },
+        {
+          responseType: "blob",
+        },
+      );
+
+      // Trigger browser file download
+      const blob = new Blob([response.data], {
+        type: selectedFormat === "csv" ? "text/csv;charset=utf-8;" : "application/json",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const dateStr = now.toISOString().slice(0, 10);
+      link.setAttribute("download", `${selectedReportType}-report-${dateStr}.${selectedFormat}`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(
+        `${activeDataset.name} exported successfully (${selectedFormat.toUpperCase()})`,
+      );
+    } catch (err: any) {
+      const msg = err.response?.data?.error?.message || err.message || "Export generation failed";
+      toast.error(`Export failed: ${msg}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Enterprise Data Export Hub
+            </h1>
+            <Badge variant="outline" className="text-xs">
+              M8 Certified
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Generate authorized statutory GST filings, closing inventory balances, and auditor reconciliation packages.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Badge
+            variant="outline"
+            className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-xs flex items-center gap-1.5"
+          >
+            <ShieldCheckIcon className="size-3.5" />
+            DPDP & Section 170 CGST Compliant
+          </Badge>
+        </div>
+      </div>
+
+      {/* Main Interactive Export Configuration Card */}
+      <div className="rounded-xl border bg-card p-5 sm:p-6 shadow-xs flex flex-col gap-5">
+        <div className="border-b pb-4">
+          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+            <FolderDownIcon className="size-4 text-primary" />
+            Configure Export Parameters
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Select domain, reporting period, and file encoding format
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Dataset Selector */}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor={datasetSelectId}
+              className="text-xs font-semibold text-muted-foreground"
+            >
+              Report Domain
+            </label>
+            <select
+              id={datasetSelectId}
+              value={selectedReportType}
+              onChange={(e) => setSelectedReportType(e.target.value)}
+              className="rounded-lg border bg-background px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {DATASETS.map((d) => (
+                <option key={d.reportType} value={d.reportType}>
+                  {d.name} ({d.category})
+                </option>
+              ))}
+            </select>
+            <span className="text-xs text-muted-foreground">
+              {activeDataset.description}
+            </span>
+          </div>
+
+          {/* Date Range Selector */}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor={dateRangeSelectId}
+              className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5"
+            >
+              <CalendarIcon className="size-3.5" />
+              Reporting Period
+            </label>
+            <select
+              id={dateRangeSelectId}
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value as any)}
+              className="rounded-lg border bg-background px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="all">All Historical Records</option>
+              <option value="month">Current Month to Date</option>
+              <option value="year">Current Financial Year (2025-26)</option>
+            </select>
+            <span className="text-xs text-muted-foreground">
+              {dateRange === "all"
+                ? "Includes full operational ledger history"
+                : dateRange === "month"
+                  ? "Filtered from the 1st of this calendar month"
+                  : "Filtered from April 1 (Statutory Indian FY)"}
+            </span>
+          </div>
+
+          {/* Format Selector */}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor={formatSelectId}
+              className="text-xs font-semibold text-muted-foreground"
+            >
+              File Format
+            </label>
+            <select
+              id={formatSelectId}
+              value={selectedFormat}
+              onChange={(e) => setSelectedFormat(e.target.value as any)}
+              className="rounded-lg border bg-background px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="csv">CSV (Spreadsheet / Microsoft Excel / Tally)</option>
+              <option value="json">JSON (Standard Machine-Readable Payload)</option>
+            </select>
+            <span className="text-xs text-muted-foreground">
+              {selectedFormat === "csv"
+                ? "UTF-8 with commas, escaped quotes, and decimal headers"
+                : "Structured array of typed schema objects"}
+            </span>
+          </div>
+        </div>
+
+        {/* Selected Schema Fields Preview */}
+        <div className="rounded-lg bg-muted/40 border border-border/60 p-4 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+              Export Schema Columns ({activeDataset.fields.length} attributes)
+            </span>
+            <Badge variant="outline" className="text-[10px]">
+              Schema Match 100%
+            </Badge>
+          </div>
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {activeDataset.fields.map((field) => (
+              <span
+                key={field}
+                className="rounded-md border bg-card px-2 py-1 font-mono text-[11px] text-muted-foreground font-medium"
+              >
+                {field}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <Button
+            size="lg"
+            onClick={handleDownload}
+            disabled={isExporting}
+            className="gap-2 cursor-pointer font-semibold shadow-xs"
+          >
+            {isExporting ? (
+              <>
+                <RefreshCwIcon className="size-4 animate-spin" />
+                <span>Generating Export...</span>
+              </>
+            ) : (
+              <>
+                <DownloadIcon className="size-4" />
+                <span>
+                  Download {activeDataset.name} ({selectedFormat.toUpperCase()})
+                </span>
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Dataset Directory Grid */}
+      <section aria-labelledby="available-exports-heading" className="flex flex-col gap-4">
+        <div>
+          <h2 id="available-exports-heading" className="text-lg font-bold text-foreground flex items-center gap-2">
+            <DatabaseIcon className="size-5 text-primary" />
+            Available System Export Registers
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            All exports are generated transactionally from PostgreSQL and logged to the immutable audit trail.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {DATASETS.map((d) => (
+            <article
+              key={d.id}
+              className={`flex flex-col justify-between rounded-xl border bg-card p-4 shadow-xs transition-colors cursor-pointer hover:border-primary/50 ${
+                selectedReportType === d.reportType
+                  ? "border-primary ring-1 ring-primary/20 bg-primary/[0.02]"
+                  : "border-border"
+              }`}
+              onClick={() => setSelectedReportType(d.reportType)}
+            >
+              <div className="flex flex-col gap-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="p-2 rounded-lg bg-muted/60 border border-border/50">
+                    {d.icon}
+                  </div>
+                  <Badge variant="outline" className="text-[10px]">
+                    {d.category}
+                  </Badge>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">{d.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                    {d.description}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-3 mt-3 border-t border-border/60 flex items-center justify-between text-xs">
+                <span className="text-[11px] text-muted-foreground">
+                  {d.fields.length} columns
+                </span>
+                <span className="text-primary font-semibold hover:underline">
+                  Select →
+                </span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}

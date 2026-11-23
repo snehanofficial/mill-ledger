@@ -64,10 +64,10 @@ const CustomersPage = lazy(() =>
   import("@/pages/customers-page").then((m) => ({ default: m.CustomersPage })),
 );
 const ExportsPage = lazy(() =>
-  import("@/pages/placeholder-pages").then((m) => ({ default: m.ExportsPage })),
+  import("@/pages/exports-page").then((m) => ({ default: m.ExportsPage })),
 );
 const SettingsPage = lazy(() =>
-  import("@/pages/placeholder-pages").then((m) => ({ default: m.SettingsPage })),
+  import("@/pages/settings-page").then((m) => ({ default: m.SettingsPage })),
 );
 const NotFoundPage = lazy(() =>
   import("@/pages/placeholder-pages").then((m) => ({ default: m.NotFoundPage })),
