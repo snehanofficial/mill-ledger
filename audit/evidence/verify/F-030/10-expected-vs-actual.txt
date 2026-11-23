@@ -1,0 +1,16 @@
+=== F-030 Verification: 10 Expected vs Actual ===
+
+EXPECTED (Source: docs/architecture.md, docs/api-contract.md, OWASP Top 10:2021 A03:2021, OWASP API Security Top 10:2023 API3:2023, OWASP ASVS v4.0.3 Sec 5.1.1, Sec 5.1.4):
+1. All mutating HTTP endpoints must validate request parameters, bodies, and data types against strict Zod schemas before routing payloads to domain services.
+2. Invalid property types, malformed enumerations, and unauthorized properties must be rejected with HTTP 400 Bad Request and detailed field-level errors.
+3. Server must never crash with HTTP 500 or leak PrismaClientValidationError stack traces on unexpected client payloads.
+
+ACTUAL:
+1. Implemented strict updateOrderSchema in server/src/modules/sales/sales.routes.ts validating notes, status (DRAFT | SUBMITTED), lines, and creatorId, rejecting unrecognized properties with .strict().
+2. Safe parse failure throws AppError with HTTP 400 Bad Request and structured error descriptions.
+3. Tested with missing fields, non-existent enum strings, numeric types, nulls, and unexpected properties; all return HTTP 400 with zero HTTP 500 crashes and zero stack trace leakage.
+4. All 36 Vitest suites (205 tests) pass. 0 typecheck errors, 0 lint warnings. 18/18 benchmark assertions pass. 10/10 SQL invariants hold. Client production build clean.
+
+DELTA:
+None. All expected criteria fully satisfied.
+Status: VERIFIED-PASS

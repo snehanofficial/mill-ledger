@@ -1,0 +1,9 @@
+=== F-030 Verification: 07 Authorization & Access Control Checks ===
+1. Salesman Ownership Enforcement:
+   - When a SALESMAN attempts to update a draft order belonging to another salesman, the ownership pre-check getSalesOrderById(orderId, req.user) throws HTTP 403 Forbidden.
+   - Tested in server/src/auth.integration.test.ts: denies salesman when updating another salesman's order (status 403).
+2. Status Transition Constraints:
+   - Direct status transition to APPROVED is rejected with HTTP 400 Bad Request: "Draft orders can only be updated to DRAFT or SUBMITTED status".
+   - Only administrative approval (/api/v1/sales/orders/:id/approve) can promote an order to APPROVED with inventory reservations.
+3. Parameter Authorization:
+   - Schema enforcement prevents client-side mass assignment or injection of internal flags.

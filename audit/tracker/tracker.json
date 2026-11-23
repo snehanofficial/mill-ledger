@@ -2403,7 +2403,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -2411,12 +2411,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-030.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-030.md",
+        "note": "Commencing Zod schema definition and validation middleware integration on PUT /orders/:id."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "520891d",
+        "evidenceLink": "audit/evidence/verify/F-030/03-regression-reproduction.txt",
+        "note": "Implemented strict updateOrderSchema on PUT /orders/:id route and updated salesService.updateDraftOrder to safely handle updates."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "520891d",
+        "evidenceLink": "audit/evidence/verify/F-030/10-expected-vs-actual.txt",
+        "note": "Verified across all 10 protocol checks: 6/6 regression tests pass, 36/36 test files (205 tests) pass, 0 typecheck/lint errors, 18/18 benchmark assertions pass, 10/10 SQL invariants hold, client build clean."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
     "regressionTest": "audit/tests/f-030-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "fixCommit": "520891d",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-030/01-fresh-environment.txt",
+      "audit/evidence/verify/F-030/02-test-execution.txt",
+      "audit/evidence/verify/F-030/03-regression-reproduction.txt",
+      "audit/evidence/verify/F-030/04-full-suite-pass.txt",
+      "audit/evidence/verify/F-030/05-typecheck-lint.txt",
+      "audit/evidence/verify/F-030/06-benchmark-invariants.txt",
+      "audit/evidence/verify/F-030/07-authorization-checks.txt",
+      "audit/evidence/verify/F-030/08-concurrency-safety.txt",
+      "audit/evidence/verify/F-030/09-backward-compat.txt",
+      "audit/evidence/verify/F-030/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'req\\.query\\|req\\.params' server/src/modules/ | grep -v 'parse' | head -n 25",
