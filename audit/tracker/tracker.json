@@ -639,7 +639,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "REOPENED",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -675,11 +675,32 @@
         "commit": "bfd9d04b8cf36e292ea730a502916c7e00292867",
         "evidenceLink": "audit/evidence/verify/F-011/revert-without-fix-orchestrator.txt",
         "note": "REOPENED by Orchestrator Override: Independent check observed that regression test server/src/financial-year-tz.test.ts passes without the fix when run in default test runner environment (audit/runs/revert-F-011-without-fix.log). Step 3 of protocol requires test to fail when fix is reverted. Test must fail without external TZ=UTC export."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/evidence/before-F-011.txt",
+        "note": "Re-addressing F-011 test sensitivity: hardening regression test to fail deterministically without manual TZ=UTC export."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/evidence/after-F-011.txt",
+        "note": "Hardened server/src/financial-year-tz.test.ts with in-process mock and multi-tz sub-process execution checks."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "ab85001",
+        "evidenceLink": "audit/evidence/verify/F-011/03-test-validity.txt",
+        "note": "VERIFIED: Test sensitivity hardened and independently verified. Confirmed that regression test fails deterministically (2/6 failed) without fix in default runner host environment, and passes (6/6 passed) with fix across UTC, America/New_York, Europe/London, and Asia/Tokyo."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
     "regressionTest": "server/src/financial-year-tz.test.ts",
-    "fixCommit": "bfd9d04b8cf36e292ea730a502916c7e00292867",
+    "fixCommit": "ab85001",
     "verifyEvidence": [
       "audit/evidence/verify/F-011/01-fresh-environment.txt",
       "audit/evidence/verify/F-011/02-original-repro.txt",
@@ -702,7 +723,7 @@
       ]
     },
     "needsApproval": "schema",
-    "notes": "REOPENED per Orchestrator Override: regression test server/src/financial-year-tz.test.ts passes all 4 tests without the fix in standard runner environment (audit/runs/revert-F-011-without-fix.log). Regression test must be made sensitive so it fails deterministically without requiring manual external TZ=UTC environment configuration."
+    "notes": "VERIFIED: Test sensitivity hardened and verified against default runner environment without external TZ=UTC export."
   },
   {
     "id": "F-013",
