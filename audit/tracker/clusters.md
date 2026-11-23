@@ -287,7 +287,7 @@ server/src/app.ts:22:    cors({
 | **F-037** | P1 | `VERIFIED` | Core Invoicing Workflow Cannot Be Initiated From Client UI (Missing Create Invoice Action) |
 | **F-038** | P1 | `VERIFIED` | Suppliers Master Cannot Be Added or Managed via UI or API (Static Seed-Only Entity) |
 | **F-039** | P2 | `VERIFIED` | Audit Log CSV Export Throws 400 Error ("Unknown report type: audit") |
-| **F-040** | P1 | `OPEN` | Dead Links and Placeholder Pages in Primary Navigation (`/orders/new`, `/exports`, `/settings`) |
+| **F-040** | P1 | `VERIFIED` | Dead Links and Placeholder Pages in Primary Navigation (`/orders/new`, `/exports`, `/settings`) |
 | **F-041** | P2 | `OPEN` | Unrestricted Report Tabs Cause 403 Console Errors for Scoped Roles (Salesman & Production) |
 | **F-042** | P1 | `VERIFIED` | Ordering Interface Missing Required Product Tiles, Visual Images, and Accessible Quantity Steppers |
 | **F-043** | P1 | `OPEN` | Pervasive Tamil Localization Failure Across Internal Business Routes Despite Language Selector |
