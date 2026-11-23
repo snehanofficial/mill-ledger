@@ -4,6 +4,7 @@ import { apiClient } from "@/lib/api-client";
 import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -22,6 +23,8 @@ import {
 export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [exporting, setExporting] = useState(false);
+  const [auditSearch, setAuditSearch] = useState("");
+  const [auditActionFilter, setAuditActionFilter] = useState("ALL");
 
   // 1. Sales Report
   const {
@@ -89,6 +92,21 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
       return res.data;
     },
     enabled: activeTab === "audit",
+  });
+
+  const filteredAuditLogs = (auditData?.logs || []).filter((log: any) => {
+    if (auditActionFilter !== "ALL" && log.action !== auditActionFilter) {
+      return false;
+    }
+    if (auditSearch.trim()) {
+      const q = auditSearch.toLowerCase();
+      const matchEmail = (log.userEmail || "").toLowerCase().includes(q);
+      const matchEntity = (log.entity || "").toLowerCase().includes(q);
+      const matchAction = (log.action || "").toLowerCase().includes(q);
+      const matchDetails = (log.details || "").toLowerCase().includes(q);
+      return matchEmail || matchEntity || matchAction || matchDetails;
+    }
+    return true;
   });
 
   const handleExportCSV = async () => {
@@ -631,7 +649,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
       {/* Tab 6: Audit Logs */}
       {activeTab === "audit" && (
         <div className="rounded-xl border bg-card shadow-xs">
-          <div className="flex items-center justify-between border-b p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b p-4">
             <div>
               <h2 className="text-base font-semibold text-foreground">
                 System Audit Trail
@@ -640,6 +658,28 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 Immutable activity logs with actor, timestamp, action and
                 request metadata
               </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                placeholder="Search actor, entity, details..."
+                value={auditSearch}
+                onChange={(e) => setAuditSearch(e.target.value)}
+                className="h-8 w-56 text-xs"
+              />
+              <select
+                value={auditActionFilter}
+                onChange={(e) => setAuditActionFilter(e.target.value)}
+                className="h-8 rounded-control border border-input bg-background px-2 text-xs text-foreground shadow-xs outline-none"
+              >
+                <option value="ALL">All Actions</option>
+                <option value="CREATE">CREATE</option>
+                <option value="UPDATE">UPDATE</option>
+                <option value="DELETE">DELETE</option>
+                <option value="APPROVE">APPROVE</option>
+                <option value="POST">POST</option>
+                <option value="REVERSE">REVERSE</option>
+                <option value="EXPORT">EXPORT</option>
+              </select>
             </div>
           </div>
 
@@ -655,17 +695,19 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(auditData?.logs || []).length === 0 ? (
+                {filteredAuditLogs.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={5}
                       className="text-center text-xs text-muted-foreground py-8"
                     >
-                      No audit events recorded yet
+                      {auditSearch || auditActionFilter !== "ALL"
+                        ? "No matching audit events found"
+                        : "No audit events recorded yet"}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  auditData?.logs.map((log: any) => (
+                  filteredAuditLogs.map((log: any) => (
                     <TableRow key={log.id}>
                       <TableCell className="text-xs font-mono text-muted-foreground">
                         {formatDateTime(log.timestamp)}

@@ -16,13 +16,15 @@ import { reportingRouter } from "./modules/reporting/reporting.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 import { isAllowedOrigin } from "./lib/origins.js";
 import { requestIdMiddleware } from "./middleware/request-id.middleware.js";
+import { requestLogger } from "./middleware/request-logger.middleware.js";
 import { createRateLimiter } from "./middleware/rate-limit.middleware.js";
 
 export function createApp() {
   const app = express();
 
-  // Request correlation ID
+  // Request correlation ID and structured logger
   app.use(requestIdMiddleware);
+  app.use(requestLogger);
 
   app.use(helmet());
   app.use(

@@ -955,6 +955,39 @@ export class ReportingService {
   }
 
   /**
+   * 8b. System Audit Trail Report
+   */
+  async getAuditReport(params: ReportFilterParams) {
+    const orgId = await this.resolveOrgId(params.organizationId);
+    const logs = await auditService.getLogs({
+      organizationId: orgId,
+      startDate: params.startDate,
+      endDate: params.endDate,
+      limit: 1000,
+    });
+
+    const rows = logs.map((log) => ({
+      timestamp: log.timestamp.toISOString(),
+      userEmail: log.userEmail || "System",
+      action: log.action,
+      entity: log.entity,
+      entityId: log.entityId || "",
+      requestId: log.requestId || "",
+      ipAddress: log.ipAddress || "",
+      details: log.details || "",
+    }));
+
+    return {
+      reportTitle: "System Audit Trail",
+      generatedAt: new Date().toISOString(),
+      rows,
+      summary: {
+        totalRecords: rows.length,
+      },
+    };
+  }
+
+  /**
    * Neutralize potential formula injection characters for CSV export per CWE-1236 & OWASP
    */
   sanitizeCSVCell(val: unknown): string {
@@ -1001,6 +1034,9 @@ export class ReportingService {
         break;
       case "receivables":
         reportData = await this.getReceivablesReport(params);
+        break;
+      case "audit":
+        reportData = await this.getAuditReport(params);
         break;
       default:
         throw new AppError(`Unknown report type: ${reportType}`, 400);

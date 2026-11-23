@@ -5,6 +5,7 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { userService } from "./user.service.js";
+import { auditService } from "../reporting/audit.service.js";
 
 export const userRouter = Router();
 
@@ -61,6 +62,18 @@ userRouter.post(
         role,
         organizationId: organizationId || req.user?.organizationId,
       });
+
+      await auditService.log({
+        organizationId: user.organizationId || req.user?.organizationId,
+        userId: req.user?.id,
+        userEmail: req.user?.email,
+        action: "CREATE",
+        entity: "User",
+        entityId: user.id,
+        details: { email: user.email, role: user.role, name: user.name },
+        requestId: req.id,
+      });
+
       res.status(201).json({ user });
     } catch (err) {
       next(err);
@@ -82,6 +95,18 @@ userRouter.put(
         isActive,
         organizationId,
       });
+
+      await auditService.log({
+        organizationId: user.organizationId || req.user?.organizationId,
+        userId: req.user?.id,
+        userEmail: req.user?.email,
+        action: "UPDATE",
+        entity: "User",
+        entityId: user.id,
+        details: { role: user.role, isActive: user.isActive, name: user.name },
+        requestId: req.id,
+      });
+
       res.json({ user });
     } catch (err) {
       next(err);
@@ -103,6 +128,18 @@ userRouter.patch(
         isActive,
         organizationId,
       });
+
+      await auditService.log({
+        organizationId: user.organizationId || req.user?.organizationId,
+        userId: req.user?.id,
+        userEmail: req.user?.email,
+        action: "UPDATE",
+        entity: "User",
+        entityId: user.id,
+        details: { role: user.role, isActive: user.isActive, name: user.name },
+        requestId: req.id,
+      });
+
       res.json({ user });
     } catch (err) {
       next(err);
@@ -118,6 +155,18 @@ userRouter.delete(
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const result = await userService.deleteUser(id);
+
+      await auditService.log({
+        organizationId: req.user?.organizationId,
+        userId: req.user?.id,
+        userEmail: req.user?.email,
+        action: "DELETE",
+        entity: "User",
+        entityId: id,
+        details: { deletedUserId: id },
+        requestId: req.id,
+      });
+
       res.json(result);
     } catch (err) {
       next(err);

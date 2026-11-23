@@ -160,6 +160,9 @@ reportingRouter.get(
           case "receivables":
             data = await reportingService.getReceivablesReport(params);
             break;
+          case "audit":
+            data = await reportingService.getAuditReport(params);
+            break;
           default:
             throw new AppError(`Unknown report type: ${reportType}`, 400);
         }
