@@ -4143,15 +4143,23 @@
       "Phase 7 Specification Check 2"
     ],
     "files": [
-      "client/src/pages/orders-page.ts",
-      "client/src/pages/dashboard-page.ts",
-      "client/src/pages/invoices-page.ts",
-      "client/src/components/ui/loading-error-empty.ts",
-      "loading-error-empty.ts"
+      "client/src/components/ui/loading-error-empty.tsx",
+      "client/src/lib/api-client.ts",
+      "client/src/pages/customers-page.tsx",
+      "client/src/pages/dashboard-page.tsx",
+      "client/src/pages/dispatch-page.tsx",
+      "client/src/pages/invoices-page.tsx",
+      "client/src/pages/orders-page.tsx",
+      "client/src/pages/payments-page.tsx",
+      "client/src/pages/production-page.tsx",
+      "client/src/pages/purchases-page.tsx",
+      "client/src/pages/reports-page.tsx",
+      "client/src/pages/stock-page.tsx",
+      "client/src/pages/suppliers-page.tsx"
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -4159,12 +4167,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-045.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "06c1f98",
+        "evidenceLink": "audit/evidence/verify/F-045/10-summary.txt",
+        "note": "Implemented SkeletonTable and SkeletonKPIs across all 11 operational pages; added request ID extraction and one-click copy in ErrorState."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-045-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-045-regression.test.ts",
+    "regressionTest": "audit/tests/f-045-regression.test.ts",
+    "fixCommit": "06c1f98",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-045/01-pre-fix-repro.txt",
+      "audit/evidence/verify/F-045/02-regression-test.txt",
+      "audit/evidence/verify/F-045/03-typecheck.txt",
+      "audit/evidence/verify/F-045/04-lint.txt",
+      "audit/evidence/verify/F-045/05-build.txt",
+      "audit/evidence/verify/F-045/06-unit-tests.txt",
+      "audit/evidence/verify/F-045/07-benchmark.txt",
+      "audit/evidence/verify/F-045/08-invariants.txt",
+      "audit/evidence/verify/F-045/09-git-diff.txt",
+      "audit/evidence/verify/F-045/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn '<table\\|useForm' client/src/pages/ | head -n 25",
