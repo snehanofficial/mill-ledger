@@ -7001,7 +7001,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -7009,12 +7009,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-088.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "aa967ac",
+        "evidenceLink": "audit/evidence/verify/F-088/",
+        "note": "Verified noindex meta tag in AuthenticatedLayout and X-Robots-Tag: noindex, nofollow across all server endpoints."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-088-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-088-regression.test.ts",
+    "fixCommit": "aa967ac",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-088/01-test-suite.txt",
+      "audit/evidence/verify/F-088/02-typecheck.txt",
+      "audit/evidence/verify/F-088/03-lint.txt",
+      "audit/evidence/verify/F-088/04-build.txt",
+      "audit/evidence/verify/F-088/05-benchmark.txt",
+      "audit/evidence/verify/F-088/06-invariants.txt",
+      "audit/evidence/verify/F-088/07-regression-test.txt",
+      "audit/evidence/verify/F-088/08-x-robots-tag-curl.txt",
+      "audit/evidence/verify/F-088/09-meta-robots-layout.txt",
+      "audit/evidence/verify/F-088/10-git-diff.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'robots\\|sitemap\\|meta' client/ server/ | head -n 25",

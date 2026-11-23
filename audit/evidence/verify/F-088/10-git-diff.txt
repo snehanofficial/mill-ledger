@@ -1,0 +1,48 @@
+diff --git a/client/src/layouts/authenticated-layout.tsx b/client/src/layouts/authenticated-layout.tsx
+index cce2a0a..663fa34 100644
+--- a/client/src/layouts/authenticated-layout.tsx
++++ b/client/src/layouts/authenticated-layout.tsx
+@@ -46,6 +46,27 @@ export function AuthenticatedLayout() {
+     };
+   }, [navigate, queryClient, location]);
+ 
++  // REQ-062 & Owner Decision 2: Keep authenticated ERP pages noindex, nofollow
++  useEffect(() => {
++    let meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
++    const created = !meta;
++    if (!meta) {
++      meta = document.createElement("meta");
++      meta.name = "robots";
++      document.head.appendChild(meta);
++    }
++    const previousContent = meta.content;
++    meta.content = "noindex, nofollow";
++
++    return () => {
++      if (created) {
++        meta?.remove();
++      } else if (previousContent) {
++        meta!.content = previousContent;
++      }
++    };
++  }, []);
++
+   // Show loading shell to prevent layout shift during initial session verification
+   if (isLoading) {
+     return <AuthenticatedShellSkeleton />;
+diff --git a/server/src/app.ts b/server/src/app.ts
+index d636428..f3f16ea 100644
+--- a/server/src/app.ts
++++ b/server/src/app.ts
+@@ -27,6 +27,11 @@ export function createApp() {
+   app.use(requestLogger);
+ 
+   app.use(helmet());
++  // REQ-062 & Owner Decision 2: Prevent search engine indexing of authenticated ERP APIs and endpoints
++  app.use((_req, res, next) => {
++    res.setHeader("X-Robots-Tag", "noindex, nofollow");
++    next();
++  });
+   app.use(
+     cors({
+       origin: (requestOrigin, callback) => {

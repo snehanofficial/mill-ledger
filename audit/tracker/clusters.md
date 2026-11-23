@@ -505,7 +505,7 @@ client/src/components/shell/authenticated-shell.tsx:976:  const { t } = useLangu
 
 | ID | Sev | Status | Title |
 |---|---|---|---|
-| **F-088** | P1 | `OPEN` | Absence of `noindex` Robots Protection and `X-Robots-Tag` Across Authenticated ERP Routes |
+| **F-088** | P1 | `VERIFIED` | Absence of `noindex` Robots Protection and `X-Robots-Tag` Across Authenticated ERP Routes |
 | **F-089** | P2 | `OPEN` | Missing `robots.txt` and `sitemap.xml` with Server Returning HTTP 200 HTML SPA Shell |
 | **F-090** | P1 | `OPEN` | Soft 404 Status and Unauthenticated Redirect Hijacking on Non-Existent Routes |
 | **F-091** | P1 | `OPEN` | Statically Frozen `<title>` and Total Omission of Essential SEO & Social Metadata |
