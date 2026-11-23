@@ -184,4 +184,130 @@ describe("F-031 Shared Domain Validation Schemas Contract Parity", () => {
     };
     expect(recordPaymentSchema.safeParse(invalidAmount).success).toBe(false);
   });
+
+  describe("F-032 Strict Mode Rejection of Unknown Fields", () => {
+    it("rejects unknown fields on createCustomerSchema", () => {
+      const res = createCustomerSchema.safeParse({
+        code: "CUST-001",
+        name: "Test Customer",
+        __unexpectedField: "malicious_or_typo",
+      });
+      expect(res.success).toBe(false);
+      if (!res.success) {
+        expect(res.error.issues[0].code).toBe("unrecognized_keys");
+      }
+    });
+
+    it("rejects unknown fields on createOrderSchema and createOrderLineSchema", () => {
+      const rootRes = createOrderSchema.safeParse({
+        customerId: "cust_123",
+        lines: [{ productVariantId: "variant_123", quantity: 10 }],
+        specialDiscountPercentage: 15,
+      });
+      expect(rootRes.success).toBe(false);
+      if (!rootRes.success) {
+        expect(rootRes.error.issues[0].code).toBe("unrecognized_keys");
+      }
+
+      const lineRes = createOrderSchema.safeParse({
+        customerId: "cust_123",
+        lines: [
+          {
+            productVariantId: "variant_123",
+            quantity: 10,
+            extraUnknownLineField: 123,
+          },
+        ],
+      });
+      expect(lineRes.success).toBe(false);
+      if (!lineRes.success) {
+        expect(lineRes.error.issues[0].code).toBe("unrecognized_keys");
+      }
+    });
+
+    it("rejects unknown fields on createDispatchSchema", () => {
+      const res = createDispatchSchema.safeParse({
+        salesOrderId: "order_123",
+        unknownProperty: "value",
+      });
+      expect(res.success).toBe(false);
+      if (!res.success) {
+        expect(res.error.issues[0].code).toBe("unrecognized_keys");
+      }
+    });
+
+    it("rejects unknown fields on production schemas", () => {
+      const draftRes = createDraftRunSchema.safeParse({
+        organizationId: "MILL",
+        warehouseId: "wh_1",
+        recipeId: "rec_1",
+        runNumber: "PR-001",
+        unknownProp: 123,
+      });
+      expect(draftRes.success).toBe(false);
+      if (!draftRes.success) {
+        expect(draftRes.error.issues[0].code).toBe("unrecognized_keys");
+      }
+
+      const postRes = postProductionRunSchema.safeParse({
+        organizationId: "MILL",
+        actualGoodQty: 50,
+        consumedMaterials: [
+          {
+            inventoryItemId: "item_1",
+            actualQty: 60,
+            unknownMaterialField: true,
+          },
+        ],
+      });
+      expect(postRes.success).toBe(false);
+      if (!postRes.success) {
+        expect(postRes.error.issues[0].code).toBe("unrecognized_keys");
+      }
+    });
+
+    it("rejects unknown fields on inventory purchase receipt schema", () => {
+      const res = createPurchaseReceiptSchema.safeParse({
+        organizationId: "MILL",
+        supplierId: "supp_1",
+        warehouseId: "wh_1",
+        receiptNumber: "REC-001",
+        items: [
+          {
+            inventoryItemId: "item_1",
+            quantity: 10,
+            uomId: "uom_1",
+            unitPrice: 15,
+          },
+        ],
+        extraPurchaseField: "bad",
+      });
+      expect(res.success).toBe(false);
+      if (!res.success) {
+        expect(res.error.issues[0].code).toBe("unrecognized_keys");
+      }
+    });
+
+    it("rejects unknown fields on finance & payment schemas", () => {
+      const invoiceRes = createInvoiceSchema.safeParse({
+        salesOrderId: "so_123",
+        bogusTaxField: 99,
+      });
+      expect(invoiceRes.success).toBe(false);
+      if (!invoiceRes.success) {
+        expect(invoiceRes.error.issues[0].code).toBe("unrecognized_keys");
+      }
+
+      const paymentRes = recordPaymentSchema.safeParse({
+        customerId: "cust_123",
+        amount: 1500,
+        paymentMode: "UPI",
+        unexpectedPaymentKey: "discardMe",
+      });
+      expect(paymentRes.success).toBe(false);
+      if (!paymentRes.success) {
+        expect(paymentRes.error.issues[0].code).toBe("unrecognized_keys");
+      }
+    });
+  });
 });
