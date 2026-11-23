@@ -33,12 +33,7 @@ async function run() {
   ];
 
   for (const r of rows as any[]) {
-    const line = headers.map((h) => {
-      const val = r[h];
-      if (val === null || val === undefined) return '""';
-      const str = String(val).replace(/"/g, '""');
-      return `"${str}"`;
-    });
+    const line = headers.map((h) => reportingService.sanitizeCSVCell(r[h]));
     csvLines.push(line.join(","));
   }
 

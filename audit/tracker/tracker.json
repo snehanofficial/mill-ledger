@@ -2391,7 +2391,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -2399,12 +2399,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-026.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": null,
+        "note": "Started remediation: formula trigger prefix neutralization in reporting service."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "adc5564ca5a934c01e9a8dcf445532cb9ac70975",
+        "evidenceLink": null,
+        "note": "Implemented sanitizeCSVCell in reporting service to neutralize formula trigger prefixes."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "adc5564ca5a934c01e9a8dcf445532cb9ac70975",
+        "evidenceLink": "audit/evidence/verify/F-026/",
+        "note": "Verified with 4 regression tests, verify-csv-injection.ts, 36 Vitest suites, 18 benchmark assertions, and 10 SQL invariants."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "reproCommand": "npx vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-026-regression.test.ts",
     "regressionTest": "audit/tests/f-026-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "fixCommit": "adc5564ca5a934c01e9a8dcf445532cb9ac70975",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-026/01-fresh-environment.txt",
+      "audit/evidence/verify/F-026/02-test-execution.txt",
+      "audit/evidence/verify/F-026/03-regression-reproduction.txt",
+      "audit/evidence/verify/F-026/04-full-suite-pass.txt",
+      "audit/evidence/verify/F-026/05-typecheck-lint.txt",
+      "audit/evidence/verify/F-026/06-benchmark-invariants.txt",
+      "audit/evidence/verify/F-026/07-authorization-checks.txt",
+      "audit/evidence/verify/F-026/08-concurrency-safety.txt",
+      "audit/evidence/verify/F-026/09-backward-compat.txt",
+      "audit/evidence/verify/F-026/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'req\\.query\\|req\\.params' server/src/modules/ | grep -v 'parse' | head -n 25",

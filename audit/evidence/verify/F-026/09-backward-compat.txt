@@ -1,0 +1,6 @@
+=== F-026 Verification: 09 Backward Compatibility ===
+1. Numerical Integrity:
+   - Numerical values (`typeof val === "number"`) like quantities, unit prices, tax amounts, and balances are never altered with apostrophes.
+   - Spreadsheet software continues to parse numeric fields as valid floats and integers for pivot tables and mathematical operations.
+2. Full Test Suite Invariance:
+   - All existing report export tests in `reports.test.ts` pass without regression.

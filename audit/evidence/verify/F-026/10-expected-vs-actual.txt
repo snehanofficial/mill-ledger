@@ -1,0 +1,14 @@
+=== F-026 Verification: 10 Expected vs Actual ===
+
+EXPECTED (Source: OWASP CSV Injection Cheat Sheet, OWASP ASVS v4.0.3 Section 5.1.4, CWE-1236):
+1. In CSV exports, cell values starting with formula trigger characters (`=`, `+`, `-`, `@`, `0x09`, `0x0D`) must be neutralized by prepending an apostrophe `'` so spreadsheets treat them as literal text.
+2. Standard numbers, booleans, and benign text must remain unaltered.
+
+ACTUAL:
+1. Implemented `sanitizeCSVCell(val: unknown)` in `server/src/modules/reporting/reporting.service.ts` checking non-numeric values for formula trigger prefixes (`/^[=+\-@\t\r]/`) and prepending `'`.
+2. Verified with `audit/scripts/verify-csv-injection.ts` (VERIFIED-PASS) and comprehensive regression test `audit/tests/f-026-regression.spec.ts` (4/4 tests passing).
+3. All 36 Vitest suites (205 tests) pass. 0 typecheck errors, 0 lint warnings. 18/18 benchmark assertions pass. 10/10 SQL database invariants hold. Client and server production builds clean.
+
+DELTA:
+None. All expected criteria fully satisfied.
+Status: VERIFIED-PASS

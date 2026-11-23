@@ -215,7 +215,7 @@ client/src/layouts/authenticated-layout.tsx:71:    <AuthenticatedShell user={use
 | **F-012** | P1 | `VERIFIED` | Absence of format and checksum validation allows malformed and counterfeit GSTIN strings in customer records and tax invoices |
 | **F-022** | P1 | `VERIFIED` | `auditService.log` is invoked only on report exports; zero audit log records are generated for orders, dispatches, production runs, invoices, or payments |
 | **F-025** | P2 | `OPEN` | Application middleware pipeline deviates from security baseline: lacks request correlation IDs, app-wide rate limits, JSON 404 envelope, and translates 413 payload limits into 500 server crashes |
-| **F-026** | P1 | `OPEN` | Unsanitized user inputs exported to CSV files allow formula injection in spreadsheet viewers |
+| **F-026** | P1 | `VERIFIED` | Unsanitized user inputs exported to CSV files allow formula injection in spreadsheet viewers |
 | **F-030** | P0 | `VERIFIED` | Order modification endpoint lacks request body schema validation, accepting unvalidated mutations and crashing with HTTP 500 on malformed status values |
 | **F-031** | P1 | `OPEN` | Shared contracts workspace contains zero domain schemas; client executes with no Zod validation while server routes define isolated, unexported schemas |
 
