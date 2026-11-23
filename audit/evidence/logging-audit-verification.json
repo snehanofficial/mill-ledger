@@ -1,5 +1,5 @@
 {
-  "apiLoggerExists": false,
+  "apiLoggerExists": true,
   "apiLogFieldsPresent": {
     "requestId": false,
     "userId": false,
@@ -16,7 +16,7 @@
   "apiLogRetention": "NONE",
   "canaryPasswordExposedInConsole": false,
   "canaryPasswordExposedInDB": false,
-  "requestIdInResponseHeader": false,
+  "requestIdInResponseHeader": true,
   "businessAuditTrailCovers": {
     "login": false,
     "failedLogin": false,
@@ -30,8 +30,8 @@
     "superAdminActions": false,
     "reportExport": true
   },
-  "auditLogAppendOnlyAtDbLevel": false,
-  "auditLogUpdatePermitted": true,
-  "auditLogDeletePermitted": true,
-  "auditLogExportStatus": 400
+  "auditLogAppendOnlyAtDbLevel": true,
+  "auditLogUpdatePermitted": false,
+  "auditLogDeletePermitted": false,
+  "auditLogExportStatus": 200
 }

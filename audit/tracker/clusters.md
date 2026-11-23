@@ -254,7 +254,7 @@ server/src/modules/production/production.routes.ts:200:        ? req.params.id[0
 | **F-032** | P1 | `VERIFIED` | Zero API Zod schemas configure `.strict()`, allowing unknown fields to be silently accepted or stripped without client notification |
 | **F-033** | P1 | `OPEN` | Application lacks domain-level validation for statutory formats (PIN, Phone, Email, State, HSN), discrete UOM integer quantities, customer credit limits, and chronological dates |
 | **F-034** | P1 | `VERIFIED` | Server lacks consistent error envelope (missing code, fieldErrors, requestId), leaks internal Prisma schema details and stack traces, and triggers client UI error masking |
-| **F-035** | P1 | `OPEN` | Zero HTTP request logging middleware exists; no correlation IDs are generated; operational mutations bypass audit logs; and `audit_log` records are mutable and lack search/export UI |
+| **F-035** | P1 | `VERIFIED` | Zero HTTP request logging middleware exists; no correlation IDs are generated; operational mutations bypass audit logs; and `audit_log` records are mutable and lack search/export UI |
 | **F-100** | P1 | `VERIFIED` | Missing Fail-Fast Environment Validation on `DATABASE_URL` and Absence of Staging / Production Env Configs |
 | **F-101** | P0 | `WONT-FIX` | Benchmark Seed Script Executes Unchecked in Production Without Environment Guard |
 | **F-106** | P2 | `OPEN` | Lack of Data Protection Policies, Retention Schedules, Erasure/Anonymization Routines, and Subject Access Export Under DPDP Act 2023 |

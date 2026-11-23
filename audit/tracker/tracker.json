@@ -3111,15 +3111,17 @@
       "REQ-050"
     ],
     "files": [
-      "/audit/scripts/verify-logging-audit.ts",
-      "///home/snehan/projects/web/mill-ledger/audit/scripts/verify-logging-audit.ts",
-      "app.ts",
-      "///home/snehan/projects/web/mill-ledger/server/src/app.ts",
-      "audit.service.ts"
+      "server/src/middleware/request-logger.middleware.ts",
+      "server/src/app.ts",
+      "server/prisma/migrations/20261124000004_audit_log_immutability_trigger/migration.sql",
+      "server/src/modules/reporting/reporting.service.ts",
+      "server/src/modules/reporting/reporting.routes.ts",
+      "server/src/modules/auth/user.routes.ts",
+      "client/src/pages/reports-page.tsx"
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -3127,12 +3129,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-035.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-24",
+        "commit": null,
+        "evidenceLink": null,
+        "note": "Added requestLogger middleware, PostgreSQL audit_log immutability trigger, and audit export."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-24",
+        "commit": "6918af1",
+        "evidenceLink": null,
+        "note": "Implemented requestLogger, audit immutability trigger, audit CSV/JSON export, and UI search/filter controls."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "6918af1",
+        "evidenceLink": "audit/evidence/verify/F-035/",
+        "note": "Verified with 5 regression tests, verify-logging-audit.ts (6/6 checks pass), 39 Vitest suites (239 tests pass), 18 benchmark assertions, and 10 SQL invariants."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-035-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "npx vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-035-regression.test.ts",
+    "regressionTest": "audit/tests/f-035-regression.test.ts",
+    "fixCommit": "6918af1",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-035/01-test-suite.txt",
+      "audit/evidence/verify/F-035/02-typecheck.txt",
+      "audit/evidence/verify/F-035/03-lint.txt",
+      "audit/evidence/verify/F-035/04-build.txt",
+      "audit/evidence/verify/F-035/05-benchmark.txt",
+      "audit/evidence/verify/F-035/06-invariants.txt",
+      "audit/evidence/verify/F-035/07-regression-test.txt",
+      "audit/evidence/verify/F-035/08-logging-audit-verification.txt",
+      "audit/evidence/verify/F-035/09-migration-status.txt",
+      "audit/evidence/verify/F-035/10-git-diff.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",

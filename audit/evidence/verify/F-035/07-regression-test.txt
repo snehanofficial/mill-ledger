@@ -1,0 +1,24 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | audit/tests/f-035-regression.test.ts > F-035 Regression Test: Request Logging, DB Immutability, and Audit Trail > enforces append-only immutability on audit_log: blocks UPDATE via PostgreSQL trigger
+prisma:error 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Audit log records are strictly immutable: UPDATE on audit_log is prohibited`
+
+stdout | audit/tests/f-035-regression.test.ts > F-035 Regression Test: Request Logging, DB Immutability, and Audit Trail > enforces append-only immutability on audit_log: blocks DELETE via PostgreSQL trigger
+prisma:error 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Audit log records are strictly immutable: DELETE on audit_log is prohibited`
+
+ ✓ audit/tests/f-035-regression.test.ts (5 tests) 172ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  01:52:50
+   Duration  1.25s (transform 301ms, setup 0ms, collect 707ms, tests 172ms, environment 0ms, prepare 52ms)
+

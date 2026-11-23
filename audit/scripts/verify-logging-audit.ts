@@ -37,8 +37,11 @@ async function main() {
   const canaryEmail = `canary_user_${Date.now()}@millledger.local`;
 
   // 1. Check API Logging Middleware
-  // Inspect Express app stack to verify if any request logger middleware is attached
-  const appStack = (app as any)._router?.stack || [];
+  // In Express, router stack is initialized upon lazyrouter() or first request
+  if (!(app as any)._router && typeof (app as any).lazyrouter === "function") {
+    (app as any).lazyrouter();
+  }
+  const appStack = (app as any)._router?.stack || (app as any).router?.stack || [];
   const loggerMiddleware = appStack.find(
     (layer: any) =>
       layer.name === "logger" ||
@@ -102,7 +105,13 @@ async function main() {
   // Perform operational mutations
   // A. Create Order
   const cust = await prisma.customer.findFirstOrThrow();
-  const prod = await prisma.productVariant.findFirstOrThrow();
+  const itemWithStock = await prisma.inventoryItem.findFirst({
+    where: { currentStock: { gt: 0 } },
+    include: { productVariants: true },
+  });
+  const prod =
+    itemWithStock?.productVariants?.[0] ||
+    (await prisma.productVariant.findFirstOrThrow());
   const orderRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Cookie: cookie, Origin: "http://localhost:5173" },
