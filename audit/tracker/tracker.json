@@ -3466,7 +3466,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -3474,12 +3474,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-037.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "0f81601",
+        "evidenceLink": "audit/evidence/verify/F-037/",
+        "note": "Added invoice creation action on approved orders in orders table, added Generate Invoice modal dialog in invoices page, and included invoices relation in sales orders queries."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-037-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-037-regression.test.ts",
+    "fixCommit": "0f81601",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-037/01-test-suite.txt",
+      "audit/evidence/verify/F-037/02-typecheck.txt",
+      "audit/evidence/verify/F-037/03-lint.txt",
+      "audit/evidence/verify/F-037/04-build.txt",
+      "audit/evidence/verify/F-037/05-benchmark.txt",
+      "audit/evidence/verify/F-037/06-invariants.txt",
+      "audit/evidence/verify/F-037/07-regression-test.txt",
+      "audit/evidence/verify/F-037/08-orders-page-invoice-action.txt",
+      "audit/evidence/verify/F-037/09-invoices-page-modal.txt",
+      "audit/evidence/verify/F-037/10-git-diff.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'placeholder\\|TODO' client/src/ server/src/ | head -n 25",

@@ -284,7 +284,7 @@ server/src/app.ts:22:    cors({
 
 | ID | Sev | Status | Title |
 |---|---|---|---|
-| **F-037** | P1 | `OPEN` | Core Invoicing Workflow Cannot Be Initiated From Client UI (Missing Create Invoice Action) |
+| **F-037** | P1 | `VERIFIED` | Core Invoicing Workflow Cannot Be Initiated From Client UI (Missing Create Invoice Action) |
 | **F-038** | P1 | `OPEN` | Suppliers Master Cannot Be Added or Managed via UI or API (Static Seed-Only Entity) |
 | **F-039** | P2 | `VERIFIED` | Audit Log CSV Export Throws 400 Error ("Unknown report type: audit") |
 | **F-040** | P1 | `OPEN` | Dead Links and Placeholder Pages in Primary Navigation (`/orders/new`, `/exports`, `/settings`) |

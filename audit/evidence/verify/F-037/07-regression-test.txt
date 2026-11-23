@@ -1,0 +1,13 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | audit/tests/f-037-regression.test.ts > F-037 Regression Test: Core Invoicing Workflow UI & API Initiation (REQ-026 & REQ-028) > POST /api/v1/finance/invoices successfully generates invoice from approved sales order
+{"level":"INFO","timestamp":"2026-11-23T22:20:20.565Z","requestId":"dbb249d2-6b2d-458e-86d9-ed5b579c753a","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":192,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+ ✓ audit/tests/f-037-regression.test.ts (4 tests) 238ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  03:50:19
+   Duration  1.28s (transform 273ms, setup 0ms, collect 677ms, tests 238ms, environment 0ms, prepare 61ms)
+
