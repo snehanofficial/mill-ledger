@@ -4,14 +4,36 @@
     "expectedStatus": 400,
     "actualStatus": 400,
     "responseShape": {
-      "error": "Invalid order data: Required, Required"
+      "code": "VALIDATION_ERROR",
+      "message": "Required, Required",
+      "error": "Required, Required",
+      "fieldErrors": {
+        "customerId": [
+          "Required"
+        ],
+        "lines": [
+          "Required"
+        ]
+      },
+      "details": {
+        "formErrors": [],
+        "fieldErrors": {
+          "customerId": [
+            "Required"
+          ],
+          "lines": [
+            "Required"
+          ]
+        }
+      },
+      "requestId": "13351270-af44-4143-9f30-058fe6525d4f"
     },
-    "hasCode": false,
-    "hasMessage": false,
-    "hasFieldErrors": false,
-    "hasRequestId": false,
+    "hasCode": true,
+    "hasMessage": true,
+    "hasFieldErrors": true,
+    "hasRequestId": true,
     "leaksPrismaOrStack": false,
-    "status": "VERIFIED-FAIL",
+    "status": "VERIFIED-PASS",
     "notes": "Schema failure returns { error: 'Invalid order data: ...' } string rather than standard envelope with fieldErrors and requestId"
   },
   {
@@ -19,44 +41,53 @@
     "expectedStatus": 404,
     "actualStatus": 404,
     "responseShape": {
-      "error": "Order non-existent-order-id-12345 not found"
+      "code": "NOT_FOUND",
+      "message": "Order non-existent-order-id-12345 not found",
+      "error": "Order non-existent-order-id-12345 not found",
+      "requestId": "6771a448-a9e3-4d36-82c6-e1c08085640b"
     },
-    "hasCode": false,
-    "hasMessage": false,
+    "hasCode": true,
+    "hasMessage": true,
     "hasFieldErrors": false,
-    "hasRequestId": false,
+    "hasRequestId": true,
     "leaksPrismaOrStack": false,
-    "status": "VERIFIED-FAIL",
+    "status": "VERIFIED-PASS",
     "notes": "AppError returns { error: 'Order ... not found' } without error code or requestId"
   },
   {
     "scenario": "Foreign Key Constraint (P2003)",
     "expectedStatus": 400,
-    "actualStatus": 404,
+    "actualStatus": 400,
     "responseShape": {
-      "error": "Customer cmwn-non-existent-customer-99999 not found"
+      "code": "FOREIGN_KEY_VIOLATION",
+      "message": "Referenced record does not exist",
+      "error": "Referenced record does not exist",
+      "requestId": "34d2e38d-ccf9-4d8d-a94e-7ae36575e2ac"
     },
-    "hasCode": false,
-    "hasMessage": false,
+    "hasCode": true,
+    "hasMessage": true,
     "hasFieldErrors": false,
-    "hasRequestId": false,
+    "hasRequestId": true,
     "leaksPrismaOrStack": false,
-    "status": "VERIFIED-FAIL",
+    "status": "VERIFIED-PASS",
     "notes": "Unhandled P2003 crashes with HTTP 500 and leaks internal Prisma foreign key schema details"
   },
   {
     "scenario": "Unique Constraint Collision (P2002)",
     "expectedStatus": 409,
-    "actualStatus": 404,
+    "actualStatus": 409,
     "responseShape": {
-      "error": "Product variant non-existent not found"
+      "code": "UNIQUE_CONSTRAINT_VIOLATION",
+      "message": "Conflict: unique constraint violation",
+      "error": "Conflict: unique constraint violation",
+      "requestId": "972e4401-958e-48dd-b2fb-80b426b01446"
     },
-    "hasCode": false,
-    "hasMessage": false,
+    "hasCode": true,
+    "hasMessage": true,
     "hasFieldErrors": false,
-    "hasRequestId": false,
+    "hasRequestId": true,
     "leaksPrismaOrStack": false,
-    "status": "VERIFIED-FAIL",
+    "status": "VERIFIED-PASS",
     "notes": "Returns { error: 'Conflict: unique constraint violation' } without specific collision field or standard envelope"
   },
   {
@@ -64,31 +95,35 @@
     "expectedStatus": 404,
     "actualStatus": 404,
     "responseShape": {
-      "_rawText": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/v1/non-existent-endpoint-xyz</pre>\n</body>\n</html>\n"
+      "code": "NOT_FOUND",
+      "message": "Route not found",
+      "error": "Not Found",
+      "requestId": "6deb0c12-4aa5-445a-8400-eb5a325ce4fb"
     },
-    "hasCode": false,
-    "hasMessage": false,
+    "hasCode": true,
+    "hasMessage": true,
     "hasFieldErrors": false,
-    "hasRequestId": false,
+    "hasRequestId": true,
     "leaksPrismaOrStack": false,
-    "status": "VERIFIED-FAIL",
+    "status": "VERIFIED-PASS",
     "notes": "Express default HTML 404 returned instead of standard JSON envelope"
   },
   {
     "scenario": "HTTP 413 Payload Too Large",
     "expectedStatus": 413,
-    "actualStatus": 500,
+    "actualStatus": 413,
     "responseShape": {
-      "error": "Internal Server Error",
-      "message": "request entity too large",
-      "stack": "PayloadTooLargeError: request entity too large\n    at readStream (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/raw-body@3.0.2/node_modules/raw-body/index.js:163:17)\n    at getRawBody (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/raw-body@3.0.2/node_modules/raw-body/index.js:116:12)\n    at read (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/body-parser@2.4.0/node_modules/body-parser/lib/read.js:134:3)\n    at jsonParser (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/body-parser@2.4.0/node_modules/body-parser/lib/types/json.js:60:5)\n    at Layer.handleRequest (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/router@2.2.0/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:342:13)\n    at /home/snehan/projects/web/mill-ledger/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:297:9\n    at processParams (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:582:12)\n    at next (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:291:5)\n    at cors (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:188:7)"
+      "code": "PAYLOAD_TOO_LARGE",
+      "message": "Request entity too large",
+      "error": "Payload Too Large",
+      "requestId": "4cd99bca-2bea-4384-bfb3-d28325b27b47"
     },
-    "hasCode": false,
+    "hasCode": true,
     "hasMessage": true,
     "hasFieldErrors": false,
-    "hasRequestId": false,
-    "leaksPrismaOrStack": true,
-    "status": "VERIFIED-FAIL",
+    "hasRequestId": true,
+    "leaksPrismaOrStack": false,
+    "status": "VERIFIED-PASS",
     "notes": "body-parser PayloadTooLargeError crashes errorHandler with HTTP 500 instead of 413"
   }
 ]

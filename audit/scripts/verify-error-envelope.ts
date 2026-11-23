@@ -117,14 +117,17 @@ async function main() {
   );
 
   // 3. Foreign Key Constraint Violation (P2003)
-  // Passing non-existent customerId to order creation
+  // Passing non-existent warehouseId with valid customer and variant
+  const existingCustomer = await prisma.customer.findFirstOrThrow();
+  const variant = await prisma.productVariant.findFirstOrThrow();
   await checkScenario(
     "Foreign Key Constraint (P2003)",
     "POST",
     "/api/v1/sales/orders",
     {
-      customerId: "cmwn-non-existent-customer-99999",
-      lines: [{ productVariantId: "cmwn-non-existent-variant-99999", quantity: 10, unitPrice: 50 }],
+      customerId: existingCustomer.id,
+      warehouseId: "cmwn-non-existent-warehouse-99999",
+      lines: [{ productVariantId: variant.id, quantity: 10, unitPrice: 50 }],
     },
     400, // or 409
     "Unhandled P2003 crashes with HTTP 500 and leaks internal Prisma foreign key schema details"
@@ -141,7 +144,7 @@ async function main() {
     {
       customerId: existingOrder.customerId,
       orderNumber: existingOrder.orderNumber, // duplicate!
-      lines: [{ productVariantId: "non-existent", quantity: 1, unitPrice: 10 }],
+      lines: [{ productVariantId: variant.id, quantity: 1, unitPrice: 50 }],
     },
     409,
     "Returns { error: 'Conflict: unique constraint violation' } without specific collision field or standard envelope"

@@ -1,0 +1,5 @@
+=== F-034 Verification: Concurrency Safety ===
+
+Postgres transaction conflicts, deadlocks (40001, 40P01), and Prisma serialization errors (P2034) are automatically mapped to HTTP 409 Conflict with code="TRANSACTION_CONFLICT" and clean, sanitized message "Transaction conflict: please retry operation".
+Internal SQL query strings, transaction isolation levels, and engine state are never leaked in concurrency error responses.
+All concurrency tests (`server/src/sequence-concurrency.test.ts`, `server/src/dispatch-concurrency.test.ts`) pass without regression.

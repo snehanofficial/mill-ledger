@@ -3017,15 +3017,22 @@
       "CWE-209"
     ],
     "files": [
-      "error.middleware.ts",
-      "///home/snehan/projects/web/mill-ledger/server/src/middleware/error.middleware.ts",
-      "/audit/evidence/fuzz-results.js",
-      "///home/snehan/projects/web/mill-ledger/audit/evidence/fuzz-results.js",
-      "orders-page.ts"
+      "server/src/middleware/error.middleware.ts",
+      "server/src/middleware/error.middleware.test.ts",
+      "server/src/app.ts",
+      "server/src/app.test.ts",
+      "server/src/modules/sales/sales.routes.ts",
+      "server/src/modules/production/production.routes.ts",
+      "server/src/modules/inventory/purchase.routes.ts",
+      "server/src/modules/finance/finance.routes.ts",
+      "server/src/modules/finance/payment.routes.ts",
+      "shared/src/contracts/error.contract.ts",
+      "shared/src/contracts/index.ts",
+      "client/src/pages/orders-page.tsx"
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -3033,12 +3040,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-034.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-24",
+        "commit": null,
+        "evidenceLink": null,
+        "note": "Started standardizing error envelope to RFC 7807 with Postgres error mapping."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-24",
+        "commit": "7537725d4f50843fe3366c50135d77281b64b2cb",
+        "evidenceLink": null,
+        "note": "Implemented standard error envelope, mapped P2002/P2003/P2004/P2034/413, sanitized 500 handler, and updated client toast."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "7537725d4f50843fe3366c50135d77281b64b2cb",
+        "evidenceLink": "audit/evidence/verify/F-034/",
+        "note": "Verified with 8 middleware unit tests, 5 regression tests, 6 verify-error-envelope scenarios, 39 Vitest suites (235 tests pass), 18 benchmark assertions, and 10 SQL invariants."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-034-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm vitest run server/src/middleware/error.middleware.test.ts",
+    "regressionTest": "server/src/middleware/error.middleware.test.ts",
+    "fixCommit": "7537725d4f50843fe3366c50135d77281b64b2cb",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-034/01-fresh-environment.txt",
+      "audit/evidence/verify/F-034/02-test-execution.txt",
+      "audit/evidence/verify/F-034/03-regression-reproduction.txt",
+      "audit/evidence/verify/F-034/04-full-suite-pass.txt",
+      "audit/evidence/verify/F-034/05-typecheck-lint.txt",
+      "audit/evidence/verify/F-034/06-benchmark-invariants.txt",
+      "audit/evidence/verify/F-034/07-authorization-checks.txt",
+      "audit/evidence/verify/F-034/08-concurrency-safety.txt",
+      "audit/evidence/verify/F-034/09-backward-compat.txt",
+      "audit/evidence/verify/F-034/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",

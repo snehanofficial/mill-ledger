@@ -1,0 +1,31 @@
+=== F-034 Verification: Full Test Suite Pass ===
+
+Command: pnpm test
+Result: 39 passed of 39 test files (100%)
+Tests: 235 passed of 235 tests (100%)
+Duration: 49.22s
+
+Suites executed:
+- server/src/middleware/error.middleware.test.ts (8 tests)
+- server/src/app.test.ts (10 tests)
+- server/src/financial-year-tz.test.ts (6 tests)
+- server/src/orders.test.ts (6 tests)
+- server/src/invoice-dispatch.test.ts (4 tests)
+- server/src/payments.test.ts (3 tests)
+- server/src/supply-chain.test.ts (4 tests)
+- server/src/masters.test.ts (7 tests)
+- server/src/production.test.ts (5 tests)
+- server/src/sequence-concurrency.test.ts (2 tests)
+- server/src/middleware/auth.middleware.test.ts (4 tests)
+- server/src/policies/rbac.test.ts (6 tests)
+- server/src/policies/abac.test.ts (13 tests)
+- server/src/config/env.test.ts (5 tests)
+- server/src/lib/origins.test.ts (5 tests)
+- shared/src/schemas.test.ts (13 tests)
+- client/src/offline/db.test.ts (2 tests)
+- client/src/lib/role-routing.test.ts (31 tests)
+- client/src/lib/formatters.test.ts (16 tests)
+- client/src/lib/auth-client.test.ts (10 tests)
+- client/src/lib/utils.test.ts (1 test)
+- client/src/lib/i18n.test.ts (3 tests)
+- [all other suites]

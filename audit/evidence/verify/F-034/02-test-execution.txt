@@ -1,0 +1,46 @@
+=== F-034 Verification: Test Execution ===
+
+Command: pnpm vitest run server/src/middleware/error.middleware.test.ts
+Output:
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+ ✓ server/src/middleware/error.middleware.test.ts (8 tests) 11ms
+   ✓ F-034 Error Envelope Middleware > formats Zod validation errors with code, fieldErrors, and requestId 4ms
+   ✓ F-034 Error Envelope Middleware > formats AppError with correct status, mapped code, and requestId 1ms
+   ✓ F-034 Error Envelope Middleware > formats 413 PayloadTooLargeError into standard envelope 0ms
+   ✓ F-034 Error Envelope Middleware > maps Postgres/Prisma P2003 foreign key violation to 400 BAD_REQUEST 0ms
+   ✓ F-034 Error Envelope Middleware > maps Postgres/Prisma P2002 unique constraint violation to 409 CONFLICT 0ms
+   ✓ F-034 Error Envelope Middleware > maps Postgres/Prisma P2004 check constraint violation to 409 CONFLICT 0ms
+   ✓ F-034 Error Envelope Middleware > maps Postgres/Prisma P2034 transaction conflict to 409 CONFLICT 0ms
+   ✓ F-034 Error Envelope Middleware > sanitizes unhandled 500 errors and never leaks stack or internals (CWE-209) 3ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+
+Command: npx vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-034-regression.test.ts
+Output:
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+ ✓ audit/tests/f-034-regression.test.ts (5 tests) 8ms
+   ✓ F-034 Regression Test: RFC 7807 Error Envelope and Error Mapping > enforces standard envelope structure on Zod validation failure 3ms
+   ✓ F-034 Regression Test: RFC 7807 Error Envelope and Error Mapping > enforces standard envelope structure on AppError domain failures 0ms
+   ✓ F-034 Regression Test: RFC 7807 Error Envelope and Error Mapping > enforces standard envelope on foreign key violation (P2003 / 23503) 0ms
+   ✓ F-034 Regression Test: RFC 7807 Error Envelope and Error Mapping > enforces standard envelope on unique constraint violation (P2002 / 23505) 0ms
+   ✓ F-034 Regression Test: RFC 7807 Error Envelope and Error Mapping > sanitizes unhandled 500 errors to prevent CWE-209 information disclosure 2ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+
+Command: npx vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-025-regression.test.ts
+Output:
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+ ✓ audit/tests/f-025-regression.test.ts (5 tests) 47ms
+   ✓ F-025 Regression Test: Express Middleware Pipeline Baseline > returns JSON 404 envelope on unmapped routes 23ms
+   ✓ F-025 Regression Test: Express Middleware Pipeline Baseline > assigns X-Request-Id header when none is provided 4ms
+   ✓ F-025 Regression Test: Express Middleware Pipeline Baseline > preserves client-provided X-Request-Id correlation header 3ms
+   ✓ F-025 Regression Test: Express Middleware Pipeline Baseline > attaches rate limiting headers on /api/v1 requests 2ms
+   ✓ F-025 Regression Test: Express Middleware Pipeline Baseline > returns HTTP 413 Payload Too Large on oversized request bodies 9ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)

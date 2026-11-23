@@ -1,0 +1,18 @@
+=== F-034 Verification: Regression Reproduction ===
+
+Initial Defect:
+1. Server error handler emitted ad-hoc shapes (`{ error: string }`) lacking standard error codes, fieldErrors, and request correlation IDs (`requestId`).
+2. Foreign key constraint violations (P2003) were unhandled in `errorHandler`, causing unhandled 500 crashes and leaking internal Prisma model names and schema details.
+3. Express 404 handler lacked `code` and `requestId`.
+4. Express 500 handler leaked full Node.js stack traces (`stack: err.stack`) and internal messages in non-production environments (CWE-209).
+5. Client UI toast components (`orders-page.tsx`) read `err.response?.data?.message`, which was permanently undefined because the server only sent `error`.
+
+Reproduction & Verification Results (via `verify-error-envelope.ts`):
+- Scenario 0 (Zod Validation Failure): status=400, code=true ("VALIDATION_ERROR"), message=true, fieldErrors=true, requestId=true, leaksStack=false -> VERIFIED-PASS
+- Scenario 1 (Operational AppError): status=404, code=true ("NOT_FOUND"), message=true, fieldErrors=false, requestId=true, leaksStack=false -> VERIFIED-PASS
+- Scenario 2 (Foreign Key Constraint P2003): status=400, code=true ("FOREIGN_KEY_VIOLATION"), message=true, fieldErrors=false, requestId=true, leaksStack=false -> VERIFIED-PASS
+- Scenario 3 (Unique Constraint Collision P2002): status=409, code=true ("UNIQUE_CONSTRAINT_VIOLATION"), message=true, fieldErrors=false, requestId=true, leaksStack=false -> VERIFIED-PASS
+- Scenario 4 (HTTP 404 Not Found Route): status=404, code=true ("NOT_FOUND"), message=true, fieldErrors=false, requestId=true, leaksStack=false -> VERIFIED-PASS
+- Scenario 5 (HTTP 413 Payload Too Large): status=413, code=true ("PAYLOAD_TOO_LARGE"), message=true, fieldErrors=false, requestId=true, leaksStack=false -> VERIFIED-PASS
+
+All 6 scenarios verified pass.
