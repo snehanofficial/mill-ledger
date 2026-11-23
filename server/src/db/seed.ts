@@ -67,6 +67,14 @@ const SEED_USERS: SeedUser[] = [
 ];
 
 export async function seedUsers() {
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.ALLOW_PRODUCTION_SEED !== "true"
+  ) {
+    throw new Error(
+      "Seeding is strictly disabled in production environments. Set ALLOW_PRODUCTION_SEED=true to override.",
+    );
+  }
   console.log("Seeding test users for M1...");
 
   const org = await prisma.organization.upsert({
@@ -124,6 +132,14 @@ export async function seedUsers() {
 }
 
 export async function seedBenchmarkMasters() {
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.ALLOW_PRODUCTION_SEED !== "true"
+  ) {
+    throw new Error(
+      "Seeding is strictly disabled in production environments. Set ALLOW_PRODUCTION_SEED=true to override.",
+    );
+  }
   console.log("Seeding benchmark master data and opening stock (M2)...");
 
   // 1. Organization
@@ -606,8 +622,13 @@ export async function seedBenchmarkMasters() {
 }
 
 export async function runFullSeed() {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("Seeding is strictly disabled in production environments.");
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.ALLOW_PRODUCTION_SEED !== "true"
+  ) {
+    throw new Error(
+      "Seeding is strictly disabled in production environments. Set ALLOW_PRODUCTION_SEED=true to override.",
+    );
   }
   await seedUsers();
   await seedBenchmarkMasters();
