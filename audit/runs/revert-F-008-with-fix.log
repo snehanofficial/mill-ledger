@@ -1,0 +1,19 @@
+
+ RUN  v3.2.7 /tmp/ml-verify-F-008-1795390775553
+
+stdout | server/src/dispatch-concurrency.test.ts > F-008: Concurrency race condition in dispatch sequence generation
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/dispatch-concurrency.test.ts > F-008: Concurrency race condition in dispatch sequence generation
+M2 benchmark master data seed successfully completed.
+
+(node:135182) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/dispatch-concurrency.test.ts (1 test) 1125ms
+   ✓ F-008: Concurrency race condition in dispatch sequence generation > handles 10 concurrent dispatches without unique constraint collisions  891ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  05:09:39
+   Duration  1.80s (transform 119ms, setup 0ms, collect 415ms, tests 1.13s, environment 0ms, prepare 47ms)
+

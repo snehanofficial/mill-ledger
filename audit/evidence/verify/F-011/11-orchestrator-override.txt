@@ -1,0 +1,31 @@
+=== STEP 11: ORCHESTRATOR OVERRIDE & INDEPENDENT CHECK EVIDENCE FOR F-011 ===
+Timestamp: 2026-11-22T22:20:00+05:30
+Status: REOPENED (via legal transition: VERIFIED -> REOPENED)
+
+1. REASON FOR OVERRIDE:
+Orchestrator independent checks contradicted the previous VERIFIED verdict:
+When running `vitest run server/src/financial-year-tz.test.ts` without the fix in the orchestrator environment:
+All 4 tests in `server/src/financial-year-tz.test.ts` PASSED without the fix!
+Evidence log: audit/runs/revert-F-011-without-fix.log (and audit/evidence/verify/F-011/revert-without-fix-orchestrator.txt).
+
+2. ROOT CAUSE OF TEST SENSITIVITY FAILURE (Step 3: Test Validity):
+The host environment where tests run has `process.env.TZ` unset, defaulting to local system time (`Asia/Kolkata`, UTC+05:30).
+Because `Date.prototype.getFullYear()` and `Date.prototype.getMonth()` in Node execute in the process's default timezone, running the test in an environment already at UTC+05:30 returns IST year and month even with the un-fixed code.
+Consequently, `server/src/financial-year-tz.test.ts` passed both with and without the fix in standard runner runs where `TZ=UTC` is not explicitly exported into the shell.
+Per Step 3 of the verification protocol:
+"Temporarily revert ONLY the fix (not the test) in a scratch worktree and confirm the regression test FAILS. Then restore it and confirm it passes. A test that passes both ways proves nothing: REJECT / REOPEN."
+
+3. RAW OUTPUT WITHOUT FIX (ORCHESTRATOR RUN):
+```
+ RUN  v3.2.7 /tmp/ml-verify-F-011-1795365366678
+
+ ✓ server/src/financial-year-tz.test.ts (4 tests) 3ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  22:06:08
+   Duration  405ms (transform 68ms, setup 0ms, collect 151ms, tests 3ms, environment 0ms, prepare 47ms)
+```
+
+4. EXPECTED ACTION FOR FIXER:
+The regression test `server/src/financial-year-tz.test.ts` must be constructed so that it catches the defect regardless of the host machine's process timezone (e.g. by mocking the process timezone / Intl environment, or by directly asserting against an unshifted Date where local methods return March 31 while IST expects April 1, or running sub-process checks). When the fix is removed, the test suite must fail deterministically in any standard Vitest execution.

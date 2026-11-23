@@ -1,0 +1,16 @@
+=== F-020 Verification: 07 Authorization & Business Rule Checks ===
+Rule: OD-07 & REQ-024 (Discount Bounds and Manager Approval Enforcement)
+1. List Price Baseline:
+   Resolved dynamically from default price list (PL-DEFAULT) or latest organization price list line.
+2. Discretionary Salesman Discount (<= 5%):
+   Salesman quoting a unit price representing <= 5% discount (e.g. ₹48 vs ₹50 list = 4%) is accepted immediately with status: SUBMITTED.
+3. Review-Required Discount (> 5% and <= 15%):
+   Salesman quoting a unit price representing > 5% and <= 15% discount (e.g. ₹45 vs ₹50 list = 10%) has status set to: UNDER_REVIEW.
+4. Maximum Discount Threshold (> 15%):
+   Any quote representing > 15% discount (e.g. ₹35 vs ₹50 list = 30%) is rejected outright with HTTP 422 DISCOUNT_EXCEEDS_MAX_THRESHOLD.
+5. Approval Accountability:
+   Orders in UNDER_REVIEW status require a mandatory overrideReason recorded in database by the reviewing manager/admin before transition to APPROVED (HTTP 400 if reason omitted).
+6. Line Overrides During Approval:
+   Admin/manager line overrides are also capped at 15% discount against the price list rate (HTTP 422 if > 15%).
+7. Draft Order Transition:
+   Draft orders can only be updated to DRAFT or SUBMITTED status (HTTP 400 if client attempts direct transition to APPROVED).

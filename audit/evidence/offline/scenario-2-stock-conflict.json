@@ -1,0 +1,33 @@
+{
+  "res": {
+    "processed": 1,
+    "succeeded": 1,
+    "conflicts": 0
+  },
+  "orderInDb": {
+    "id": "ord-s2-1795112739598",
+    "idempotencyKey": "idem-s2-1795112739598",
+    "schemaVersion": 1,
+    "userId": "HyEQZ1G4njZ00voLsJ658RUKTioKGKHw",
+    "deviceId": "dev-test-stock",
+    "customerId": "cmwlwxp0w0009caablhch59cb",
+    "customerName": "Retailer A",
+    "customerState": "Tamil Nadu",
+    "pricedAt": "2026-11-19T18:25:39.601Z",
+    "status": "synced",
+    "createdAt": "2026-11-19T18:25:39.601Z",
+    "updatedAt": "2026-11-19T18:25:39.667Z",
+    "attempts": 0,
+    "items": [
+      {
+        "productVariantId": "cmwlwxp2c000rcaabaf79b9an",
+        "sku": "VAR-MURUKKU-200G",
+        "name": "Murukku 200 g",
+        "quantity": 99999,
+        "quotedUnitPrice": 50
+      }
+    ],
+    "serverOrderId": "cmwnvryo80002hkabdgy1od6r",
+    "serverOrderNumber": "SO-2026-9653"
+  }
+}

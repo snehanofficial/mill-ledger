@@ -1,0 +1,56 @@
+{
+  "root": {
+    "status": 200,
+    "contentType": "text/html",
+    "xRobotsTag": null,
+    "hasRootDiv": true,
+    "hasPrerenderedContent": false,
+    "hasRobotsMeta": false
+  },
+  "login": {
+    "status": 200,
+    "contentType": "text/html",
+    "xRobotsTag": null,
+    "hasRootDiv": true,
+    "hasMetaDescription": false,
+    "hasCanonical": false,
+    "hasOgTitle": false,
+    "hasTwitterCard": false,
+    "hasHreflang": false,
+    "hasJsonLd": false,
+    "themeColor": "#176b54",
+    "title": "MillLedger | Order-to-Audit System for a Small Food Manufacturer"
+  },
+  "dashboard": {
+    "status": 200,
+    "contentType": "text/html",
+    "xRobotsTag": null,
+    "hasSensitiveData": false,
+    "hasNoindexMeta": false
+  },
+  "robotsTxt": {
+    "status": 200,
+    "contentType": "text/html",
+    "isHtmlFallback": true,
+    "containsDisallow": false
+  },
+  "sitemapXml": {
+    "status": 200,
+    "contentType": "text/html",
+    "isHtmlFallback": true,
+    "isValidXml": false
+  },
+  "unknownPath": {
+    "status": 200,
+    "isSoft404": true
+  },
+  "trailingSlash": {
+    "status": 200,
+    "location": null,
+    "is301Redirect": false
+  },
+  "manifest": {
+    "status": 200,
+    "hasValidJson": false
+  }
+}

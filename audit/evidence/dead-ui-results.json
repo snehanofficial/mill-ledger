@@ -1,0 +1,1769 @@
+[
+  {
+    "role": "ADMIN",
+    "route": "/dashboard",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/dashboard",
+    "elementTag": "a",
+    "elementText": "View all",
+    "elementHref": "/invoices",
+    "outcome": "NAVIGATED",
+    "details": "URL changed from http://127.0.0.1:4173/dashboard to http://127.0.0.1:4173/invoices"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/dashboard",
+    "elementTag": "a",
+    "elementText": "View all stock",
+    "elementHref": "/stock",
+    "outcome": "NAVIGATED",
+    "details": "URL changed from http://127.0.0.1:4173/dashboard to http://127.0.0.1:4173/stock"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/orders",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/orders",
+    "elementTag": "button",
+    "elementText": "New sales order",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/orders",
+    "elementTag": "button",
+    "elementText": "All orders (308)",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/orders",
+    "elementTag": "button",
+    "elementText": "Device outbox",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/orders/new",
+    "elementTag": "PAGE_ROOT",
+    "elementText": "Page Container",
+    "outcome": "PLACEHOLDER",
+    "details": "Route renders placeholder page (Module in Progress / scheduled for rollout in next milestone)"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/invoices",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/dispatch",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/dispatch",
+    "elementTag": "button",
+    "elementText": "Record dispatch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/payments",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/payments",
+    "elementTag": "button",
+    "elementText": "Record payment",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/payments",
+    "elementTag": "button",
+    "elementText": "Payments ledger (5)",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/payments",
+    "elementTag": "button",
+    "elementText": "Customer receivables (4)",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/stock",
+    "elementTag": "button",
+    "elementText": "Refresh Balances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/purchases",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/purchases",
+    "elementTag": "button",
+    "elementText": "Record Purchase Receipt",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/production/today",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/production/today",
+    "elementTag": "button",
+    "elementText": "Record production batch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/production/today",
+    "elementTag": "button",
+    "elementText": "Record first batch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/production/new",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/production/new",
+    "elementTag": "button",
+    "elementText": "Record production batch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/production/new",
+    "elementTag": "button",
+    "elementText": "Record first batch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/production/history",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/production/history",
+    "elementTag": "button",
+    "elementText": "Record production batch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/production/history",
+    "elementTag": "button",
+    "elementText": "Record first batch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/customers",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/exports",
+    "elementTag": "PAGE_ROOT",
+    "elementText": "Page Container",
+    "outcome": "PLACEHOLDER",
+    "details": "Route renders placeholder page (Module in Progress / scheduled for rollout in next milestone)"
+  },
+  {
+    "role": "ADMIN",
+    "route": "/settings",
+    "elementTag": "PAGE_ROOT",
+    "elementText": "Page Container",
+    "outcome": "PLACEHOLDER",
+    "details": "Route renders placeholder page (Module in Progress / scheduled for rollout in next milestone)"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/orders",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/orders",
+    "elementTag": "button",
+    "elementText": "New sales order",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/orders",
+    "elementTag": "button",
+    "elementText": "All orders (4)",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/orders",
+    "elementTag": "button",
+    "elementText": "Device outbox",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/orders/new",
+    "elementTag": "PAGE_ROOT",
+    "elementText": "Page Container",
+    "outcome": "PLACEHOLDER",
+    "details": "Route renders placeholder page (Module in Progress / scheduled for rollout in next milestone)"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/customers",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "SALESMAN",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/stock",
+    "elementTag": "button",
+    "elementText": "Refresh Balances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/purchases",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/purchases",
+    "elementTag": "button",
+    "elementText": "Record Purchase Receipt",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/production/today",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/production/today",
+    "elementTag": "button",
+    "elementText": "Record production batch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/production/today",
+    "elementTag": "button",
+    "elementText": "Record first batch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/production/new",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/production/new",
+    "elementTag": "button",
+    "elementText": "Record production batch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/production/new",
+    "elementTag": "button",
+    "elementText": "Record first batch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/production/history",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/production/history",
+    "elementTag": "button",
+    "elementText": "Record production batch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/production/history",
+    "elementTag": "button",
+    "elementText": "Record first batch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "PRODUCTION",
+    "route": "/reports/production",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/invoices",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/payments",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/payments",
+    "elementTag": "button",
+    "elementText": "Record payment",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/payments",
+    "elementTag": "button",
+    "elementText": "Payments ledger (5)",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/payments",
+    "elementTag": "button",
+    "elementText": "Customer receivables (4)",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/stock",
+    "elementTag": "button",
+    "elementText": "Refresh Balances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/purchases",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/purchases",
+    "elementTag": "button",
+    "elementText": "Record Purchase Receipt",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/customers",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/stock",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/receivables",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/gst",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "ERROR_CRASH",
+    "details": "Console error triggered upon click"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/reports/audit",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "ACCOUNTANT",
+    "route": "/exports",
+    "elementTag": "PAGE_ROOT",
+    "elementText": "Page Container",
+    "outcome": "PLACEHOLDER",
+    "details": "Route renders placeholder page (Module in Progress / scheduled for rollout in next milestone)"
+  },
+  {
+    "role": "OWNER",
+    "route": "/dashboard",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/dashboard",
+    "elementTag": "a",
+    "elementText": "View all",
+    "elementHref": "/invoices",
+    "outcome": "NAVIGATED",
+    "details": "URL changed from http://127.0.0.1:4173/dashboard to http://127.0.0.1:4173/invoices"
+  },
+  {
+    "role": "OWNER",
+    "route": "/dashboard",
+    "elementTag": "a",
+    "elementText": "View all stock",
+    "elementHref": "/stock",
+    "outcome": "NAVIGATED",
+    "details": "URL changed from http://127.0.0.1:4173/dashboard to http://127.0.0.1:4173/stock"
+  },
+  {
+    "role": "OWNER",
+    "route": "/orders",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/orders",
+    "elementTag": "button",
+    "elementText": "New sales order",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "OWNER",
+    "route": "/orders",
+    "elementTag": "button",
+    "elementText": "All orders (308)",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "OWNER",
+    "route": "/orders",
+    "elementTag": "button",
+    "elementText": "Device outbox",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "OWNER",
+    "route": "/invoices",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/dispatch",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/dispatch",
+    "elementTag": "button",
+    "elementText": "Record dispatch",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "OWNER",
+    "route": "/payments",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/payments",
+    "elementTag": "button",
+    "elementText": "Record payment",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "OWNER",
+    "route": "/payments",
+    "elementTag": "button",
+    "elementText": "Payments ledger (5)",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "OWNER",
+    "route": "/payments",
+    "elementTag": "button",
+    "elementText": "Customer receivables (4)",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "OWNER",
+    "route": "/stock",
+    "elementTag": "button",
+    "elementText": "Refresh Balances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/purchases",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/purchases",
+    "elementTag": "button",
+    "elementText": "Record Purchase Receipt",
+    "elementHref": null,
+    "outcome": "MODAL_OPENED",
+    "details": "Modal/Dialog/Overlay opened on click"
+  },
+  {
+    "role": "OWNER",
+    "route": "/customers",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Refresh",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Export CSV",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Sales register",
+    "elementHref": null,
+    "outcome": "DEAD_NOOP",
+    "details": "Click produced no observable URL change, modal, or network request"
+  },
+  {
+    "role": "OWNER",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "GST outward summary",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Stock valuation",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Production & variances",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Receivables & ageing",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/reports/sales",
+    "elementTag": "button",
+    "elementText": "Audit logs",
+    "elementHref": null,
+    "outcome": "API_MUTATION",
+    "details": "API network request dispatched"
+  },
+  {
+    "role": "OWNER",
+    "route": "/settings",
+    "elementTag": "PAGE_ROOT",
+    "elementText": "Page Container",
+    "outcome": "PLACEHOLDER",
+    "details": "Route renders placeholder page (Module in Progress / scheduled for rollout in next milestone)"
+  }
+]

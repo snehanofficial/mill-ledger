@@ -1,0 +1,383 @@
+{
+  "totalFiles": 106,
+  "domainFiles": 18,
+  "anyCount": 31,
+  "asUnknownAsCount": 4,
+  "nonNullCount": 13,
+  "tsIgnoreCount": 0,
+  "lintDisableCount": 5,
+  "violations": {
+    "domainAny": [
+      {
+        "file": "server/src/modules/reporting/audit.service.ts",
+        "line": 71,
+        "col": 18,
+        "parentKind": "VariableDeclaration",
+        "snippet": "where: any = {       organizationId: orgId,     }"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 35,
+        "col": 18,
+        "parentKind": "VariableDeclaration",
+        "snippet": "where: any = {       organizationId: orgId,       status: { not: InvoiceStatus.D"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 68,
+        "col": 17,
+        "parentKind": "ArrayType",
+        "snippet": "any[]"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 147,
+        "col": 18,
+        "parentKind": "VariableDeclaration",
+        "snippet": "where: any = {       organizationId: orgId,       status: { not: InvoiceStatus.D"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 169,
+        "col": 24,
+        "parentKind": "ArrayType",
+        "snippet": "any[]"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 171,
+        "col": 24,
+        "parentKind": "ArrayType",
+        "snippet": "any[]"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 173,
+        "col": 24,
+        "parentKind": "ArrayType",
+        "snippet": "any[]"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 328,
+        "col": 18,
+        "parentKind": "VariableDeclaration",
+        "snippet": "where: any = {       organizationId: orgId,     }"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 358,
+        "col": 17,
+        "parentKind": "ArrayType",
+        "snippet": "any[]"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 513,
+        "col": 18,
+        "parentKind": "VariableDeclaration",
+        "snippet": "where: any = {       organizationId: orgId,     }"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 625,
+        "col": 18,
+        "parentKind": "VariableDeclaration",
+        "snippet": "where: any = {       organizationId: orgId,     }"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 919,
+        "col": 19,
+        "parentKind": "Parameter",
+        "snippet": "userContext?: any"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 921,
+        "col": 21,
+        "parentKind": "VariableDeclaration",
+        "snippet": "reportData: any"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.service.ts",
+        "line": 960,
+        "col": 17,
+        "parentKind": "ArrayType",
+        "snippet": "any[]"
+      }
+    ],
+    "nonDomainAny": [
+      {
+        "file": "client/src/offline/sync-engine.ts",
+        "line": 39,
+        "col": 40,
+        "parentKind": "TypeReference",
+        "snippet": "Array<any>"
+      },
+      {
+        "file": "client/src/offline/sync-engine.ts",
+        "line": 40,
+        "col": 39,
+        "parentKind": "TypeReference",
+        "snippet": "Array<any>"
+      },
+      {
+        "file": "client/src/offline/sync-engine.ts",
+        "line": 229,
+        "col": 21,
+        "parentKind": "VariableDeclaration",
+        "snippet": "err: any"
+      },
+      {
+        "file": "client/src/pages/dispatch-page.tsx",
+        "line": 149,
+        "col": 20,
+        "parentKind": "Parameter",
+        "snippet": "err: any"
+      },
+      {
+        "file": "client/src/pages/orders-page.tsx",
+        "line": 289,
+        "col": 19,
+        "parentKind": "VariableDeclaration",
+        "snippet": "err: any"
+      },
+      {
+        "file": "client/src/pages/payments-page.tsx",
+        "line": 183,
+        "col": 13,
+        "parentKind": "Parameter",
+        "snippet": "i: any"
+      },
+      {
+        "file": "client/src/pages/payments-page.tsx",
+        "line": 217,
+        "col": 20,
+        "parentKind": "Parameter",
+        "snippet": "err: any"
+      },
+      {
+        "file": "client/src/pages/purchases-page.tsx",
+        "line": 160,
+        "col": 20,
+        "parentKind": "Parameter",
+        "snippet": "err: any"
+      },
+      {
+        "file": "client/src/pages/reports-page.tsx",
+        "line": 235,
+        "col": 54,
+        "parentKind": "Parameter",
+        "snippet": "row: any"
+      },
+      {
+        "file": "client/src/pages/reports-page.tsx",
+        "line": 330,
+        "col": 57,
+        "parentKind": "Parameter",
+        "snippet": "r: any"
+      },
+      {
+        "file": "client/src/pages/reports-page.tsx",
+        "line": 365,
+        "col": 56,
+        "parentKind": "Parameter",
+        "snippet": "h: any"
+      },
+      {
+        "file": "client/src/pages/reports-page.tsx",
+        "line": 428,
+        "col": 52,
+        "parentKind": "Parameter",
+        "snippet": "row: any"
+      },
+      {
+        "file": "client/src/pages/reports-page.tsx",
+        "line": 513,
+        "col": 51,
+        "parentKind": "Parameter",
+        "snippet": "row: any"
+      },
+      {
+        "file": "client/src/pages/reports-page.tsx",
+        "line": 592,
+        "col": 50,
+        "parentKind": "Parameter",
+        "snippet": "row: any"
+      },
+      {
+        "file": "client/src/pages/reports-page.tsx",
+        "line": 670,
+        "col": 45,
+        "parentKind": "Parameter",
+        "snippet": "log: any"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.routes.ts",
+        "line": 140,
+        "col": 19,
+        "parentKind": "VariableDeclaration",
+        "snippet": "data: any"
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.routes.ts",
+        "line": 239,
+        "col": 19,
+        "parentKind": "VariableDeclaration",
+        "snippet": "result: any"
+      }
+    ],
+    "asUnknownAs": [
+      {
+        "file": "client/src/components/ui/sidebar.tsx",
+        "line": 564,
+        "col": 16,
+        "code": "ref as unknown as Ref<never>",
+        "isDomain": false
+      },
+      {
+        "file": "client/src/components/ui/sidebar.tsx",
+        "line": 570,
+        "col": 16,
+        "code": "ref as unknown as Ref<HTMLButtonElement>",
+        "isDomain": false
+      },
+      {
+        "file": "server/src/middleware/auth.middleware.ts",
+        "line": 19,
+        "col": 16,
+        "code": "req.headers as unknown as Headers",
+        "isDomain": false
+      },
+      {
+        "file": "server/src/middleware/error.middleware.ts",
+        "line": 38,
+        "col": 18,
+        "code": "err as unknown as { code?: string; message?: string }",
+        "isDomain": false
+      }
+    ],
+    "nonNull": [
+      {
+        "file": "client/src/components/shell/authenticated-shell.tsx",
+        "line": 1029,
+        "col": 17,
+        "code": "item.href!",
+        "isDomain": false
+      },
+      {
+        "file": "client/src/main.tsx",
+        "line": 6,
+        "col": 12,
+        "code": "document.getElementById(\"root\")!",
+        "isDomain": false
+      },
+      {
+        "file": "server/src/modules/production/production.service.ts",
+        "line": 552,
+        "col": 14,
+        "code": "finalRun!",
+        "isDomain": true
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.routes.ts",
+        "line": 120,
+        "col": 15,
+        "code": "req.user!",
+        "isDomain": false
+      },
+      {
+        "file": "server/src/modules/reporting/reporting.routes.ts",
+        "line": 231,
+        "col": 15,
+        "code": "req.user!",
+        "isDomain": false
+      },
+      {
+        "file": "server/src/modules/sales/sales.routes.ts",
+        "line": 77,
+        "col": 64,
+        "code": "req.user!",
+        "isDomain": false
+      },
+      {
+        "file": "server/src/modules/sales/sales.routes.ts",
+        "line": 112,
+        "col": 9,
+        "code": "req.user!",
+        "isDomain": false
+      },
+      {
+        "file": "server/src/modules/sales/sales.routes.ts",
+        "line": 136,
+        "col": 67,
+        "code": "req.user!",
+        "isDomain": false
+      },
+      {
+        "file": "server/src/modules/sales/sales.routes.ts",
+        "line": 161,
+        "col": 9,
+        "code": "req.user!",
+        "isDomain": false
+      },
+      {
+        "file": "server/src/modules/sales/sales.routes.ts",
+        "line": 192,
+        "col": 9,
+        "code": "req.user!",
+        "isDomain": false
+      },
+      {
+        "file": "server/src/modules/sales/sales.routes.ts",
+        "line": 226,
+        "col": 9,
+        "code": "req.user!",
+        "isDomain": false
+      },
+      {
+        "file": "server/src/modules/sales/sales.routes.ts",
+        "line": 260,
+        "col": 9,
+        "code": "req.user!",
+        "isDomain": false
+      },
+      {
+        "file": "server/src/modules/sales/sales.service.ts",
+        "line": 347,
+        "col": 16,
+        "code": "fullOrder!",
+        "isDomain": true
+      }
+    ],
+    "tsDirectives": [],
+    "lintDisables": [
+      {
+        "file": "client/src/components/ui/badge.tsx",
+        "line": 1,
+        "text": "/* oxlint-disable react/only-export-components */"
+      },
+      {
+        "file": "client/src/components/ui/button.tsx",
+        "line": 1,
+        "text": "/* oxlint-disable react/only-export-components */"
+      },
+      {
+        "file": "client/src/components/ui/sidebar.tsx",
+        "line": 1,
+        "text": "/* oxlint-disable react/only-export-components, react/refs */"
+      },
+      {
+        "file": "client/src/lib/i18n.tsx",
+        "line": 1,
+        "text": "/* oxlint-disable react/only-export-components */"
+      },
+      {
+        "file": "server/src/db/client.ts",
+        "line": 13,
+        "text": "// eslint-disable-next-line no-var"
+      }
+    ]
+  }
+}

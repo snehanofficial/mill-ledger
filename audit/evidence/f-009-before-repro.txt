@@ -1,0 +1,8 @@
+=== CHECKING IMMUTABILITY AT DATABASE LEVEL ===
+Found stock_movement: cmwlwxp1o000hcaabugkys1oi, qty=30
+ACTUAL: Database ALLOWED UPDATE on stock_movement!
+ACTUAL: Database ALLOWED DELETE on stock_movement!
+DELETE succeeded before transaction rollback.
+Created test posted invoice: cmwomlbdm0000tsabm7t7idp8
+ACTUAL: Database ALLOWED UPDATE on sales_invoice!
+ACTUAL: Database ALLOWED DELETE on sales_invoice!

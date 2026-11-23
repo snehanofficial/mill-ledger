@@ -1,0 +1,52 @@
+=== BETTER AUTH AUDIT VERIFICATION ===
+Standard: OWASP Top 10:2021 A07:2021 Identification & Authentication Failures, OWASP ASVS v4.0.3 Section 2 & 3
+Installed Version: better-auth@1.7.25
+
+--- 1. COOKIE SECURITY FLAGS & ATTRIBUTES ---
+Login HTTP Status: 200
+Raw Set-Cookie: better-auth.session_token=...; Max-Age=604800; Path=/; HttpOnly; SameSite=Lax
+Contains HttpOnly: true
+Contains Secure: false (Environment: development; configured as useSecureCookies: NODE_ENV === 'production')
+Contains SameSite: true
+SameSite Value: Lax
+
+--- 2. DATABASE SESSION RECORD & EXPIRATION ---
+Session ID: NykhDemQDdHNhhS1kW8vM7IzNxg7NgiV
+Created At: 2026-11-19T12:33:11.805Z
+Expires At: 2026-11-26T12:33:11.805Z
+Session Validity Duration: 168.00 hours (7.0 days)
+
+--- 3. SESSION ROTATION ON RE-LOGIN ---
+First Session Token: VvZ0LYpZuIc0kqbh...
+Second Session Token: 7Zp3NPSuD00c2neK...
+Tokens Differ (Rotation): true
+
+--- 4. CONCURRENT SESSIONS ---
+Active concurrent sessions in DB for admin: 607
+First session still active after second login (HTTP status): 200
+Finding: Unlimited concurrent sessions allowed; older sessions are never capped or revoked.
+
+--- 5. SERVER-SIDE LOGOUT INVALIDATION ---
+Sign-out HTTP Status: 200
+Second session record in DB after signout: DELETED (INVALIDATED)
+Requesting /api/v1/me with logged out cookie status: 401
+Finding: Server-side invalidation is properly enforced in PostgreSQL session table.
+
+--- 6. PASSWORD RESET FLOW ---
+POST /api/auth/forget-password Status: 404
+Finding: Password reset endpoint is disabled/missing (sendResetPassword callback not configured).
+
+--- 7. BRUTE FORCE PROTECTION & LOCKOUT ---
+Testing 6 consecutive failed logins on salesman1@millledger.local...
+Failed attempt status codes: [ 401, 401, 401, 401, 401, 401 ]
+Login with valid password immediately following 6 failures status: 200
+User isActive state: true
+Rate Limit Warning: Rate limiting could not determine a client IP and falls back to single shared per-path bucket.
+Finding: Zero account lockout protection after repeated authentication failures.
+
+--- 8. USER ENUMERATION TESTING ---
+Nonexistent user response (71.4ms, status 401): {"message":"Invalid email or password","code":"INVALID_EMAIL_OR_PASSWORD"}
+Existing user wrong pass response (73.4ms, status 401): {"message":"Invalid email or password","code":"INVALID_EMAIL_OR_PASSWORD"}
+Error messages identical: true
+Timing difference (ms): 2.0
+Finding: Generic error message and constant-time password comparison prevent user enumeration.

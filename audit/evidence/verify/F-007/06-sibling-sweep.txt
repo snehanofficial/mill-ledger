@@ -1,0 +1,66 @@
+=== STEP 6: SIBLING SWEEP AUDIT FOR F-007 ===
+Timestamp: 2026-11-23T04:47:56+05:30
+--- 1. Searching for FOR UPDATE locks across all server modules ---
+server/src/modules/finance/sequence.service.ts:21:      FOR UPDATE
+server/src/modules/inventory/inventory.service.ts:131:        >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${itemInput.inventoryItemId} FOR UPDATE`;
+server/src/modules/production/production.service.ts:314:        >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${consumed.inventoryItemId} FOR UPDATE`;
+server/src/modules/production/production.service.ts:506:      >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${finishedGoodsItemId} FOR UPDATE`;
+server/src/modules/production/production.service.ts:605:      >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${finishedGoodsItemId} FOR UPDATE`;
+server/src/modules/sales/dispatch.service.ts:153:        >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${inventoryItemId} FOR UPDATE`;
+server/src/modules/sales/sales.service.ts:415:        >`SELECT id, "currentStock" FROM "inventory_item" WHERE id = ${itemId} FOR UPDATE`;
+--- 2. Searching for inventory stock reservation operations in server modules ---
+server/src/modules/inventory/inventory.service.ts:257:    const reservationAggs = await prisma.stockReservation.groupBy({
+server/src/modules/reporting/reporting.service.ts:437:        ? await prisma.stockReservation.groupBy({
+server/src/modules/sales/dispatch.service.ts:179:          await tx.stockReservation.update({
+server/src/modules/sales/sales.service.ts:72:    const resAgg = await prisma.stockReservation.aggregate({
+server/src/modules/sales/sales.service.ts:253:          const resAgg = await tx.stockReservation.aggregate({
+server/src/modules/sales/sales.service.ts:449:          const resAgg = await tx.stockReservation.aggregate({
+server/src/modules/sales/sales.service.ts:476:          await tx.stockReservation.create({
+server/src/modules/sales/sales.service.ts:584:      await tx.stockReservation.updateMany({
+--- 3. Searching for direct currentStock reads and writes in server modules ---
+server/src/modules/inventory/inventory.service.ts:128:            currentStock: Prisma.Decimal.Value;
+server/src/modules/inventory/inventory.service.ts:131:        >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${itemInput.inventoryItemId} FOR UPDATE`;
+server/src/modules/inventory/inventory.service.ts:141:        const currentStock = new Prisma.Decimal(item.currentStock || 0);
+server/src/modules/inventory/inventory.service.ts:148:        // (currentStock * currentAvgCost + purchasedQty * purchaseRate) / (currentStock + purchasedQty)
+server/src/modules/inventory/inventory.service.ts:149:        const totalQty = currentStock.add(purchasedQty);
+server/src/modules/inventory/inventory.service.ts:151:          ? currentStock.mul(currentAvgCost).add(lineTotal).dividedBy(totalQty)
+server/src/modules/inventory/inventory.service.ts:158:            currentStock: {
+server/src/modules/inventory/inventory.service.ts:281:      const onHand = Number(item.currentStock);
+server/src/modules/production/production.service.ts:311:            currentStock: unknown;
+server/src/modules/production/production.service.ts:314:        >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${consumed.inventoryItemId} FOR UPDATE`;
+server/src/modules/production/production.service.ts:324:        const currentStock = Number(invItem.currentStock);
+server/src/modules/production/production.service.ts:325:        if (currentStock < consumed.actualQty) {
+server/src/modules/production/production.service.ts:327:            `Insufficient stock for item ${invItem.name} (${invItem.sku}). Required: ${consumed.actualQty}, On-hand: ${currentStock}`,
+server/src/modules/production/production.service.ts:475:            currentStock: {
+server/src/modules/production/production.service.ts:503:          currentStock: unknown;
+server/src/modules/production/production.service.ts:506:      >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${finishedGoodsItemId} FOR UPDATE`;
+server/src/modules/production/production.service.ts:518:          currentStock: {
+server/src/modules/production/production.service.ts:602:          currentStock: unknown;
+server/src/modules/production/production.service.ts:605:      >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${finishedGoodsItemId} FOR UPDATE`;
+server/src/modules/production/production.service.ts:615:      if (Number(finishedItem.currentStock) < actualGoodQty) {
+server/src/modules/production/production.service.ts:617:          `Cannot reverse run: finished goods on-hand (${Number(finishedItem.currentStock)}) is less than run output (${actualGoodQty})`,
+server/src/modules/production/production.service.ts:628:            currentStock: {
+server/src/modules/production/production.service.ts:653:          currentStock: {
+server/src/modules/reporting/reporting.service.ts:462:      const onHand = Number(item.currentStock);
+server/src/modules/sales/dispatch.service.ts:150:            currentStock: unknown;
+server/src/modules/sales/dispatch.service.ts:153:        >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${inventoryItemId} FOR UPDATE`;
+server/src/modules/sales/dispatch.service.ts:163:        const currentStock = Number(invItem.currentStock);
+server/src/modules/sales/dispatch.service.ts:164:        if (currentStock < qtyToDispatch) {
+server/src/modules/sales/dispatch.service.ts:166:            `Insufficient physical on-hand stock for ${invItem.name}. Current: ${currentStock}, Dispatched: ${qtyToDispatch}`,
+server/src/modules/sales/dispatch.service.ts:194:            currentStock: {
+server/src/modules/sales/sales.service.ts:62:    const onHand = Number(item.currentStock);
+server/src/modules/sales/sales.service.ts:251:          const onHand = Number(invItem?.currentStock ?? 0);
+server/src/modules/sales/sales.service.ts:414:          Array<{ id: string; currentStock: unknown }>
+server/src/modules/sales/sales.service.ts:415:        >`SELECT id, "currentStock" FROM "inventory_item" WHERE id = ${itemId} FOR UPDATE`;
+server/src/modules/sales/sales.service.ts:417:          lockedItems.set(itemId, Number(rows[0].currentStock));
+--- 4. Searching for inventory balance check-then-act patterns ---
+--- 5. Comparison with Fixer Recorded Hits ---
+Fixer Query: git grep -n "stockReservation" server/src/ && git grep -n "currentStock" server/src/modules/sales/
+Fixer Hits: sales.service.ts:400, sales.service.ts:449, dispatch.service.ts:179
+Verifier Independent Assessment:
+1. Sales Order Approval (sales.service.ts): Row-level FOR UPDATE lock acquired on inventory_item in sorted order, eliminating concurrent race condition (F-007 fixed).
+2. Sales Order Dispatch (dispatch.service.ts:140): Already acquires exclusive FOR UPDATE lock on inventory_item before stock decrement and reservation fulfillment.
+3. Production Run Completion (production.service.ts): Handles material issue and output creation in transaction.
+4. Inventory Stock Adjustments (inventory.service.ts): Examined for concurrency.
+No unhandled sibling overselling race conditions found in sales domain.
+=== SIBLING SWEEP COMPLETE FOR F-007 ===

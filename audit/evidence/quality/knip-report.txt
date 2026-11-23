@@ -1,0 +1,103 @@
+Unused files (5)
+.agents/skills/shadcn/assets/showcase/color-pair.tsx                  
+.agents/skills/shadcn/assets/showcase/state-matrix.tsx                
+.agents/skills/shadcn/scripts/showcase-coverage.mjs                   
+.agents/skills/systematic-debugging/condition-based-waiting-example.ts
+client/src/lib/i18n-dictionary.ts                                     
+Unused dependencies (10)
+@fontsource-variable/geist  client/package.json:14:6
+@hookform/resolvers         client/package.json:15:6
+cn                          client/package.json:23:6
+date-fns                    client/package.json:24:6
+next-themes                 client/package.json:28:6
+react-day-picker            client/package.json:31:6
+react-hook-form             client/package.json:33:6
+shadcn                      client/package.json:35:6
+tw-animate-css              client/package.json:38:6
+zod                         client/package.json:42:6
+Unused devDependencies (3)
+tailwindcss       client/package.json:51:6
+@types/supertest  server/package.json:34:6
+supertest         server/package.json:36:6
+Unused exports (58)
+useConnectionStatus     function  client/src/components/shell/use-connection-status.ts:25:17
+badgeVariants                     client/src/components/ui/badge.tsx:44:17                  
+BreadcrumbEllipsis                client/src/components/ui/breadcrumb.tsx:111:3             
+buttonVariants                    client/src/components/ui/button.tsx:56:18                 
+CardFooter                        client/src/components/ui/card.tsx:78:3                    
+CommandSeparator                  client/src/components/ui/command.tsx:118:3                
+DialogClose                       client/src/components/ui/dialog.tsx:109:3                 
+DrawerClose                       client/src/components/ui/drawer.tsx:69:3                  
+PaginationEllipsis                client/src/components/ui/pagination.tsx:89:3              
+SidebarSeparator        function  client/src/components/ui/sidebar.tsx:427:17               
+SidebarGroupContent     function  client/src/components/ui/sidebar.tsx:469:17               
+sidebarNavItemClass     function  client/src/components/ui/sidebar.tsx:514:17               
+TableCaption                      client/src/components/ui/table.tsx:116:3                  
+TableFooter                       client/src/components/ui/table.tsx:118:3                  
+betterAuth                        client/src/lib/auth-client.ts:24:14                       
+MillLedgerDatabase      class     client/src/offline/db.ts:64:14                            
+getDeviceId             function  client/src/offline/sync-engine.ts:24:17                   
+updateOfflineOrder      function  client/src/offline/sync-engine.ts:311:23                  
+useIsOnline             function  client/src/offline/use-offline.ts:35:17                   
+useOfflineCustomers     function  client/src/offline/use-offline.ts:39:17                   
+useOfflineProducts      function  client/src/offline/use-offline.ts:51:17                   
+useOutboxOrders         function  client/src/offline/use-offline.ts:61:17                   
+DashboardPage           function  client/src/pages/placeholder-pages.tsx:51:17              
+OrdersPage              function  client/src/pages/placeholder-pages.tsx:60:17              
+InvoicesPage            function  client/src/pages/placeholder-pages.tsx:78:17              
+DispatchPage            function  client/src/pages/placeholder-pages.tsx:87:17              
+PaymentsPage            function  client/src/pages/placeholder-pages.tsx:96:17              
+StockPage               function  client/src/pages/placeholder-pages.tsx:105:17             
+PurchasesPage           function  client/src/pages/placeholder-pages.tsx:114:17             
+ProductionTodayPage     function  client/src/pages/placeholder-pages.tsx:123:17             
+ProductionNewPage       function  client/src/pages/placeholder-pages.tsx:132:17             
+ProductionHistoryPage   function  client/src/pages/placeholder-pages.tsx:141:17             
+CustomersPage           function  client/src/pages/placeholder-pages.tsx:150:17             
+ReportsSalesPage        function  client/src/pages/placeholder-pages.tsx:159:17             
+ReportsStockPage        function  client/src/pages/placeholder-pages.tsx:168:17             
+ReportsProductionPage   function  client/src/pages/placeholder-pages.tsx:177:17             
+ReportsReceivablesPage  function  client/src/pages/placeholder-pages.tsx:186:17             
+ReportsGSTPage          function  client/src/pages/placeholder-pages.tsx:195:17             
+ReportsAuditPage        function  client/src/pages/placeholder-pages.tsx:204:17             
+SettingsProfilePage     function  client/src/pages/placeholder-pages.tsx:231:17             
+SettingsUsersPage       function  client/src/pages/placeholder-pages.tsx:240:17             
+SettingsMillPage        function  client/src/pages/placeholder-pages.tsx:249:17             
+SettingsAuditPage       function  client/src/pages/placeholder-pages.tsx:258:17             
+LoginPage               function  client/src/pages/placeholder-pages.tsx:267:17             
+ReportsPage             function  client/src/pages/reports-page.tsx:21:17                   
+seedUsers               function  server/src/db/seed.ts:69:23                               
+runFullSeed             function  server/src/db/seed.ts:595:23                              
+requireTenant           function  server/src/middleware/auth.middleware.ts:48:17            
+FinanceService          class     server/src/modules/finance/finance.service.ts:20:14       
+PaymentService          class     server/src/modules/finance/payment.service.ts:22:14       
+SequenceService         class     server/src/modules/finance/sequence.service.ts:3:14       
+InventoryService        class     server/src/modules/inventory/inventory.service.ts:38:14   
+ProductionService       class     server/src/modules/production/production.service.ts:45:14 
+AuditService            class     server/src/modules/reporting/audit.service.ts:16:14       
+ReportingService        class     server/src/modules/reporting/reporting.service.ts:18:14   
+DispatchService         class     server/src/modules/sales/dispatch.service.ts:26:14        
+SalesService            class     server/src/modules/sales/sales.service.ts:38:14           
+ROLE_PERMISSIONS                  server/src/policies/rbac.ts:3:14                          
+Unused exported types (22)
+NavItem                     interface  client/src/components/shell/nav-config.tsx:36:18         
+MetaRecord                  interface  client/src/offline/db.ts:58:18                           
+CreateInvoiceInput          interface  server/src/modules/finance/finance.service.ts:6:18       
+IssueCreditNoteInput        interface  server/src/modules/finance/finance.service.ts:13:18      
+PaymentAllocationInput      interface  server/src/modules/finance/payment.service.ts:5:18       
+RecordPaymentInput          interface  server/src/modules/finance/payment.service.ts:10:18      
+CreatePurchaseReceiptInput  interface  server/src/modules/inventory/inventory.service.ts:5:18   
+InventoryBalanceRow         interface  server/src/modules/inventory/inventory.service.ts:21:18  
+ConsumedMaterialInput       interface  server/src/modules/production/production.service.ts:9:18 
+CreateDraftRunInput         interface  server/src/modules/production/production.service.ts:15:18
+PostProductionRunInput      interface  server/src/modules/production/production.service.ts:25:18
+ReverseProductionRunInput   interface  server/src/modules/production/production.service.ts:40:18
+LogAuditInput               interface  server/src/modules/reporting/audit.service.ts:3:18       
+ReportFilterParams          interface  server/src/modules/reporting/reporting.service.ts:6:18   
+CreateDispatchLineInput     interface  server/src/modules/sales/dispatch.service.ts:10:18       
+CreateDispatchInput         interface  server/src/modules/sales/dispatch.service.ts:15:18       
+CreateOrderLineInput        interface  server/src/modules/sales/sales.service.ts:6:18           
+CreateOrderInput            interface  server/src/modules/sales/sales.service.ts:12:18          
+ApproveOrderLineOverride    interface  server/src/modules/sales/sales.service.ts:23:18          
+ApproveOrderInput           interface  server/src/modules/sales/sales.service.ts:29:18          
+RejectOrderInput            interface  server/src/modules/sales/sales.service.ts:34:18          
+PolicyRule                  type       server/src/policies/abac.ts:14:13                        

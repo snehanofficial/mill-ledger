@@ -159,10 +159,10 @@ server/src/modules/production/production.service.ts:448:        await tx.product
 
 | ID | Sev | Status | Title |
 |---|---|---|---|
-| **F-017** | P0 | `OPEN` | Unvalidated `status` in order creation payload allows salesman to set `status: "APPROVED"` directly in PostgreSQL |
-| **F-018** | P1 | `OPEN` | `GET /api/v1/sales/dispatches` is accessible to salesmen and leaks company-wide customer orders, invoices, and dispatch records |
+| **F-017** | P0 | `VERIFIED` | Unvalidated `status` in order creation payload allows salesman to set `status: "APPROVED"` directly in PostgreSQL |
+| **F-018** | P1 | `VERIFIED` | `GET /api/v1/sales/dispatches` is accessible to salesmen and leaks company-wide customer orders, invoices, and dispatch records |
 | **F-019** | P1 | `VERIFIED` | Direct URL navigation to forbidden routes renders full operational page shells without route-level authorization guards or 403 pages |
-| **F-020** | P1 | `OPEN` | Sales order creation permits arbitrary client-supplied unit prices without discount bounds, minimum margin validation, or manager approval |
+| **F-020** | P1 | `VERIFIED` | Sales order creation permits arbitrary client-supplied unit prices without discount bounds, minimum margin validation, or manager approval |
 | **F-021** | P1 | `OPEN` | Multi-mount of `inventoryRouter` exposes `GET /api/v1/purchase-receipts/items/:id/ledger` to salesmen due to broad `inventory:read` privilege |
 | **F-027** | P1 | `OPEN` | Stock reservations lack TTL and expiration semantics, enabling inventory lockup and order fulfillment denial of service |
 

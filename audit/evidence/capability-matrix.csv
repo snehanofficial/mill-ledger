@@ -1,0 +1,24 @@
+Entity,DB Model,API List,API Create,API Detail,API Update,API Archive,UI List,UI Create,UI Detail,UI Update,UI Archive,Permission Enforced,Audited,Translated (EN/TA),Loading/Error/Offline,Verdict,Evidence Link
+supplier,Y,Y,N,N,N,N,BROKEN,N,N,N,N,Y,N,N,BROKEN,BROKEN,server/src/modules/inventory/inventory.routes.ts#L76
+customer,Y,Y,N,N,N,N,Y,N,N,N,N,Y,N,BROKEN,Y,PARTIAL,client/src/pages/customers-page.tsx#L31
+raw material,Y,Y,N,Y,N,N,Y,N,Y,N,N,Y,Y,BROKEN,Y,PARTIAL,client/src/pages/stock-page.tsx#L1
+packaging,Y,Y,N,Y,N,N,Y,N,Y,N,N,Y,Y,BROKEN,Y,PARTIAL,client/src/pages/stock-page.tsx#L1
+finished good,Y,Y,N,Y,N,N,Y,N,Y,N,N,Y,Y,BROKEN,Y,PARTIAL,client/src/pages/stock-page.tsx#L1
+BOM,Y,Y,N,N,N,N,BROKEN,N,N,N,N,Y,N,N,BROKEN,BROKEN,server/src/modules/production/production.routes.ts#L69
+unit of measure,Y,BROKEN,N,N,N,N,BROKEN,N,N,N,N,N,N,N,N,BROKEN,server/prisma/schema.prisma#L185
+warehouse/location,Y,BROKEN,N,N,N,N,N,N,N,N,N,N,N,N,N,BROKEN,client/src/pages/purchases-page.tsx#L133
+purchase receipt,Y,Y,Y,N,N,N,Y,Y,BROKEN,N,N,Y,Y,BROKEN,Y,PARTIAL,client/src/pages/purchases-page.tsx#L212
+production run,Y,Y,Y,Y,Y,N,Y,Y,Y,Y,N,Y,Y,BROKEN,Y,VERIFIED-PASS,client/src/pages/production-page.tsx#L75
+sales order,Y,Y,Y,Y,Y,N,Y,Y,BROKEN,Y,N,Y,Y,BROKEN,Y,VERIFIED-PASS,client/src/pages/orders-page.tsx#L466
+reservation,Y,BROKEN,Y,N,Y,N,BROKEN,Y,N,Y,N,Y,Y,BROKEN,N,PARTIAL,server/src/modules/sales/sales.service.ts#L168
+invoice,Y,Y,Y,Y,N,N,Y,BROKEN,Y,N,Y,Y,Y,BROKEN,Y,BROKEN,client/src/pages/invoices-page.tsx#L66
+dispatch,Y,Y,Y,N,N,N,Y,Y,BROKEN,N,N,Y,Y,BROKEN,Y,PARTIAL,client/src/pages/dispatch-page.tsx#L85
+payment,Y,Y,Y,Y,N,N,Y,Y,Y,N,N,Y,Y,BROKEN,Y,VERIFIED-PASS,client/src/pages/payments-page.tsx#L110
+credit note,Y,BROKEN,Y,N,N,N,BROKEN,Y,N,N,N,Y,Y,BROKEN,Y,PARTIAL,server/src/modules/finance/finance.routes.ts#L90
+user,Y,N,BROKEN,BROKEN,N,N,N,N,N,N,N,N,N,N,N,BROKEN,server/src/modules/auth/auth.routes.ts#L9
+role,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,BROKEN,server/prisma/schema.prisma#L10
+permission,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,PARTIAL,server/src/middleware/auth.middleware.ts#L25
+tax rate,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,BROKEN,server/prisma/schema.prisma#L324
+settings,BROKEN,N,N,N,N,N,BROKEN,N,N,N,N,N,N,N,BROKEN,BROKEN,client/src/pages/placeholder-pages.tsx#L222
+audit log,Y,Y,Y,N,N,N,Y,N,BROKEN,N,N,Y,Y,BROKEN,BROKEN,client/src/pages/reports-page.tsx#L634
+API log,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,NOT-APPLICABLE,server/prisma/schema.prisma#L1

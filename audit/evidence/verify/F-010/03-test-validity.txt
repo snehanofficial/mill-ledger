@@ -1,0 +1,27 @@
+=== STEP 3: TEST VALIDITY (REVERT CHECK) FOR F-010 ===
+Command: pnpm vitest run server/src/invoice-rounding.test.ts
+
+1. WITH FIX:
+ ✓ server/src/invoice-rounding.test.ts (4 tests) 312ms
+   ✓ F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGST Act) > calculates exact statutory paise rounding on single-line intra-state invoice (Case 2: 14 pkts @ ₹54.21 @ 18% GST) 47ms
+   ✓ F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGST Act) > calculates exact statutory paise rounding on multi-line intra-state invoice (Case 4: 4 lines with 5%, 18%, 12% GST) 29ms
+   ✓ F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGST Act) > calculates exact statutory paise rounding on inter-state invoice (Case 6: TN to KA IGST) 26ms
+   ✓ F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGST Act) > matches statutory Decimal half-up reference across randomized configurations 0ms
+Test Files: 1 passed (1)
+Tests: 4 passed (4)
+Exit code: 0
+
+2. WITHOUT FIX (Temporarily reverted finance.service.ts to unrounded float math):
+ ❯ server/src/invoice-rounding.test.ts (4 tests | 3 failed) 325ms
+   × F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGST Act) > calculates exact statutory paise rounding on single-line intra-state invoice (Case 2: 14 pkts @ ₹54.21 @ 18% GST) 51ms
+     → expected 136.61 to be 136.6 // Object.is equality
+   × F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGST Act) > calculates exact statutory paise rounding on multi-line intra-state invoice (Case 4: 4 lines with 5%, 18%, 12% GST) 30ms
+     → expected 1021.16 to be 1021.17 // Object.is equality
+   × F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGST Act) > calculates exact statutory paise rounding on inter-state invoice (Case 6: TN to KA IGST) 30ms
+     → expected 1333.08 to be 1333.07 // Object.is equality
+   ✓ F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGST Act) > matches statutory Decimal half-up reference across randomized configurations 3ms
+Test Files: 1 failed (1)
+Tests: 3 failed, 1 passed (4)
+Exit code: 1
+
+Test sensitivity confirmed: Regression test catches rounding errors and fails cleanly when fix is absent.

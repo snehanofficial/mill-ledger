@@ -1,0 +1,28 @@
+=== STEP 5: ADVERSARIAL PROBES FOR F-007 ===
+Timestamp: 2026-11-23T04:46:46+05:30
+=== STARTING ADVERSARIAL PROBES FOR F-007 ===
+Seeding benchmark master data and opening stock (M2)...
+M2 benchmark master data seed successfully completed.
+
+--- PROBE 1: 50 concurrent approval requests against 100 available units ---
+(node:126815) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Probe 1 Results: Approved=10, Rejected=40, TotalReserved=100 (Stock=100)
+✓ PROBE 1 PASSED: Strict 100-unit ATP reservation maintained under 50 concurrent requests.
+
+--- PROBE 2: Multi-line orders with shuffled line order (Deadlock Prevention) ---
+Probe 2 Results: Total=30, Succeeded=30, Deadlocks=0
+✓ PROBE 2 PASSED: Deterministic item sorting prevented deadlocks across concurrent multi-line orders.
+
+--- PROBE 3: Partial stock shortage atomicity probe ---
+Probe 3 expected rejection caught: "Insufficient stock to approve order SO-P3-1795389409073. Available: 5, Approved: 50, Shortage: 45"
+✓ PROBE 3 PASSED: Atomic rollback confirmed. Zero orphaned reservations created.
+
+--- PROBE 4: Zero stock concurrent rejection probe ---
+✓ PROBE 4 PASSED: 10/10 concurrent requests cleanly rejected on 0 available stock.
+
+--- PROBE 5: Negative / Zero override validation ---
+✓ PROBE 5 PASSED: Zero approved quantity override correctly rejected.
+
+=== ALL ADVERSARIAL PROBES FOR F-007 PASSED SUCCESSFULLY ===
+=== ALL ADVERSARIAL PROBES FOR F-007 PASSED ===

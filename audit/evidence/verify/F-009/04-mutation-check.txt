@@ -1,0 +1,694 @@
+=== STEP 4: MUTATION CHECK FOR F-009 ===
+Timestamp: 2026-11-22T21:49:54+05:30
+1. Cleaning up scratch directory and db...
+NOTICE:  database "mill_ledger_mutant_f009" does not exist, skipping
+2. Setting up scratch worktree...
+Preparing worktree (detached HEAD ba71207)
+HEAD is now at ba71207 F-009: Fix sales_invoice_line trigger column, add status downgrade & snapshot protection, expand test coverage to 8 tests
+Scope: all 4 workspace projects
+[WARN] The store at /home/snehan/.local/share/pnpm/store/v11 is not used because packages cannot be hard linked from it into this project. Using the store at /tmp/.pnpm-store/v11 instead. Set storeDir to choose the store.
+✓ Lockfile passes supply-chain policies (verified 3d ago)
+Lockfile is up to date, resolution step is skipped
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /tmp/.pnpm-store/v11
+  Virtual store is at:             node_modules/.pnpm
+Packages: +876
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 876, reused 876, downloaded 0, added 876, done
+
+devDependencies:
++ @playwright/test 1.65.1
++ @types/node 22.20.5
++ oxlint 1.94.0
++ prettier 3.10.1
++ typescript 5.9.3
++ vitest 3.2.7
+
+Done in 234ms using pnpm v12.18.0
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+
+✔ Generated Prisma Client (v7.10.1) to ./../node_modules/.pnpm/@prisma+client@7.10.1_prisma@7.10.1_@types+node@22.20.5_@types+react-dom@19.3.0_@types+_6c67c6ce86c84f92acf6c759ffa7e26a/node_modules/@prisma/client in 361ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "mill_ledger_mutant_f009", schema "public" at "localhost:5432"
+
+3 migrations found in prisma/migrations
+
+Applying migration `20261118000000_init_baseline`
+Applying migration `20261118000001_constraints_and_sequences`
+Applying migration `20261120000002_ledger_immutability_triggers`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261118000000_init_baseline/
+    └─ migration.sql
+  └─ 20261118000001_constraints_and_sequences/
+    └─ migration.sql
+  └─ 20261120000002_ledger_immutability_triggers/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+$ tsx prisma/seed.ts
+Seeding test users for M1...
+Created user admin@millledger.local with role ADMIN
+Created user salesman1@millledger.local with role SALESMAN
+Created user salesman@millledger.local with role SALESMAN
+Created user salesman2@millledger.local with role SALESMAN
+Created user production@millledger.local with role PRODUCTION
+Created user operator@millledger.local with role PRODUCTION
+Created user accountant@millledger.local with role ACCOUNTANT
+Created user owner@millledger.local with role OWNER
+Seeding benchmark master data and opening stock (M2)...
+M2 benchmark master data seed successfully completed.
+--- Testing Baseline (Unmutated) ---
+
+ RUN  v3.2.7 /tmp/mill-ledger-mutant-f009
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: UPDATE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: DELETE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice financial and identification fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoices cannot be deleted (status: POSTED)`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice status cannot be downgraded from POSTED to DRAFT`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice snapshot fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+ ✓ server/src/db-immutability.test.ts (8 tests) 317ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  21:49:59
+   Duration  711ms (transform 58ms, setup 0ms, collect 148ms, tests 317ms, environment 0ms, prepare 48ms)
+
+--- Mutant 1: Allow stock_movement UPDATE (RETURN NEW instead of RAISE EXCEPTION) ---
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+
+ RUN  v3.2.7 /tmp/mill-ledger-mutant-f009
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice financial and identification fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoices cannot be deleted (status: POSTED)`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice status cannot be downgraded from POSTED to DRAFT`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice snapshot fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+ ❯ server/src/db-immutability.test.ts (8 tests | 2 failed) 294ms
+   × F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement 32ms
+     → promise resolved "1" instead of rejecting
+   × F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement 23ms
+     → promise resolved "+0" instead of rejecting
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice 30ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice 17ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice 15ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice 12ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice 19ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice 16ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement
+AssertionError: promise resolved "1" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+1
+
+ ❯ server/src/db-immutability.test.ts:30:5
+     28|     await expect(
+     29|       prisma.$executeRaw`UPDATE "stock_movement" SET "quantity" = 999.…
+     30|     ).rejects.toThrow();
+       |     ^
+     31|   });
+     32| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement
+AssertionError: promise resolved "+0" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+0
+
+ ❯ server/src/db-immutability.test.ts:51:5
+     49|     await expect(
+     50|       prisma.$executeRaw`DELETE FROM "stock_movement" WHERE "id" = ${t…
+     51|     ).rejects.toThrow();
+       |     ^
+     52|   });
+     53| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  21:50:01
+   Duration  688ms (transform 52ms, setup 0ms, collect 129ms, tests 294ms, environment 0ms, prepare 52ms)
+
+Mutant 1 exit code: 1
+Mutant 1 was KILLED by test suite.
+--- Mutant 2: Allow totalAmount UPDATE on POSTED invoice ---
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+
+ RUN  v3.2.7 /tmp/mill-ledger-mutant-f009
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: UPDATE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: DELETE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoices cannot be deleted (status: POSTED)`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice status cannot be downgraded from POSTED to DRAFT`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice snapshot fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+ ❯ server/src/db-immutability.test.ts (8 tests | 1 failed) 283ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement 42ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement 29ms
+   × F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice 23ms
+     → promise resolved "1" instead of rejecting
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice 5ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice 16ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice 14ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice 20ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice
+AssertionError: promise resolved "1" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+1
+
+ ❯ server/src/db-immutability.test.ts:80:5
+     78|     await expect(
+     79|       prisma.$executeRaw`UPDATE "sales_invoice" SET "totalAmount" = 99…
+     80|     ).rejects.toThrow();
+       |     ^
+     81|   });
+     82| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  21:50:02
+   Duration  662ms (transform 50ms, setup 0ms, collect 118ms, tests 283ms, environment 0ms, prepare 51ms)
+
+Mutant 2 exit code: 1
+Mutant 2 was KILLED by test suite.
+--- Mutant 3: Allow sales_invoice_line UPDATE/DELETE on POSTED invoice ---
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+
+ RUN  v3.2.7 /tmp/mill-ledger-mutant-f009
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: UPDATE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: DELETE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice financial and identification fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoices cannot be deleted (status: POSTED)`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice status cannot be downgraded from POSTED to DRAFT`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice snapshot fields are immutable`
+
+ ❯ server/src/db-immutability.test.ts (8 tests | 2 failed) 274ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement 42ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement 33ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice 18ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice 15ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice 16ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice 11ms
+   × F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice 17ms
+     → promise resolved "+0" instead of rejecting
+   × F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice 6ms
+     → promise resolved "1" instead of rejecting
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice
+AssertionError: promise resolved "+0" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+0
+
+ ❯ server/src/db-immutability.test.ts:218:5
+    216|     await expect(
+    217|       prisma.$executeRaw`DELETE FROM "sales_invoice_line" WHERE "id" =…
+    218|     ).rejects.toThrow();
+       |     ^
+    219|   });
+    220| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice
+AssertionError: promise resolved "1" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+1
+
+ ❯ server/src/db-immutability.test.ts:267:5
+    265|     await expect(
+    266|       prisma.$executeRaw`UPDATE "sales_invoice_line" SET "lineTotal" =…
+    267|     ).rejects.toThrow();
+       |     ^
+    268|   });
+    269| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  21:50:04
+   Duration  652ms (transform 51ms, setup 0ms, collect 123ms, tests 274ms, environment 0ms, prepare 49ms)
+
+Mutant 3 exit code: 1
+Mutant 3 was KILLED by test suite.
+--- Mutant 4: Allow status downgrade from POSTED to DRAFT ---
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+
+ RUN  v3.2.7 /tmp/mill-ledger-mutant-f009
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: UPDATE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: DELETE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice financial and identification fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoices cannot be deleted (status: POSTED)`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice snapshot fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+ ❯ server/src/db-immutability.test.ts (8 tests | 1 failed) 280ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement 43ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement 27ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice 23ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice 15ms
+   × F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice 17ms
+     → promise resolved "1" instead of rejecting
+   ✓ F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice 4ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice 15ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice 16ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice
+AssertionError: promise resolved "1" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+1
+
+ ❯ server/src/db-immutability.test.ts:139:5
+    137|     await expect(
+    138|       prisma.$executeRaw`UPDATE "sales_invoice" SET "status" = 'DRAFT'…
+    139|     ).rejects.toThrow();
+       |     ^
+    140|   });
+    141| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  21:50:05
+   Duration  658ms (transform 53ms, setup 0ms, collect 127ms, tests 280ms, environment 0ms, prepare 47ms)
+
+Mutant 4 exit code: 1
+Mutant 4 was KILLED by test suite.
+--- Mutant 5: Allow snapshot fields mutation ---
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+
+ RUN  v3.2.7 /tmp/mill-ledger-mutant-f009
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: UPDATE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: DELETE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice financial and identification fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoices cannot be deleted (status: POSTED)`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice status cannot be downgraded from POSTED to DRAFT`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+ ❯ server/src/db-immutability.test.ts (8 tests | 1 failed) 288ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement 43ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement 30ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice 18ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice 15ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice 15ms
+   × F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice 14ms
+     → promise resolved "1" instead of rejecting
+   ✓ F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice 10ms
+   ✓ F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice
+AssertionError: promise resolved "1" instead of rejecting
+
+- Expected: 
+Error {
+  "message": "rejected promise",
+}
+
++ Received: 
+1
+
+ ❯ server/src/db-immutability.test.ts:169:5
+    167|     await expect(
+    168|       prisma.$executeRaw`UPDATE "sales_invoice" SET "companyGstinSnaps…
+    169|     ).rejects.toThrow();
+       |     ^
+    170|   });
+    171| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  21:50:07
+   Duration  673ms (transform 55ms, setup 0ms, collect 133ms, tests 288ms, environment 0ms, prepare 48ms)
+
+Mutant 5 exit code: 1
+Mutant 5 was KILLED by test suite.
+--- Cleanup ---
+=== SUMMARY OF MUTATION CHECK ===
+Mutant 1 (allow stock UPDATE): exit=1
+Mutant 2 (allow invoice total UPDATE): exit=1
+Mutant 3 (allow line UPDATE/DELETE): exit=1
+Mutant 4 (allow status downgrade): exit=1
+Mutant 5 (allow snapshot mutation): exit=1

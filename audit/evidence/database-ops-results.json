@@ -1,0 +1,186 @@
+{
+  "poolConfiguration": {
+    "clientFile": "server/src/db/client.ts",
+    "poolHasMax": false,
+    "defaultMaxInPg": 10,
+    "poolHasStatementTimeout": false,
+    "poolHasIdleTimeout": false,
+    "poolHasConnectionTimeout": false
+  },
+  "backupAndRestoreVerification": {
+    "sourceDatabase": "mill_ledger_audit_throwaway",
+    "tableCount": 39,
+    "dumpDurationMs": 196,
+    "dumpSizeBytes": 28376932,
+    "restoreTargetDatabase": "mill_ledger_restore_test",
+    "restoreDurationMs": 907,
+    "dataFidelityDiscrepancies": 0,
+    "tableComparison": {
+      "_prisma_migrations": {
+        "source": 2,
+        "restored": 2
+      },
+      "account": {
+        "source": 8,
+        "restored": 8
+      },
+      "audit_log": {
+        "source": 2,
+        "restored": 2
+      },
+      "credit_note": {
+        "source": 2,
+        "restored": 2
+      },
+      "customer": {
+        "source": 2,
+        "restored": 2
+      },
+      "dispatch": {
+        "source": 3,
+        "restored": 3
+      },
+      "dispatch_line": {
+        "source": 1,
+        "restored": 1
+      },
+      "document_sequences": {
+        "source": 1,
+        "restored": 1
+      },
+      "facility": {
+        "source": 1,
+        "restored": 1
+      },
+      "inventory_item": {
+        "source": 6,
+        "restored": 6
+      },
+      "organization": {
+        "source": 1,
+        "restored": 1
+      },
+      "payment": {
+        "source": 5,
+        "restored": 5
+      },
+      "payment_allocation": {
+        "source": 6,
+        "restored": 6
+      },
+      "price_list": {
+        "source": 1,
+        "restored": 1
+      },
+      "price_list_line": {
+        "source": 1,
+        "restored": 1
+      },
+      "product": {
+        "source": 1,
+        "restored": 1
+      },
+      "product_variant": {
+        "source": 1,
+        "restored": 1
+      },
+      "production_run": {
+        "source": 1,
+        "restored": 1
+      },
+      "production_run_material": {
+        "source": 0,
+        "restored": 0
+      },
+      "production_run_reversal": {
+        "source": 0,
+        "restored": 0
+      },
+      "purchase_receipt": {
+        "source": 0,
+        "restored": 0
+      },
+      "purchase_receipt_line": {
+        "source": 0,
+        "restored": 0
+      },
+      "recipe": {
+        "source": 1,
+        "restored": 1
+      },
+      "recipe_item": {
+        "source": 5,
+        "restored": 5
+      },
+      "sales_invoice": {
+        "source": 5006,
+        "restored": 5006
+      },
+      "sales_invoice_line": {
+        "source": 5006,
+        "restored": 5006
+      },
+      "sales_order": {
+        "source": 10011,
+        "restored": 10011
+      },
+      "sales_order_line": {
+        "source": 10011,
+        "restored": 10011
+      },
+      "salesman_customer_assignment": {
+        "source": 2,
+        "restored": 2
+      },
+      "session": {
+        "source": 36,
+        "restored": 36
+      },
+      "stock_movement": {
+        "source": 100007,
+        "restored": 100007
+      },
+      "stock_reservation": {
+        "source": 2,
+        "restored": 2
+      },
+      "supplier": {
+        "source": 1,
+        "restored": 1
+      },
+      "tax_rate": {
+        "source": 1,
+        "restored": 1
+      },
+      "unit_conversion": {
+        "source": 1,
+        "restored": 1
+      },
+      "unit_of_measure": {
+        "source": 5,
+        "restored": 5
+      },
+      "user": {
+        "source": 8,
+        "restored": 8
+      },
+      "verification": {
+        "source": 0,
+        "restored": 0
+      },
+      "warehouse": {
+        "source": 1,
+        "restored": 1
+      }
+    }
+  },
+  "migrateDeployOnPopulatedDb": {
+    "success": true,
+    "output": "Datasource \"db\": PostgreSQL database \"mill_ledger_restore_test\", schema \"public\" at \"localhost:5432\"\n\n2 migrations found in prisma/migrations\n\n\nNo pending migrations to apply."
+  },
+  "ciMigrationReality": {
+    "ciWorkflowFile": ".github/workflows/ci.yml",
+    "runsAgainstFreshDbOnly": true,
+    "runsAgainstRealisticDataCopy": false
+  }
+}

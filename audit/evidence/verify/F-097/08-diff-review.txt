@@ -1,0 +1,41 @@
+=== STEP 8: DIFF REVIEW FOR COMMIT e0047aa ===
+Finding: F-097
+Commit: e0047aadb565ba164ff07f8ad499b6c8b5bbe988
+Title: F-097: Architectural Inconsistency: Zero Centralized Currency & Date Formatters across 7 Financial Surfaces (Ad-hoc .toFixed(2) & Fragmented Locales)
+
+1. Overview of Touched Files (15 files, +443 / -248 lines):
+- client/src/components/shell/device-outbox-sheet.tsx
+- client/src/lib/formatters.test.ts (new regression test suite with 16 tests)
+- client/src/lib/formatters.ts (re-export hub)
+- client/src/pages/dashboard-page.tsx
+- client/src/pages/dispatch-page.tsx
+- client/src/pages/invoices-page.tsx
+- client/src/pages/orders-page.tsx
+- client/src/pages/payments-page.tsx
+- client/src/pages/production-page.tsx
+- client/src/pages/purchases-page.tsx
+- client/src/pages/reports-page.tsx
+- client/src/pages/stock-page.tsx
+- shared/package.json
+- shared/src/formatters.ts (canonical implementation of formatINR, formatQuantity, formatDate, formatDateShort, formatDateTime, formatTime)
+- shared/src/index.ts
+
+2. Code Quality and Hygiene Checks:
+- Scope creep: None. Changes strictly replace ad-hoc currency and date/time formatting with canonical helpers.
+- Leftover debug code (console.log / debugger): None. Zero console statements introduced.
+- Swallowed errors: None. Type coercions safely guard with Number.isNaN and Number.isFinite, returning clean statutory fallbacks ("₹0.00", "0", "—").
+- `any` usage: Zero `any` types added in shared/src/formatters.ts or client/src/lib/formatters.ts.
+- Loose casts: None. Parameter typing accepts `number | string | { toString(): string } | null | undefined`.
+- Disabled lint rules: None (no eslint-disable or @ts-ignore).
+- Commented-out code: None.
+- Hardcoded values / magic numbers:
+  - Benchmark constants in production-page.tsx (4055) existed in baseline before the commit.
+- New TODOs: None.
+- Untranslated copy / placeholders: None introduced.
+
+3. Sibling Deficiencies / Observation:
+- In client/src/pages/payments-page.tsx:272:
+  `setPaymentError(\`Total manual allocations (₹\${totalManual}) exceed payment amount (₹\${amountNum})\`);`
+  This toast error message still interpolates raw numbers with a prefixed '₹' instead of using formatINR(totalManual) and formatINR(amountNum).
+- Items 3 and 4 of F-097.md (Dual HTTP Client and Mismatched Error Envelopes):
+  The commit specifically scoped remediation to Centralized Currency and Date Formatters as designated by CLUSTER-01 (Financial Math & Decimal Precision). Dual HTTP client and Error envelopes are tracked under F-034 and HTTP security clusters.

@@ -56,7 +56,7 @@
 | **F-017** | T2 | P0 | CLUSTER-04 | `VERIFIED` | none | F-007, F-009, F-010 | Unvalidated `status` in order creation payload allows salesman to set `status: "APPROVED"` directly in PostgreSQL |
 | **F-018** | T2 | P1 | CLUSTER-04 | `VERIFIED` | none | F-007, F-009, F-010 | `GET /api/v1/sales/dispatches` is accessible to salesmen and leaks company-wide customer orders, invoices, and dispatch records |
 | **F-019** | T2 | P1 | CLUSTER-04 | `VERIFIED` | none | F-007, F-009, F-010 | Direct URL navigation to forbidden routes renders full operational page shells without route-level authorization guards or 403 pages |
-| **F-020** | T2 | P1 | CLUSTER-04 | `OPEN` | permission | F-007, F-009, F-010 | Sales order creation permits arbitrary client-supplied unit prices without discount bounds, minimum margin validation, or manager approval |
+| **F-020** | T2 | P1 | CLUSTER-04 | `VERIFIED` | none | F-007, F-009, F-010 | Sales order creation permits arbitrary client-supplied unit prices without discount bounds, minimum margin validation, or manager approval |
 | **F-021** | T2 | P1 | CLUSTER-04 | `OPEN` | permission | F-007, F-009, F-010 | Multi-mount of `inventoryRouter` exposes `GET /api/v1/purchase-receipts/items/:id/ledger` to salesmen due to broad `inventory:read` privilege |
 | **F-027** | T2 | P1 | CLUSTER-04 | `OPEN` | permission | F-007, F-009, F-010 | Stock reservations lack TTL and expiration semantics, enabling inventory lockup and order fulfillment denial of service |
 | **F-023** | T2 | P1 | CLUSTER-05 | `OPEN` | API | F-017 | Backend lacks user and role management API endpoints; super admin accounts rely on hardcoded seeded credentials without last-admin demotion safeguards or MFA |

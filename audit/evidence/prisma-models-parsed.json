@@ -1,0 +1,5677 @@
+{
+  "models": [
+    {
+      "name": "User",
+      "tableName": "user",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "name",
+          "columnName": "name",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "email",
+          "columnName": "email",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": true
+        },
+        {
+          "name": "emailVerified",
+          "columnName": "emailVerified",
+          "type": "Boolean",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "false"
+        },
+        {
+          "name": "image",
+          "columnName": "image",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "role",
+          "columnName": "role",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "\"SALESMAN\""
+        },
+        {
+          "name": "isActive",
+          "columnName": "isActive",
+          "type": "Boolean",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "true"
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organization_id",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "sessions",
+          "columnName": "sessions",
+          "type": "Session",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "accounts",
+          "columnName": "accounts",
+          "type": "Account",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "customerAssignments",
+          "columnName": "customerAssignments",
+          "type": "SalesmanCustomerAssignment",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrders",
+          "columnName": "salesOrders",
+          "type": "SalesOrder",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": []
+    },
+    {
+      "name": "Session",
+      "tableName": "session",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "expiresAt",
+          "columnName": "expiresAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "token",
+          "columnName": "token",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": true
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "ipAddress",
+          "columnName": "ipAddress",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "userAgent",
+          "columnName": "userAgent",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "userId",
+          "columnName": "userId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "user",
+          "columnName": "user",
+          "type": "User",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": []
+    },
+    {
+      "name": "Account",
+      "tableName": "account",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "accountId",
+          "columnName": "accountId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "providerId",
+          "columnName": "providerId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "userId",
+          "columnName": "userId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "user",
+          "columnName": "user",
+          "type": "User",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "accessToken",
+          "columnName": "accessToken",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "refreshToken",
+          "columnName": "refreshToken",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "idToken",
+          "columnName": "idToken",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "accessTokenExpiresAt",
+          "columnName": "accessTokenExpiresAt",
+          "type": "DateTime",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "refreshTokenExpiresAt",
+          "columnName": "refreshTokenExpiresAt",
+          "type": "DateTime",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "scope",
+          "columnName": "scope",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "password",
+          "columnName": "password",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": []
+    },
+    {
+      "name": "Verification",
+      "tableName": "verification",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "identifier",
+          "columnName": "identifier",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "value",
+          "columnName": "value",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "expiresAt",
+          "columnName": "expiresAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": []
+    },
+    {
+      "name": "Organization",
+      "tableName": "organization",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "code",
+          "columnName": "code",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": true
+        },
+        {
+          "name": "name",
+          "columnName": "name",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "gstin",
+          "columnName": "gstin",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "state",
+          "columnName": "state",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "\"Tamil Nadu\""
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "facilities",
+          "columnName": "facilities",
+          "type": "Facility",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "customers",
+          "columnName": "customers",
+          "type": "Customer",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "suppliers",
+          "columnName": "suppliers",
+          "type": "Supplier",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "uoms",
+          "columnName": "uoms",
+          "type": "UnitOfMeasure",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "products",
+          "columnName": "products",
+          "type": "Product",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItems",
+          "columnName": "inventoryItems",
+          "type": "InventoryItem",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "recipes",
+          "columnName": "recipes",
+          "type": "Recipe",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "priceLists",
+          "columnName": "priceLists",
+          "type": "PriceList",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "taxRates",
+          "columnName": "taxRates",
+          "type": "TaxRate",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "purchaseReceipts",
+          "columnName": "purchaseReceipts",
+          "type": "PurchaseReceipt",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productionRuns",
+          "columnName": "productionRuns",
+          "type": "ProductionRun",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrders",
+          "columnName": "salesOrders",
+          "type": "SalesOrder",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "invoices",
+          "columnName": "invoices",
+          "type": "SalesInvoice",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "dispatches",
+          "columnName": "dispatches",
+          "type": "Dispatch",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "creditNotes",
+          "columnName": "creditNotes",
+          "type": "CreditNote",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "payments",
+          "columnName": "payments",
+          "type": "Payment",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "auditLogs",
+          "columnName": "auditLogs",
+          "type": "AuditLog",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "users",
+          "columnName": "users",
+          "type": "User",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "documentSequences",
+          "columnName": "documentSequences",
+          "type": "DocumentSequence",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": []
+    },
+    {
+      "name": "Facility",
+      "tableName": "facility",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "code",
+          "columnName": "code",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "columnName": "name",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "state",
+          "columnName": "state",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "\"Tamil Nadu\""
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouses",
+          "columnName": "warehouses",
+          "type": "Warehouse",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, code])"
+      ]
+    },
+    {
+      "name": "Warehouse",
+      "tableName": "warehouse",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "facilityId",
+          "columnName": "facilityId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "facility",
+          "columnName": "facility",
+          "type": "Facility",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "code",
+          "columnName": "code",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "columnName": "name",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "stockMovements",
+          "columnName": "stockMovements",
+          "type": "StockMovement",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "purchaseReceipts",
+          "columnName": "purchaseReceipts",
+          "type": "PurchaseReceipt",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productionRuns",
+          "columnName": "productionRuns",
+          "type": "ProductionRun",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrders",
+          "columnName": "salesOrders",
+          "type": "SalesOrder",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "dispatches",
+          "columnName": "dispatches",
+          "type": "Dispatch",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "stockReservations",
+          "columnName": "stockReservations",
+          "type": "StockReservation",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([facilityId, code])"
+      ]
+    },
+    {
+      "name": "Customer",
+      "tableName": "customer",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "code",
+          "columnName": "code",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "columnName": "name",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "phone",
+          "columnName": "phone",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "email",
+          "columnName": "email",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "state",
+          "columnName": "state",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "\"Tamil Nadu\""
+        },
+        {
+          "name": "gstin",
+          "columnName": "gstin",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "isActive",
+          "columnName": "isActive",
+          "type": "Boolean",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "true"
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "assignments",
+          "columnName": "assignments",
+          "type": "SalesmanCustomerAssignment",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrders",
+          "columnName": "salesOrders",
+          "type": "SalesOrder",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "invoices",
+          "columnName": "invoices",
+          "type": "SalesInvoice",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "payments",
+          "columnName": "payments",
+          "type": "Payment",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, code])"
+      ]
+    },
+    {
+      "name": "SalesmanCustomerAssignment",
+      "tableName": "salesman_customer_assignment",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "salesmanId",
+          "columnName": "salesmanId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "customerId",
+          "columnName": "customerId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "assignedAt",
+          "columnName": "assignedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "customer",
+          "columnName": "customer",
+          "type": "Customer",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesman",
+          "columnName": "salesman",
+          "type": "User",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([salesmanId, customerId])"
+      ]
+    },
+    {
+      "name": "Supplier",
+      "tableName": "supplier",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "code",
+          "columnName": "code",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "columnName": "name",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "phone",
+          "columnName": "phone",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "email",
+          "columnName": "email",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "state",
+          "columnName": "state",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "\"Tamil Nadu\""
+        },
+        {
+          "name": "gstin",
+          "columnName": "gstin",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "isActive",
+          "columnName": "isActive",
+          "type": "Boolean",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "true"
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "purchaseReceipts",
+          "columnName": "purchaseReceipts",
+          "type": "PurchaseReceipt",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, code])"
+      ]
+    },
+    {
+      "name": "UnitOfMeasure",
+      "tableName": "unit_of_measure",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "code",
+          "columnName": "code",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "columnName": "name",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "symbol",
+          "columnName": "symbol",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItems",
+          "columnName": "inventoryItems",
+          "type": "InventoryItem",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productVariants",
+          "columnName": "productVariants",
+          "type": "ProductVariant",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "recipeOutputs",
+          "columnName": "recipeOutputs",
+          "type": "Recipe",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "recipeItems",
+          "columnName": "recipeItems",
+          "type": "RecipeItem",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "purchaseReceiptLines",
+          "columnName": "purchaseReceiptLines",
+          "type": "PurchaseReceiptLine",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "fromConversions",
+          "columnName": "fromConversions",
+          "type": "UnitConversion",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "toConversions",
+          "columnName": "toConversions",
+          "type": "UnitConversion",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, code])"
+      ]
+    },
+    {
+      "name": "UnitConversion",
+      "tableName": "unit_conversion",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "fromUomId",
+          "columnName": "fromUomId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "toUomId",
+          "columnName": "toUomId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "factor",
+          "columnName": "factor",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "fromUom",
+          "columnName": "fromUom",
+          "type": "UnitOfMeasure",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "toUom",
+          "columnName": "toUom",
+          "type": "UnitOfMeasure",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([fromUomId, toUomId])"
+      ]
+    },
+    {
+      "name": "InventoryItem",
+      "tableName": "inventory_item",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "sku",
+          "columnName": "sku",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "columnName": "name",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "category",
+          "columnName": "category",
+          "type": "ItemCategory",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "baseUomId",
+          "columnName": "baseUomId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "currentStock",
+          "columnName": "currentStock",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "weightedAverageCost",
+          "columnName": "weightedAverageCost",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "isActive",
+          "columnName": "isActive",
+          "type": "Boolean",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "true"
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "baseUom",
+          "columnName": "baseUom",
+          "type": "UnitOfMeasure",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productVariants",
+          "columnName": "productVariants",
+          "type": "ProductVariant",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "recipeItems",
+          "columnName": "recipeItems",
+          "type": "RecipeItem",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "stockMovements",
+          "columnName": "stockMovements",
+          "type": "StockMovement",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "purchaseReceiptLines",
+          "columnName": "purchaseReceiptLines",
+          "type": "PurchaseReceiptLine",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productionRunMaterials",
+          "columnName": "productionRunMaterials",
+          "type": "ProductionRunMaterial",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrderLines",
+          "columnName": "salesOrderLines",
+          "type": "SalesOrderLine",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "stockReservations",
+          "columnName": "stockReservations",
+          "type": "StockReservation",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "dispatchLines",
+          "columnName": "dispatchLines",
+          "type": "DispatchLine",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, sku])"
+      ]
+    },
+    {
+      "name": "StockMovement",
+      "tableName": "stock_movement",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "inventoryItemId",
+          "columnName": "inventoryItemId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouseId",
+          "columnName": "warehouseId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "movementType",
+          "columnName": "movementType",
+          "type": "MovementType",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "quantity",
+          "columnName": "quantity",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "unitCost",
+          "columnName": "unitCost",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "totalCost",
+          "columnName": "totalCost",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "referenceDocumentType",
+          "columnName": "referenceDocumentType",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "referenceDocumentId",
+          "columnName": "referenceDocumentId",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "notes",
+          "columnName": "notes",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "postedAt",
+          "columnName": "postedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "inventoryItem",
+          "columnName": "inventoryItem",
+          "type": "InventoryItem",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouse",
+          "columnName": "warehouse",
+          "type": "Warehouse",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [
+        "@@index([inventoryItemId, warehouseId, postedAt])"
+      ],
+      "uniques": []
+    },
+    {
+      "name": "Product",
+      "tableName": "product",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "code",
+          "columnName": "code",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "columnName": "name",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "hsnCode",
+          "columnName": "hsnCode",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "\"21069099\""
+        },
+        {
+          "name": "taxRate",
+          "columnName": "taxRate",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "5.00"
+        },
+        {
+          "name": "isActive",
+          "columnName": "isActive",
+          "type": "Boolean",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "true"
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "variants",
+          "columnName": "variants",
+          "type": "ProductVariant",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, code])"
+      ]
+    },
+    {
+      "name": "ProductVariant",
+      "tableName": "product_variant",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "productId",
+          "columnName": "productId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "sku",
+          "columnName": "sku",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "columnName": "name",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "packSize",
+          "columnName": "packSize",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "uomId",
+          "columnName": "uomId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItemId",
+          "columnName": "inventoryItemId",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "isActive",
+          "columnName": "isActive",
+          "type": "Boolean",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "true"
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "product",
+          "columnName": "product",
+          "type": "Product",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "uom",
+          "columnName": "uom",
+          "type": "UnitOfMeasure",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItem",
+          "columnName": "inventoryItem",
+          "type": "InventoryItem",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "recipes",
+          "columnName": "recipes",
+          "type": "Recipe",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "priceLines",
+          "columnName": "priceLines",
+          "type": "PriceListLine",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrderLines",
+          "columnName": "salesOrderLines",
+          "type": "SalesOrderLine",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([productId, sku])"
+      ]
+    },
+    {
+      "name": "Recipe",
+      "tableName": "recipe",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productVariantId",
+          "columnName": "productVariantId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "version",
+          "columnName": "version",
+          "type": "Int",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "1"
+        },
+        {
+          "name": "name",
+          "columnName": "name",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "standardBatchSize",
+          "columnName": "standardBatchSize",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "expectedOutputQty",
+          "columnName": "expectedOutputQty",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "outputUomId",
+          "columnName": "outputUomId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "isActive",
+          "columnName": "isActive",
+          "type": "Boolean",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "true"
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productVariant",
+          "columnName": "productVariant",
+          "type": "ProductVariant",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "outputUom",
+          "columnName": "outputUom",
+          "type": "UnitOfMeasure",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "items",
+          "columnName": "items",
+          "type": "RecipeItem",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productionRuns",
+          "columnName": "productionRuns",
+          "type": "ProductionRun",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([productVariantId, version])"
+      ]
+    },
+    {
+      "name": "RecipeItem",
+      "tableName": "recipe_item",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "recipeId",
+          "columnName": "recipeId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItemId",
+          "columnName": "inventoryItemId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "itemType",
+          "columnName": "itemType",
+          "type": "RecipeItemType",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "plannedQty",
+          "columnName": "plannedQty",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "uomId",
+          "columnName": "uomId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "tolerancePct",
+          "columnName": "tolerancePct",
+          "type": "Decimal",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "recipe",
+          "columnName": "recipe",
+          "type": "Recipe",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItem",
+          "columnName": "inventoryItem",
+          "type": "InventoryItem",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "uom",
+          "columnName": "uom",
+          "type": "UnitOfMeasure",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": []
+    },
+    {
+      "name": "PriceList",
+      "tableName": "price_list",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "code",
+          "columnName": "code",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "name",
+          "columnName": "name",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "isDefault",
+          "columnName": "isDefault",
+          "type": "Boolean",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "false"
+        },
+        {
+          "name": "effectiveFrom",
+          "columnName": "effectiveFrom",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "effectiveTo",
+          "columnName": "effectiveTo",
+          "type": "DateTime",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "isActive",
+          "columnName": "isActive",
+          "type": "Boolean",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "true"
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "lines",
+          "columnName": "lines",
+          "type": "PriceListLine",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, code])"
+      ]
+    },
+    {
+      "name": "PriceListLine",
+      "tableName": "price_list_line",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "priceListId",
+          "columnName": "priceListId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productVariantId",
+          "columnName": "productVariantId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "price",
+          "columnName": "price",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "priceList",
+          "columnName": "priceList",
+          "type": "PriceList",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productVariant",
+          "columnName": "productVariant",
+          "type": "ProductVariant",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([priceListId, productVariantId])"
+      ]
+    },
+    {
+      "name": "TaxRate",
+      "tableName": "tax_rate",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "hsnCode",
+          "columnName": "hsnCode",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "rate",
+          "columnName": "rate",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "cgstRate",
+          "columnName": "cgstRate",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "sgstRate",
+          "columnName": "sgstRate",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "igstRate",
+          "columnName": "igstRate",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "effectiveFrom",
+          "columnName": "effectiveFrom",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "effectiveTo",
+          "columnName": "effectiveTo",
+          "type": "DateTime",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, hsnCode, effectiveFrom])"
+      ]
+    },
+    {
+      "name": "PurchaseReceipt",
+      "tableName": "purchase_receipt",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "supplierId",
+          "columnName": "supplierId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "supplier",
+          "columnName": "supplier",
+          "type": "Supplier",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouseId",
+          "columnName": "warehouseId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouse",
+          "columnName": "warehouse",
+          "type": "Warehouse",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "receiptNumber",
+          "columnName": "receiptNumber",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "supplierInvoiceNumber",
+          "columnName": "supplierInvoiceNumber",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "status",
+          "columnName": "status",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "\"POSTED\""
+        },
+        {
+          "name": "totalAmount",
+          "columnName": "totalAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "notes",
+          "columnName": "notes",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "idempotencyKey",
+          "columnName": "idempotencyKey",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": true
+        },
+        {
+          "name": "postedAt",
+          "columnName": "postedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "lines",
+          "columnName": "lines",
+          "type": "PurchaseReceiptLine",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, receiptNumber])"
+      ]
+    },
+    {
+      "name": "PurchaseReceiptLine",
+      "tableName": "purchase_receipt_line",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "purchaseReceiptId",
+          "columnName": "purchaseReceiptId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "purchaseReceipt",
+          "columnName": "purchaseReceipt",
+          "type": "PurchaseReceipt",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItemId",
+          "columnName": "inventoryItemId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItem",
+          "columnName": "inventoryItem",
+          "type": "InventoryItem",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "quantity",
+          "columnName": "quantity",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "uomId",
+          "columnName": "uomId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "uom",
+          "columnName": "uom",
+          "type": "UnitOfMeasure",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "unitPrice",
+          "columnName": "unitPrice",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "totalPrice",
+          "columnName": "totalPrice",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": []
+    },
+    {
+      "name": "ProductionRun",
+      "tableName": "production_run",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouseId",
+          "columnName": "warehouseId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouse",
+          "columnName": "warehouse",
+          "type": "Warehouse",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "recipeId",
+          "columnName": "recipeId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "recipe",
+          "columnName": "recipe",
+          "type": "Recipe",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "recipeVersion",
+          "columnName": "recipeVersion",
+          "type": "Int",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "runNumber",
+          "columnName": "runNumber",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "batchCount",
+          "columnName": "batchCount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "1"
+        },
+        {
+          "name": "status",
+          "columnName": "status",
+          "type": "ProductionRunStatus",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "DRAFT"
+        },
+        {
+          "name": "expectedOutputQty",
+          "columnName": "expectedOutputQty",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "actualGoodQty",
+          "columnName": "actualGoodQty",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "actualRejectedQty",
+          "columnName": "actualRejectedQty",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "yieldVarianceQty",
+          "columnName": "yieldVarianceQty",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "yieldVariancePct",
+          "columnName": "yieldVariancePct",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "isYieldFlagged",
+          "columnName": "isYieldFlagged",
+          "type": "Boolean",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "false"
+        },
+        {
+          "name": "directMaterialCost",
+          "columnName": "directMaterialCost",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "directLaborCost",
+          "columnName": "directLaborCost",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "utilityCost",
+          "columnName": "utilityCost",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "totalRunCost",
+          "columnName": "totalRunCost",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "costPerGoodUnit",
+          "columnName": "costPerGoodUnit",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "notes",
+          "columnName": "notes",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "idempotencyKey",
+          "columnName": "idempotencyKey",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": true
+        },
+        {
+          "name": "postedAt",
+          "columnName": "postedAt",
+          "type": "DateTime",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "reversedAt",
+          "columnName": "reversedAt",
+          "type": "DateTime",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "reversalReason",
+          "columnName": "reversalReason",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "materials",
+          "columnName": "materials",
+          "type": "ProductionRunMaterial",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "reversal",
+          "columnName": "reversal",
+          "type": "ProductionRunReversal",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, runNumber])"
+      ]
+    },
+    {
+      "name": "ProductionRunMaterial",
+      "tableName": "production_run_material",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "productionRunId",
+          "columnName": "productionRunId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productionRun",
+          "columnName": "productionRun",
+          "type": "ProductionRun",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItemId",
+          "columnName": "inventoryItemId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItem",
+          "columnName": "inventoryItem",
+          "type": "InventoryItem",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "itemType",
+          "columnName": "itemType",
+          "type": "RecipeItemType",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "plannedQty",
+          "columnName": "plannedQty",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "actualQty",
+          "columnName": "actualQty",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "damagedQty",
+          "columnName": "damagedQty",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "varianceQty",
+          "columnName": "varianceQty",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "variancePct",
+          "columnName": "variancePct",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "isVarianceFlagged",
+          "columnName": "isVarianceFlagged",
+          "type": "Boolean",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "false"
+        },
+        {
+          "name": "unitCost",
+          "columnName": "unitCost",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "totalCost",
+          "columnName": "totalCost",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": []
+    },
+    {
+      "name": "ProductionRunReversal",
+      "tableName": "production_run_reversal",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "originalRunId",
+          "columnName": "originalRunId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": true
+        },
+        {
+          "name": "originalRun",
+          "columnName": "originalRun",
+          "type": "ProductionRun",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "reversalRunNumber",
+          "columnName": "reversalRunNumber",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "reason",
+          "columnName": "reason",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "reversedByUserId",
+          "columnName": "reversedByUserId",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        }
+      ],
+      "indexes": [],
+      "uniques": []
+    },
+    {
+      "name": "SalesOrder",
+      "tableName": "sales_order",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "orderNumber",
+          "columnName": "orderNumber",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "customerId",
+          "columnName": "customerId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "customer",
+          "columnName": "customer",
+          "type": "Customer",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesmanId",
+          "columnName": "salesmanId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesman",
+          "columnName": "salesman",
+          "type": "User",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouseId",
+          "columnName": "warehouseId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouse",
+          "columnName": "warehouse",
+          "type": "Warehouse",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "status",
+          "columnName": "status",
+          "type": "OrderStatus",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "DRAFT"
+        },
+        {
+          "name": "fulfilmentStatus",
+          "columnName": "fulfilmentStatus",
+          "type": "FulfilmentStatus",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "UNFULFILLED"
+        },
+        {
+          "name": "deliveryState",
+          "columnName": "deliveryState",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "\"Tamil Nadu\""
+        },
+        {
+          "name": "notes",
+          "columnName": "notes",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "rejectionReason",
+          "columnName": "rejectionReason",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "overrideReason",
+          "columnName": "overrideReason",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "taxableAmount",
+          "columnName": "taxableAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "cgstAmount",
+          "columnName": "cgstAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "sgstAmount",
+          "columnName": "sgstAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "igstAmount",
+          "columnName": "igstAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "totalTaxAmount",
+          "columnName": "totalTaxAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "totalAmount",
+          "columnName": "totalAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "idempotencyKey",
+          "columnName": "idempotencyKey",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": true
+        },
+        {
+          "name": "submittedAt",
+          "columnName": "submittedAt",
+          "type": "DateTime",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "approvedAt",
+          "columnName": "approvedAt",
+          "type": "DateTime",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "approvedByUserId",
+          "columnName": "approvedByUserId",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "rejectedAt",
+          "columnName": "rejectedAt",
+          "type": "DateTime",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "lines",
+          "columnName": "lines",
+          "type": "SalesOrderLine",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "reservations",
+          "columnName": "reservations",
+          "type": "StockReservation",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "invoices",
+          "columnName": "invoices",
+          "type": "SalesInvoice",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "dispatches",
+          "columnName": "dispatches",
+          "type": "Dispatch",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [
+        "@@index([salesmanId, status])"
+      ],
+      "uniques": [
+        "@@unique([organizationId, orderNumber])"
+      ]
+    },
+    {
+      "name": "SalesOrderLine",
+      "tableName": "sales_order_line",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "salesOrderId",
+          "columnName": "salesOrderId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrder",
+          "columnName": "salesOrder",
+          "type": "SalesOrder",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productVariantId",
+          "columnName": "productVariantId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productVariant",
+          "columnName": "productVariant",
+          "type": "ProductVariant",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItemId",
+          "columnName": "inventoryItemId",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItem",
+          "columnName": "inventoryItem",
+          "type": "InventoryItem",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "quotedQuantity",
+          "columnName": "quotedQuantity",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "approvedQuantity",
+          "columnName": "approvedQuantity",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "dispatchedQuantity",
+          "columnName": "dispatchedQuantity",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "quotedUnitPrice",
+          "columnName": "quotedUnitPrice",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "approvedUnitPrice",
+          "columnName": "approvedUnitPrice",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "taxRate",
+          "columnName": "taxRate",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "taxableAmount",
+          "columnName": "taxableAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "taxAmount",
+          "columnName": "taxAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "lineTotal",
+          "columnName": "lineTotal",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "reservations",
+          "columnName": "reservations",
+          "type": "StockReservation",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": []
+    },
+    {
+      "name": "StockReservation",
+      "tableName": "stock_reservation",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "salesOrderId",
+          "columnName": "salesOrderId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrder",
+          "columnName": "salesOrder",
+          "type": "SalesOrder",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrderLineId",
+          "columnName": "salesOrderLineId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrderLine",
+          "columnName": "salesOrderLine",
+          "type": "SalesOrderLine",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItemId",
+          "columnName": "inventoryItemId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItem",
+          "columnName": "inventoryItem",
+          "type": "InventoryItem",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouseId",
+          "columnName": "warehouseId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouse",
+          "columnName": "warehouse",
+          "type": "Warehouse",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "reservedQuantity",
+          "columnName": "reservedQuantity",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "releasedQuantity",
+          "columnName": "releasedQuantity",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "status",
+          "columnName": "status",
+          "type": "ReservationStatus",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "ACTIVE"
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [
+        "@@index([inventoryItemId, warehouseId, status])"
+      ],
+      "uniques": []
+    },
+    {
+      "name": "SalesInvoice",
+      "tableName": "sales_invoice",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "invoiceNumber",
+          "columnName": "invoiceNumber",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "financialYear",
+          "columnName": "financialYear",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrderId",
+          "columnName": "salesOrderId",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrder",
+          "columnName": "salesOrder",
+          "type": "SalesOrder",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "customerId",
+          "columnName": "customerId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "customer",
+          "columnName": "customer",
+          "type": "Customer",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "customerNameSnapshot",
+          "columnName": "customerNameSnapshot",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "customerGstinSnapshot",
+          "columnName": "customerGstinSnapshot",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "customerAddressSnapshot",
+          "columnName": "customerAddressSnapshot",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "deliveryStateSnapshot",
+          "columnName": "deliveryStateSnapshot",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "companyGstinSnapshot",
+          "columnName": "companyGstinSnapshot",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "\"33AAAAA0000A1Z5\""
+        },
+        {
+          "name": "status",
+          "columnName": "status",
+          "type": "InvoiceStatus",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "POSTED"
+        },
+        {
+          "name": "currency",
+          "columnName": "currency",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "\"INR\""
+        },
+        {
+          "name": "taxableAmount",
+          "columnName": "taxableAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "cgstAmount",
+          "columnName": "cgstAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "sgstAmount",
+          "columnName": "sgstAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "igstAmount",
+          "columnName": "igstAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "totalTaxAmount",
+          "columnName": "totalTaxAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "totalAmount",
+          "columnName": "totalAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "paidAmount",
+          "columnName": "paidAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "outstandingAmount",
+          "columnName": "outstandingAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "notes",
+          "columnName": "notes",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "idempotencyKey",
+          "columnName": "idempotencyKey",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": true
+        },
+        {
+          "name": "postedAt",
+          "columnName": "postedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "dueDate",
+          "columnName": "dueDate",
+          "type": "DateTime",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "lines",
+          "columnName": "lines",
+          "type": "SalesInvoiceLine",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "dispatches",
+          "columnName": "dispatches",
+          "type": "Dispatch",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "creditNotes",
+          "columnName": "creditNotes",
+          "type": "CreditNote",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "paymentAllocations",
+          "columnName": "paymentAllocations",
+          "type": "PaymentAllocation",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, invoiceNumber])"
+      ]
+    },
+    {
+      "name": "SalesInvoiceLine",
+      "tableName": "sales_invoice_line",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "invoiceId",
+          "columnName": "invoiceId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesInvoice",
+          "columnName": "salesInvoice",
+          "type": "SalesInvoice",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrderLineId",
+          "columnName": "salesOrderLineId",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productVariantId",
+          "columnName": "productVariantId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "productNameSnapshot",
+          "columnName": "productNameSnapshot",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "hsnCodeSnapshot",
+          "columnName": "hsnCodeSnapshot",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "\"21069099\""
+        },
+        {
+          "name": "quantity",
+          "columnName": "quantity",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "unitPrice",
+          "columnName": "unitPrice",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "taxRate",
+          "columnName": "taxRate",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "taxableAmount",
+          "columnName": "taxableAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "cgstAmount",
+          "columnName": "cgstAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "sgstAmount",
+          "columnName": "sgstAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "igstAmount",
+          "columnName": "igstAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "taxAmount",
+          "columnName": "taxAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "lineTotal",
+          "columnName": "lineTotal",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": []
+    },
+    {
+      "name": "Dispatch",
+      "tableName": "dispatch",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "dispatchNumber",
+          "columnName": "dispatchNumber",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrderId",
+          "columnName": "salesOrderId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrder",
+          "columnName": "salesOrder",
+          "type": "SalesOrder",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesInvoiceId",
+          "columnName": "salesInvoiceId",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesInvoice",
+          "columnName": "salesInvoice",
+          "type": "SalesInvoice",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouseId",
+          "columnName": "warehouseId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "warehouse",
+          "columnName": "warehouse",
+          "type": "Warehouse",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "status",
+          "columnName": "status",
+          "type": "DispatchStatus",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "POSTED"
+        },
+        {
+          "name": "vehicleNumber",
+          "columnName": "vehicleNumber",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "driverName",
+          "columnName": "driverName",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "driverPhone",
+          "columnName": "driverPhone",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "notes",
+          "columnName": "notes",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "idempotencyKey",
+          "columnName": "idempotencyKey",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": true
+        },
+        {
+          "name": "dispatchedAt",
+          "columnName": "dispatchedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "lines",
+          "columnName": "lines",
+          "type": "DispatchLine",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, dispatchNumber])"
+      ]
+    },
+    {
+      "name": "DispatchLine",
+      "tableName": "dispatch_line",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "dispatchId",
+          "columnName": "dispatchId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "dispatch",
+          "columnName": "dispatch",
+          "type": "Dispatch",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesOrderLineId",
+          "columnName": "salesOrderLineId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItemId",
+          "columnName": "inventoryItemId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "inventoryItem",
+          "columnName": "inventoryItem",
+          "type": "InventoryItem",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "quantity",
+          "columnName": "quantity",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": []
+    },
+    {
+      "name": "CreditNote",
+      "tableName": "credit_note",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "creditNoteNumber",
+          "columnName": "creditNoteNumber",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesInvoiceId",
+          "columnName": "salesInvoiceId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesInvoice",
+          "columnName": "salesInvoice",
+          "type": "SalesInvoice",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "reason",
+          "columnName": "reason",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "taxableAmount",
+          "columnName": "taxableAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "taxAmount",
+          "columnName": "taxAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "totalAmount",
+          "columnName": "totalAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "postedAt",
+          "columnName": "postedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, creditNoteNumber])"
+      ]
+    },
+    {
+      "name": "Payment",
+      "tableName": "payment",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "paymentNumber",
+          "columnName": "paymentNumber",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "customerId",
+          "columnName": "customerId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "customer",
+          "columnName": "customer",
+          "type": "Customer",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "amount",
+          "columnName": "amount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "unallocatedAmount",
+          "columnName": "unallocatedAmount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "paymentMode",
+          "columnName": "paymentMode",
+          "type": "PaymentMode",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "BANK_TRANSFER"
+        },
+        {
+          "name": "referenceNumber",
+          "columnName": "referenceNumber",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "paymentDate",
+          "columnName": "paymentDate",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "status",
+          "columnName": "status",
+          "type": "PaymentStatus",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "POSTED"
+        },
+        {
+          "name": "notes",
+          "columnName": "notes",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "idempotencyKey",
+          "columnName": "idempotencyKey",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": true
+        },
+        {
+          "name": "postedAt",
+          "columnName": "postedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "allocations",
+          "columnName": "allocations",
+          "type": "PaymentAllocation",
+          "isOptional": false,
+          "isList": true,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [
+        "@@index([organizationId, customerId])",
+        "@@index([paymentDate])"
+      ],
+      "uniques": [
+        "@@unique([organizationId, paymentNumber])"
+      ]
+    },
+    {
+      "name": "PaymentAllocation",
+      "tableName": "payment_allocation",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "paymentId",
+          "columnName": "paymentId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "payment",
+          "columnName": "payment",
+          "type": "Payment",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesInvoiceId",
+          "columnName": "salesInvoiceId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "salesInvoice",
+          "columnName": "salesInvoice",
+          "type": "SalesInvoice",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "amount",
+          "columnName": "amount",
+          "type": "Decimal",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "allocatedAt",
+          "columnName": "allocatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "createdAt",
+          "columnName": "createdAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updatedAt",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [
+        "@@index([paymentId])",
+        "@@index([salesInvoiceId])"
+      ],
+      "uniques": []
+    },
+    {
+      "name": "AuditLog",
+      "tableName": "audit_log",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organizationId",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "userId",
+          "columnName": "userId",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "userEmail",
+          "columnName": "userEmail",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "action",
+          "columnName": "action",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "entity",
+          "columnName": "entity",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "entityId",
+          "columnName": "entityId",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "details",
+          "columnName": "details",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "reason",
+          "columnName": "reason",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "requestId",
+          "columnName": "requestId",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "ipAddress",
+          "columnName": "ipAddress",
+          "type": "String",
+          "isOptional": true,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "timestamp",
+          "columnName": "timestamp",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "now("
+        }
+      ],
+      "indexes": [
+        "@@index([organizationId, entity])",
+        "@@index([organizationId, timestamp])"
+      ],
+      "uniques": []
+    },
+    {
+      "name": "DocumentSequence",
+      "tableName": "document_sequences",
+      "fields": [
+        {
+          "name": "id",
+          "columnName": "id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": true,
+          "isUnique": false,
+          "default": "cuid("
+        },
+        {
+          "name": "organizationId",
+          "columnName": "organization_id",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "type",
+          "columnName": "type",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "financialYear",
+          "columnName": "financial_year",
+          "type": "String",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "currentValue",
+          "columnName": "current_value",
+          "type": "Int",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false,
+          "default": "0"
+        },
+        {
+          "name": "updatedAt",
+          "columnName": "updated_at",
+          "type": "DateTime",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        },
+        {
+          "name": "organization",
+          "columnName": "organization",
+          "type": "Organization",
+          "isOptional": false,
+          "isList": false,
+          "isId": false,
+          "isUnique": false
+        }
+      ],
+      "indexes": [],
+      "uniques": [
+        "@@unique([organizationId, type, financialYear])"
+      ]
+    }
+  ],
+  "enums": [
+    {
+      "name": "ItemCategory",
+      "values": [
+        "RAW_MATERIAL",
+        "PACKAGING",
+        "FINISHED_GOODS"
+      ]
+    },
+    {
+      "name": "MovementType",
+      "values": [
+        "OPENING_BALANCE",
+        "PURCHASE_RECEIPT",
+        "PRODUCTION_CONSUMED",
+        "PRODUCTION_OUTPUT",
+        "PRODUCTION_REVERSAL",
+        "DISPATCH",
+        "ADJUSTMENT",
+        "RETURN"
+      ]
+    },
+    {
+      "name": "RecipeItemType",
+      "values": [
+        "INGREDIENT",
+        "PACKAGING"
+      ]
+    },
+    {
+      "name": "ProductionRunStatus",
+      "values": [
+        "DRAFT",
+        "POSTED",
+        "REVERSED"
+      ]
+    },
+    {
+      "name": "OrderStatus",
+      "values": [
+        "DRAFT",
+        "SUBMITTED",
+        "UNDER_REVIEW",
+        "APPROVED",
+        "REJECTED",
+        "CLOSED"
+      ]
+    },
+    {
+      "name": "FulfilmentStatus",
+      "values": [
+        "UNFULFILLED",
+        "PARTIALLY_FULFILLED",
+        "FULFILLED"
+      ]
+    },
+    {
+      "name": "ReservationStatus",
+      "values": [
+        "ACTIVE",
+        "RELEASED",
+        "CANCELLED"
+      ]
+    },
+    {
+      "name": "InvoiceStatus",
+      "values": [
+        "DRAFT",
+        "POSTED",
+        "CANCELLED_BY_CREDIT_NOTE",
+        "PAID",
+        "PARTIALLY_PAID"
+      ]
+    },
+    {
+      "name": "DispatchStatus",
+      "values": [
+        "DRAFT",
+        "POSTED",
+        "CANCELLED"
+      ]
+    },
+    {
+      "name": "PaymentMode",
+      "values": [
+        "CASH",
+        "BANK_TRANSFER",
+        "UPI",
+        "CHEQUE",
+        "DEMAND_DRAFT"
+      ]
+    },
+    {
+      "name": "PaymentStatus",
+      "values": [
+        "POSTED",
+        "CANCELLED"
+      ]
+    }
+  ]
+}

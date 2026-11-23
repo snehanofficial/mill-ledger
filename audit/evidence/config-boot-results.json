@@ -1,0 +1,50 @@
+{
+  "bootValidation": [
+    {
+      "test": "Production with default dev secret",
+      "exitCode": 1,
+      "passedValidation": false,
+      "expectedFail": true,
+      "outputSummary": "Invalid environment variables configuration: {\n  _errors: [],\n  BETTER_AUTH_SECRET: {\n    _errors: [\n      'BETTER_AUTH_SECRET must not use the default development secret in production'\n    ]\n  }\n}\n/home/snehan/projects/web/mill-ledger/server/src/config/env.ts:65\n  throw new Error(\"Invalid server en",
+      "verdict": "PASS"
+    },
+    {
+      "test": "Production with short secret (< 32 chars)",
+      "exitCode": 1,
+      "passedValidation": false,
+      "expectedFail": true,
+      "outputSummary": "Invalid environment variables configuration: {\n  _errors: [],\n  BETTER_AUTH_SECRET: {\n    _errors: [\n      'BETTER_AUTH_SECRET must be at least 32 characters in production'\n    ]\n  }\n}\n/home/snehan/projects/web/mill-ledger/server/src/config/env.ts:65\n  throw new Error(\"Invalid server environment con",
+      "verdict": "PASS"
+    },
+    {
+      "test": "Production with localhost CORS_ORIGIN",
+      "exitCode": 1,
+      "passedValidation": false,
+      "expectedFail": true,
+      "outputSummary": "Invalid environment variables configuration: {\n  _errors: [],\n  CORS_ORIGIN: {\n    _errors: [\n      'CORS_ORIGIN must be explicitly configured with non-local production origin(s) in production'\n    ]\n  }\n}\n/home/snehan/projects/web/mill-ledger/server/src/config/env.ts:65\n  throw new Error(\"Invalid s",
+      "verdict": "PASS"
+    },
+    {
+      "test": "Production with completely MISSING DATABASE_URL (Does it fail loudly or quietly default?)",
+      "exitCode": 0,
+      "passedValidation": true,
+      "expectedFail": true,
+      "outputSummary": "PARSED_SUCCESS: NODE_ENV=production, DB=postgresql://postgres:postgres@localhost:5432/mill_ledger?schema=public",
+      "verdict": "FAIL"
+    },
+    {
+      "test": "Development with completely MISSING DATABASE_URL (Does it fail loudly or quietly default to localhost?)",
+      "exitCode": 0,
+      "passedValidation": true,
+      "expectedFail": true,
+      "outputSummary": "PARSED_SUCCESS: NODE_ENV=development, DB=postgresql://postgres:postgres@localhost:5432/mill_ledger?schema=public",
+      "verdict": "FAIL"
+    }
+  ],
+  "seedInProduction": {
+    "exitCode": 0,
+    "refused": false,
+    "stdout": "Seeding test users for M1...\nSeeding benchmark master data and opening stock (M2)...\nM2 benchmark master data seed successfully completed.\n",
+    "stderr": ""
+  }
+}

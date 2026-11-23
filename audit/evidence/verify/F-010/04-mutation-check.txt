@@ -1,0 +1,13 @@
+=== STEP 4: MUTATION CHECK FOR F-010 ===
+Mutant 1: Replace ROUND_HALF_UP with ROUND_DOWN in tax.util.ts.
+Result: KILLED by Case 7 (81.22 vs 81.23) and Case 4 (1021.16 vs 1021.17).
+
+Mutant 2: Replace ROUND_HALF_UP with ROUND_UP in tax.util.ts.
+Result: KILLED by Case 2 (68.31 vs 68.30).
+
+Mutant 3: Sum taxes directly from header taxable without summing lines.
+Result: KILLED by Invariant 7 and Case 4.
+
+Mutants tested: 3
+Mutants killed: 3
+Surviving mutants: 0

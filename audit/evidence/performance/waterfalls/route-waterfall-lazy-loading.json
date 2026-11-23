@@ -1,0 +1,27 @@
+{
+  "initialJsChunksCount": 19,
+  "invoicesChunkLoadedInitially": false,
+  "reportsChunkLoadedInitially": false,
+  "hoverRequests": [
+    {
+      "url": "http://127.0.0.1:4173/api/v1/dashboard?organizationId=MILL",
+      "type": "xhr"
+    }
+  ],
+  "hoverPrefetchedChunk": false,
+  "invoicesChunkLoadedOnDemand": true,
+  "postClickRequests": [
+    {
+      "url": "http://127.0.0.1:4173/assets/invoices-page-CZZ361aT.js",
+      "type": "script"
+    },
+    {
+      "url": "http://127.0.0.1:4173/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2",
+      "type": "font"
+    },
+    {
+      "url": "http://127.0.0.1:4173/api/v1/finance/invoices?organizationId=MILL",
+      "type": "xhr"
+    }
+  ]
+}

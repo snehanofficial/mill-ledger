@@ -1,0 +1,382 @@
+=== STEP 4: MUTATION CHECK FOR F-097 ===
+Timestamp: 2026-11-22T21:25:48+05:30
+1. Cleaning up scratch directory...
+2. Checking out commit e0047aa into scratch worktree /tmp/mill-ledger-mutant-f097...
+Preparing worktree (detached HEAD e0047aa)
+HEAD is now at e0047aa F-097: Architectural Inconsistency: Zero Centralized Currency & Date Formatters across 7 Financial Surfaces (Ad-hoc .toFixed(2) & Fragmented Locales)
+Scope: all 4 workspace projects
+[WARN] The store at /home/snehan/.local/share/pnpm/store/v11 is not used because packages cannot be hard linked from it into this project. Using the store at /tmp/.pnpm-store/v11 instead. Set storeDir to choose the store.
+✓ Lockfile passes supply-chain policies (verified 3d ago)
+Lockfile is up to date, resolution step is skipped
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /tmp/.pnpm-store/v11
+  Virtual store is at:             node_modules/.pnpm
+Packages: +876
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 876, reused 876, downloaded 0, added 876, done
+
+devDependencies:
++ @playwright/test 1.65.1
++ @types/node 22.20.5
++ oxlint 1.94.0
++ prettier 3.10.1
++ typescript 5.9.3
++ vitest 3.2.7
+
+Done in 312ms using pnpm v12.18.0
+3. Mutant 1: Change formatINR locale from 'en-IN' to 'en-US' (Western 3-digit thousands instead of Lakhs/Crores)
+----------------------------------------------------
+Testing Mutant 1: en-US locale instead of en-IN...
+
+ RUN  v3.2.7 /tmp/mill-ledger-mutant-f097
+
+ ❯ client/src/lib/formatters.test.ts (16 tests | 7 failed) 30ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > formats standard amounts with en-IN numbering and two decimal places 12ms
+   × F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > correctly groups Lakhs and Crores using Indian numbering system 6ms
+     → expected '₹100,000.00' to be '₹1,00,000.00' // Object.is equality
+   × F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > handles string representations of numbers 1ms
+     → expected '₹100,000.50' to be '₹1,00,000.50' // Object.is equality
+   ✓ F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > handles Decimal-like objects with toString() or toNumber() 0ms
+   × F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > formats negative amounts correctly with minus sign 1ms
+     → expected '-₹100,000.00' to be '-₹1,00,000.00' // Object.is equality
+   ✓ F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > gracefully falls back on null, undefined, NaN, and invalid strings 0ms
+   × F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > supports optional configuration (e.g. symbol: false) 1ms
+     → expected '100,000.00' to be '1,00,000.00' // Object.is equality
+   × F-097: Centralized Currency & Date Formatters > formatQuantity (Discrete units and weights) > formats quantities with Indian grouping 1ms
+     → expected '100,000' to be '1,00,000' // Object.is equality
+   ✓ F-097: Centralized Currency & Date Formatters > formatQuantity (Discrete units and weights) > appends unit when specified 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatQuantity (Discrete units and weights) > handles null and undefined gracefully 0ms
+   × F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats standard date to DD MMM YYYY in en-IN 4ms
+     → expected 'Apr 01, 2026' to match /01\s+Apr\s+2026/
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats date strings and timestamps identically 0ms
+   × F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats short date as DD/MM/YYYY 1ms
+     → expected '04/01/2026' to be '01/04/2026' // Object.is equality
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats date time with both date and time components 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats time component cleanly 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > handles invalid or missing dates gracefully without crashing 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > correctly groups Lakhs and Crores using Indian numbering system
+AssertionError: expected '₹100,000.00' to be '₹1,00,000.00' // Object.is equality
+
+Expected: "₹1,00,000.00"
+Received: "₹100,000.00"
+
+ ❯ client/src/lib/formatters.test.ts:21:33
+     19|     it("correctly groups Lakhs and Crores using Indian numbering syste…
+     20|       // 1 Lakh = 1,00,000.00
+     21|       expect(formatINR(100000)).toBe("₹1,00,000.00");
+       |                                 ^
+     22|       // 12.5 Lakhs = 12,50,000.00
+     23|       expect(formatINR(1250000)).toBe("₹12,50,000.00");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > handles string representations of numbers
+AssertionError: expected '₹100,000.50' to be '₹1,00,000.50' // Object.is equality
+
+Expected: "₹1,00,000.50"
+Received: "₹100,000.50"
+
+ ❯ client/src/lib/formatters.test.ts:32:38
+     30|     it("handles string representations of numbers", () => {
+     31|       expect(formatINR("1000")).toBe("₹1,000.00");
+     32|       expect(formatINR("100000.50")).toBe("₹1,00,000.50");
+       |                                      ^
+     33|       expect(formatINR("7875")).toBe("₹7,875.00");
+     34|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > formats negative amounts correctly with minus sign
+AssertionError: expected '-₹100,000.00' to be '-₹1,00,000.00' // Object.is equality
+
+Expected: "-₹1,00,000.00"
+Received: "-₹100,000.00"
+
+ ❯ client/src/lib/formatters.test.ts:46:34
+     44|     it("formats negative amounts correctly with minus sign", () => {
+     45|       expect(formatINR(-500)).toBe("-₹500.00");
+     46|       expect(formatINR(-100000)).toBe("-₹1,00,000.00");
+       |                                  ^
+     47|     });
+     48| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > supports optional configuration (e.g. symbol: false)
+AssertionError: expected '100,000.00' to be '1,00,000.00' // Object.is equality
+
+Expected: "1,00,000.00"
+Received: "100,000.00"
+
+ ❯ client/src/lib/formatters.test.ts:57:52
+     55| 
+     56|     it("supports optional configuration (e.g. symbol: false)", () => {
+     57|       expect(formatINR(100000, { symbol: false })).toBe("1,00,000.00");
+       |                                                    ^
+     58|       expect(formatINR(500, { minimumFractionDigits: 0, maximumFractio…
+     59|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatQuantity (Discrete units and weights) > formats quantities with Indian grouping
+AssertionError: expected '100,000' to be '1,00,000' // Object.is equality
+
+Expected: "1,00,000"
+Received: "100,000"
+
+ ❯ client/src/lib/formatters.test.ts:65:38
+     63|     it("formats quantities with Indian grouping", () => {
+     64|       expect(formatQuantity(1000)).toBe("1,000");
+     65|       expect(formatQuantity(100000)).toBe("1,00,000");
+       |                                      ^
+     66|     });
+     67| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats standard date to DD MMM YYYY in en-IN
+AssertionError: expected 'Apr 01, 2026' to match /01\s+Apr\s+2026/
+
+- Expected: 
+/01\s+Apr\s+2026/
+
++ Received: 
+"Apr 01, 2026"
+
+ ❯ client/src/lib/formatters.test.ts:85:25
+     83|     it("formats standard date to DD MMM YYYY in en-IN", () => {
+     84|       const formatted = formatDate(testDate);
+     85|       expect(formatted).toMatch(/01\s+Apr\s+2026/);
+       |                         ^
+     86|     });
+     87| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats short date as DD/MM/YYYY
+AssertionError: expected '04/01/2026' to be '01/04/2026' // Object.is equality
+
+Expected: "01/04/2026"
+Received: "04/01/2026"
+
+ ❯ client/src/lib/formatters.test.ts:94:25
+     92|     it("formats short date as DD/MM/YYYY", () => {
+     93|       const formatted = formatDateShort(testDate);
+     94|       expect(formatted).toBe("01/04/2026");
+       |                         ^
+     95|     });
+     96| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 9 passed (16)
+   Start at  21:25:49
+   Duration  371ms (transform 76ms, setup 0ms, collect 105ms, tests 30ms, environment 0ms, prepare 45ms)
+
+RESULT: CAUGHT (exit code: 1) - Test suite successfully killed the mutant.
+4. Mutant 2: Disable NaN / non-finite guard in formatINR (let NaN flow to Intl or return empty string)
+----------------------------------------------------
+Testing Mutant 2: Corrupted NaN / invalid fallback...
+
+ RUN  v3.2.7 /tmp/mill-ledger-mutant-f097
+
+ ❯ client/src/lib/formatters.test.ts (16 tests | 1 failed) 26ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > formats standard amounts with en-IN numbering and two decimal places 12ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > correctly groups Lakhs and Crores using Indian numbering system 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > handles string representations of numbers 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > handles Decimal-like objects with toString() or toNumber() 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > formats negative amounts correctly with minus sign 0ms
+   × F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > gracefully falls back on null, undefined, NaN, and invalid strings 6ms
+     → expected 'SURVIVED_MUTANT' to be '₹0.00' // Object.is equality
+   ✓ F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > supports optional configuration (e.g. symbol: false) 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatQuantity (Discrete units and weights) > formats quantities with Indian grouping 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatQuantity (Discrete units and weights) > appends unit when specified 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatQuantity (Discrete units and weights) > handles null and undefined gracefully 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats standard date to DD MMM YYYY in en-IN 3ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats date strings and timestamps identically 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats short date as DD/MM/YYYY 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats date time with both date and time components 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats time component cleanly 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > handles invalid or missing dates gracefully without crashing 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > gracefully falls back on null, undefined, NaN, and invalid strings
+AssertionError: expected 'SURVIVED_MUTANT' to be '₹0.00' // Object.is equality
+
+Expected: "₹0.00"
+Received: "SURVIVED_MUTANT"
+
+ ❯ client/src/lib/formatters.test.ts:50:31
+     48| 
+     49|     it("gracefully falls back on null, undefined, NaN, and invalid str…
+     50|       expect(formatINR(null)).toBe("₹0.00");
+       |                               ^
+     51|       expect(formatINR(undefined)).toBe("₹0.00");
+     52|       expect(formatINR(NaN)).toBe("₹0.00");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  21:25:50
+   Duration  334ms (transform 58ms, setup 0ms, collect 70ms, tests 26ms, environment 0ms, prepare 47ms)
+
+RESULT: CAUGHT (exit code: 1) - Test suite successfully killed the mutant.
+5. Mutant 3: Invert formatDateShort day/month format (MM/DD/YYYY instead of DD/MM/YYYY)
+----------------------------------------------------
+Testing Mutant 3: Mismatched short date day/month ordering...
+
+ RUN  v3.2.7 /tmp/mill-ledger-mutant-f097
+
+ ✓ client/src/lib/formatters.test.ts (16 tests) 21ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  21:25:51
+   Duration  377ms (transform 64ms, setup 0ms, collect 92ms, tests 21ms, environment 0ms, prepare 50ms)
+
+RESULT: SURVIVED (exit code: 0) - Mutant survived! Regression test failed to detect this mutation.
+6. Mutant 4: Change default fraction digits from 2 to 0 in formatINR
+----------------------------------------------------
+Testing Mutant 4: Zero fraction digits default in formatINR...
+
+ RUN  v3.2.7 /tmp/mill-ledger-mutant-f097
+
+ ❯ client/src/lib/formatters.test.ts (16 tests | 6 failed) 29ms
+   × F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > formats standard amounts with en-IN numbering and two decimal places 18ms
+     → expected '₹1,000' to be '₹1,000.00' // Object.is equality
+   × F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > correctly groups Lakhs and Crores using Indian numbering system 1ms
+     → expected '₹1,00,000' to be '₹1,00,000.00' // Object.is equality
+   × F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > handles string representations of numbers 1ms
+     → expected '₹1,000' to be '₹1,000.00' // Object.is equality
+   × F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > handles Decimal-like objects with toString() or toNumber() 1ms
+     → expected '₹4,000' to be '₹4,000.00' // Object.is equality
+   × F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > formats negative amounts correctly with minus sign 1ms
+     → expected '-₹500' to be '-₹500.00' // Object.is equality
+   ✓ F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > gracefully falls back on null, undefined, NaN, and invalid strings 0ms
+   × F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > supports optional configuration (e.g. symbol: false) 1ms
+     → expected '1,00,000' to be '1,00,000.00' // Object.is equality
+   ✓ F-097: Centralized Currency & Date Formatters > formatQuantity (Discrete units and weights) > formats quantities with Indian grouping 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatQuantity (Discrete units and weights) > appends unit when specified 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatQuantity (Discrete units and weights) > handles null and undefined gracefully 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats standard date to DD MMM YYYY in en-IN 3ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats date strings and timestamps identically 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats short date as DD/MM/YYYY 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats date time with both date and time components 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > formats time component cleanly 0ms
+   ✓ F-097: Centralized Currency & Date Formatters > formatDate & formatDateTime (IST Date/Time formatting) > handles invalid or missing dates gracefully without crashing 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > formats standard amounts with en-IN numbering and two decimal places
+AssertionError: expected '₹1,000' to be '₹1,000.00' // Object.is equality
+
+Expected: "₹1,000.00"
+Received: "₹1,000"
+
+ ❯ client/src/lib/formatters.test.ts:14:31
+     12|   describe("formatINR (Indian Rupee Currency Formatter)", () => {
+     13|     it("formats standard amounts with en-IN numbering and two decimal …
+     14|       expect(formatINR(1000)).toBe("₹1,000.00");
+       |                               ^
+     15|       expect(formatINR(7875.5)).toBe("₹7,875.50");
+     16|       expect(formatINR(0)).toBe("₹0.00");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > correctly groups Lakhs and Crores using Indian numbering system
+AssertionError: expected '₹1,00,000' to be '₹1,00,000.00' // Object.is equality
+
+Expected: "₹1,00,000.00"
+Received: "₹1,00,000"
+
+ ❯ client/src/lib/formatters.test.ts:21:33
+     19|     it("correctly groups Lakhs and Crores using Indian numbering syste…
+     20|       // 1 Lakh = 1,00,000.00
+     21|       expect(formatINR(100000)).toBe("₹1,00,000.00");
+       |                                 ^
+     22|       // 12.5 Lakhs = 12,50,000.00
+     23|       expect(formatINR(1250000)).toBe("₹12,50,000.00");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > handles string representations of numbers
+AssertionError: expected '₹1,000' to be '₹1,000.00' // Object.is equality
+
+Expected: "₹1,000.00"
+Received: "₹1,000"
+
+ ❯ client/src/lib/formatters.test.ts:31:33
+     29| 
+     30|     it("handles string representations of numbers", () => {
+     31|       expect(formatINR("1000")).toBe("₹1,000.00");
+       |                                 ^
+     32|       expect(formatINR("100000.50")).toBe("₹1,00,000.50");
+     33|       expect(formatINR("7875")).toBe("₹7,875.00");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > handles Decimal-like objects with toString() or toNumber()
+AssertionError: expected '₹4,000' to be '₹4,000.00' // Object.is equality
+
+Expected: "₹4,000.00"
+Received: "₹4,000"
+
+ ❯ client/src/lib/formatters.test.ts:41:38
+     39|         toNumber: () => 4000,
+     40|       };
+     41|       expect(formatINR(mockDecimal)).toBe("₹4,000.00");
+       |                                      ^
+     42|     });
+     43| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > formats negative amounts correctly with minus sign
+AssertionError: expected '-₹500' to be '-₹500.00' // Object.is equality
+
+Expected: "-₹500.00"
+Received: "-₹500"
+
+ ❯ client/src/lib/formatters.test.ts:45:31
+     43| 
+     44|     it("formats negative amounts correctly with minus sign", () => {
+     45|       expect(formatINR(-500)).toBe("-₹500.00");
+       |                               ^
+     46|       expect(formatINR(-100000)).toBe("-₹1,00,000.00");
+     47|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  client/src/lib/formatters.test.ts > F-097: Centralized Currency & Date Formatters > formatINR (Indian Rupee Currency Formatter) > supports optional configuration (e.g. symbol: false)
+AssertionError: expected '1,00,000' to be '1,00,000.00' // Object.is equality
+
+Expected: "1,00,000.00"
+Received: "1,00,000"
+
+ ❯ client/src/lib/formatters.test.ts:57:52
+     55| 
+     56|     it("supports optional configuration (e.g. symbol: false)", () => {
+     57|       expect(formatINR(100000, { symbol: false })).toBe("1,00,000.00");
+       |                                                    ^
+     58|       expect(formatINR(500, { minimumFractionDigits: 0, maximumFractio…
+     59|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 10 passed (16)
+   Start at  21:25:52
+   Duration  390ms (transform 76ms, setup 0ms, collect 111ms, tests 29ms, environment 0ms, prepare 48ms)
+
+RESULT: CAUGHT (exit code: 1) - Test suite successfully killed the mutant.
+7. Cleaning up scratch worktree...
+=== STEP 4: MUTATION CHECK COMPLETE ===

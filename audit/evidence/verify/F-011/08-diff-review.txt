@@ -1,0 +1,21 @@
+=== STEP 8: DIFF REVIEW FOR F-011 (COMMIT bfd9d04) ===
+Timestamp: 2026-11-22T22:01:15+05:30
+Target Commit: bfd9d04b8cf36e292ea730a502916c7e00292867
+Parent Commit: af12729225d5acc2312118d99080a1c8a72f557f
+
+1. Modified Files:
+   - server/src/modules/finance/finance.service.ts (14 lines added, 4 removed)
+   - server/src/financial-year-tz.test.ts (36 lines added)
+
+2. Scope and Hygiene Analysis:
+   - Scope Creep: None. Modification is strictly isolated to `financeService.getFinancialYear()` replacing runtime-dependent `date.getFullYear()` / `date.getMonth()` with `Intl.DateTimeFormat` configured with `timeZone: "Asia/Kolkata"`.
+   - Leftover Debug Code: None. Zero `console.log` statements in service code.
+   - Swallowed Errors: None.
+   - Type Safety: Full TypeScript adherence; uses typed `DateTimeFormatPart[]`.
+   - Disabled Lint Rules: None. Zero lint suppressions.
+   - Commented-out Code: None.
+   - Hardcoded Magic Numbers: 4 (April start of Indian financial year) and -2 (2-digit year suffix) are standard, documented, domain-appropriate constants.
+   - TODOs / Placeholders: None.
+   - Untranslated Strings: N/A (service logic).
+
+3. Verdict: DIFF CLEAN AND ACCEPTED.

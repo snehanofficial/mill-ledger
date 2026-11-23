@@ -1,0 +1,246 @@
+=== STEP 1: FRESH ENVIRONMENT TEST FOR COMMIT e0047aa ===
+Timestamp: 2026-11-22T21:23:09+05:30
+1. Cleaning up worktree and fresh database if any...
+NOTICE:  database "mill_ledger_fresh_f097" does not exist, skipping
+2. Checking out commit e0047aa into clean directory /tmp/mill-ledger-fresh-f097...
+Preparing worktree (detached HEAD e0047aa)
+HEAD is now at e0047aa F-097: Architectural Inconsistency: Zero Centralized Currency & Date Formatters across 7 Financial Surfaces (Ad-hoc .toFixed(2) & Fragmented Locales)
+Current HEAD in fresh dir:
+e0047aadb565ba164ff07f8ad499b6c8b5bbe988
+e0047aa F-097: Architectural Inconsistency: Zero Centralized Currency & Date Formatters across 7 Financial Surfaces (Ad-hoc .toFixed(2) & Fragmented Locales)
+3. Installing dependencies using frozen lockfile...
+Scope: all 4 workspace projects
+[WARN] The store at /home/snehan/.local/share/pnpm/store/v11 is not used because packages cannot be hard linked from it into this project. Using the store at /tmp/.pnpm-store/v11 instead. Set storeDir to choose the store.
+✓ Lockfile passes supply-chain policies (verified 3d ago)
+Lockfile is up to date, resolution step is skipped
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /tmp/.pnpm-store/v11
+  Virtual store is at:             node_modules/.pnpm
+Progress: resolved 876, reused 0, downloaded 34, added 33
+[WARN] Tarball download average speed 6 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/available-typed-arrays/-/available-typed-arrays-1.0.7.tgz (GET)
+[WARN] Tarball download average speed 9 KiB/s (size 13 KiB) is below 50 KiB/s: https://registry.npmjs.org/d3-time/-/d3-time-3.1.0.tgz (GET)
+[WARN] Tarball download average speed 9 KiB/s (size 16 KiB) is below 50 KiB/s: https://registry.npmjs.org/ret/-/ret-0.5.1.tgz (GET)
+[WARN] Tarball download average speed 38 KiB/s (size 49 KiB) is below 50 KiB/s: https://registry.npmjs.org/json5/-/json5-2.2.3.tgz (GET)
+[WARN] Tarball download average speed 22 KiB/s (size 24 KiB) is below 50 KiB/s: https://registry.npmjs.org/@date-fns/tz/-/tz-1.5.0.tgz (GET)
+[WARN] Tarball download average speed 7 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/@nodelib/fs.walk/-/fs.walk-1.2.8.tgz (GET)
+[WARN] Tarball download average speed 10 KiB/s (size 17 KiB) is below 50 KiB/s: https://registry.npmjs.org/sql-escaper/-/sql-escaper-1.7.0.tgz (GET)
+[WARN] Tarball download average speed 2 KiB/s (size 3 KiB) is below 50 KiB/s: https://registry.npmjs.org/@radix-ui/react-separator/-/react-separator-1.2.0.tgz (GET)
+[WARN] Tarball download average speed 2 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/grammex/-/grammex-3.1.13.tgz (GET)
+[WARN] Tarball download average speed 14 KiB/s (size 25 KiB) is below 50 KiB/s: https://registry.npmjs.org/react/-/react-19.3.1.tgz (GET)
+[WARN] Tarball download average speed 3 KiB/s (size 6 KiB) is below 50 KiB/s: https://registry.npmjs.org/is-array-buffer/-/is-array-buffer-3.0.5.tgz (GET)
+[WARN] Tarball download average speed 7 KiB/s (size 14 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/helper-compilation-targets/-/helper-compilation-targets-7.29.13.tgz (GET)
+[WARN] Tarball download average speed 1 KiB/s (size 3 KiB) is below 50 KiB/s: https://registry.npmjs.org/unicorn-magic/-/unicorn-magic-0.3.0.tgz (GET)
+[WARN] Tarball download average speed 5 KiB/s (size 15 KiB) is below 50 KiB/s: https://registry.npmjs.org/minimist/-/minimist-1.2.8.tgz (GET)
+[WARN] Tarball download average speed 32 KiB/s (size 103 KiB) is below 50 KiB/s: https://registry.npmjs.org/@isaacs/nonrecursive-glob-match/-/nonrecursive-glob-match-1.1.0.tgz (GET)
+[WARN] Tarball download average speed 1 KiB/s (size 6 KiB) is below 50 KiB/s: https://registry.npmjs.org/typed-array-byte-offset/-/typed-array-byte-offset-1.0.5.tgz (GET)
+[WARN] Tarball download average speed 3 KiB/s (size 12 KiB) is below 50 KiB/s: https://registry.npmjs.org/@radix-ui/react-checkbox/-/react-checkbox-1.4.1.tgz (GET)
+[WARN] Tarball download average speed 3 KiB/s (size 5 KiB) is below 50 KiB/s: https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz (GET)
+[WARN] Tarball download average speed 7 KiB/s (size 8 KiB) is below 50 KiB/s: https://registry.npmjs.org/is-date-object/-/is-date-object-1.1.0.tgz (GET)
+[WARN] Tarball download average speed 19 KiB/s (size 81 KiB) is below 50 KiB/s: https://registry.npmjs.org/minipass/-/minipass-7.1.3.tgz (GET)
+[WARN] Tarball download average speed 26 KiB/s (size 100 KiB) is below 50 KiB/s: https://registry.npmjs.org/@types/lodash/-/lodash-4.17.27.tgz (GET)
+[WARN] Tarball download average speed 5 KiB/s (size 9 KiB) is below 50 KiB/s: https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.5.0.tgz (GET)
+[WARN] Tarball download average speed 44 KiB/s (size 75 KiB) is below 50 KiB/s: https://registry.npmjs.org/@types/react/-/react-19.3.0.tgz (GET)
+[WARN] Tarball download average speed 2 KiB/s (size 5 KiB) is below 50 KiB/s: https://registry.npmjs.org/side-channel-weakmap/-/side-channel-weakmap-1.0.2.tgz (GET)
+[WARN] Tarball download average speed 13 KiB/s (size 53 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/runtime/-/runtime-7.29.14.tgz (GET)
+[WARN] Tarball download average speed 1 KiB/s (size 4 KiB) is below 50 KiB/s: https://registry.npmjs.org/which/-/which-2.0.2.tgz (GET)
+[WARN] Tarball download average speed 48 KiB/s (size 48 KiB) is below 50 KiB/s: https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.9.tgz (GET)
+[WARN] Tarball download average speed 6 KiB/s (size 14 KiB) is below 50 KiB/s: https://registry.npmjs.org/execa/-/execa-5.1.1.tgz (GET)
+[WARN] Tarball download average speed 4 KiB/s (size 11 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/plugin-transform-for-of/-/plugin-transform-for-of-7.29.13.tgz (GET)
+[WARN] Tarball download average speed 7 KiB/s (size 12 KiB) is below 50 KiB/s: https://registry.npmjs.org/open/-/open-8.4.2.tgz (GET)
+[WARN] Tarball download average speed 1 KiB/s (size 2 KiB) is below 50 KiB/s: https://registry.npmjs.org/define-lazy-prop/-/define-lazy-prop-3.0.0.tgz (GET)
+[WARN] Tarball download average speed 9 KiB/s (size 16 KiB) is below 50 KiB/s: https://registry.npmjs.org/which-typed-array/-/which-typed-array-1.1.24.tgz (GET)
+[WARN] Tarball download average speed 7 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/plugin-bugfix-v8-static-class-fields-redefine-readonly/-/plugin-bugfix-v8-static-class-fields-redefine-readonly-7.29.7.tgz (GET)
+[WARN] Tarball download average speed 12 KiB/s (size 24 KiB) is below 50 KiB/s: https://registry.npmjs.org/rou3/-/rou3-0.9.2.tgz (GET)
+[WARN] Tarball download average speed 34 KiB/s (size 44 KiB) is below 50 KiB/s: https://registry.npmjs.org/@radix-ui/react-one-time-password-field/-/react-one-time-password-field-0.2.1.tgz (GET)
+[WARN] Tarball download average speed 29 KiB/s (size 121 KiB) is below 50 KiB/s: https://registry.npmjs.org/enhanced-resolve/-/enhanced-resolve-5.27.0.tgz (GET)
+[WARN] Tarball download average speed 24 KiB/s (size 101 KiB) is below 50 KiB/s: https://registry.npmjs.org/path-scurry/-/path-scurry-3.0.0.tgz (GET)
+[WARN] Tarball download average speed 2 KiB/s (size 14 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/plugin-transform-modules-systemjs/-/plugin-transform-modules-systemjs-7.29.8.tgz (GET)
+[WARN] Tarball download average speed 6 KiB/s (size 25 KiB) is below 50 KiB/s: https://registry.npmjs.org/magic-string/-/magic-string-1.4.5.tgz (GET)
+[WARN] Tarball download average speed 12 KiB/s (size 15 KiB) is below 50 KiB/s: https://registry.npmjs.org/string.prototype.matchall/-/string.prototype.matchall-4.1.0.tgz (GET)
+[WARN] Tarball download average speed 15 KiB/s (size 19 KiB) is below 50 KiB/s: https://registry.npmjs.org/semver/-/semver-6.3.2.tgz (GET)
+[WARN] Tarball download average speed 6 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/@prisma/debug/-/debug-7.10.1.tgz (GET)
+[WARN] Tarball download average speed 14 KiB/s (size 17 KiB) is below 50 KiB/s: https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.6.0.tgz (GET)
+[WARN] Tarball download average speed 3 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/get-stream/-/get-stream-9.0.1.tgz (GET)
+Downloading @prisma/dev@0.24.17: 0.00 B/9.16 MB
+[WARN] Tarball download average speed 1 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/which-collection/-/which-collection-1.0.2.tgz (GET)
+[WARN] Tarball download average speed 34 KiB/s (size 50 KiB) is below 50 KiB/s: https://registry.npmjs.org/d3-shape/-/d3-shape-3.2.0.tgz (GET)
+[WARN] Tarball download average speed 3 KiB/s (size 4 KiB) is below 50 KiB/s: https://registry.npmjs.org/escalade/-/escalade-3.2.0.tgz (GET)
+[WARN] Tarball download average speed 15 KiB/s (size 50 KiB) is below 50 KiB/s: https://registry.npmjs.org/@radix-ui/react-navigation-menu/-/react-navigation-menu-1.4.1.tgz (GET)
+[WARN] Tarball download average speed 19 KiB/s (size 39 KiB) is below 50 KiB/s: https://registry.npmjs.org/@rollup/plugin-node-resolve/-/plugin-node-resolve-16.0.3.tgz (GET)
+[WARN] Tarball download average speed 15 KiB/s (size 18 KiB) is below 50 KiB/s: https://registry.npmjs.org/commander/-/commander-2.20.3.tgz (GET)
+[WARN] Tarball download average speed 20 KiB/s (size 30 KiB) is below 50 KiB/s: https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz (GET)
+[WARN] Tarball download average speed 35 KiB/s (size 273 KiB) is below 50 KiB/s: https://registry.npmjs.org/@prisma/fetch-engine/-/fetch-engine-7.10.1.tgz (GET)
+[WARN] Tarball download average speed 32 KiB/s (size 40 KiB) is below 50 KiB/s: https://registry.npmjs.org/@tailwindcss/node/-/node-4.3.5.tgz (GET)
+[WARN] Tarball download average speed 26 KiB/s (size 37 KiB) is below 50 KiB/s: https://registry.npmjs.org/d3-array/-/d3-array-3.2.1.tgz (GET)
+Downloading @rolldown/binding-linux-x64-gnu@1.2.19: 0.00 B/8.83 MB
+[WARN] Tarball download average speed 1 KiB/s (size 13 KiB) is below 50 KiB/s: https://registry.npmjs.org/regenerate/-/regenerate-1.5.0.tgz (GET)
+[WARN] Tarball download average speed 9 KiB/s (size 13 KiB) is below 50 KiB/s: https://registry.npmjs.org/debug/-/debug-4.4.3.tgz (GET)
+[WARN] Tarball download average speed 9 KiB/s (size 19 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/plugin-transform-destructuring/-/plugin-transform-destructuring-7.29.13.tgz (GET)
+[WARN] Tarball download average speed 36 KiB/s (size 56 KiB) is below 50 KiB/s: https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-7.2.1.tgz (GET)
+[WARN] Tarball download average speed 25 KiB/s (size 90 KiB) is below 50 KiB/s: https://registry.npmjs.org/@dotenvx/dotenvx/-/dotenvx-1.75.1.tgz (GET)
+Downloading prisma@7.10.1: 0.00 B/14.17 MB
+Downloading @prisma/studio-core@0.33.0: 0.00 B/10.12 MB
+[WARN] Tarball download average speed 26 KiB/s (size 46 KiB) is below 50 KiB/s: https://registry.npmjs.org/postgres/-/postgres-3.4.7.tgz (GET)
+[WARN] Tarball download average speed 15 KiB/s (size 28 KiB) is below 50 KiB/s: https://registry.npmjs.org/mime-db/-/mime-db-1.54.0.tgz (GET)
+[WARN] Tarball download average speed 27 KiB/s (size 72 KiB) is below 50 KiB/s: https://registry.npmjs.org/workbox-background-sync/-/workbox-background-sync-7.4.1.tgz (GET)
+Downloading @oxlint/binding-linux-x64-gnu@1.94.0: 0.00 B/6.76 MB
+Update available! 12.18.0 → 12.21.0.
+Changelog: https://pnpm.io/v/12.21.0
+To update, run: pnpm self-update
+[WARN] Tarball download average speed 43 KiB/s (size 242 KiB) is below 50 KiB/s: https://registry.npmjs.org/@prisma/get-platform/-/get-platform-7.10.1.tgz (GET)
+[WARN] Tarball download average speed 41 KiB/s (size 94 KiB) is below 50 KiB/s: https://registry.npmjs.org/cn/-/cn-0.5.2.tgz (GET)
+[WARN] Tarball download average speed 6 KiB/s (size 11 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/plugin-transform-modules-commonjs/-/plugin-transform-modules-commonjs-7.29.14.tgz (GET)
+[WARN] Tarball download average speed 13 KiB/s (size 43 KiB) is below 50 KiB/s: https://registry.npmjs.org/confbox/-/confbox-0.3.2.tgz (GET)
+[WARN] Tarball download average speed 33 KiB/s (size 151 KiB) is below 50 KiB/s: https://registry.npmjs.org/@noble/hashes/-/hashes-1.8.0.tgz (GET)
+[WARN] Tarball download average speed 34 KiB/s (size 50 KiB) is below 50 KiB/s: https://registry.npmjs.org/giget/-/giget-3.3.1.tgz (GET)
+Progress: resolved 876, reused 0, downloaded 618, added 617
+Downloading @prisma/client@7.10.1: 0.00 B/26.82 MB
+[WARN] Tarball download average speed 41 KiB/s (size 161 KiB) is below 50 KiB/s: https://registry.npmjs.org/@fontsource-variable/geist/-/geist-5.3.0.tgz (GET)
+[WARN] Tarball download average speed 38 KiB/s (size 322 KiB) is below 50 KiB/s: https://registry.npmjs.org/kysely/-/kysely-0.29.9.tgz (GET)
+[WARN] Tarball download average speed 39 KiB/s (size 156 KiB) is below 50 KiB/s: https://registry.npmjs.org/systeminformation/-/systeminformation-5.33.23.tgz (GET)
+[WARN] Tarball download average speed 47 KiB/s (size 615 KiB) is below 50 KiB/s: https://registry.npmjs.org/axios/-/axios-1.21.1.tgz (GET)
+[WARN] Tarball download average speed 37 KiB/s (size 38 KiB) is below 50 KiB/s: https://registry.npmjs.org/@vitest/mocker/-/mocker-3.2.7.tgz (GET)
+[WARN] Tarball download average speed 32 KiB/s (size 105 KiB) is below 50 KiB/s: https://registry.npmjs.org/@visx/vendor/-/vendor-4.0.0-alpha.0.tgz (GET)
+[WARN] Tarball download average speed 47 KiB/s (size 53 KiB) is below 50 KiB/s: https://registry.npmjs.org/vite-plugin-pwa/-/vite-plugin-pwa-2.0.0.tgz (GET)
+[WARN] Tarball download average speed 13 KiB/s (size 60 KiB) is below 50 KiB/s: https://registry.npmjs.org/find-my-way/-/find-my-way-9.7.0.tgz (GET)
+[WARN] Tarball download average speed 18 KiB/s (size 22 KiB) is below 50 KiB/s: https://registry.npmjs.org/@trickfilm400/rollup-plugin-off-main-thread/-/rollup-plugin-off-main-thread-3.0.0-pre1.tgz (GET)
+[WARN] Tarball download average speed 28 KiB/s (size 31 KiB) is below 50 KiB/s: https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.13.tgz (GET)
+Downloading @electric-sql/pglite@0.4.3: 0.00 B/8.29 MB
+[WARN] Tarball download average speed 9 KiB/s (size 25 KiB) is below 50 KiB/s: https://registry.npmjs.org/@vitest/snapshot/-/snapshot-3.2.7.tgz (GET)
+[WARN] Tarball download average speed 3 KiB/s (size 18 KiB) is below 50 KiB/s: https://registry.npmjs.org/tslib/-/tslib-2.9.1.tgz (GET)
+[WARN] Tarball download average speed 2 KiB/s (size 13 KiB) is below 50 KiB/s: https://registry.npmjs.org/cookie/-/cookie-1.1.1.tgz (GET)
+[WARN] Tarball download average speed 47 KiB/s (size 133 KiB) is below 50 KiB/s: https://registry.npmjs.org/workbox-window/-/workbox-window-7.4.1.tgz (GET)
+[WARN] Tarball download average speed 15 KiB/s (size 32 KiB) is below 50 KiB/s: https://registry.npmjs.org/resolve/-/resolve-1.22.14.tgz (GET)
+[WARN] Tarball download average speed 49 KiB/s (size 84 KiB) is below 50 KiB/s: https://registry.npmjs.org/workbox-precaching/-/workbox-precaching-7.4.1.tgz (GET)
+[WARN] Tarball download average speed 27 KiB/s (size 78 KiB) is below 50 KiB/s: https://registry.npmjs.org/chai/-/chai-5.3.3.tgz (GET)
+[WARN] Tarball download average speed 45 KiB/s (size 681 KiB) is below 50 KiB/s: https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.3.tgz (GET)
+Downloading @prisma/client@7.10.1: 253.94 kB/26.82 MB
+[WARN] Tarball download average speed 31 KiB/s (size 195 KiB) is below 50 KiB/s: https://registry.npmjs.org/ts-morph/-/ts-morph-26.0.0.tgz (GET)
+Progress: resolved 876, reused 0, downloaded 848, added 847
+[WARN] Tarball download average speed 23 KiB/s (size 323 KiB) is below 50 KiB/s: https://registry.npmjs.org/@better-auth/core/-/core-1.7.25.tgz (GET)
+Downloading @prisma/client@7.10.1: 453.99 kB/26.82 MB
+[WARN] Tarball download average speed 29 KiB/s (size 445 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/parser/-/parser-7.29.14.tgz (GET)
+[WARN] Tarball download average speed 22 KiB/s (size 200 KiB) is below 50 KiB/s: https://registry.npmjs.org/rolldown/-/rolldown-1.2.19.tgz (GET)
+[WARN] Tarball download average speed 45 KiB/s (size 578 KiB) is below 50 KiB/s: https://registry.npmjs.org/vite/-/vite-8.3.8.tgz (GET)
+Downloading @oxlint/binding-linux-x64-gnu@1.94.0: 1.24 MB/6.76 MB
+Downloading @prisma/studio-core@0.33.0: 474.46 kB/10.12 MB
+Progress: resolved 876, reused 0, downloaded 861, added 860
+Downloading @rolldown/binding-linux-x64-gnu@1.2.19: 1.08 MB/8.83 MB
+Downloading @prisma/client@7.10.1: 1.58 MB/26.82 MB
+Downloading prisma@7.10.1: 405.48 kB/14.17 MB
+Downloading @prisma/client@7.10.1: 2.04 MB/26.82 MB
+Downloading @prisma/studio-core@0.33.0: 608.38 kB/10.12 MB
+Downloading prisma@7.10.1: 568.37 kB/14.17 MB
+Downloading @prisma/client@7.10.1: 3.58 MB/26.82 MB
+Downloading @oxlint/binding-linux-x64-gnu@1.94.0: 2.29 MB/6.76 MB
+Downloading @rolldown/binding-linux-x64-gnu@1.2.19: 2.82 MB/8.83 MB
+Downloading @rolldown/binding-linux-x64-gnu@1.2.19: 3.10 MB/8.83 MB
+Downloading @rolldown/binding-linux-x64-gnu@1.2.19: 3.42 MB/8.83 MB
+Downloading @prisma/client@7.10.1: 6.43 MB/26.82 MB
+Downloading @prisma/studio-core@0.33.0: 755.82 kB/10.12 MB
+Downloading prisma@7.10.1: 933.88 kB/14.17 MB
+Downloading @prisma/client@7.10.1: 8.36 MB/26.82 MB
+Downloading @prisma/client@7.10.1: 9.07 MB/26.82 MB
+Downloading @prisma/client@7.10.1: 9.69 MB/26.82 MB
+Downloading @prisma/client@7.10.1: 10.51 MB/26.82 MB
+Downloading @prisma/client@7.10.1: 11.31 MB/26.82 MB
+Downloading prisma@7.10.1: 2.63 MB/14.17 MB
+Downloading @prisma/studio-core@0.33.0: 903.29 kB/10.12 MB
+Downloading @prisma/client@7.10.1: 13.30 MB/26.82 MB
+Downloading @prisma/client@7.10.1: 13.87 MB/26.82 MB
+Downloading @prisma/client@7.10.1: 14.34 MB/26.82 MB
+Downloading prisma@7.10.1: 4.11 MB/14.17 MB
+Downloading @prisma/client@7.10.1: 15.26 MB/26.82 MB
+Downloading @prisma/client@7.10.1: 15.74 MB/26.82 MB
+Downloading prisma@7.10.1: 6.06 MB/14.17 MB
+Downloading prisma@7.10.1: 6.91 MB/14.17 MB
+Downloading prisma@7.10.1: 7.68 MB/14.17 MB
+Downloading prisma@7.10.1: 8.37 MB/14.17 MB
+Downloading prisma@7.10.1: 9.06 MB/14.17 MB
+Downloading prisma@7.10.1: 9.67 MB/14.17 MB
+Downloading prisma@7.10.1: 10.39 MB/14.17 MB
+Downloading prisma@7.10.1: 11.14 MB/14.17 MB
+Downloading @prisma/client@7.10.1: 19.24 MB/26.82 MB
+Downloading @prisma/client@7.10.1: 19.60 MB/26.82 MB
+Downloading @prisma/client@7.10.1: 20.44 MB/26.82 MB
+Downloading @prisma/client@7.10.1: 22.19 MB/26.82 MB
+Downloading @prisma/client@7.10.1: 23.88 MB/26.82 MB
+Downloading @prisma/client@7.10.1: 26.60 MB/26.82 MB
+Packages: +876
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 876, reused 0, downloaded 876, added 876, done
+.../node_modules/@prisma/engines postinstall$ node scripts/postinstall.js
+.../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+.../node_modules/@prisma/engines postinstall: Done
+.../node_modules/prisma preinstall$ node scripts/preinstall-entry.js
+.../node_modules/prisma preinstall: Done
+
+devDependencies:
++ @playwright/test 1.65.1
++ @types/node 22.20.5
++ oxlint 1.94.0
++ prettier 3.10.1
++ typescript 5.9.3
++ vitest 3.2.7
+
+Done in 1m 11.8s using pnpm v12.18.0
+4. Generating Prisma client...
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+
+✔ Generated Prisma Client (v7.10.1) to ./../node_modules/.pnpm/@prisma+client@7.10.1_prisma@7.10.1_@types+node@22.20.5_@types+react-dom@19.3.0_@types+_6c67c6ce86c84f92acf6c759ffa7e26a/node_modules/@prisma/client in 393ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+
+5. Running migrations from zero...
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "mill_ledger_fresh_f097", schema "public" at "localhost:5432"
+
+3 migrations found in prisma/migrations
+
+Applying migration `20261118000000_init_baseline`
+Applying migration `20261118000001_constraints_and_sequences`
+Applying migration `20261120000002_ledger_immutability_triggers`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261118000000_init_baseline/
+    └─ migration.sql
+  └─ 20261118000001_constraints_and_sequences/
+    └─ migration.sql
+  └─ 20261120000002_ledger_immutability_triggers/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+6. Seeding database...
+$ tsx prisma/seed.ts
+Seeding test users for M1...
+Created user admin@millledger.local with role ADMIN
+Created user salesman1@millledger.local with role SALESMAN
+Created user salesman@millledger.local with role SALESMAN
+Created user salesman2@millledger.local with role SALESMAN
+Created user production@millledger.local with role PRODUCTION
+Created user operator@millledger.local with role PRODUCTION
+Created user accountant@millledger.local with role ACCOUNTANT
+Created user owner@millledger.local with role OWNER
+Seeding benchmark master data and opening stock (M2)...
+M2 benchmark master data seed successfully completed.
+7. Running formatters unit test suite...
+
+ RUN  v3.2.7 /tmp/mill-ledger-fresh-f097
+
+ ✓ client/src/lib/formatters.test.ts (16 tests) 21ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  21:24:26
+   Duration  361ms (transform 69ms, setup 0ms, collect 97ms, tests 21ms, environment 0ms, prepare 49ms)
+
+8. Cleaning up fresh worktree and database...
+=== STEP 1: FRESH ENVIRONMENT TEST PASSED ===

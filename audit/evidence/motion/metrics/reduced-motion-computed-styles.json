@@ -1,0 +1,20 @@
+{
+  "standardStyles": {
+    "animationDuration": "1s",
+    "animationIterationCount": "infinite",
+    "transitionDuration": "0.1s",
+    "scrollBehavior": "auto"
+  },
+  "reducedStyles": {
+    "mediaMatches": true,
+    "htmlScrollBehavior": "auto",
+    "spinnerAnimationDuration": "1e-05s",
+    "spinnerAnimationIterationCount": "1",
+    "pulseAnimationDuration": "1e-05s",
+    "pulseAnimationIterationCount": "1",
+    "collapsibleAnimationName": "collapsible-open",
+    "collapsibleAnimationDuration": "1e-05s",
+    "buttonTransitionDuration": "1e-05s"
+  },
+  "timestamp": "2026-11-19T17:26:41.954Z"
+}

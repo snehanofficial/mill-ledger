@@ -1,0 +1,20 @@
+=== F-020 Verification: 02 Test Execution ===
+Command: npx vitest run server/src/orders.test.ts
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations
+Seeding benchmark master data and opening stock (M2)...
+M2 benchmark master data seed successfully completed.
+
+ ✓ server/src/orders.test.ts (5 tests) 1430ms
+   ✓ M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > executes benchmark transactions 4, 5, and 6: salesman order creation, tax calculation, atomic reservation, and exact shortage 32  399ms
+   ✓ M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > enforces ABAC boundaries: salesman customer assignments and cross-salesman visibility 196ms
+   ✓ M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > handles order rejection and cancels active reservations 137ms
+   ✓ M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-017: blocks mass assignment of status in sales order creation payload (OWASP API3:2023) 193ms
+   ✓ M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024) 272ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Duration  2.28s
+Result: PASS (All 5 tests pass including 7 discrete sub-assertions in F-020).

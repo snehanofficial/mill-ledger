@@ -1,0 +1,27 @@
+{
+  "runs": 29,
+  "attempts": {
+    "CLUSTER-03": 2,
+    "CLUSTER-01": 4,
+    "CLUSTER-02": 5
+  },
+  "feedback": {
+    "CLUSTER-03": "",
+    "CLUSTER-01": "The agent made no commits. A fix must be committed (one commit per finding, with its regression test).\n\nNo item reached FIXED-UNVERIFIED (current: F-010=OPEN). Fix, commit, add the regression test, record fixCommit and regressionTest in the tracker, and set FIXED-UNVERIFIED.\n\nUncommitted changes remain after the fix:\n?? server/src/invoice-rounding.test.ts\n\nCHECK_CMD failed:\n$ pnpm -r run typecheck\nScope: 3 of 4 workspace projects\nshared typecheck$ tsc --noEmit\nshared typecheck: Done\nclient typecheck$ tsc -b --noEmit\nserver typecheck$ tsc --noEmit\nclient typecheck: Done\nserver typecheck: src/invoice-rounding.test.ts(6,1): error TS6133: 'Prisma' is declared but its value is never read.\nserver typecheck: src/invoice-rounding.test.ts(113,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(114,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(115,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(116,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(117,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(118,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(120,18): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(231,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(232,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(233,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(234,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(235,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(236,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(239,26): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(240,26): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(241,25): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(242,27): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(366,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(367,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(368,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(369,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(370,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: src/invoice-rounding.test.ts(371,19): error TS18047: 'invoice' is possibly 'null'.\nserver typecheck: Failed\n[ELIFECYCLE] Command failed with exit code 2.\nError: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL\n\n  × \"pnpm recursive run\" failed in /home/snehan/projects/web/mill-ledger/\n  │ server\n\n[ELIFECYCLE] Command failed with exit code 1.\n",
+    "CLUSTER-02": ""
+  },
+  "parked": {},
+  "contradicted": {},
+  "tokens": {
+    "in": 2557379,
+    "out": 331582,
+    "total": 2888961
+  },
+  "agentMs": 48713356,
+  "gateAttempts": {},
+  "gateWaived": {},
+  "unblock": {},
+  "skippedRevert": {},
+  "finalCycles": 0,
+  "finalDone": false
+}

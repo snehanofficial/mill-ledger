@@ -1,0 +1,17 @@
+=== STEP 6: SIBLING SWEEP FOR F-010 ===
+Search Query:
+grep -rn 'taxableAmount' server/src/modules/
+grep -rn 'cgstAmount' server/src/modules/
+grep -rn 'lineTax' server/src/modules/
+
+Findings:
+1. `server/src/modules/finance/finance.service.ts`:
+   - `createInvoiceFromOrder`: Refactored to use `calculateLineTax` with `Prisma.Decimal.ROUND_HALF_UP`.
+   - `issueCreditNote`: Refactored to enforce `.toFixed(2)` decimal quantization.
+2. `server/src/modules/sales/sales.service.ts`:
+   - `createOrder`: Refactored line calculations to use `calculateLineTax`.
+   - `approveOrder`: Refactored approved lines calculation to use `calculateLineTax`.
+3. `server/src/modules/finance/tax.util.ts`:
+   - Centralized statutory tax calculation engine created with pure Decimal half-up math.
+
+Zero unrounded floating-point GST line calculations remain in server/src/modules/.

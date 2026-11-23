@@ -1,0 +1,11 @@
+=== STEP 4: MUTATION CHECK FOR F-015 ===
+Mutation 1: Remove P2002 collision catch in salesService.createSalesOrder:
+Result: Test 1 fails with unhandled PrismaClientKnownRequestError P2002 on sales_order_idempotencyKey_key.
+
+Mutation 2: Skip findUnique fallback in financeService.createInvoiceFromOrder:
+Result: Test 2 fails with unhandled P2002 on sales_invoice_idempotencyKey_key.
+
+Mutation 3: Return empty object on P2002 catch instead of fetching existing record:
+Result: Tests fail with expect(r.order.id).toBe(firstOrderId), received undefined.
+
+Result: 3 / 3 mutants killed.

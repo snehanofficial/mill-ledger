@@ -1,0 +1,32 @@
+=== STEP 5: ADVERSARIAL PROBES FOR F-011 ===
+Timestamp: 2026-11-22T21:59:49+05:30
+--- PROBE 1: Millisecond boundaries around Indian FY transition ---
+PASS [1ms before midnight April 1]: 2026-03-31T18:29:59.999Z -> 2025-26
+PASS [Exact midnight April 1]: 2026-03-31T18:30:00.000Z -> 2026-27
+PASS [1ms after midnight April 1]: 2026-03-31T18:30:00.001Z -> 2026-27
+PASS [1ms before midnight Dec 31]: 2026-12-31T18:29:59.999Z -> 2026-27
+PASS [Exact midnight Jan 1]: 2026-12-31T18:30:00.000Z -> 2026-27
+PASS [1ms before midnight March 31 end of FY]: 2027-03-31T18:29:59.999Z -> 2026-27
+PASS [Next FY boundary April 1 2027]: 2027-03-31T18:30:00.000Z -> 2027-28
+--- PROBE 2: Leap year handling ---
+PASS [Leap day 2024 late evening]: 2024-02-29T18:29:59.999Z -> 2023-24
+PASS [Leap day 2028 early morning]: 2028-02-28T18:30:00.000Z -> 2027-28
+--- PROBE 3: Century rollover (Year 2099 - 2100) ---
+PASS [FY 2099-00 April 1]: 2099-03-31T18:30:00.000Z -> 2099-00
+PASS [FY 2099-00 Jan 1]: 2099-12-31T18:30:00.000Z -> 2099-00
+PASS [FY 2100-01 April 1]: 2100-03-31T18:30:00.000Z -> 2100-01
+--- PROBE 4: Default argument (current date) ---
+PASS [Default parameter]: current FY is 2026-27
+--- PROBE 5: Global timezone invariance across 10 extreme timezones ---
+PASS under process.env.TZ=Pacific/Kiritimati: 2026-27
+PASS under process.env.TZ=Pacific/Midway: 2026-27
+PASS under process.env.TZ=UTC: 2026-27
+PASS under process.env.TZ=America/New_York: 2026-27
+PASS under process.env.TZ=America/Los_Angeles: 2026-27
+PASS under process.env.TZ=Europe/London: 2026-27
+PASS under process.env.TZ=Europe/Berlin: 2026-27
+PASS under process.env.TZ=Asia/Kolkata: 2026-27
+PASS under process.env.TZ=Asia/Tokyo: 2026-27
+PASS under process.env.TZ=Australia/Sydney: 2026-27
+All adversarial probes succeeded!
+=== ALL ADVERSARIAL PROBES PASSED ===

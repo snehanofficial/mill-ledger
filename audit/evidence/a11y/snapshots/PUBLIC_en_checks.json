@@ -1,0 +1,10 @@
+{
+  "title": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+  "docLang": "en",
+  "hasSkipLink": false,
+  "h1Text": "Sign in to MillLedger",
+  "emailAutocomplete": "email",
+  "passAutocomplete": "current-password",
+  "hasEmailLabelFor": true,
+  "hasPassLabelFor": true
+}

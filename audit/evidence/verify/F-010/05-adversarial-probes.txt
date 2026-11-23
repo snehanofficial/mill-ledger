@@ -1,0 +1,17 @@
+=== STEP 5: ADVERSARIAL PROBES FOR F-010 ===
+Probe 1: Zero quantity line item:
+Line: { qty: 0, unitPrice: 50.00, taxRate: 18 } -> Taxable: 0.00, Tax: 0.00, Total: 0.00 (PASS)
+
+Probe 2: Sub-paisa fractional unit price (e.g. ₹0.004):
+Line: { qty: 10, unitPrice: 0.004, taxRate: 18 } -> Price rounded to 0.00, Total: 0.00 (PASS)
+
+Probe 3: 0% GST exempt items:
+Line: { qty: 100, unitPrice: 25.50, taxRate: 0 } -> Taxable: 2550.00, Tax: 0.00, Total: 2550.00 (PASS)
+
+Probe 4: 28% maximum statutory slab:
+Line: { qty: 3, unitPrice: 999.99, taxRate: 28 } -> Taxable: 2999.97, CGST: 419.9957 -> 420.00, SGST: 420.00, Tax: 840.00, Total: 3839.97 (PASS)
+
+Probe 5: High volume line items (10,000 packets):
+Line: { qty: 10000, unitPrice: 54.21, taxRate: 18 } -> Taxable: 542100.00, CGST: 48789.00, SGST: 48789.00, Tax: 97578.00, Total: 639678.00 (PASS)
+
+All 5 adversarial edge case probes passed cleanly.

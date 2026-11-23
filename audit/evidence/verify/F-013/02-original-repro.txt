@@ -1,0 +1,16 @@
+=== STEP 2: ORIGINAL REPRODUCTION EVIDENCE FOR F-013 ===
+Command: pnpm --filter @mill-ledger/server exec tsx ../audit/scripts/verify-payments.ts
+Initial Output:
+Payment bounce/reversal function exists on service: false
+
+Command: grep -inE "bounce|revers" server/src/modules/finance/payment.service.ts
+Exit code: 1 (no bounce or reversal methods existed)
+
+Command: grep -n "enum PaymentStatus" server/prisma/schema.prisma -A 5
+Output:
+enum PaymentStatus {
+  POSTED
+  CANCELLED
+}
+Missing: BOUNCED, REVERSED
+Missing: DebitNote model

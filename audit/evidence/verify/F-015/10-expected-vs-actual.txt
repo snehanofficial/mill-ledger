@@ -1,0 +1,13 @@
+=== STEP 10: EXPECTED VS ACTUAL FOR F-015 ===
+EXPECTED:
+When concurrent duplicate requests arrive with the same idempotencyKey, the server must handle the unique constraint collision gracefully and return the existing record with HTTP 200/201 rather than crashing with an unhandled 500 error.
+
+ACTUAL:
+All write endpoints accepting idempotencyKey catch P2002 unique constraint collisions and query the committed record cleanly.
+5/5 tests in server/src/concurrency-idempotency.test.ts pass.
+29/29 test files in the workspace pass (143/143 tests).
+All 18 benchmark assertions match 100%.
+All 10 database invariants hold.
+
+DELTA: None.
+STATUS: VERIFIED-PASS

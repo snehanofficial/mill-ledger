@@ -1,0 +1,23 @@
+=== STEP 9: STANDARDS CHECK FOR F-008 ===
+Finding: F-008
+Category: Data Integrity / Concurrency / Availability
+Standards Refs: ACID Concurrency, OWASP API Security Top 10:2023 API10:2023, REQ-031
+
+1. Applicable Standards:
+   - ACID Concurrency and Atomicity:
+     Concurrent transactions generating unique document sequences must execute atomically without duplicate collisions or aborts. Using row-locked `document_sequences` updates via PostgreSQL `SELECT ... FOR UPDATE` and `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` guarantees serial execution of sequence generation without table-level locks.
+   - OWASP API Security Top 10:2023 API10:2023 (Concurrency / Race Conditions):
+     Concurrent client invocations must execute cleanly without crashing into internal server 500 errors caused by unhandled database unique constraint collisions.
+   - Product Requirement REQ-031 & architecture.md:
+     Mandates reliable, concurrent, crash-free warehouse dispatches with uniquely numbered physical dispatch documents (`DSP-YYYY-XXXX`).
+
+2. Evidence of Compliance:
+   - `server/src/modules/sales/dispatch.service.ts` replaced non-atomic `tx.dispatch.count()` with atomic `sequenceService.getNextDispatchNumber(tx, order.organizationId)`.
+   - 10 concurrent dispatches test in `server/src/dispatch-concurrency.test.ts` passes with 10 successful dispatches, 0 failures, 0 unique constraint collisions, and 10 unique dispatch numbers.
+   - 10 iterations of parallel dispatches in `audit/scripts/verify-concurrency-approve-dispatch.ts` achieved 100% dispatch success with 0 collisions.
+   - Adversarial Probe 1: 50 concurrent dispatches succeeded with 50 unique sequence numbers and 0 errors.
+   - Adversarial Probe 2: Multi-organization sequence isolation confirmed between distinct organizations.
+   - Adversarial Probe 3: Calendar year rollover cleanly segregates sequence numbers.
+   - 3 deliberate mutants killed with 0 survivors.
+
+3. Status: VERIFIED-PASS.

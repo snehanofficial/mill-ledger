@@ -1,0 +1,94 @@
+[
+  {
+    "scenario": "Zod Validation Failure",
+    "expectedStatus": 400,
+    "actualStatus": 400,
+    "responseShape": {
+      "error": "Invalid order data: Required, Required"
+    },
+    "hasCode": false,
+    "hasMessage": false,
+    "hasFieldErrors": false,
+    "hasRequestId": false,
+    "leaksPrismaOrStack": false,
+    "status": "VERIFIED-FAIL",
+    "notes": "Schema failure returns { error: 'Invalid order data: ...' } string rather than standard envelope with fieldErrors and requestId"
+  },
+  {
+    "scenario": "Operational Domain Error (AppError)",
+    "expectedStatus": 404,
+    "actualStatus": 404,
+    "responseShape": {
+      "error": "Order non-existent-order-id-12345 not found"
+    },
+    "hasCode": false,
+    "hasMessage": false,
+    "hasFieldErrors": false,
+    "hasRequestId": false,
+    "leaksPrismaOrStack": false,
+    "status": "VERIFIED-FAIL",
+    "notes": "AppError returns { error: 'Order ... not found' } without error code or requestId"
+  },
+  {
+    "scenario": "Foreign Key Constraint (P2003)",
+    "expectedStatus": 400,
+    "actualStatus": 404,
+    "responseShape": {
+      "error": "Customer cmwn-non-existent-customer-99999 not found"
+    },
+    "hasCode": false,
+    "hasMessage": false,
+    "hasFieldErrors": false,
+    "hasRequestId": false,
+    "leaksPrismaOrStack": false,
+    "status": "VERIFIED-FAIL",
+    "notes": "Unhandled P2003 crashes with HTTP 500 and leaks internal Prisma foreign key schema details"
+  },
+  {
+    "scenario": "Unique Constraint Collision (P2002)",
+    "expectedStatus": 409,
+    "actualStatus": 404,
+    "responseShape": {
+      "error": "Product variant non-existent not found"
+    },
+    "hasCode": false,
+    "hasMessage": false,
+    "hasFieldErrors": false,
+    "hasRequestId": false,
+    "leaksPrismaOrStack": false,
+    "status": "VERIFIED-FAIL",
+    "notes": "Returns { error: 'Conflict: unique constraint violation' } without specific collision field or standard envelope"
+  },
+  {
+    "scenario": "HTTP 404 Not Found Route",
+    "expectedStatus": 404,
+    "actualStatus": 404,
+    "responseShape": {
+      "_rawText": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot GET /api/v1/non-existent-endpoint-xyz</pre>\n</body>\n</html>\n"
+    },
+    "hasCode": false,
+    "hasMessage": false,
+    "hasFieldErrors": false,
+    "hasRequestId": false,
+    "leaksPrismaOrStack": false,
+    "status": "VERIFIED-FAIL",
+    "notes": "Express default HTML 404 returned instead of standard JSON envelope"
+  },
+  {
+    "scenario": "HTTP 413 Payload Too Large",
+    "expectedStatus": 413,
+    "actualStatus": 500,
+    "responseShape": {
+      "error": "Internal Server Error",
+      "message": "request entity too large",
+      "stack": "PayloadTooLargeError: request entity too large\n    at readStream (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/raw-body@3.0.2/node_modules/raw-body/index.js:163:17)\n    at getRawBody (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/raw-body@3.0.2/node_modules/raw-body/index.js:116:12)\n    at read (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/body-parser@2.4.0/node_modules/body-parser/lib/read.js:134:3)\n    at jsonParser (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/body-parser@2.4.0/node_modules/body-parser/lib/types/json.js:60:5)\n    at Layer.handleRequest (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/router@2.2.0/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:342:13)\n    at /home/snehan/projects/web/mill-ledger/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:297:9\n    at processParams (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:582:12)\n    at next (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:291:5)\n    at cors (/home/snehan/projects/web/mill-ledger/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:188:7)"
+    },
+    "hasCode": false,
+    "hasMessage": true,
+    "hasFieldErrors": false,
+    "hasRequestId": false,
+    "leaksPrismaOrStack": true,
+    "status": "VERIFIED-FAIL",
+    "notes": "body-parser PayloadTooLargeError crashes errorHandler with HTTP 500 instead of 413"
+  }
+]

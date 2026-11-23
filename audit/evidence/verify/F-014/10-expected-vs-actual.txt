@@ -1,0 +1,9 @@
+=== STEP 10: EXPECTED VS ACTUAL FOR F-014 ===
+EXPECTED (source: docs/data-model.md, docs/product-requirements.md REQ-006 / REQ-034, Owner Decision OD-01):
+GST rates must be determined dynamically from the dedicated TaxRate master table based on product HSN code and transaction effective date. Missing rates must fail safely with HTTP 422 TAX_CONFIGURATION_ERROR. Overlapping rate schedules must be prevented.
+
+ACTUAL (evidence: server/src/tax-rate-effective-date.test.ts, commit fcaeef4):
+Sales order and sales invoice posting queries tx.taxRate.findFirst with organizationId, hsnCode, and effectiveFrom <= date and (effectiveTo is null or >= date). If not found, throws AppError("TAX_CONFIGURATION_ERROR: No active statutory GST rate found for HSN ...", 422). Overlapping schedules are validated and rejected in financeService.setTaxRate().
+
+DELTA:
+None. All expected behaviors verified with 100% test pass rate.

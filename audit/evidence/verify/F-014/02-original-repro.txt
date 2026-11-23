@@ -1,0 +1,9 @@
+=== STEP 2: ORIGINAL REPRODUCTION EVIDENCE FOR F-014 ===
+Command: grep -rn "prisma.taxRate\|tx.taxRate" server/src/modules/
+Output: (Empty - 0 occurrences across all business logic)
+
+Prior behavior:
+Sales orders resolved tax via `const taxRate = Number(variant.product.taxRate)` (sales.service.ts:232).
+Invoices resolved tax via `line.taxRate` copied from sales order without effective-date schedule verification (finance.service.ts:157).
+TaxRate master table existed in schema.prisma and PostgreSQL but was dead code never queried by application modules.
+Revisions to statutory GST Council rates could not be scheduled forward or backward without mutating product master records and corrupting historical context.

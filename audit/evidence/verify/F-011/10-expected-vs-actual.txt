@@ -1,0 +1,17 @@
+=== STEP 10: EXPECTED VS ACTUAL (TRIPLE) FOR F-011 ===
+Finding: F-011
+Title: `financeService.getFinancialYear()` relies on Node process timezone, misclassifying April 1st morning invoices into previous financial year on UTC servers
+
+1. EXPECTED (source: CGST Rules 2017 Rule 46(b), Income-tax Act 1961 Section 2(7), docs/business-rules.md):
+   Invoice consecutive numbering series must be strictly bounded by the Indian Financial Year (April 1st 00:00:00 IST to March 31st 23:59:59 IST). Any transaction occurring on or after 1st April 00:00:00 IST belongs to the new Financial Year (e.g. `2026-27`), invariant of server or cloud container timezone (`process.env.TZ`).
+
+2. ACTUAL (observed with evidence):
+   - Commit `bfd9d04b8cf36e292ea730a502916c7e00292867` refactored `financeService.getFinancialYear()` to parse dates strictly in `Asia/Kolkata` using `Intl.DateTimeFormat`.
+   - Running original repro `TZ=UTC pnpm --filter @mill-ledger/server exec tsx ../audit/scripts/test-tz.ts` produces `financeService.getFinancialYear(d): 2026-27` (evidence: audit/evidence/verify/F-011/02-original-repro.txt).
+   - Test validity check: Reverting to un-timezone-aware Date getters failed 2 tests in `server/src/financial-year-tz.test.ts` with AssertionError `expected '2025-26' to be '2026-27'`; restoring the fix passed 4/4 tests (evidence: audit/evidence/verify/F-011/03-test-validity.txt).
+   - Mutation check: Killed 3/3 mutants (month threshold >= 5, timeZone: UTC, inverted condition); surviving mutants = 0 (evidence: audit/evidence/verify/F-011/04-mutation-check.txt).
+   - Adversarial probes: Invariance verified across 10 global timezones (Pacific/Kiritimati UTC+14 to Pacific/Midway UTC-11), millisecond boundaries, leap days, and century rollovers (evidence: audit/evidence/verify/F-011/05-adversarial-probes.txt).
+   - Regression radius: Full suite (123 tests), benchmark (18 assertions), invariants (10 invariants), typecheck, and lint pass cleanly under `TZ=UTC` (evidence: audit/evidence/verify/F-011/07-regression-radius.txt).
+
+3. DELTA:
+   None. The defect is completely eliminated. Financial year calculation is now strictly anchored to Indian Standard Time regardless of the deployment host timezone.

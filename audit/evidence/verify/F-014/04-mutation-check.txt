@@ -1,0 +1,8 @@
+=== STEP 4: MUTATION CHECK FOR F-014 ===
+Mutation 1: Reverting sales.service.ts to read static variant.product.taxRate directly:
+- Causes test 3 to fail: April order uses 5% instead of scheduled 12%.
+Mutation 2: Removing fail-safe TAX_CONFIGURATION_ERROR when HSN is missing from TaxRate table:
+- Causes test 2 to fail: order creation succeeds with undefined/NaN tax rate instead of throwing 422 error.
+Mutation 3: Removing schedule overlap validation in financeService.setTaxRate():
+- Causes test 4 to fail: overlapping dates are accepted silently without throwing error.
+All mutations are caught by regression test suite.

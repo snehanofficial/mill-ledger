@@ -1,0 +1,37 @@
+{
+  "apiLoggerExists": false,
+  "apiLogFieldsPresent": {
+    "requestId": false,
+    "userId": false,
+    "role": false,
+    "method": false,
+    "routePattern": false,
+    "status": false,
+    "latency": false,
+    "ip": false,
+    "userAgent": false,
+    "payloadSize": false
+  },
+  "apiLogPersisted": false,
+  "apiLogRetention": "NONE",
+  "canaryPasswordExposedInConsole": false,
+  "canaryPasswordExposedInDB": false,
+  "requestIdInResponseHeader": false,
+  "businessAuditTrailCovers": {
+    "login": false,
+    "failedLogin": false,
+    "logout": false,
+    "permissionChanges": false,
+    "roleChanges": false,
+    "priceChanges": false,
+    "stockAdjustments": false,
+    "invoicePosting": false,
+    "paymentReversal": false,
+    "superAdminActions": false,
+    "reportExport": true
+  },
+  "auditLogAppendOnlyAtDbLevel": false,
+  "auditLogUpdatePermitted": true,
+  "auditLogDeletePermitted": true,
+  "auditLogExportStatus": 400
+}

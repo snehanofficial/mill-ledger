@@ -1,0 +1,17 @@
+=== STEP 10: EXPECTED VS ACTUAL FOR F-013 ===
+EXPECTED:
+1. When a cheque or payment bounces, POST /api/v1/payments/:id/bounce transitions payment to BOUNCED, records reason and timestamp, transactionally restores invoice outstanding balance, updates invoice status back to POSTED or PARTIALLY_PAID, and marks allocations isReversed without deleting historical records.
+2. Customer ledger accurately reflects restored receivables balance.
+3. Dedicated DebitNote model and API allows raising debit notes against suppliers with itemized line breakdowns without mutating purchase receipts or reusing customer credit note structures.
+
+ACTUAL:
+1. paymentService.bouncePayment() executes in an atomic transaction, updates payment status to BOUNCED, records reversalReason/reversedAt/reversalReference, preserves allocations with isReversed=true, and restores invoice outstanding amount and status with exact Decimal arithmetic.
+2. getCustomerLedger() immediately shows restored netOutstanding debt.
+3. financeService.issueDebitNote() creates dedicated DebitNote and DebitNoteLine records with consecutive DN-YYYY-XXXX sequences and audit logs.
+4. All 5 regression tests in server/src/payment-bounce.test.ts pass.
+5. All 28 test files in full vitest suite pass (138/138).
+6. 18/18 benchmark assertions match.
+7. 10/10 SQL database invariants hold with 0 violations.
+
+DELTA: None. Fully compliant with OD-06, REQ-037, and REQ-039.
+STATUS: VERIFIED-PASS

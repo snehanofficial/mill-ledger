@@ -1,0 +1,72 @@
+[
+  {
+    "domainRule": "GSTIN Validation",
+    "expectedBehavior": "Enforce 15-character GSTIN format with valid state code and Luhn Mod 36 checksum",
+    "actualBehavior": "Accepted invalid GSTIN \"99FAKEGSTIN1234Z9\" with no database constraint or API validation",
+    "status": "VERIFIED-FAIL",
+    "details": "No GSTIN format regex or checksum algorithm in application or database layers"
+  },
+  {
+    "domainRule": "PIN Code Validation",
+    "expectedBehavior": "Enforce 6-digit Indian PIN Code format on customer/party addresses",
+    "actualBehavior": "PIN code field does NOT exist in Customer schema or address models",
+    "status": "VERIFIED-FAIL",
+    "details": "Postal Index Number (PIN) code field is absent from data model and validation schemas"
+  },
+  {
+    "domainRule": "Phone Number Validation",
+    "expectedBehavior": "Enforce 10-digit Indian mobile number format (^[6-9]\\d{9}$)",
+    "actualBehavior": "Accepted invalid phone \"12345\" with no validation",
+    "status": "VERIFIED-FAIL",
+    "details": "Customer phone field accepts arbitrary strings without numeric or length validation"
+  },
+  {
+    "domainRule": "Email Validation",
+    "expectedBehavior": "Enforce standard RFC 5322 email syntax validation",
+    "actualBehavior": "Accepted invalid email \"not-an-email-at-all\" without rejection",
+    "status": "VERIFIED-FAIL",
+    "details": "Customer email field accepts arbitrary non-email strings"
+  },
+  {
+    "domainRule": "State Code Validation",
+    "expectedBehavior": "Enforce 2-digit Indian GST State Code (01-38) for tax jurisdiction classification",
+    "actualBehavior": "State stored as free-form string \"Tamil Nadu\" instead of 2-digit GST state code",
+    "status": "VERIFIED-FAIL",
+    "details": "Place of Supply calculation relies on string matching rather than standardized 2-digit statutory state codes"
+  },
+  {
+    "domainRule": "HSN Code Validation",
+    "expectedBehavior": "Enforce 4, 6, or 8 digit numeric HSN/SAC code format per CBIC statutory guidelines",
+    "actualBehavior": "Accepted alphanumeric string 'INVALID_HSN' without database constraint or schema rejection",
+    "status": "VERIFIED-FAIL",
+    "details": "HSN code column accepts arbitrary text with zero numeric or length constraints"
+  },
+  {
+    "domainRule": "Decimal Precision Per UOM",
+    "expectedBehavior": "Reject fractional quantities for discrete packaging units (e.g. BAGS integer only; KG max 3 decimals)",
+    "actualBehavior": "Accepted 1.55555555 PACKET with HTTP 201",
+    "status": "VERIFIED-FAIL",
+    "details": "Zod schema and database allow arbitrary floating-point fractions regardless of unit of measure semantics"
+  },
+  {
+    "domainRule": "Reasons Required for Overrides",
+    "expectedBehavior": "Mandate an audit reason when an order's quantity or price is overridden during approval",
+    "actualBehavior": "approveOrderSchema marks overrideReason as optional (.optional())",
+    "status": "VERIFIED-FAIL",
+    "details": "Managers can override prices and quantities without recording any justification"
+  },
+  {
+    "domainRule": "Credit Limit Enforcement",
+    "expectedBehavior": "Check customer credit limit and overdue aging balances before approving orders or generating invoices",
+    "actualBehavior": "Customer model has no creditLimit column; sales approval performs zero credit exposure checks",
+    "status": "VERIFIED-FAIL",
+    "details": "Orders can be submitted and approved for customers with unlimited unpaid debt"
+  },
+  {
+    "domainRule": "Date Ordering Enforcement",
+    "expectedBehavior": "Enforce chronological invariants (dueDate >= invoiceDate, paymentDate <= current_date)",
+    "actualBehavior": "Invoice dueDate accepts 1970-01-01 (epoch); payment accepts dates in the year 2999",
+    "status": "VERIFIED-FAIL",
+    "details": "Zero temporal constraint checking on invoice due dates or payment receipt dates"
+  }
+]

@@ -1,0 +1,10 @@
+
+ RUN  v3.2.7 /tmp/ml-verify-F-097-1795363399840
+
+ ✓ client/src/lib/formatters.test.ts (16 tests) 23ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  21:33:22
+   Duration  380ms (transform 73ms, setup 0ms, collect 105ms, tests 23ms, environment 0ms, prepare 49ms)
+

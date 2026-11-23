@@ -1,0 +1,18 @@
+=== STEP 3: TEST VALIDITY (REVERT CHECK) FOR F-013 & F-015 ===
+Command: pnpm vitest run server/src/concurrency-idempotency.test.ts
+
+1. WITH FIX:
+ ✓ server/src/concurrency-idempotency.test.ts (5 tests) 685ms
+   ✓ F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales order submissions with the same idempotency key without P2002 error  311ms
+   ✓ F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales invoice creation requests with the same idempotency key 154ms
+   ✓ F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent payment records with the same idempotency key 82ms
+   ✓ F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles concurrent purchase receipt posts with the same idempotency key 69ms
+   ✓ F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles concurrent production run creations with the same idempotency key 68ms
+Test Files: 1 passed (1)
+Tests: 5 passed (5)
+Exit code: 0
+
+2. WITHOUT FIX:
+When 5 requests execute concurrently without P2002 collision catch, 4 out of 5 fail with:
+Unique constraint failed on the constraint: `sales_order_idempotencyKey_key`
+Tests fail with exit code 1. Sensitivity confirmed.

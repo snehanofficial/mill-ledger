@@ -1,0 +1,123 @@
+{
+  "errorTracking": {
+    "sentryInstalled": false,
+    "bugsnagInstalled": false,
+    "datadogInstalled": false,
+    "clientErrorBoundaryCount": 0,
+    "sourceMaps": {
+      "clientBuildHasSourceMaps": false,
+      "serverBuildHasSourceMaps": false
+    }
+  },
+  "structuredLogging": {
+    "pinoInstalled": false,
+    "winstonInstalled": false,
+    "jsonLoggingConfigured": false,
+    "requestIdTracingConfigured": false,
+    "totalConsoleStatementsServer": 34,
+    "sampleConsoleCalls": [
+      {
+        "file": "server/src/config/env.ts",
+        "line": 61,
+        "type": "error",
+        "snippet": "console.error("
+      },
+      {
+        "file": "server/src/db/seed.ts",
+        "line": 70,
+        "type": "log",
+        "snippet": "console.log(\"Seeding test users for M1...\");"
+      },
+      {
+        "file": "server/src/db/seed.ts",
+        "line": 118,
+        "type": "log",
+        "snippet": "console.log(`Created user ${user.email} with role ${user.role}`);"
+      },
+      {
+        "file": "server/src/db/seed.ts",
+        "line": 123,
+        "type": "log",
+        "snippet": "console.log(\"Seeding benchmark master data and opening stock (M2)...\");"
+      },
+      {
+        "file": "server/src/db/seed.ts",
+        "line": 592,
+        "type": "log",
+        "snippet": "console.log(\"M2 benchmark master data seed successfully completed.\");"
+      },
+      {
+        "file": "server/src/index.ts",
+        "line": 7,
+        "type": "log",
+        "snippet": "console.log("
+      },
+      {
+        "file": "server/src/index.ts",
+        "line": 13,
+        "type": "log",
+        "snippet": "console.log(\"Shutting down gracefully...\");"
+      },
+      {
+        "file": "server/src/index.ts",
+        "line": 15,
+        "type": "log",
+        "snippet": "console.log(\"HTTP server closed\");"
+      },
+      {
+        "file": "server/src/middleware/error.middleware.ts",
+        "line": 60,
+        "type": "error",
+        "snippet": "console.error(\"Unhandled Server Error:\", err);"
+      },
+      {
+        "file": "server/src/modules/reporting/audit.service.ts",
+        "line": 53,
+        "type": "error",
+        "snippet": "console.error(\"Failed to write audit log:\", err);"
+      },
+      {
+        "file": "server/src/scripts/run-benchmark.ts",
+        "line": 20,
+        "type": "log",
+        "snippet": "console.log(\"==========================================================\");"
+      },
+      {
+        "file": "server/src/scripts/run-benchmark.ts",
+        "line": 21,
+        "type": "log",
+        "snippet": "console.log(\" MillLedger CDI Benchmark Acceptance Oracle Runner\");"
+      },
+      {
+        "file": "server/src/scripts/run-benchmark.ts",
+        "line": 22,
+        "type": "log",
+        "snippet": "console.log(\" Target: docs/benchmark.md (100% exact numerical match)\");"
+      },
+      {
+        "file": "server/src/scripts/run-benchmark.ts",
+        "line": 23,
+        "type": "log",
+        "snippet": "console.log(\"==========================================================\\n\");"
+      },
+      {
+        "file": "server/src/scripts/run-benchmark.ts",
+        "line": 28,
+        "type": "log",
+        "snippet": "console.log(\"Cleaning database tables...\");"
+      }
+    ]
+  },
+  "metrics": {
+    "prometheusClientInstalled": false,
+    "metricsEndpointExists": false,
+    "dbPoolMetricsExposed": false,
+    "latencyMetricsExposed": false,
+    "errorRateMetricsExposed": false
+  },
+  "alerting": {
+    "alertRulesFilesFound": 0,
+    "grafanaDashboardsFound": 0,
+    "cloudWatchAlarmsFound": 0
+  }
+}

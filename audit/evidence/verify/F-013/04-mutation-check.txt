@@ -1,0 +1,11 @@
+=== STEP 4: MUTATION CHECK FOR F-013 ===
+Mutation 1: Skip restoring invoice outstanding balance during bouncePayment:
+Result: Test 1 fails with expected 5000 received 0 for invoice.outstandingAmount.
+
+Mutation 2: Allow duplicate bounce on already bounced payment without idempotencyKey:
+Result: Test 4 fails with expected error "already been bounced", but succeeded.
+
+Mutation 3: Exclude line items from DebitNote creation:
+Result: Test 5 fails with expected debitNote.lines length 1, received 0.
+
+Result: 3 / 3 mutants killed.
