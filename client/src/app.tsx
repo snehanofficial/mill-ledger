@@ -347,10 +347,17 @@ const router = createBrowserRouter([
           </RoleGuard>
         ),
       },
-
-      // Catch-all within authenticated area
-      { path: "*", element: <NotFoundPage /> },
     ],
+  },
+
+  // ── Root catch-all for unknown routes (prevents unauthenticated redirect hijacking) ──
+  {
+    path: "*",
+    element: (
+      <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+        <NotFoundPage />
+      </Suspense>
+    ),
   },
 ]);
 
