@@ -284,6 +284,29 @@ export class UserService {
 
     return { success: true, id };
   }
+
+  /**
+   * Automated Session & Token Cleanup Procedure (DPDP Act 2023 - Data Minimization)
+   * Purges expired sessions and sessions older than 90 days.
+   */
+  async cleanupExpiredSessions() {
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+
+    const result = await prisma.session.deleteMany({
+      where: {
+        OR: [
+          { expiresAt: { lt: now } },
+          { createdAt: { lt: ninetyDaysAgo } },
+        ],
+      },
+    });
+
+    return {
+      deletedCount: result.count,
+      purgedAt: now.toISOString(),
+    };
+  }
 }
 
 export const userService = new UserService();

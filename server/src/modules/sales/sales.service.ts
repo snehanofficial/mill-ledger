@@ -1308,6 +1308,158 @@ export class SalesService {
       };
     });
   }
+
+  /**
+   * Export Customer Data (DPDP Act 2023 Section 11 - Right to Access)
+   */
+  async exportCustomerData(customerId: string, user: UserContext) {
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
+      include: {
+        salesOrders: {
+          select: {
+            id: true,
+            orderNumber: true,
+            status: true,
+            totalAmount: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        invoices: {
+          select: {
+            id: true,
+            invoiceNumber: true,
+            status: true,
+            totalAmount: true,
+            outstandingAmount: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        payments: {
+          select: {
+            id: true,
+            paymentNumber: true,
+            amount: true,
+            paymentMode: true,
+            paymentDate: true,
+          },
+          orderBy: { paymentDate: "desc" },
+        },
+      },
+    });
+
+    if (!customer) {
+      throw new AppError("Customer not found", 404);
+    }
+
+    // Verify ABAC access
+    if (user.role === "SALESMAN") {
+      const isAssigned = await prisma.salesmanCustomerAssignment.findFirst({
+        where: {
+          salesmanId: user.id,
+          customerId,
+        },
+      });
+      if (!isAssigned) {
+        throw new AppError("Access denied: Customer is not assigned to you", 403);
+      }
+    }
+
+    await auditService.log({
+      organizationId: customer.organizationId,
+      userId: user.id,
+      userEmail: user.email,
+      action: "EXPORT",
+      entity: "Customer",
+      entityId: customer.id,
+      details: { exportType: "DPDP_DATA_ACCESS", customerCode: customer.code },
+    });
+
+    return {
+      exportedAt: new Date().toISOString(),
+      statutoryReference: "DPDP Act 2023 Section 11",
+      profile: {
+        id: customer.id,
+        code: customer.code,
+        name: customer.name,
+        phone: customer.phone,
+        email: customer.email,
+        state: customer.state,
+        gstin: customer.gstin,
+        isActive: customer.isActive,
+        createdAt: customer.createdAt,
+        updatedAt: customer.updatedAt,
+      },
+      documentSummary: {
+        ordersCount: customer.salesOrders.length,
+        invoicesCount: customer.invoices.length,
+        paymentsCount: customer.payments.length,
+        salesOrders: customer.salesOrders,
+        salesInvoices: customer.invoices,
+        payments: customer.payments,
+      },
+    };
+  }
+
+  /**
+   * Anonymize Customer PII (DPDP Act 2023 Section 12 - Right to Erasure)
+   * Redacts personal identifiers without breaking historical accounting records (CGST Section 36).
+   */
+  async anonymizeCustomer(
+    customerId: string,
+    user: UserContext,
+    reason?: string,
+  ) {
+    if (user.role !== "ADMIN" && user.role !== "OWNER") {
+      throw new AppError(
+        "Only administrators and owners can anonymize customer data under DPDP Act",
+        403,
+      );
+    }
+
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
+    });
+
+    if (!customer) {
+      throw new AppError("Customer not found", 404);
+    }
+
+    const previousCode = customer.code;
+
+    const [anonymized] = await prisma.$transaction([
+      prisma.customer.update({
+        where: { id: customerId },
+        data: {
+          name: "ANONYMIZED_CUSTOMER",
+          phone: null,
+          email: null,
+          gstin: null,
+          isActive: false,
+        },
+      }),
+      prisma.salesmanCustomerAssignment.deleteMany({
+        where: { customerId },
+      }),
+    ]);
+
+    await auditService.log({
+      organizationId: customer.organizationId,
+      userId: user.id,
+      userEmail: user.email,
+      action: "ANONYMIZE",
+      entity: "Customer",
+      entityId: customer.id,
+      details: {
+        previousCode,
+        reason: reason || "Data Subject Erasure Request (DPDP Act 2023 Section 12)",
+      },
+    });
+
+    return anonymized;
+  }
 }
 
 export const salesService = new SalesService();

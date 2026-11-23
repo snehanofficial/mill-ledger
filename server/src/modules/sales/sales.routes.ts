@@ -90,6 +90,58 @@ salesRouter.put(
   },
 );
 
+// GET /api/v1/sales/customers/:id/data-export - DPDP Act Section 11 Data Subject Export
+salesRouter.get(
+  "/customers/:id/data-export",
+  requireAuth,
+  authorize("customer", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const customerId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!customerId) {
+        throw new AppError("Customer ID is required", 400);
+      }
+
+      const exportData = await salesService.exportCustomerData(
+        customerId,
+        req.user!,
+      );
+      res.json({ status: "success", data: exportData });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/sales/customers/:id/anonymize - DPDP Act Section 12 Data Subject Erasure
+salesRouter.post(
+  "/customers/:id/anonymize",
+  requireAuth,
+  authorize("customer", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const customerId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!customerId) {
+        throw new AppError("Customer ID is required", 400);
+      }
+
+      const { reason } = req.body || {};
+      const customer = await salesService.anonymizeCustomer(
+        customerId,
+        req.user!,
+        reason,
+      );
+      res.json({ status: "anonymized", customer });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /api/v1/sales/products - Product snapshot and price list for offline cache
 salesRouter.get(
   "/products",
