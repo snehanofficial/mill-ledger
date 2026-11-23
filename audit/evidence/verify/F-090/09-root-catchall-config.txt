@@ -1,0 +1,26 @@
+diff --git a/client/src/app.tsx b/client/src/app.tsx
+index 230e14d..ba47760 100644
+--- a/client/src/app.tsx
++++ b/client/src/app.tsx
+@@ -347,11 +347,18 @@ const router = createBrowserRouter([
+           </RoleGuard>
+         ),
+       },
+-
+-      // Catch-all within authenticated area
+-      { path: "*", element: <NotFoundPage /> },
+     ],
+   },
++
++  // ── Root catch-all for unknown routes (prevents unauthenticated redirect hijacking) ──
++  {
++    path: "*",
++    element: (
++      <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
++        <NotFoundPage />
++      </Suspense>
++    ),
++  },
+ ]);
+ 
+ const queryClient = new QueryClient({

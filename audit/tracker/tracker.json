@@ -7159,7 +7159,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -7167,12 +7167,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-090.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "b195a39",
+        "evidenceLink": "audit/evidence/verify/F-090/",
+        "note": "Verified root-level catch-all routing for NotFoundPage, eliminating unauthenticated redirect hijacking and soft 404 behavior."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-090-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-090-regression.test.ts",
+    "fixCommit": "b195a39",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-090/01-test-suite.txt",
+      "audit/evidence/verify/F-090/02-typecheck.txt",
+      "audit/evidence/verify/F-090/03-lint.txt",
+      "audit/evidence/verify/F-090/04-build.txt",
+      "audit/evidence/verify/F-090/05-benchmark.txt",
+      "audit/evidence/verify/F-090/06-invariants.txt",
+      "audit/evidence/verify/F-090/07-regression-test.txt",
+      "audit/evidence/verify/F-090/08-404-api-test.txt",
+      "audit/evidence/verify/F-090/09-root-catchall-config.txt",
+      "audit/evidence/verify/F-090/10-git-diff.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'robots\\|sitemap\\|meta' client/ server/ | head -n 25",
