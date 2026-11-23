@@ -1,0 +1,11 @@
+F-041 Pre-fix Reproduction:
+---------------------------
+Issue: Unrestricted Report Tabs Cause 403 Console Errors for Scoped Roles (Salesman & Production)
+
+Root cause:
+In `client/src/pages/reports-page.tsx`, the tab navigation statically defined and rendered tabs for `sales`, `gst`, `stock`, `production`, `receivables`, and `audit` regardless of the logged-in user's role.
+On the backend (`server/src/modules/reporting/reporting.routes.ts`), reporting endpoints strictly enforce ABAC/RBAC:
+- SALESMAN role is restricted to ['sales', 'stock']. Any query to 'gst', 'audit', or 'production' returns 403 Forbidden.
+- PRODUCTION role is restricted to ['production', 'stock']. Any query to 'sales', 'gst', 'receivables', or 'audit' returns 403 Forbidden.
+
+When a user with SALESMAN or PRODUCTION role loaded `/reports` or clicked tabs they were not authorized for, React Query dispatched requests to prohibited endpoints, generating 403 Forbidden errors in the browser console.

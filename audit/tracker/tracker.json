@@ -3863,7 +3863,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -3871,12 +3871,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-041.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "5ac790d",
+        "evidenceLink": "audit/evidence/verify/F-041/10-summary.txt",
+        "note": "Scoped report navigation tabs based on user role and prevented unauthorized background queries."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-041-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-041-regression.test.ts",
+    "regressionTest": "audit/tests/f-041-regression.test.ts",
+    "fixCommit": "5ac790d",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-041/01-pre-fix-repro.txt",
+      "audit/evidence/verify/F-041/02-regression-test.txt",
+      "audit/evidence/verify/F-041/03-typecheck.txt",
+      "audit/evidence/verify/F-041/04-lint.txt",
+      "audit/evidence/verify/F-041/05-build.txt",
+      "audit/evidence/verify/F-041/06-unit-tests.txt",
+      "audit/evidence/verify/F-041/07-benchmark.txt",
+      "audit/evidence/verify/F-041/08-invariants.txt",
+      "audit/evidence/verify/F-041/09-git-diff.txt",
+      "audit/evidence/verify/F-041/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'placeholder\\|TODO' client/src/ server/src/ | head -n 25",
