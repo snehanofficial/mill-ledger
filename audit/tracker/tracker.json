@@ -1430,6 +1430,13 @@
         "note": "Unblocked on 2026-11-20 per Owner Decision OD-07 (Threshold Discount Guard: <=5% salesman discretion, 5-15% manager approval, >15% reject)."
       },
       {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-020.md",
+        "note": "Commencing remediation and test development for F-020."
+      },
+      {
         "status": "FIXED-UNVERIFIED",
         "date": "2026-11-23",
         "commit": "7b2a2b2",
@@ -1501,6 +1508,13 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-021.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-021.md",
+        "note": "Commencing remediation and test development for F-021."
       },
       {
         "status": "FIXED-UNVERIFIED",
@@ -1577,6 +1591,13 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-027.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-027.md",
+        "note": "Commencing remediation and test development for F-027."
       },
       {
         "status": "FIXED-UNVERIFIED",
@@ -1677,6 +1698,13 @@
         "note": "Unblocked on 2026-11-20 per Owner Decision OD-02 (Interactive CLI pnpm admin:bootstrap with hidden password entry)."
       },
       {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-023.md",
+        "note": "Commencing remediation and test development for F-023."
+      },
+      {
         "status": "FIXED-UNVERIFIED",
         "date": "2026-11-23",
         "commit": "023f195",
@@ -1751,6 +1779,13 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-024.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-024.md",
+        "note": "Commencing remediation and test development for F-024."
       },
       {
         "status": "FIXED-UNVERIFIED",
@@ -1830,6 +1865,13 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-028.md",
+        "note": "Commencing remediation and test development for F-028."
+      },
+      {
         "status": "FIXED-UNVERIFIED",
         "date": "2026-11-23",
         "commit": "401d47e",
@@ -1896,7 +1938,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -1904,12 +1946,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-029.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-029.md",
+        "note": "Commencing CI action SHA pinning, supply-chain package configuration, and production seed guardrails."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "aeb13ac",
+        "evidenceLink": "audit/evidence/verify/F-029/03-regression-reproduction.txt",
+        "note": "Pinned GitHub Action SHAs in ci.yml, added min-release-age to .npmrc, added blockExoticSubdeps to pnpm-workspace.yaml, and added production seed check."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "aeb13ac",
+        "evidenceLink": "audit/evidence/verify/F-029/10-expected-vs-actual.txt",
+        "note": "Verified across all 10 protocol checks: 4/4 regression tests pass, 36/36 test files (205 tests) pass, 0 typecheck/lint errors, 18/18 benchmark assertions pass, 10/10 SQL invariants hold, client build clean."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
     "regressionTest": "audit/tests/f-029-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "fixCommit": "aeb13ac",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-029/01-fresh-environment.txt",
+      "audit/evidence/verify/F-029/02-test-execution.txt",
+      "audit/evidence/verify/F-029/03-regression-reproduction.txt",
+      "audit/evidence/verify/F-029/04-full-suite-pass.txt",
+      "audit/evidence/verify/F-029/05-typecheck-lint.txt",
+      "audit/evidence/verify/F-029/06-benchmark-invariants.txt",
+      "audit/evidence/verify/F-029/07-authorization-checks.txt",
+      "audit/evidence/verify/F-029/08-concurrency-safety.txt",
+      "audit/evidence/verify/F-029/09-backward-compat.txt",
+      "audit/evidence/verify/F-029/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'handleSignOut\\|quickLogin' client/src/ | head -n 20",

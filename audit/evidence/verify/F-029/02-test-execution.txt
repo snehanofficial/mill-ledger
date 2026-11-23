@@ -1,0 +1,28 @@
+=== F-029 Verification: 02 Test Execution ===
+Command: npx vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-029-regression.test.ts
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+ ✓ audit/tests/f-029-regression.test.ts (4 tests) 4ms
+   ✓ F-029 Regression Test: Supply Chain Security & Production Guardrails > pins all GitHub Actions in CI workflow to full 40-character commit SHAs 1ms
+   ✓ F-029 Regression Test: Supply Chain Security & Production Guardrails > enforces minimum package release age in .npmrc 0ms
+   ✓ F-029 Regression Test: Supply Chain Security & Production Guardrails > enforces exotic subdependencies block policy in pnpm-workspace.yaml 0ms
+   ✓ F-029 Regression Test: Supply Chain Security & Production Guardrails > strictly disables database seeding in production environments 1ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Duration  789ms
+
+Command: npx vitest run server/src/supply-chain.test.ts
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+ ✓ server/src/supply-chain.test.ts (4 tests) 4ms
+   ✓ Supply Chain Security & Production Guardrails (F-029) > pins all GitHub Actions in CI workflow to full 40-character commit SHAs 1ms
+   ✓ Supply Chain Security & Production Guardrails (F-029) > enforces minimum package release age in .npmrc 0ms
+   ✓ Supply Chain Security & Production Guardrails (F-029) > enforces exotic subdependencies block policy in pnpm-workspace.yaml 0ms
+   ✓ Supply Chain Security & Production Guardrails (F-029) > strictly disables database seeding in production environments 1ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Duration  350ms

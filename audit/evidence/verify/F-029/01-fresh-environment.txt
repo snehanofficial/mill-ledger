@@ -1,0 +1,12 @@
+=== F-029 Verification: 01 Fresh Environment ===
+Timestamp: 2026-11-23T18:54:00+05:30
+Branch: remediation/main
+Node Version: v22.22.1
+PNPM Version: 12.18.0
+PostgreSQL: 16 (port 5432)
+Database: mill_ledger (local isolated test database)
+CI Workflow: .github/workflows/ci.yml
+Package Manager Configuration: .npmrc, pnpm-workspace.yaml
+Seed Script: server/prisma/seed.ts, server/src/db/seed.ts
+OWASP Standards: OWASP Top 10:2021 A08 (Software and Data Integrity Failures), OWASP API Security Top 10:2023 API8:2023, OWASP ASVS v4.0.3 Sec 10.3.1, Sec 14.2.1.
+Supply Chain Protection: Immutable SHA pinning on GitHub Actions, min-release-age in .npmrc, blockExoticSubdeps in pnpm-workspace.yaml, and production seed gating.
