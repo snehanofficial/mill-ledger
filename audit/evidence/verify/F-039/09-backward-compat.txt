@@ -1,0 +1,1 @@
+Audit CSV export preserves existing report schemas and backwards compatibility across sales, stock, and gst exports.
