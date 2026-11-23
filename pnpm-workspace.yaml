@@ -3,6 +3,8 @@ packages:
   - "server"
   - "shared"
 
+blockExoticSubdeps: true
+
 overrides:
   tinypool: ">=2.1.2"
   glob: ">=14.0.2"

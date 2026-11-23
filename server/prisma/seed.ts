@@ -606,6 +606,9 @@ export async function seedBenchmarkMasters() {
 }
 
 export async function runFullSeed() {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Seeding is strictly disabled in production environments.");
+  }
   await seedUsers();
   await seedBenchmarkMasters();
 }
