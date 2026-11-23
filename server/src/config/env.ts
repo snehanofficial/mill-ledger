@@ -19,7 +19,7 @@ export const envSchema = z
       .default("development"),
     PORT: z.coerce.number().default(4000),
     DATABASE_URL: z
-      .string({ required_error: "DATABASE_URL is required" })
+      .string({ message: "DATABASE_URL is required" })
       .min(1, "DATABASE_URL is required")
       .url("DATABASE_URL must be a valid URL"),
     BETTER_AUTH_SECRET: z.string().min(16).default(DEV_DEFAULT_SECRET),

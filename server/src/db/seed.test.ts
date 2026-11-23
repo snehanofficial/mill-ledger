@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { runFullSeed, seedBenchmarkMasters, seedUsers } from "./seed.js";
@@ -65,7 +66,9 @@ describe("F-004 / F-101: Production Guard on Seed Script", () => {
   });
 
   it("invoking prisma/seed.ts directly exits with code 1 in production mode", () => {
-    const tsxBin = path.resolve(process.cwd(), "node_modules/.bin/tsx");
+    const tsxBin = fs.existsSync(path.resolve(process.cwd(), "node_modules/.bin/tsx"))
+      ? path.resolve(process.cwd(), "node_modules/.bin/tsx")
+      : path.resolve(process.cwd(), "server/node_modules/.bin/tsx");
     const seedPath = path.resolve(process.cwd(), "server/prisma/seed.ts");
     const result = spawnSync(
       tsxBin,

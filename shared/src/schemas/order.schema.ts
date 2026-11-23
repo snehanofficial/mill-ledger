@@ -52,10 +52,7 @@ export const updateOrderSchema = z
       .optional(),
     status: z
       .enum(["DRAFT", "SUBMITTED"], {
-        errorMap: () => ({
-          message:
-            "Draft orders can only be updated to DRAFT or SUBMITTED status",
-        }),
+        message: "Draft orders can only be updated to DRAFT or SUBMITTED status",
       })
       .optional(),
     lines: z.array(updateOrderLineSchema).min(1).optional(),
