@@ -1136,7 +1136,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -1144,19 +1144,51 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-017.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-017.md",
+        "note": "Remediating mass assignment in sales order creation payload."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "b3bb47a",
+        "evidenceLink": "audit/evidence/verify/F-017/08-concurrency-safety.txt",
+        "note": "Restricted createOrderSchema to DRAFT and SUBMITTED only; enforced domain check in salesService.createOrder."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "b3bb47a",
+        "evidenceLink": "audit/evidence/verify/F-017/10-expected-vs-actual.txt",
+        "note": "Verified mass assignment prevention in HTTP schema and service layer; regression test passed in server/src/orders.test.ts."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-017-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "server/src/orders.test.ts",
+    "fixCommit": "b3bb47a",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-017/01-fresh-environment.txt",
+      "audit/evidence/verify/F-017/02-test-execution.txt",
+      "audit/evidence/verify/F-017/03-regression-reproduction.txt",
+      "audit/evidence/verify/F-017/04-full-suite-pass.txt",
+      "audit/evidence/verify/F-017/05-typecheck-lint.txt",
+      "audit/evidence/verify/F-017/06-benchmark-invariants.txt",
+      "audit/evidence/verify/F-017/07-authorization-checks.txt",
+      "audit/evidence/verify/F-017/08-concurrency-safety.txt",
+      "audit/evidence/verify/F-017/09-backward-compat.txt",
+      "audit/evidence/verify/F-017/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'router\\.' server/src/modules/ | grep -v 'requirePermission' | head -n 25",
       "hits": []
     },
-    "needsApproval": "permission",
-    "notes": ""
+    "needsApproval": "none",
+    "notes": "Restricted createOrderSchema to DRAFT and SUBMITTED status only; enforced domain check in salesService.createOrder preventing unauthorized direct status assignment."
   },
   {
     "id": "F-018",
