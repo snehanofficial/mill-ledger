@@ -1,0 +1,40 @@
+=== F-027 Verification: 04 Full Suite Pass ===
+Command: npx vitest run
+
+Test Files: 32 passed (32)
+Tests:      186 passed (186)
+Duration:   28.89s
+
+Files passed:
+- server/src/financial-year-tz.test.ts (6 tests)
+- server/src/orders.test.ts (6 tests)
+- server/src/invoice-dispatch.test.ts (4 tests)
+- server/src/payments.test.ts (3 tests)
+- server/src/production.test.ts (2 tests)
+- server/src/production-concurrency.test.ts (1 test)
+- server/src/reports.test.ts (2 tests)
+- server/src/dashboard-revenue.test.ts (3 tests)
+- server/src/offline-sync.test.ts (3 tests)
+- server/src/tax-rate-effective-date.test.ts (3 tests)
+- server/src/uom-conversion.test.ts (2 tests)
+- server/src/payment-bounce-debit-note.test.ts (7 tests)
+- server/src/invoice-rounding.test.ts (7 tests)
+- server/src/atp-overselling.test.ts (2 tests)
+- server/src/inventory-concurrency.test.ts (3 tests)
+- server/src/idempotency-concurrency.test.ts (2 tests)
+- server/src/db-immutability.test.ts (8 tests)
+- server/src/sequence-concurrency.test.ts (2 tests)
+- server/src/masters.test.ts (7 tests)
+- server/src/purchases.test.ts (4 tests)
+- server/src/app.test.ts (5 tests)
+- client/src/lib/formatters.test.ts (16 tests)
+- client/src/lib/auth-client.test.ts (10 tests)
+- client/src/lib/role-routing.test.ts (31 tests)
+- client/src/lib/utils.test.ts (1 test)
+- server/src/middleware/auth.middleware.test.ts (4 tests)
+- server/src/policies/rbac.test.ts (6 tests)
+- server/src/config/env.test.ts (5 tests)
+- server/src/policies/abac.test.ts (13 tests)
+- server/src/lib/origins.test.ts (5 tests)
+- client/src/lib/i18n.test.ts (3 tests)
+Total: 32/32 suites, 186/186 tests passed.
