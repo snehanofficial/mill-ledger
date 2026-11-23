@@ -33,6 +33,30 @@ export function createApp() {
     }),
   );
 
+  // Aliases for password recovery (MLD / OWASP ASVS compatibility)
+  app.post(
+    ["/api/auth/forget-password", "/api/auth/forgot-password"],
+    express.json(),
+    async (req, res, next) => {
+      try {
+        const { email, redirectTo } = req.body || {};
+        if (!email || typeof email !== "string" || !email.includes("@")) {
+          return res.status(400).json({ error: "Valid email is required" });
+        }
+        const result = await auth.api.requestPasswordReset({
+          body: {
+            email: email.toLowerCase().trim(),
+            redirectTo,
+          },
+          headers: req.headers as unknown as Headers,
+        });
+        return res.status(200).json(result);
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
+
   // Better Auth handler
   app.use("/api/auth", toNodeHandler(auth));
 
