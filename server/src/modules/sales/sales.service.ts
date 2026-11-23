@@ -1,5 +1,5 @@
 import { prisma } from "../../db/client.js";
-import { OrderStatus, ReservationStatus, type Prisma } from "@prisma/client";
+import { OrderStatus, ReservationStatus, Prisma } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
 import type { UserContext } from "@mill-ledger/shared";
 import { calculateLineTax } from "../finance/tax.util.js";
@@ -197,6 +197,8 @@ export class SalesService {
         shortage: number;
       }> = [];
 
+      let hasLineRequiringApproval = false;
+
       for (const line of input.lines) {
         if (line.quantity <= 0) {
           throw new AppError("Line quantity must be greater than zero", 400);
@@ -223,11 +225,51 @@ export class SalesService {
           );
         }
 
-        // Determine unit price: explicitly provided or default price list
-        let unitPrice = line.unitPrice;
-        if (unitPrice === undefined || unitPrice === null) {
-          const defaultPrice = variant.priceLines[0]?.price;
-          unitPrice = defaultPrice ? Number(defaultPrice) : 50.0;
+        // Determine baseline price list rate for product variant
+        let basePrice = variant.priceLines[0]?.price
+          ? Number(variant.priceLines[0].price)
+          : null;
+        if (basePrice === null) {
+          const fallbackPriceLine = await tx.priceListLine.findFirst({
+            where: {
+              productVariantId: variant.id,
+              priceList: { organizationId },
+            },
+            orderBy: { createdAt: "desc" },
+          });
+          basePrice = fallbackPriceLine ? Number(fallbackPriceLine.price) : 50.0;
+        }
+
+        // Enforce OD-07 & REQ-024 discount threshold guard
+        let unitPrice: number;
+        if (line.unitPrice === undefined || line.unitPrice === null) {
+          unitPrice = basePrice;
+        } else {
+          const baseDec = new Prisma.Decimal(basePrice);
+          const requestedDec = new Prisma.Decimal(line.unitPrice);
+
+          if (requestedDec.isNegative()) {
+            throw new AppError("Unit price cannot be negative", 400);
+          }
+
+          if (requestedDec.lt(baseDec)) {
+            const discountAmount = baseDec.minus(requestedDec);
+            const discountPct = discountAmount.dividedBy(baseDec).times(100);
+
+            // Discounts above 15% are rejected outright with HTTP 422
+            if (discountPct.gt(15.0001)) {
+              throw new AppError(
+                `DISCOUNT_EXCEEDS_MAX_THRESHOLD: Unit price ${line.unitPrice} reflects a ${discountPct.toFixed(2)}% discount, which exceeds the maximum allowable 15% threshold against list price ${basePrice}`,
+                422,
+              );
+            }
+
+            // Discounts above 5% and up to 15% require Manager approval
+            if (discountPct.gt(5.0001)) {
+              hasLineRequiringApproval = true;
+            }
+          }
+          unitPrice = Number(line.unitPrice);
         }
 
         const hsnCode = variant.product.hsnCode;
@@ -340,10 +382,15 @@ export class SalesService {
           400,
         );
       }
-      const initialStatus =
+      let initialStatus: OrderStatus =
         input.status === OrderStatus.DRAFT
           ? OrderStatus.DRAFT
           : OrderStatus.SUBMITTED;
+
+      // If any line has a discount between 5% and 15%, place order UNDER_REVIEW pending manager approval
+      if (initialStatus === OrderStatus.SUBMITTED && hasLineRequiringApproval) {
+        initialStatus = OrderStatus.UNDER_REVIEW;
+      }
 
       // Create Sales Order header
       const order = await tx.salesOrder.create({
@@ -364,7 +411,10 @@ export class SalesService {
           totalAmount,
           idempotencyKey: input.idempotencyKey,
           submittedAt:
-            initialStatus === OrderStatus.SUBMITTED ? new Date() : null,
+            initialStatus === OrderStatus.SUBMITTED ||
+            initialStatus === OrderStatus.UNDER_REVIEW
+              ? new Date()
+              : null,
         },
       });
 
@@ -450,7 +500,13 @@ export class SalesService {
         include: {
           lines: {
             include: {
-              productVariant: true,
+              productVariant: {
+                include: {
+                  priceLines: {
+                    where: { priceList: { isDefault: true } },
+                  },
+                },
+              },
             },
           },
           customer: true,
@@ -510,6 +566,25 @@ export class SalesService {
           override?.approvedUnitPrice !== undefined
             ? override.approvedUnitPrice
             : Number(line.quotedUnitPrice);
+
+        if (override?.approvedUnitPrice !== undefined) {
+          const overridePriceDec = new Prisma.Decimal(override.approvedUnitPrice);
+          if (overridePriceDec.isNegative()) {
+            throw new AppError("Approved unit price cannot be negative", 400);
+          }
+          const defaultPrice = line.productVariant.priceLines?.[0]?.price;
+          const basePrice = defaultPrice ? Number(defaultPrice) : 50.0;
+          const baseDec = new Prisma.Decimal(basePrice);
+          if (overridePriceDec.lt(baseDec)) {
+            const discountPct = baseDec.minus(overridePriceDec).dividedBy(baseDec).times(100);
+            if (discountPct.gt(15.0001)) {
+              throw new AppError(
+                `DISCOUNT_EXCEEDS_MAX_THRESHOLD: Approved unit price ${override.approvedUnitPrice} reflects a ${discountPct.toFixed(2)}% discount, which exceeds the maximum allowable 15% threshold against list price ${basePrice}`,
+                422,
+              );
+            }
+          }
+        }
 
         if (
           approvedQty !== Number(line.quotedQuantity) ||
@@ -605,9 +680,11 @@ export class SalesService {
         });
       }
 
-      if (hasOverrides && !input.overrideReason) {
+      const requiresReason =
+        hasOverrides || order.status === OrderStatus.UNDER_REVIEW;
+      if (requiresReason && !input.overrideReason) {
         throw new AppError(
-          "Admin quantity or price override requires a recorded reason",
+          "Manager approval for price discount or override requires a recorded reason",
           400,
         );
       }
@@ -856,6 +933,17 @@ export class SalesService {
 
     if (order.status !== OrderStatus.DRAFT) {
       throw new AppError("Only DRAFT orders can be updated", 400);
+    }
+
+    if (
+      input.status &&
+      input.status !== OrderStatus.DRAFT &&
+      input.status !== OrderStatus.SUBMITTED
+    ) {
+      throw new AppError(
+        "Draft orders can only be updated to DRAFT or SUBMITTED status",
+        400,
+      );
     }
 
     if (user.role === "SALESMAN" && order.salesmanId !== user.id) {

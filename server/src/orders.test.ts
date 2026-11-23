@@ -518,4 +518,248 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
     const defaultData = (await defaultRes.json()) as { order: { status: string } };
     expect(defaultData.order.status).toBe("SUBMITTED");
   });
+
+  it("F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)", async () => {
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { code: "MILL" },
+    });
+    const retailerA = await prisma.customer.findFirstOrThrow({
+      where: { code: "CUST-RET-A" },
+    });
+    const murukkuVariant = await prisma.productVariant.findFirstOrThrow({
+      where: { sku: "VAR-MURUKKU-200G" },
+    });
+
+    const salesman1Cookie = await loginAndGetCookie(
+      "salesman1@millledger.local",
+      "SalesmanPassword123!",
+    );
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+
+    // 1. Reject discount > 15% (e.g. 0.01 or 40.00 against list price 50.00) with HTTP 422
+    const excessiveDiscountRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        lines: [
+          {
+            productVariantId: murukkuVariant.id,
+            quantity: 10,
+            unitPrice: 0.01,
+          },
+        ],
+      }),
+    });
+    expect(excessiveDiscountRes.status).toBe(422);
+    const excessiveErr = (await excessiveDiscountRes.json()) as { error?: string; message?: string };
+    expect(excessiveErr.error || excessiveErr.message).toContain("DISCOUNT_EXCEEDS_MAX_THRESHOLD");
+
+    // Also test 20% discount (₹40.00 against ₹50.00)
+    const twentyPctDiscountRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        lines: [
+          {
+            productVariantId: murukkuVariant.id,
+            quantity: 10,
+            unitPrice: 40.0,
+          },
+        ],
+      }),
+    });
+    expect(twentyPctDiscountRes.status).toBe(422);
+    const twentyPctErr = (await twentyPctDiscountRes.json()) as { error?: string; message?: string };
+    expect(twentyPctErr.error || twentyPctErr.message).toContain("DISCOUNT_EXCEEDS_MAX_THRESHOLD");
+
+    // 2. Allow discount <= 5% (e.g. ₹47.50, which is exact 5% discount) under salesman discretion -> status SUBMITTED
+    const validSalesmanDiscountRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        lines: [
+          {
+            productVariantId: murukkuVariant.id,
+            quantity: 10,
+            unitPrice: 47.5,
+          },
+        ],
+      }),
+    });
+    expect(validSalesmanDiscountRes.status).toBe(201);
+    const validSalesmanData = (await validSalesmanDiscountRes.json()) as {
+      order: { id: string; status: string; lines: Array<{ quotedUnitPrice: string | number }> };
+    };
+    expect(validSalesmanData.order.status).toBe("SUBMITTED");
+    expect(Number(validSalesmanData.order.lines[0].quotedUnitPrice)).toBe(47.5);
+
+    // 3. Discount between 5% and 15% (e.g. ₹45.00, 10% discount) places order into UNDER_REVIEW
+    const managerApprovalRequiredRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        lines: [
+          {
+            productVariantId: murukkuVariant.id,
+            quantity: 10,
+            unitPrice: 45.0,
+          },
+        ],
+      }),
+    });
+    expect(managerApprovalRequiredRes.status).toBe(201);
+    const underReviewData = (await managerApprovalRequiredRes.json()) as {
+      order: { id: string; status: string };
+    };
+    expect(underReviewData.order.status).toBe("UNDER_REVIEW");
+    const underReviewOrderId = underReviewData.order.id;
+
+    // 4. Attempting to approve UNDER_REVIEW order without overrideReason fails with HTTP 400
+    const approveNoReasonRes = await fetch(
+      `${baseUrl}/api/v1/sales/orders/${underReviewOrderId}/approve`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({}),
+      },
+    );
+    expect(approveNoReasonRes.status).toBe(400);
+    const approveNoReasonErr = (await approveNoReasonRes.json()) as { error?: string; message?: string };
+    expect(approveNoReasonErr.error || approveNoReasonErr.message).toContain(
+      "Manager approval for price discount or override requires a recorded reason",
+    );
+
+    // 5. Approving UNDER_REVIEW order with recorded manager reason succeeds
+    const approveWithReasonRes = await fetch(
+      `${baseUrl}/api/v1/sales/orders/${underReviewOrderId}/approve`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          overrideReason: "Approved 10% volume discount by Sales Manager per OD-07",
+        }),
+      },
+    );
+    expect(approveWithReasonRes.status).toBe(200);
+    const approvedOrderData = (await approveWithReasonRes.json()) as {
+      status: string;
+      overrideReason: string;
+      approvedByUserId: string;
+    };
+    expect(approvedOrderData.status).toBe("APPROVED");
+    expect(approvedOrderData.overrideReason).toBe(
+      "Approved 10% volume discount by Sales Manager per OD-07",
+    );
+    expect(approvedOrderData.approvedByUserId).toBeDefined();
+
+    // 6. Attempting to approve with line override exceeding 15% discount fails with HTTP 422
+    const submittedForApprovalRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        lines: [
+          {
+            productVariantId: murukkuVariant.id,
+            quantity: 5,
+          },
+        ],
+      }),
+    });
+    expect(submittedForApprovalRes.status).toBe(201);
+    const submittedForApprovalData = (await submittedForApprovalRes.json()) as {
+      order: { id: string; lines: Array<{ id: string }> };
+    };
+    const orderForOverrideId = submittedForApprovalData.order.id;
+    const lineId = submittedForApprovalData.order.lines[0].id;
+
+    const excessiveOverrideRes = await fetch(
+      `${baseUrl}/api/v1/sales/orders/${orderForOverrideId}/approve`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          overrideReason: "Attempting 30% discount override",
+          lineOverrides: [
+            {
+              lineId,
+              approvedQuantity: 5,
+              approvedUnitPrice: 35.0, // 30% discount against 50.0 list price
+            },
+          ],
+        }),
+      },
+    );
+    expect(excessiveOverrideRes.status).toBe(422);
+    const excessiveOverrideErr = (await excessiveOverrideRes.json()) as { error?: string; message?: string };
+    expect(excessiveOverrideErr.error || excessiveOverrideErr.message).toContain("DISCOUNT_EXCEEDS_MAX_THRESHOLD");
+
+    // 7. Update draft order cannot bypass approval to transition to APPROVED directly
+    const draftRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        status: "DRAFT",
+        lines: [{ productVariantId: murukkuVariant.id, quantity: 2 }],
+      }),
+    });
+    const draftData = (await draftRes.json()) as { order: { id: string } };
+    const invalidStatusPutRes = await fetch(
+      `${baseUrl}/api/v1/sales/orders/${draftData.order.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({ status: "APPROVED" }),
+      },
+    );
+    expect(invalidStatusPutRes.status).toBe(400);
+    const invalidStatusErr = (await invalidStatusPutRes.json()) as { error?: string; message?: string };
+    expect(invalidStatusErr.error || invalidStatusErr.message).toContain(
+      "Draft orders can only be updated to DRAFT or SUBMITTED status",
+    );
+  });
 });
