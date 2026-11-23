@@ -631,7 +631,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -639,12 +639,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-015.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-015.md",
+        "note": "Started remediation for F-015 (Idempotency key pre-query race condition)."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "5b30199",
+        "evidenceLink": "audit/evidence/verify/F-015/08-diff-review.txt",
+        "note": "Added P2002 collision catch and clean return fallback across all idempotency services."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "5b30199",
+        "evidenceLink": "audit/evidence/verify/F-015/10-expected-vs-actual.txt",
+        "note": "Verified 5/5 regression tests pass, 29/29 full suite passes, 18/18 benchmark assertions match, 10/10 SQL invariants hold."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-015-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm vitest run server/src/concurrency-idempotency.test.ts",
+    "regressionTest": "server/src/concurrency-idempotency.test.ts",
+    "fixCommit": "5b30199",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-015/01-fresh-environment.txt",
+      "audit/evidence/verify/F-015/02-original-repro.txt",
+      "audit/evidence/verify/F-015/03-test-validity.txt",
+      "audit/evidence/verify/F-015/04-mutation-check.txt",
+      "audit/evidence/verify/F-015/05-adversarial-probes.txt",
+      "audit/evidence/verify/F-015/06-sibling-sweep.txt",
+      "audit/evidence/verify/F-015/07-regression-radius.txt",
+      "audit/evidence/verify/F-015/08-diff-review.txt",
+      "audit/evidence/verify/F-015/09-standards-check.txt",
+      "audit/evidence/verify/F-015/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'findUnique' server/src/modules/ | grep -v 'test' | head -n 25",
