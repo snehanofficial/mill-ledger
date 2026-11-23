@@ -249,7 +249,7 @@ server/src/modules/production/production.routes.ts:200:        ? req.params.id[0
 
 | ID | Sev | Status | Title |
 |---|---|---|---|
-| **F-004** | P0 | `OPEN` | Prisma seed script executes in production mode without guard or confirmation, injecting hardcoded test accounts |
+| **F-004** | P0 | `VERIFIED` | Prisma seed script executes in production mode without guard or confirmation, injecting hardcoded test accounts |
 | **F-006** | P2 | `OPEN` | Installed Zod version 3.24.2 is subject to high-severity denial-of-service advisory GHSA-mrhx-c7xc-m3w5 |
 | **F-032** | P1 | `OPEN` | Zero API Zod schemas configure `.strict()`, allowing unknown fields to be silently accepted or stripped without client notification |
 | **F-033** | P1 | `OPEN` | Application lacks domain-level validation for statutory formats (PIN, Phone, Email, State, HSN), discrete UOM integer quantities, customer credit limits, and chronological dates |
