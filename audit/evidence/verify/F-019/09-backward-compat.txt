@@ -1,0 +1,13 @@
+=== F-019 VERIFICATION EVIDENCE 09: BACKWARD COMPATIBILITY ===
+Scope: Client routes, URL structure, and server API parity
+
+1. ROUTE URL INTEGRITY:
+   - All standard route URLs (/orders, /orders/new, /invoices, /dispatch, /payments, /stock, /purchases, /production/*, /reports/*, /settings) maintain their exact pathname structure.
+   - Zero route paths were altered, renamed, or broken.
+
+2. API CONTRACT INTEGRITY:
+   - Backend APIs already enforce 403 on unauthorized calls. The frontend guard prevents issuing unauthorized HTTP requests while presenting a clean, accessible error barrier conforming to WCAG 2.2 AA.
+
+3. BUILD & PWA VERIFICATION:
+   - Vite 6 PWA build succeeds cleanly with zero bundle regressions.
+   - Precache entries generated correctly in dist/sw.js.

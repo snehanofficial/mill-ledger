@@ -1,0 +1,26 @@
+=== F-019 VERIFICATION EVIDENCE 01: FRESH ENVIRONMENT ===
+Timestamp: 2026-11-23T16:17:00+05:30
+Branch: remediation/main
+Working Tree Status:
+On branch remediation/main
+Changes to be committed:
+  client/src/lib/role-routing.ts
+  client/src/lib/role-routing.test.ts
+  client/src/components/auth/role-guard.tsx
+  client/src/pages/forbidden-page.tsx
+  client/src/app.tsx
+  client/src/pages/login-page.tsx
+  client/src/components/shell/authenticated-shell.tsx
+  client/src/pages/orders-page.tsx
+  client/src/pages/invoices-page.tsx
+  client/src/pages/payments-page.tsx
+  client/src/pages/production-page.tsx
+  client/src/pages/dispatch-page.tsx
+  client/src/pages/purchases-page.tsx
+  audit/tests/f-019-regression.spec.ts
+  audit/tests/f-019-regression.test.ts
+
+Node.js: v22.22.1
+pnpm: 12.18.0 / 10.30.1
+PostgreSQL: 16 (Local)
+Prisma: 7.10.1
