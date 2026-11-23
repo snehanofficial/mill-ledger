@@ -290,7 +290,7 @@ server/src/app.ts:22:    cors({
 | **F-040** | P1 | `VERIFIED` | Dead Links and Placeholder Pages in Primary Navigation (`/orders/new`, `/exports`, `/settings`) |
 | **F-041** | P2 | `VERIFIED` | Unrestricted Report Tabs Cause 403 Console Errors for Scoped Roles (Salesman & Production) |
 | **F-042** | P1 | `VERIFIED` | Ordering Interface Missing Required Product Tiles, Visual Images, and Accessible Quantity Steppers |
-| **F-043** | P1 | `OPEN` | Pervasive Tamil Localization Failure Across Internal Business Routes Despite Language Selector |
+| **F-043** | P1 | `VERIFIED` | Pervasive Tamil Localization Failure Across Internal Business Routes Despite Language Selector |
 
 #### Sibling Sweep Record
 
