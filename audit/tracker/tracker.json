@@ -1217,7 +1217,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -1239,19 +1239,51 @@
         "commit": null,
         "evidenceLink": "audit/tracker/owner-decisions.md",
         "note": "Unblocked on 2026-11-20 per Owner Decision OD-03 (Scoped Dispatches by salesOrder.createdById === user.id)."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-018.md",
+        "note": "Implementing ABAC salesman scoping on dispatch list and detail endpoints per Owner Decision OD-03."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "f091a87",
+        "evidenceLink": "audit/evidence/verify/F-018/08-concurrency-safety.txt",
+        "note": "Scoped dispatchService.getDispatches and getDispatchById by salesOrder.salesmanId when user.role is SALESMAN."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "f091a87",
+        "evidenceLink": "audit/evidence/verify/F-018/10-expected-vs-actual.txt",
+        "note": "Verified salesman cannot see or query other salesmen's dispatches, while admin retains full visibility; regression test passed in server/src/invoice-dispatch.test.ts."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-018-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "server/src/invoice-dispatch.test.ts",
+    "fixCommit": "f091a87",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-018/01-fresh-environment.txt",
+      "audit/evidence/verify/F-018/02-test-execution.txt",
+      "audit/evidence/verify/F-018/03-regression-reproduction.txt",
+      "audit/evidence/verify/F-018/04-full-suite-pass.txt",
+      "audit/evidence/verify/F-018/05-typecheck-lint.txt",
+      "audit/evidence/verify/F-018/06-benchmark-invariants.txt",
+      "audit/evidence/verify/F-018/07-authorization-checks.txt",
+      "audit/evidence/verify/F-018/08-concurrency-safety.txt",
+      "audit/evidence/verify/F-018/09-backward-compat.txt",
+      "audit/evidence/verify/F-018/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'router\\.' server/src/modules/ | grep -v 'requirePermission' | head -n 25",
       "hits": []
     },
-    "needsApproval": "permission",
-    "notes": "Unblocked on 2026-11-20 per Owner Decision OD-03 (Scoped Dispatches by salesOrder.createdById === user.id)."
+    "needsApproval": "none",
+    "notes": "Remediated per Owner Decision OD-03 (Option B) by enforcing salesOrder.salesmanId === user.id for SALESMAN on getDispatches and getDispatchById, while preserving full access for ADMIN, DISPATCHER, and OWNER."
   },
   {
     "id": "F-019",
