@@ -3356,7 +3356,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -3378,12 +3378,30 @@
         "commit": null,
         "evidenceLink": "audit/tracker/owner-decisions.md",
         "note": "Unblocked on 2026-11-20 per Owner Decision OD-08 (PII Anonymization with CGST Section 36 72-month statutory retention safeguards)."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "0d032d8",
+        "evidenceLink": "audit/evidence/verify/F-106/",
+        "note": "Verified customer DPDP Section 11 data export, Section 12 PII anonymization preserving CGST s36 72-month records, session pruning, and formal retention schedule."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-106-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-106-regression.test.ts",
+    "fixCommit": "0d032d8",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-106/01-test-suite.txt",
+      "audit/evidence/verify/F-106/02-typecheck.txt",
+      "audit/evidence/verify/F-106/03-lint.txt",
+      "audit/evidence/verify/F-106/04-build.txt",
+      "audit/evidence/verify/F-106/05-benchmark.txt",
+      "audit/evidence/verify/F-106/06-invariants.txt",
+      "audit/evidence/verify/F-106/07-regression-test.txt",
+      "audit/evidence/verify/F-106/08-dpdp-export-test.txt",
+      "audit/evidence/verify/F-106/09-retention-policy.txt",
+      "audit/evidence/verify/F-106/10-git-diff.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'helmet\\|cors\\|trust proxy' server/src/ | head -n 20",

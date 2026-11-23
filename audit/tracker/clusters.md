@@ -257,7 +257,7 @@ server/src/modules/production/production.routes.ts:200:        ? req.params.id[0
 | **F-035** | P1 | `VERIFIED` | Zero HTTP request logging middleware exists; no correlation IDs are generated; operational mutations bypass audit logs; and `audit_log` records are mutable and lack search/export UI |
 | **F-100** | P1 | `VERIFIED` | Missing Fail-Fast Environment Validation on `DATABASE_URL` and Absence of Staging / Production Env Configs |
 | **F-101** | P0 | `WONT-FIX` | Benchmark Seed Script Executes Unchecked in Production Without Environment Guard |
-| **F-106** | P2 | `OPEN` | Lack of Data Protection Policies, Retention Schedules, Erasure/Anonymization Routines, and Subject Access Export Under DPDP Act 2023 |
+| **F-106** | P2 | `VERIFIED` | Lack of Data Protection Policies, Retention Schedules, Erasure/Anonymization Routines, and Subject Access Export Under DPDP Act 2023 |
 
 #### Sibling Sweep Record
 
