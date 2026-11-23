@@ -10,50 +10,8 @@
     "schemaName": "createOrderSchema",
     "isSharedWithClient": false,
     "rejectsUnknownFields": false,
-    "unknownFieldsStatus": 201,
+    "unknownFieldsStatus": 500,
     "notes": "Body schema strips unknown fields by default; .strict() not enabled"
-  },
-  {
-    "method": "PUT",
-    "path": "/api/v1/sales/orders/:id",
-    "router": "salesRouter",
-    "hasBodySchema": false,
-    "hasQuerySchema": false,
-    "hasParamSchema": false,
-    "hasHeaderSchema": false,
-    "schemaName": "NONE",
-    "isSharedWithClient": false,
-    "rejectsUnknownFields": false,
-    "unknownFieldsStatus": 200,
-    "notes": "ZERO validation schema on req.body; unvalidated input passed directly to service"
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/sales/orders/:id/approve",
-    "router": "salesRouter",
-    "hasBodySchema": true,
-    "hasQuerySchema": false,
-    "hasParamSchema": false,
-    "hasHeaderSchema": false,
-    "schemaName": "approveOrderSchema",
-    "isSharedWithClient": false,
-    "rejectsUnknownFields": true,
-    "unknownFieldsStatus": 400,
-    "notes": "Param :id not validated via Zod; unknown fields stripped"
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/sales/orders/:id/reject",
-    "router": "salesRouter",
-    "hasBodySchema": true,
-    "hasQuerySchema": false,
-    "hasParamSchema": false,
-    "hasHeaderSchema": false,
-    "schemaName": "rejectOrderSchema",
-    "isSharedWithClient": false,
-    "rejectsUnknownFields": false,
-    "unknownFieldsStatus": 200,
-    "notes": "Param :id not validated via Zod; unknown fields stripped"
   },
   {
     "method": "POST",
@@ -66,7 +24,7 @@
     "schemaName": "createDispatchSchema",
     "isSharedWithClient": false,
     "rejectsUnknownFields": false,
-    "unknownFieldsStatus": 201,
+    "unknownFieldsStatus": 500,
     "notes": "Unknown fields stripped"
   },
   {
@@ -136,7 +94,7 @@
     "schemaName": "recordPaymentSchema",
     "isSharedWithClient": false,
     "rejectsUnknownFields": false,
-    "unknownFieldsStatus": 201,
+    "unknownFieldsStatus": 500,
     "notes": "Unknown fields stripped"
   }
 ]

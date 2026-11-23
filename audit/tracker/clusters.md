@@ -217,7 +217,7 @@ client/src/layouts/authenticated-layout.tsx:71:    <AuthenticatedShell user={use
 | **F-025** | P2 | `OPEN` | Application middleware pipeline deviates from security baseline: lacks request correlation IDs, app-wide rate limits, JSON 404 envelope, and translates 413 payload limits into 500 server crashes |
 | **F-026** | P1 | `VERIFIED` | Unsanitized user inputs exported to CSV files allow formula injection in spreadsheet viewers |
 | **F-030** | P0 | `VERIFIED` | Order modification endpoint lacks request body schema validation, accepting unvalidated mutations and crashing with HTTP 500 on malformed status values |
-| **F-031** | P1 | `OPEN` | Shared contracts workspace contains zero domain schemas; client executes with no Zod validation while server routes define isolated, unexported schemas |
+| **F-031** | P1 | `VERIFIED` | Shared contracts workspace contains zero domain schemas; client executes with no Zod validation while server routes define isolated, unexported schemas |
 
 #### Sibling Sweep Record
 

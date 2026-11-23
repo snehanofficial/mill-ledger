@@ -2605,7 +2605,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -2613,12 +2613,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-031.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": null,
+        "note": "Started extraction of domain validation schemas to @mill-ledger/shared."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "85b0a599e5dc68a7d657dc0ad41a5ee6ed7a22ac",
+        "evidenceLink": null,
+        "note": "Extracted domain schemas to shared/src/schemas and updated server route modules."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "85b0a599e5dc68a7d657dc0ad41a5ee6ed7a22ac",
+        "evidenceLink": "audit/evidence/verify/F-031/",
+        "note": "Verified with 7 shared schema unit tests, 17 regression tests, 37 Vitest suites (212 tests pass), 18 benchmark assertions, and 10 SQL invariants."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-031-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm vitest run shared/src/schemas.test.ts",
+    "regressionTest": "shared/src/schemas.test.ts",
+    "fixCommit": "85b0a599e5dc68a7d657dc0ad41a5ee6ed7a22ac",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-031/01-fresh-environment.txt",
+      "audit/evidence/verify/F-031/02-test-execution.txt",
+      "audit/evidence/verify/F-031/03-regression-reproduction.txt",
+      "audit/evidence/verify/F-031/04-full-suite-pass.txt",
+      "audit/evidence/verify/F-031/05-typecheck-lint.txt",
+      "audit/evidence/verify/F-031/06-benchmark-invariants.txt",
+      "audit/evidence/verify/F-031/07-authorization-checks.txt",
+      "audit/evidence/verify/F-031/08-concurrency-safety.txt",
+      "audit/evidence/verify/F-031/09-backward-compat.txt",
+      "audit/evidence/verify/F-031/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'req\\.query\\|req\\.params' server/src/modules/ | grep -v 'parse' | head -n 25",
