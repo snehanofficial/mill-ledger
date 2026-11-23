@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Alert } from "@/components/ui/alert";
 import { useLanguage } from "@/lib/i18n";
+import { getDefaultRouteForRole } from "@/lib/role-routing";
 import {
   LockIcon,
   MailIcon,
@@ -98,8 +99,9 @@ export function LoginPage() {
   )?.from;
   const fromPath = rawFrom
     ? `${rawFrom.pathname}${rawFrom.search || ""}`
-    : "/dashboard";
-  const safeFrom = getSafeRedirectUrl(fromPath, "/dashboard");
+    : null;
+  const userDefaultRoute = user ? getDefaultRouteForRole(user.role) : "/dashboard";
+  const safeFrom = fromPath ? getSafeRedirectUrl(fromPath, userDefaultRoute) : userDefaultRoute;
 
   // If user is already authenticated, redirect to destination immediately ("vice versa if authenticated")
   if (user) {
@@ -138,14 +140,17 @@ export function LoginPage() {
         password,
       });
 
+      const shellUser = mapAuthUserToShellUser(authUser);
       // Update TanStack query cache with authenticated user
       queryClient.setQueryData(
         AUTH_SESSION_QUERY_KEY,
-        mapAuthUserToShellUser(authUser),
+        shellUser,
       );
 
-      // Navigate to safe destination
-      navigate(safeFrom, { replace: true });
+      // Navigate to safe destination (respecting user role workspace if no explicit from route)
+      const targetDefault = getDefaultRouteForRole(shellUser.role);
+      const destination = fromPath ? getSafeRedirectUrl(fromPath, targetDefault) : targetDefault;
+      navigate(destination, { replace: true });
     } catch (err: unknown) {
       setIsSubmitting(false);
       if (err instanceof Error) {

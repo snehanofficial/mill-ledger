@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
 import { formatDate, formatINR } from "@/lib/formatters";
 import {
@@ -110,6 +111,8 @@ interface OpenInvoice {
 
 export function PaymentsPage() {
   const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+  const canRecordPayment = user?.role === "ADMIN";
   const [activeTab, setActiveTab] = useState<"ledger" | "receivables">(
     "ledger",
   );
@@ -321,17 +324,19 @@ export function PaymentsPage() {
             />
             Refresh
           </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              setPaymentError(null);
-              setShowPaymentModal(true);
-            }}
-            className="gap-2"
-          >
-            <PlusCircleIcon className="h-4 w-4" />
-            Record payment
-          </Button>
+          {canRecordPayment && (
+            <Button
+              size="sm"
+              onClick={() => {
+                setPaymentError(null);
+                setShowPaymentModal(true);
+              }}
+              className="gap-2"
+            >
+              <PlusCircleIcon className="h-4 w-4" />
+              Record payment
+            </Button>
+          )}
         </div>
       </div>
 

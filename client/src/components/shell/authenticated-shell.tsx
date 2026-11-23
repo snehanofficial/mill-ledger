@@ -45,6 +45,7 @@ import {
   HomeIcon,
   PackageIcon,
   ShoppingCartIcon,
+  UsersIcon,
 } from "lucide-react";
 
 import { useLanguage } from "@/lib/i18n";
@@ -114,6 +115,7 @@ import {
   getNavSections,
   getAllLinks,
 } from "./nav-config";
+import { getDefaultRouteForRole } from "@/lib/role-routing";
 import { useBreadcrumbs } from "./use-breadcrumbs";
 import { type SyncState } from "./use-connection-status";
 import { useSyncManager } from "@/offline/use-offline";
@@ -971,33 +973,50 @@ function StickyHeader({
 // ─── MobileBottomNav ─────────────────────────────────────────────────────────
 // Accessible touch-first navigation bar on mobile viewports (<768px)
 
-function MobileBottomNav() {
+function MobileBottomNav({ role }: { role: UserRole }) {
   const location = useLocation();
   const { t } = useLanguage();
   const { setOpenMobile } = useSidebar();
 
-  const navItems = [
-    {
-      label: t("nav.home", "Home"),
-      href: "/dashboard",
-      icon: HomeIcon,
-    },
-    {
-      label: t("nav.orders", "Orders"),
-      href: "/orders",
-      icon: ShoppingCartIcon,
-    },
-    {
-      label: t("nav.stock", "Stock"),
-      href: "/stock",
-      icon: PackageIcon,
-    },
-    {
-      label: t("nav.more", "More"),
-      action: () => setOpenMobile(true),
-      icon: MenuIcon,
-    },
-  ];
+  const homeHref = getDefaultRouteForRole(role);
+
+  let navItems: Array<{
+    label: string;
+    href?: string;
+    icon: typeof HomeIcon;
+    action?: () => void;
+  }> = [];
+
+  if (role === "SALESMAN") {
+    navItems = [
+      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      { label: t("nav.orders", "Orders"), href: "/orders", icon: ShoppingCartIcon },
+      { label: t("nav.customers", "Customers"), href: "/customers", icon: UsersIcon },
+      { label: t("nav.more", "More"), action: () => setOpenMobile(true), icon: MenuIcon },
+    ];
+  } else if (role === "PRODUCTION") {
+    navItems = [
+      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      { label: t("nav.stock", "Stock"), href: "/stock", icon: PackageIcon },
+      { label: t("nav.production", "Production"), href: "/production/today", icon: PackageIcon },
+      { label: t("nav.more", "More"), action: () => setOpenMobile(true), icon: MenuIcon },
+    ];
+  } else if (role === "ACCOUNTANT") {
+    navItems = [
+      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      { label: t("nav.orders", "Orders"), href: "/orders", icon: ShoppingCartIcon },
+      { label: t("nav.payments", "Payments"), href: "/payments", icon: PackageIcon },
+      { label: t("nav.more", "More"), action: () => setOpenMobile(true), icon: MenuIcon },
+    ];
+  } else {
+    // ADMIN / OWNER
+    navItems = [
+      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      { label: t("nav.orders", "Orders"), href: "/orders", icon: ShoppingCartIcon },
+      { label: t("nav.stock", "Stock"), href: "/stock", icon: PackageIcon },
+      { label: t("nav.more", "More"), action: () => setOpenMobile(true), icon: MenuIcon },
+    ];
+  }
 
   return (
     <nav
@@ -1092,7 +1111,7 @@ export function AuthenticatedShell({
         <Sidebar collapsible="icon">
           <SidebarHeader>
             <AppBrand
-              href="/dashboard"
+              href={getDefaultRouteForRole(user.role)}
               name="MillLedger"
               description="Production unit"
             />
@@ -1186,7 +1205,7 @@ export function AuthenticatedShell({
         </SidebarInset>
 
         {/* Mobile bottom navigation bar for small touch viewports */}
-        <MobileBottomNav />
+        <MobileBottomNav role={user.role} />
 
         {/* Global Toast Notifications */}
         <Toaster />

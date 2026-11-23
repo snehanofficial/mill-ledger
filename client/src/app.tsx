@@ -1,11 +1,12 @@
 import { lazy, Suspense } from "react";
 import {
   createBrowserRouter,
-  Navigate,
   RouterProvider,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthenticatedLayout } from "@/layouts/authenticated-layout";
+import { RoleGuard, RoleDefaultRedirect } from "@/components/auth/role-guard";
+import { ROUTE_PERMISSIONS } from "@/lib/role-routing";
 
 // Lazy-loaded routes for code splitting (MLD-014)
 const LoginPage = lazy(() =>
@@ -116,11 +117,15 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/dashboard" replace />,
+        element: <RoleDefaultRedirect />,
       },
       {
         path: "dashboard",
-        element: <DashboardPage />,
+        element: (
+          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/dashboard"]}>
+            <DashboardPage />
+          </RoleGuard>
+        ),
         handle: dashboardHandle,
       },
 
@@ -129,27 +134,79 @@ const router = createBrowserRouter([
         path: "orders",
         handle: ordersHandle,
         children: [
-          { index: true, element: <OrdersPage />, handle: ordersHandle },
-          { path: "new", element: <NewOrderPage />, handle: newOrderHandle },
+          {
+            index: true,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/orders"]}>
+                <OrdersPage />
+              </RoleGuard>
+            ),
+            handle: ordersHandle,
+          },
+          {
+            path: "new",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/orders/new"]}>
+                <NewOrderPage />
+              </RoleGuard>
+            ),
+            handle: newOrderHandle,
+          },
         ],
       },
 
       // Invoices
-      { path: "invoices", element: <InvoicesPage />, handle: invoicesHandle },
+      {
+        path: "invoices",
+        element: (
+          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/invoices"]}>
+            <InvoicesPage />
+          </RoleGuard>
+        ),
+        handle: invoicesHandle,
+      },
 
       // Dispatch
-      { path: "dispatch", element: <DispatchPage />, handle: dispatchHandle },
+      {
+        path: "dispatch",
+        element: (
+          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/dispatch"]}>
+            <DispatchPage />
+          </RoleGuard>
+        ),
+        handle: dispatchHandle,
+      },
 
       // Payments
-      { path: "payments", element: <PaymentsPage />, handle: paymentsHandle },
+      {
+        path: "payments",
+        element: (
+          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/payments"]}>
+            <PaymentsPage />
+          </RoleGuard>
+        ),
+        handle: paymentsHandle,
+      },
 
       // Stock
-      { path: "stock", element: <StockPage />, handle: stockHandle },
+      {
+        path: "stock",
+        element: (
+          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/stock"]}>
+            <StockPage />
+          </RoleGuard>
+        ),
+        handle: stockHandle,
+      },
 
       // Purchases
       {
         path: "purchases",
-        element: <PurchasesPage />,
+        element: (
+          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/purchases"]}>
+            <PurchasesPage />
+          </RoleGuard>
+        ),
         handle: purchasesHandle,
       },
 
@@ -159,17 +216,29 @@ const router = createBrowserRouter([
         children: [
           {
             path: "today",
-            element: <ProductionPage />,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/production/today"]}>
+                <ProductionPage />
+              </RoleGuard>
+            ),
             handle: productionTodayHandle,
           },
           {
             path: "new",
-            element: <ProductionPage />,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/production/new"]}>
+                <ProductionPage />
+              </RoleGuard>
+            ),
             handle: productionNewHandle,
           },
           {
             path: "history",
-            element: <ProductionPage />,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/production/history"]}>
+                <ProductionPage />
+              </RoleGuard>
+            ),
             handle: productionHistoryHandle,
           },
         ],
@@ -178,7 +247,11 @@ const router = createBrowserRouter([
       // Customers
       {
         path: "customers",
-        element: <CustomersPage />,
+        element: (
+          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/customers"]}>
+            <CustomersPage />
+          </RoleGuard>
+        ),
         handle: customersHandle,
       },
 
@@ -188,45 +261,92 @@ const router = createBrowserRouter([
         children: [
           {
             path: "sales",
-            element: <ReportsSalesPage />,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/reports/sales"]}>
+                <ReportsSalesPage />
+              </RoleGuard>
+            ),
             handle: reportsSalesHandle,
           },
           {
             path: "stock",
-            element: <ReportsStockPage />,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/reports/stock"]}>
+                <ReportsStockPage />
+              </RoleGuard>
+            ),
             handle: reportsStockHandle,
           },
           {
             path: "production",
-            element: <ReportsProductionPage />,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/reports/production"]}>
+                <ReportsProductionPage />
+              </RoleGuard>
+            ),
             handle: reportsProductionHandle,
           },
           {
             path: "receivables",
-            element: <ReportsReceivablesPage />,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/reports/receivables"]}>
+                <ReportsReceivablesPage />
+              </RoleGuard>
+            ),
             handle: reportsReceivablesHandle,
           },
           {
             path: "gst",
-            element: <ReportsGSTPage />,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/reports/gst"]}>
+                <ReportsGSTPage />
+              </RoleGuard>
+            ),
             handle: reportsGSTHandle,
           },
           {
             path: "audit",
-            element: <ReportsAuditPage />,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/reports/audit"]}>
+                <ReportsAuditPage />
+              </RoleGuard>
+            ),
             handle: reportsAuditHandle,
           },
         ],
       },
 
       // Exports
-      { path: "exports", element: <ExportsPage />, handle: exportsHandle },
+      {
+        path: "exports",
+        element: (
+          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/exports"]}>
+            <ExportsPage />
+          </RoleGuard>
+        ),
+        handle: exportsHandle,
+      },
 
       // Settings
-      { path: "settings", element: <SettingsPage />, handle: settingsHandle },
+      {
+        path: "settings",
+        element: (
+          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/settings"]}>
+            <SettingsPage />
+          </RoleGuard>
+        ),
+        handle: settingsHandle,
+      },
 
       // Component showcase
-      { path: "showcase", element: <ShowcasePage /> },
+      {
+        path: "showcase",
+        element: (
+          <RoleGuard allowedRoles={["ADMIN", "OWNER"]}>
+            <ShowcasePage />
+          </RoleGuard>
+        ),
+      },
 
       // Catch-all within authenticated area
       { path: "*", element: <NotFoundPage /> },

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
 import { formatINR } from "@/lib/formatters";
 import {
@@ -66,6 +67,8 @@ interface SalesInvoice {
 
 export function InvoicesPage() {
   const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+  const canIssueCreditNote = user?.role === "ADMIN";
   const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(
     null,
   );
@@ -310,7 +313,7 @@ export function InvoicesPage() {
                           <PrinterIcon className="h-3.5 w-3.5 mr-1" />
                           View
                         </Button>
-                        {Number(inv.outstandingAmount) > 0 && (
+                        {canIssueCreditNote && Number(inv.outstandingAmount) > 0 && (
                           <Button
                             variant="ghost"
                             size="sm"

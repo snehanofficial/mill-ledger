@@ -95,6 +95,8 @@ export function OrdersPage() {
   } = syncManager;
 
   const [activeTab, setActiveTab] = useState<"stream" | "outbox">("stream");
+  const canCreateOrder = user?.role === "ADMIN" || user?.role === "SALESMAN";
+  const canApproveOrder = user?.role === "ADMIN";
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [showNewOrderModal, setShowNewOrderModal] = useState(false);
   const [selectedOrderForAction, setSelectedOrderForAction] =
@@ -388,14 +390,16 @@ export function OrdersPage() {
             Refresh
           </Button>
 
-          <Button
-            size="sm"
-            onClick={() => setShowNewOrderModal(true)}
-            className="gap-2"
-          >
-            <PlusCircleIcon className="h-4 w-4" />
-            New sales order
-          </Button>
+          {canCreateOrder && (
+            <Button
+              size="sm"
+              onClick={() => setShowNewOrderModal(true)}
+              className="gap-2"
+            >
+              <PlusCircleIcon className="h-4 w-4" />
+              New sales order
+            </Button>
+          )}
         </div>
       </div>
 
@@ -513,14 +517,16 @@ export function OrdersPage() {
           <div className="flex flex-col items-center justify-center gap-3 p-12 text-center text-sm text-muted-foreground">
             <ShoppingCartIcon className="h-8 w-8 stroke-1 text-muted-foreground/60" />
             <p>No sales orders created yet.</p>
-            <Button
-              size="sm"
-              onClick={() => setShowNewOrderModal(true)}
-              className="gap-2"
-            >
-              <PlusCircleIcon className="h-4 w-4" />
-              Create first order
-            </Button>
+            {canCreateOrder && (
+              <Button
+                size="sm"
+                onClick={() => setShowNewOrderModal(true)}
+                className="gap-2"
+              >
+                <PlusCircleIcon className="h-4 w-4" />
+                Create first order
+              </Button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -740,7 +746,7 @@ export function OrdersPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          {o.status === "SUBMITTED" ? (
+                          {o.status === "SUBMITTED" && canApproveOrder ? (
                             <div className="flex items-center justify-end gap-1.5">
                               <Button
                                 variant="outline"
@@ -767,7 +773,7 @@ export function OrdersPage() {
                             </div>
                           ) : (
                             <span className="text-xs text-muted-foreground italic">
-                              Completed
+                              {o.status === "SUBMITTED" ? "Pending approval" : "Completed"}
                             </span>
                           )}
                         </TableCell>

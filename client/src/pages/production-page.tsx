@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import {
@@ -77,6 +78,9 @@ interface ProductionRun {
 
 export function ProductionPage() {
   const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+  const canRecordProduction =
+    user?.role === "ADMIN" || user?.role === "PRODUCTION";
   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
   const [selectedRun, setSelectedRun] = useState<ProductionRun | null>(null);
 
@@ -271,14 +275,16 @@ export function ProductionPage() {
             Refresh
           </Button>
 
-          <Button
-            size="sm"
-            onClick={() => setShowNewBatchModal(true)}
-            className="gap-2"
-          >
-            <PlusCircleIcon className="h-4 w-4" />
-            Record production batch
-          </Button>
+          {canRecordProduction && (
+            <Button
+              size="sm"
+              onClick={() => setShowNewBatchModal(true)}
+              className="gap-2"
+            >
+              <PlusCircleIcon className="h-4 w-4" />
+              Record production batch
+            </Button>
+          )}
         </div>
       </div>
 
@@ -371,14 +377,16 @@ export function ProductionPage() {
           <div className="flex flex-col items-center justify-center gap-3 p-12 text-center text-sm text-muted-foreground">
             <FactoryIcon className="h-8 w-8 stroke-1 text-muted-foreground/60" />
             <p>No production batches recorded yet.</p>
-            <Button
-              size="sm"
-              onClick={() => setShowNewBatchModal(true)}
-              className="gap-2"
-            >
-              <PlusCircleIcon className="h-4 w-4" />
-              Record first batch
-            </Button>
+            {canRecordProduction && (
+              <Button
+                size="sm"
+                onClick={() => setShowNewBatchModal(true)}
+                className="gap-2"
+              >
+                <PlusCircleIcon className="h-4 w-4" />
+                Record first batch
+              </Button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
 import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
 import {
@@ -60,6 +61,9 @@ interface Supplier {
 
 export function PurchasesPage() {
   const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+  const canRecordPurchase =
+    user?.role === "ADMIN" || user?.role === "PRODUCTION";
   const [showModal, setShowModal] = useState(false);
 
   // Form states
@@ -198,14 +202,16 @@ export function PurchasesPage() {
             Refresh
           </Button>
 
-          <Button
-            size="sm"
-            onClick={() => setShowModal(true)}
-            className="gap-1.5"
-          >
-            <PlusIcon className="size-4" />
-            Record Purchase Receipt
-          </Button>
+          {canRecordPurchase && (
+            <Button
+              size="sm"
+              onClick={() => setShowModal(true)}
+              className="gap-1.5"
+            >
+              <PlusIcon className="size-4" />
+              Record Purchase Receipt
+            </Button>
+          )}
         </div>
       </div>
 

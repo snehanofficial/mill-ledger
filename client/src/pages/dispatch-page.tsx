@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
 import { formatDateTime, formatQuantity } from "@/lib/formatters";
 import {
@@ -85,6 +86,8 @@ interface EligibleOrder {
 
 export function DispatchPage() {
   const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+  const canRecordDispatch = user?.role === "ADMIN";
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [vehicleNumber, setVehicleNumber] = useState("");
@@ -211,17 +214,19 @@ export function DispatchPage() {
             />
             Refresh
           </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              setDispatchError(null);
-              setShowCreateModal(true);
-            }}
-            className="gap-2"
-          >
-            <PlusCircleIcon className="h-4 w-4" />
-            Record dispatch
-          </Button>
+          {canRecordDispatch && (
+            <Button
+              size="sm"
+              onClick={() => {
+                setDispatchError(null);
+                setShowCreateModal(true);
+              }}
+              className="gap-2"
+            >
+              <PlusCircleIcon className="h-4 w-4" />
+              Record dispatch
+            </Button>
+          )}
         </div>
       </div>
 
