@@ -2315,7 +2315,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -2323,12 +2323,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-025.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": null,
+        "note": "Started implementation of request ID, rate limiting, JSON 404, and 413 error handling."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "e111e9a3d76a7414bc9db79ae09a565615d5ec01",
+        "evidenceLink": null,
+        "note": "Added requestIdMiddleware, rateLimitMiddleware, 404 catch-all, and 413 handler."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "e111e9a3d76a7414bc9db79ae09a565615d5ec01",
+        "evidenceLink": "audit/evidence/verify/F-025/",
+        "note": "Verified with 5 app.test.ts integration tests, 5 regression tests, verify-middleware-chain.ts, 37 Vitest suites (217 tests pass), 18 benchmark assertions, and 10 SQL invariants."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-025-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm vitest run server/src/app.test.ts",
+    "regressionTest": "server/src/app.test.ts",
+    "fixCommit": "e111e9a3d76a7414bc9db79ae09a565615d5ec01",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-025/01-fresh-environment.txt",
+      "audit/evidence/verify/F-025/02-test-execution.txt",
+      "audit/evidence/verify/F-025/03-regression-reproduction.txt",
+      "audit/evidence/verify/F-025/04-full-suite-pass.txt",
+      "audit/evidence/verify/F-025/05-typecheck-lint.txt",
+      "audit/evidence/verify/F-025/06-benchmark-invariants.txt",
+      "audit/evidence/verify/F-025/07-authorization-checks.txt",
+      "audit/evidence/verify/F-025/08-concurrency-safety.txt",
+      "audit/evidence/verify/F-025/09-backward-compat.txt",
+      "audit/evidence/verify/F-025/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'req\\.query\\|req\\.params' server/src/modules/ | grep -v 'parse' | head -n 25",
