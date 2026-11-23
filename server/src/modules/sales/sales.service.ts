@@ -2,6 +2,7 @@ import { prisma } from "../../db/client.js";
 import { OrderStatus, ReservationStatus, type Prisma } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
 import type { UserContext } from "@mill-ledger/shared";
+import { calculateLineTax } from "../finance/tax.util.js";
 
 export interface CreateOrderLineInput {
   productVariantId: string;
@@ -228,18 +229,27 @@ export class SalesService {
         }
 
         const taxRate = Number(variant.product.taxRate); // e.g. 5.00%
-        const lineTaxable = line.quantity * unitPrice;
-        const lineTax = (lineTaxable * taxRate) / 100;
-        const lineTotal = lineTaxable + lineTax;
+        const taxRes = calculateLineTax(
+          {
+            quantity: line.quantity,
+            unitPrice,
+            taxRate,
+          },
+          isIntraState,
+        );
 
-        taxableAmount += lineTaxable;
-        totalTaxAmount += lineTax;
+        const lineTaxable = taxRes.taxableAmount.toNumber();
+        const lineTax = taxRes.taxAmount.toNumber();
+        const lineTotal = taxRes.lineTotal.toNumber();
+
+        taxableAmount = Number((taxableAmount + lineTaxable).toFixed(2));
+        totalTaxAmount = Number((totalTaxAmount + lineTax).toFixed(2));
 
         if (isIntraState) {
-          cgstAmount += lineTax / 2;
-          sgstAmount += lineTax / 2;
+          cgstAmount = Number((cgstAmount + taxRes.cgstAmount.toNumber()).toFixed(2));
+          sgstAmount = Number((sgstAmount + taxRes.sgstAmount.toNumber()).toFixed(2));
         } else {
-          igstAmount += lineTax;
+          igstAmount = Number((igstAmount + taxRes.igstAmount.toNumber()).toFixed(2));
         }
 
         // Real-time stock shortage check
@@ -285,7 +295,7 @@ export class SalesService {
         });
       }
 
-      const totalAmount = taxableAmount + totalTaxAmount;
+      const totalAmount = Number((taxableAmount + totalTaxAmount).toFixed(2));
       const initialStatus = input.status ?? OrderStatus.SUBMITTED;
 
       // Create Sales Order header
@@ -486,18 +496,27 @@ export class SalesService {
         }
 
         const taxRate = Number(line.taxRate);
-        const lineTaxable = approvedQty * approvedPrice;
-        const lineTax = (lineTaxable * taxRate) / 100;
-        const lineTotal = lineTaxable + lineTax;
+        const taxRes = calculateLineTax(
+          {
+            quantity: approvedQty,
+            unitPrice: approvedPrice,
+            taxRate,
+          },
+          isIntraState,
+        );
 
-        totalTaxable += lineTaxable;
-        totalTax += lineTax;
+        const lineTaxable = taxRes.taxableAmount.toNumber();
+        const lineTax = taxRes.taxAmount.toNumber();
+        const lineTotal = taxRes.lineTotal.toNumber();
+
+        totalTaxable = Number((totalTaxable + lineTaxable).toFixed(2));
+        totalTax = Number((totalTax + lineTax).toFixed(2));
 
         if (isIntraState) {
-          cgstAmount += lineTax / 2;
-          sgstAmount += lineTax / 2;
+          cgstAmount = Number((cgstAmount + taxRes.cgstAmount.toNumber()).toFixed(2));
+          sgstAmount = Number((sgstAmount + taxRes.sgstAmount.toNumber()).toFixed(2));
         } else {
-          igstAmount += lineTax;
+          igstAmount = Number((igstAmount + taxRes.igstAmount.toNumber()).toFixed(2));
         }
 
         // Update line with approved values
@@ -520,7 +539,7 @@ export class SalesService {
         );
       }
 
-      const totalAmount = totalTaxable + totalTax;
+      const totalAmount = Number((totalTaxable + totalTax).toFixed(2));
 
       const updatedOrder = await tx.salesOrder.update({
         where: { id: order.id },

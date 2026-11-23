@@ -2,6 +2,7 @@ import { prisma } from "../../db/client.js";
 import { InvoiceStatus, type Prisma } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
 import { sequenceService } from "./sequence.service.js";
+import { calculateLineTax } from "./tax.util.js";
 
 export interface CreateInvoiceInput {
   salesOrderId: string;
@@ -119,49 +120,49 @@ export class FinanceService {
       }> = [];
 
       for (const line of order.lines) {
-        const qty = Number(line.approvedQuantity);
-        const price = Number(line.approvedUnitPrice);
-        const taxRate = Number(line.taxRate);
+        const taxRes = calculateLineTax(
+          {
+            quantity: line.approvedQuantity.toString(),
+            unitPrice: line.approvedUnitPrice.toString(),
+            taxRate: line.taxRate.toString(),
+          },
+          isIntraState,
+        );
 
-        const lineTaxable = qty * price;
-        const lineTax = (lineTaxable * taxRate) / 100;
-        const lineTotal = lineTaxable + lineTax;
+        const lineQty = taxRes.quantity.toNumber();
+        const linePrice = taxRes.unitPrice.toNumber();
+        const lineTaxRate = taxRes.taxRate.toNumber();
+        const lineTaxable = taxRes.taxableAmount.toNumber();
+        const lineCgst = taxRes.cgstAmount.toNumber();
+        const lineSgst = taxRes.sgstAmount.toNumber();
+        const lineIgst = taxRes.igstAmount.toNumber();
+        const lineTax = taxRes.taxAmount.toNumber();
+        const lineTotal = taxRes.lineTotal.toNumber();
 
-        let lineCgst = 0;
-        let lineSgst = 0;
-        let lineIgst = 0;
-
-        if (isIntraState) {
-          lineCgst = lineTax / 2;
-          lineSgst = lineTax / 2;
-          cgstAmount += lineCgst;
-          sgstAmount += lineSgst;
-        } else {
-          lineIgst = lineTax;
-          igstAmount += lineIgst;
-        }
-
-        taxableAmount += lineTaxable;
-        totalTaxAmount += lineTax;
+        cgstAmount = Number((cgstAmount + lineCgst).toFixed(2));
+        sgstAmount = Number((sgstAmount + lineSgst).toFixed(2));
+        igstAmount = Number((igstAmount + lineIgst).toFixed(2));
+        taxableAmount = Number((taxableAmount + lineTaxable).toFixed(2));
+        totalTaxAmount = Number((totalTaxAmount + lineTax).toFixed(2));
 
         preparedLines.push({
           salesOrderLineId: line.id,
           productVariantId: line.productVariantId,
           productNameSnapshot: line.productVariant.name,
           hsnCodeSnapshot: line.productVariant.product.hsnCode || "21069099",
-          quantity: qty,
-          unitPrice: price,
-          taxRate,
+          quantity: lineQty,
+          unitPrice: linePrice,
+          taxRate: lineTaxRate,
           taxableAmount: lineTaxable,
           cgstAmount: lineCgst,
           sgstAmount: lineSgst,
           igstAmount: lineIgst,
           taxAmount: lineTax,
-          lineTotal,
+          lineTotal: lineTotal,
         });
       }
 
-      const totalAmount = taxableAmount + totalTaxAmount;
+      const totalAmount = Number((taxableAmount + totalTaxAmount).toFixed(2));
 
       // Create immutable posted invoice
       const invoice = await tx.salesInvoice.create({
@@ -241,10 +242,15 @@ export class FinanceService {
         throw new AppError(`Invoice ${invoiceId} not found`, 404);
       }
 
-      const totalAmount =
-        input.totalAmount ?? Number(invoice.outstandingAmount);
-      const taxableAmount = input.taxableAmount ?? totalAmount / 1.05;
-      const taxAmount = input.taxAmount ?? totalAmount - taxableAmount;
+      const totalAmount = Number(
+        (input.totalAmount ?? Number(invoice.outstandingAmount)).toFixed(2),
+      );
+      const taxableAmount = Number(
+        (input.taxableAmount ?? totalAmount / 1.05).toFixed(2),
+      );
+      const taxAmount = Number(
+        (input.taxAmount ?? totalAmount - taxableAmount).toFixed(2),
+      );
 
       const count = await tx.creditNote.count({
         where: { organizationId: invoice.organizationId },
@@ -267,7 +273,7 @@ export class FinanceService {
       // Update invoice outstanding amount
       const newOutstanding = Math.max(
         0,
-        Number(invoice.outstandingAmount) - totalAmount,
+        Number((Number(invoice.outstandingAmount) - totalAmount).toFixed(2)),
       );
       const newStatus =
         newOutstanding === 0
