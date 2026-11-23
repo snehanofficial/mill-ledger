@@ -3911,14 +3911,14 @@
       "Phase 7 Specification Check 6"
     ],
     "files": [
-      "client/src/pages/orders-page.ts",
-      "client/src/pages/placeholder-pages.ts",
-      "orders-page.ts",
-      "tests/ordering-tiles.spec.ts"
+      "client/src/pages/new-order-page.tsx",
+      "client/src/app.tsx",
+      "client/public/products/murukku.svg",
+      "client/public/products/default.svg"
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -3926,12 +3926,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-042.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "ee8ff85",
+        "evidenceLink": "audit/evidence/verify/F-042/10-summary.txt",
+        "note": "Implemented dedicated /orders/new catalog ordering page with product tiles, images, 44x44px accessible steppers, live stock ATP badges, and sticky bottom summary bar."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-042-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "npx vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-042-regression.test.ts",
+    "regressionTest": "audit/tests/f-042-regression.test.ts",
+    "fixCommit": "ee8ff85",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-042/01-pre-fix-repro.txt",
+      "audit/evidence/verify/F-042/02-regression-test.txt",
+      "audit/evidence/verify/F-042/03-typecheck.txt",
+      "audit/evidence/verify/F-042/04-lint.txt",
+      "audit/evidence/verify/F-042/05-build.txt",
+      "audit/evidence/verify/F-042/06-unit-tests.txt",
+      "audit/evidence/verify/F-042/07-benchmark.txt",
+      "audit/evidence/verify/F-042/08-invariants.txt",
+      "audit/evidence/verify/F-042/09-git-diff.txt",
+      "audit/evidence/verify/F-042/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'placeholder\\|TODO' client/src/ server/src/ | head -n 25",
