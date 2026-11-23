@@ -2191,7 +2191,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -2199,12 +2199,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-022.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": null,
+        "note": "Started remediation: instrumenting operational mutations across sales, dispatch, production, finance, and payments."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "1316473b42c1a7da64548aa4304ea6db8558d3ea",
+        "evidenceLink": null,
+        "note": "Integrated auditService.log across all domain services and forwarded authenticated req.user from routes."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "1316473b42c1a7da64548aa4304ea6db8558d3ea",
+        "evidenceLink": "audit/evidence/verify/F-022/",
+        "note": "Verified with 6 regression tests, 36 Vitest suites, 18 benchmark assertions, and 10 SQL invariants."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
+    "reproCommand": "npx vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-022-regression.test.ts",
     "regressionTest": "audit/tests/f-022-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "fixCommit": "1316473b42c1a7da64548aa4304ea6db8558d3ea",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-022/01-fresh-environment.txt",
+      "audit/evidence/verify/F-022/02-test-execution.txt",
+      "audit/evidence/verify/F-022/03-regression-reproduction.txt",
+      "audit/evidence/verify/F-022/04-full-suite-pass.txt",
+      "audit/evidence/verify/F-022/05-typecheck-lint.txt",
+      "audit/evidence/verify/F-022/06-benchmark-invariants.txt",
+      "audit/evidence/verify/F-022/07-authorization-checks.txt",
+      "audit/evidence/verify/F-022/08-concurrency-safety.txt",
+      "audit/evidence/verify/F-022/09-backward-compat.txt",
+      "audit/evidence/verify/F-022/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'req\\.query\\|req\\.params' server/src/modules/ | grep -v 'parse' | head -n 25",

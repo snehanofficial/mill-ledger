@@ -1,0 +1,5 @@
+=== F-022 Verification: 08 Concurrency & Transaction Safety ===
+1. Non-Blocking Non-Failing Logging:
+   - `auditService.log` includes built-in error handling (`try / catch`) ensuring that logging failures do not abort completed business transactions.
+2. Concurrent Event Ordering:
+   - Database model `AuditLog` leverages PostgreSQL `timestamp DateTime @default(now())` with composite indices `@@index([organizationId, entity])` and `@@index([organizationId, timestamp])` ensuring performant sorting under high write concurrency.
