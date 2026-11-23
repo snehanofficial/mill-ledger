@@ -38,7 +38,8 @@ export class PaymentService {
       throw new AppError("Payment amount must be greater than zero", 400);
     }
 
-    return await prisma.$transaction(async (tx) => {
+    try {
+      return await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existing = await tx.payment.findUnique({
@@ -235,6 +236,28 @@ export class PaymentService {
 
       return payment;
     });
+    } catch (err: unknown) {
+      if (
+        input.idempotencyKey &&
+        typeof err === "object" &&
+        err !== null &&
+        (err as { code?: string }).code === "P2002"
+      ) {
+        const existing = await prisma.payment.findUnique({
+          where: { idempotencyKey: input.idempotencyKey },
+          include: {
+            customer: true,
+            allocations: {
+              include: { salesInvoice: true },
+            },
+          },
+        });
+        if (existing) {
+          return existing;
+        }
+      }
+      throw err;
+    }
   }
 
   /**

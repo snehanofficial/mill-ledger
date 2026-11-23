@@ -94,7 +94,8 @@ export class SalesService {
       throw new AppError("Order must contain at least one line", 400);
     }
 
-    return await prisma.$transaction(async (tx) => {
+    try {
+      return await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existing = await tx.salesOrder.findUnique({
@@ -361,6 +362,32 @@ export class SalesService {
         })),
       };
     });
+    } catch (err: unknown) {
+      if (
+        input.idempotencyKey &&
+        typeof err === "object" &&
+        err !== null &&
+        (err as { code?: string }).code === "P2002"
+      ) {
+        const existing = await prisma.salesOrder.findUnique({
+          where: { idempotencyKey: input.idempotencyKey },
+          include: {
+            lines: {
+              include: {
+                productVariant: true,
+              },
+            },
+            customer: true,
+            salesman: true,
+            reservations: true,
+          },
+        });
+        if (existing) {
+          return { order: existing, shortages: [] };
+        }
+      }
+      throw err;
+    }
   }
 
   /**

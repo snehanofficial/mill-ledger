@@ -66,7 +66,8 @@ export class FinanceService {
    * Post an immutable sales invoice from an approved sales order
    */
   async createInvoiceFromOrder(input: CreateInvoiceInput) {
-    return await prisma.$transaction(async (tx) => {
+    try {
+      return await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existing = await tx.salesInvoice.findUnique({
@@ -252,6 +253,27 @@ export class FinanceService {
         },
       });
     });
+    } catch (err: unknown) {
+      if (
+        input.idempotencyKey &&
+        typeof err === "object" &&
+        err !== null &&
+        (err as { code?: string }).code === "P2002"
+      ) {
+        const existing = await prisma.salesInvoice.findUnique({
+          where: { idempotencyKey: input.idempotencyKey },
+          include: {
+            lines: true,
+            customer: true,
+            salesOrder: true,
+          },
+        });
+        if (existing) {
+          return existing;
+        }
+      }
+      throw err;
+    }
   }
 
   /**

@@ -52,7 +52,8 @@ export class InventoryService {
       );
     }
 
-    return await prisma.$transaction(async (tx) => {
+    try {
+      return await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existingReceipt = await tx.purchaseReceipt.findUnique({
@@ -202,6 +203,30 @@ export class InventoryService {
         },
       });
     });
+    } catch (err: unknown) {
+      if (
+        input.idempotencyKey &&
+        typeof err === "object" &&
+        err !== null &&
+        (err as { code?: string }).code === "P2002"
+      ) {
+        const existingReceipt = await prisma.purchaseReceipt.findUnique({
+          where: { idempotencyKey: input.idempotencyKey },
+          include: {
+            lines: {
+              include: {
+                inventoryItem: true,
+                uom: true,
+              },
+            },
+          },
+        });
+        if (existingReceipt) {
+          return existingReceipt;
+        }
+      }
+      throw err;
+    }
   }
 
   /**

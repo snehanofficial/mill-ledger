@@ -33,7 +33,8 @@ export class DispatchService {
    * 4. Updates order fulfilment status to FULFILLED
    */
   async postDispatch(input: CreateDispatchInput) {
-    return await prisma.$transaction(async (tx) => {
+    try {
+      return await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existing = await tx.dispatch.findUnique({
@@ -261,6 +262,30 @@ export class DispatchService {
         },
       });
     });
+    } catch (err: unknown) {
+      if (
+        input.idempotencyKey &&
+        typeof err === "object" &&
+        err !== null &&
+        (err as { code?: string }).code === "P2002"
+      ) {
+        const existing = await prisma.dispatch.findUnique({
+          where: { idempotencyKey: input.idempotencyKey },
+          include: {
+            lines: {
+              include: { inventoryItem: true },
+            },
+            salesOrder: true,
+            salesInvoice: true,
+            warehouse: true,
+          },
+        });
+        if (existing) {
+          return existing;
+        }
+      }
+      throw err;
+    }
   }
 
   /**

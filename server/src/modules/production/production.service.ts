@@ -96,7 +96,8 @@ export class ProductionService {
       input.batchCount && input.batchCount > 0 ? input.batchCount : 1;
     const expectedOutputQty = Number(recipe.expectedOutputQty) * batchCount;
 
-    return await prisma.$transaction(async (tx) => {
+    try {
+      return await prisma.$transaction(async (tx) => {
       if (input.idempotencyKey) {
         const existing = await tx.productionRun.findUnique({
           where: { idempotencyKey: input.idempotencyKey },
@@ -157,6 +158,28 @@ export class ProductionService {
         },
       });
     });
+    } catch (err: unknown) {
+      if (
+        input.idempotencyKey &&
+        typeof err === "object" &&
+        err !== null &&
+        (err as { code?: string }).code === "P2002"
+      ) {
+        const existing = await prisma.productionRun.findUnique({
+          where: { idempotencyKey: input.idempotencyKey },
+          include: {
+            materials: {
+              include: { inventoryItem: true },
+            },
+            recipe: true,
+          },
+        });
+        if (existing) {
+          return existing;
+        }
+      }
+      throw err;
+    }
   }
 
   /**
