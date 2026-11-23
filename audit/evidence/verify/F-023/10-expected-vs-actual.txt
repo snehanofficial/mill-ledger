@@ -1,0 +1,20 @@
+=== F-023 Verification: 10 Expected vs Actual ===
+
+EXPECTED (Source: docs/authorization-matrix.md, server/src/policies/rbac.ts:15, OD-02, OWASP ASVS v4.0.3 Section 1.4.1):
+1. Administrative user management endpoints (/api/v1/users) for listing, creating, updating, and deleting accounts guarded by RBAC permissions.
+2. Protection of the sole remaining active administrator against demotion, deactivation, and deletion.
+3. Interactive bootstrap CLI utility (pnpm admin:bootstrap) with masked password entry and refusal to run if an initial admin already exists.
+4. Operational data integrity protection preventing deletion of users with attached business transactions.
+5. Audit logging for user administration and bootstrap events.
+
+ACTUAL:
+1. Complete CRUD endpoints implemented in server/src/modules/auth/user.routes.ts and mounted at /api/v1/users and /api/v1/admin/users, guarded by authorize("user", action).
+2. Last-admin safeguard implemented in server/src/modules/auth/user.service.ts returning HTTP 400 Bad Request when attempting to demote, deactivate, or delete the last remaining active admin.
+3. Interactive CLI implemented in server/src/scripts/bootstrap-admin.ts via pnpm admin:bootstrap, with masked input, refusal on existing admin, and audit logging.
+4. Operational integrity check prevents hard-deletion of users who have associated sales orders.
+5. Audit events recorded for USER_CREATE, USER_UPDATE, USER_DELETE, and ADMIN_BOOTSTRAP.
+6. All 9 targeted tests in server/src/user-management.test.ts pass. Full test suite (33 files, 195 tests) passes. All 18 benchmark assertions pass. All 10 SQL invariants return 0 rows.
+
+DELTA:
+None. All expected criteria fully satisfied.
+Status: VERIFIED-PASS

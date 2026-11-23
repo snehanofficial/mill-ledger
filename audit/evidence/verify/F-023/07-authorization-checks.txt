@@ -1,0 +1,32 @@
+=== F-023 Verification: 07 Authorization & RBAC Checks ===
+1. Unauthenticated Request:
+   Request: GET /api/v1/users without session cookie
+   Response: HTTP 401 Unauthorized ("Session required") [PASS]
+
+2. Non-Admin (SALESMAN) Access:
+   Request: GET /api/v1/users with Salesman session
+   Response: HTTP 403 Forbidden ("Role SALESMAN lacks permission read on user") [PASS]
+   Request: POST /api/v1/users with Salesman session
+   Response: HTTP 403 Forbidden ("Role SALESMAN lacks permission create on user") [PASS]
+
+3. Admin Access:
+   Request: GET /api/v1/users with Admin session
+   Response: HTTP 200 OK with list of users [PASS]
+   Request: GET /api/v1/admin/users with Admin session
+   Response: HTTP 200 OK with list of users [PASS]
+   Request: POST /api/v1/users with Admin session
+   Response: HTTP 201 Created with new user record [PASS]
+
+4. Last-Admin Safeguard:
+   Request: PUT /api/v1/users/:id to demote last active admin to SALESMAN
+   Response: HTTP 400 Bad Request ("Cannot demote or deactivate the last remaining administrator account") [PASS]
+   Request: PUT /api/v1/users/:id to deactivate last active admin
+   Response: HTTP 400 Bad Request ("Cannot demote or deactivate the last remaining administrator account") [PASS]
+   Request: DELETE /api/v1/users/:id to delete last active admin
+   Response: HTTP 400 Bad Request ("Cannot delete the last remaining administrator account") [PASS]
+
+5. Multi-Admin Scenarios:
+   When 2 active admins exist, demoting or deleting one is permitted because an active administrator remains [PASS]
+
+6. Operational Referencing Safeguard:
+   Deleting a user with associated business transactions (orders, receipts) is rejected with HTTP 400 Bad Request to maintain referential integrity [PASS]

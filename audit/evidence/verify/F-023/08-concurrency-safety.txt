@@ -1,0 +1,7 @@
+=== F-023 Verification: 08 Concurrency & Transactional Safety ===
+1. Account Creation:
+   User creation relies on Better Auth's signUpEmail followed by transactional Prisma metadata updates and audit logging.
+2. Bootstrap Concurrency:
+   bootstrap-admin CLI performs a pre-flight count of active administrators. If any active administrator already exists, it terminates immediately with exit code 1.
+3. Database Invariants:
+   User table changes do not disrupt any financial, inventory, or order sequence invariants.
