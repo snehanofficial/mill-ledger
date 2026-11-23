@@ -1,0 +1,24 @@
+=== F-016 VERIFICATION EVIDENCE 10: EXPECTED VS ACTUAL ===
+Finding ID: F-016
+Title: Packaging capacity mismatch warning is hardcoded to specific SKU and multiplier, and never persisted to database
+Status: VERIFIED-PASS
+
+[Item 1: Hardcoded SKU and Multiplier]
+- EXPECTED: Packaging capacity calculations resolve dynamically from `unit_conversion` (from packaging UOM to recipe output UOM) rather than hardcoded SKU ("PKG-CARTON") and fixed multiplier (* 20).
+- ACTUAL: Dynamic lookup from `tx.unitConversion` matches packaging material base UOM (`fromUomId`) to recipe output UOM (`toUomId`). Tested with carton (factor 20) and custom tin (factor 15).
+- DELTA: None.
+
+[Item 2: Database Persistence]
+- EXPECTED: When packaging shortfall is detected, `packagingMismatch` boolean flag and `packagingWarning` string are persisted on `production_run` table.
+- ACTUAL: Schema updated with `packagingMismatch Boolean @default(false)` and `packagingWarning String?`. Verified by querying fresh database records via `productionService.getProductionRunById`.
+- DELTA: None.
+
+[Item 3: Frontend Warning Display]
+- EXPECTED: Historical production runs table displays packaging mismatch warning indicators and tooltips when `packagingMismatch` is true.
+- ACTUAL: `client/src/pages/production-page.tsx` renders amber AlertTriangleIcon with tooltip showing `packagingWarning`.
+- DELTA: None.
+
+[Item 4: Benchmark and Invariants Integrity]
+- EXPECTED: 100% pass on all 18 CDI benchmark acceptance oracle checks and 10 SQL database invariants.
+- ACTUAL: 18/18 benchmark assertions pass, 10/10 SQL database invariants return 0 violating rows.
+- DELTA: None.

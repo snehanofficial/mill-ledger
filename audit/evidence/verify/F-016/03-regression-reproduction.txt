@@ -1,0 +1,13 @@
+=== F-016 VERIFICATION EVIDENCE 03: REGRESSION REPRODUCTION ===
+Finding ID: F-016
+Title: Packaging capacity mismatch warning is hardcoded to specific SKU and multiplier, and never persisted to database
+Severity: P2
+Root Cause:
+1. Hardcoded check: In production.service.ts, the packaging check was hardcoded to `invItem.sku === "PKG-CARTON"` with a fixed multiplier of `* 20` and fixed units `"packets"`. Any custom packaging container (e.g. tins, crates, bulk boxes) or non-standard conversion ratios were ignored.
+2. Ephemeral warning: The packaging mismatch warning was pushed to an in-memory `warnings: string[]` array returned in the HTTP response, but was never persisted to the `production_run` database record. Subsequent queries (`GET /api/v1/production/runs` or `GET /api/v1/production/runs/:id`) and historical run ledgers showed no indication of packaging mismatch.
+
+Reproduction Test:
+`server/src/packaging-capacity.test.ts`
+- Test 1: Submits production run where 9 cartons hold 180 of 188 actual good packets. Before the fix, `productionRun.packagingMismatch` and `packagingWarning` columns did not exist. With the fix, `result.run.packagingMismatch === true` and `result.run.packagingWarning` contains `9 cartons represent 180 of 188 packets.`, verified via a fresh DB fetch through `productionService.getProductionRunById`.
+- Test 2: Submits production run with 10 cartons (capacity 200 >= 188). Confirms `packagingMismatch === false` and `packagingWarning === null` in the DB.
+- Test 3: Defines a custom packaging UOM (`TIN`) with dynamic `unit_conversion` factor of 15.0 to `PACKET`. Consumes 12 tins for 188 good packets (12 * 15 = 180 < 188). Verifies that dynamic conversion is resolved from the database table `unit_conversion` rather than hardcoded logic, and generates `12 tins represent 180 of 188 packets.`, persisting to DB.

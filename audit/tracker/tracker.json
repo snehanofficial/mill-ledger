@@ -1033,7 +1033,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -1041,12 +1041,44 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-016.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-016.md",
+        "note": "Approved in auto-approvals.log. Implementing dynamic packaging capacity resolution and DB warning persistence."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "d53c1b1",
+        "evidenceLink": "audit/evidence/verify/F-016/08-concurrency-safety.txt",
+        "note": "Implemented dynamic unit conversion lookup for packaging materials and persisted packagingMismatch / packagingWarning on ProductionRun."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "d53c1b1",
+        "evidenceLink": "audit/evidence/verify/F-016/10-expected-vs-actual.txt",
+        "note": "Resolved packaging capacity dynamically via unitConversion and persisted packagingMismatch/packagingWarning on ProductionRun table."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-016-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "server/src/packaging-capacity.test.ts",
+    "fixCommit": "d53c1b1",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-016/01-fresh-environment.txt",
+      "audit/evidence/verify/F-016/02-test-execution.txt",
+      "audit/evidence/verify/F-016/03-regression-reproduction.txt",
+      "audit/evidence/verify/F-016/04-full-suite-pass.txt",
+      "audit/evidence/verify/F-016/05-typecheck-lint.txt",
+      "audit/evidence/verify/F-016/06-benchmark-invariants.txt",
+      "audit/evidence/verify/F-016/07-authorization-checks.txt",
+      "audit/evidence/verify/F-016/08-concurrency-safety.txt",
+      "audit/evidence/verify/F-016/09-backward-compat.txt",
+      "audit/evidence/verify/F-016/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'deleteMany' server/src/modules/ | head -n 20",
@@ -1054,8 +1086,8 @@
         "server/src/modules/production/production.service.ts:448:        await tx.productionRunMaterial.deleteMany({"
       ]
     },
-    "needsApproval": "schema",
-    "notes": ""
+    "needsApproval": "none",
+    "notes": "Resolved packaging capacity dynamically via unit_conversion from packaging UOM to recipe output UOM, and persisted packagingMismatch and packagingWarning to ProductionRun."
   },
   {
     "id": "F-017",

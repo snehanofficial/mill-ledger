@@ -1,0 +1,15 @@
+=== F-016 VERIFICATION EVIDENCE 07: AUTHORIZATION CHECKS ===
+Timestamp: 2026-11-23T14:49:30+05:30
+Scope: Production run posting and packaging warning visibility
+
+1. RBAC Enforcement:
+- Production runs can be created/posted only by authorized roles (PRODUCTION, OWNER, ADMIN).
+- Verified via `server/src/production.test.ts`:
+  * Non-production roles (e.g. SALESMAN) attempting to post production runs receive HTTP 403 Forbidden.
+  * ACCOUNTANT role has read-only access to view production runs, including `packagingMismatch` and `packagingWarning`.
+  * PRODUCTION role can post runs.
+
+2. ABAC Enforcement:
+- Runs are strictly organization-scoped (`organizationId`).
+- A production run created in Organization A is invisible and inaccessible to users in Organization B.
+- Verified in `server/src/policies/abac.test.ts` and `server/src/production.test.ts`.
