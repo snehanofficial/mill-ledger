@@ -8,6 +8,7 @@ export interface CreateInvoiceInput {
   salesOrderId: string;
   notes?: string;
   dueDate?: Date;
+  invoiceDate?: Date;
   idempotencyKey?: string;
 }
 
@@ -116,7 +117,8 @@ export class FinanceService {
         );
       }
 
-      const fy = this.getFinancialYear();
+      const invoiceDate = input.invoiceDate ?? new Date();
+      const fy = this.getFinancialYear(invoiceDate);
       const invoiceNumber = await sequenceService.getNextInvoiceNumber(
         tx,
         order.organizationId,
@@ -150,18 +152,49 @@ export class FinanceService {
       }> = [];
 
       for (const line of order.lines) {
+        const hsnCode = line.productVariant.product.hsnCode;
+        if (!hsnCode) {
+          throw new AppError(
+            `TAX_CONFIGURATION_ERROR: Product ${line.productVariant.product.name} is missing an HSN code`,
+            422,
+          );
+        }
+
+        const taxRateRecord = await tx.taxRate.findFirst({
+          where: {
+            organizationId: order.organizationId,
+            hsnCode,
+            effectiveFrom: { lte: invoiceDate },
+            OR: [
+              { effectiveTo: null },
+              { effectiveTo: { gte: invoiceDate } },
+            ],
+          },
+          orderBy: {
+            effectiveFrom: "desc",
+          },
+        });
+
+        if (!taxRateRecord) {
+          throw new AppError(
+            `TAX_CONFIGURATION_ERROR: No active statutory GST rate found for HSN ${hsnCode}`,
+            422,
+          );
+        }
+
+        const lineTaxRate = Number(taxRateRecord.rate);
+
         const taxRes = calculateLineTax(
           {
             quantity: line.approvedQuantity.toString(),
             unitPrice: line.approvedUnitPrice.toString(),
-            taxRate: line.taxRate.toString(),
+            taxRate: lineTaxRate,
           },
           isIntraState,
         );
 
         const lineQty = taxRes.quantity.toNumber();
         const linePrice = taxRes.unitPrice.toNumber();
-        const lineTaxRate = taxRes.taxRate.toNumber();
         const lineTaxable = taxRes.taxableAmount.toNumber();
         const lineCgst = taxRes.cgstAmount.toNumber();
         const lineSgst = taxRes.sgstAmount.toNumber();
@@ -179,7 +212,7 @@ export class FinanceService {
           salesOrderLineId: line.id,
           productVariantId: line.productVariantId,
           productNameSnapshot: line.productVariant.name,
-          hsnCodeSnapshot: line.productVariant.product.hsnCode || "21069099",
+          hsnCodeSnapshot: hsnCode,
           quantity: lineQty,
           unitPrice: linePrice,
           taxRate: lineTaxRate,
@@ -218,8 +251,8 @@ export class FinanceService {
           outstandingAmount: totalAmount,
           notes: input.notes,
           idempotencyKey: input.idempotencyKey,
+          postedAt: invoiceDate,
           dueDate: input.dueDate,
-          postedAt: new Date(),
         },
       });
 
@@ -533,6 +566,129 @@ export class FinanceService {
         lines: true,
       },
       orderBy: { postedAt: "desc" },
+    });
+  }
+
+  /**
+   * List statutory tax rates for an organization, optionally filtered by HSN
+   */
+  async getTaxRates(organizationId: string, hsnCode?: string) {
+    const org = await prisma.organization.findFirst({
+      where: { OR: [{ id: organizationId }, { code: organizationId }] },
+    });
+    const orgId = org ? org.id : organizationId;
+
+    return await prisma.taxRate.findMany({
+      where: {
+        organizationId: orgId,
+        ...(hsnCode ? { hsnCode } : {}),
+      },
+      orderBy: [{ hsnCode: "asc" }, { effectiveFrom: "desc" }],
+    });
+  }
+
+  /**
+   * Set or update a statutory tax rate schedule with overlap prevention
+   */
+  async setTaxRate(
+    organizationId: string,
+    input: {
+      hsnCode: string;
+      rate: number;
+      cgstRate?: number;
+      sgstRate?: number;
+      igstRate?: number;
+      effectiveFrom: Date;
+      effectiveTo?: Date | null;
+    },
+  ) {
+    const org = await prisma.organization.findFirst({
+      where: { OR: [{ id: organizationId }, { code: organizationId }] },
+    });
+    const orgId = org ? org.id : organizationId;
+
+    return await prisma.$transaction(async (tx) => {
+      const hsnCode = input.hsnCode.trim();
+      const rate = input.rate;
+      const effectiveFrom = new Date(input.effectiveFrom);
+      const effectiveTo = input.effectiveTo ? new Date(input.effectiveTo) : null;
+
+      if (effectiveTo && effectiveTo <= effectiveFrom) {
+        throw new AppError(
+          "effectiveTo must be strictly after effectiveFrom",
+          400,
+        );
+      }
+
+      const igstRate = input.igstRate !== undefined ? input.igstRate : rate;
+      const cgstRate = input.cgstRate !== undefined ? input.cgstRate : rate / 2;
+      const sgstRate = input.sgstRate !== undefined ? input.sgstRate : rate / 2;
+
+      // Check existing rates for overlap
+      const existing = await tx.taxRate.findMany({
+        where: {
+          organizationId: orgId,
+          hsnCode,
+        },
+      });
+
+      for (const rec of existing) {
+        const recFrom = new Date(rec.effectiveFrom);
+        const recTo = rec.effectiveTo ? new Date(rec.effectiveTo) : null;
+
+        // If exact same effectiveFrom, update it
+        if (recFrom.getTime() === effectiveFrom.getTime()) {
+          continue;
+        }
+
+        // If existing record is open-ended and started before new effectiveFrom, auto-close it
+        if (!recTo && recFrom < effectiveFrom) {
+          await tx.taxRate.update({
+            where: { id: rec.id },
+            data: { effectiveTo: effectiveFrom },
+          });
+          continue;
+        }
+
+        // Check for general overlap:
+        const overlaps =
+          (!recTo || recTo > effectiveFrom) &&
+          (!effectiveTo || recFrom < effectiveTo);
+
+        if (overlaps) {
+          throw new AppError(
+            `TAX_CONFIGURATION_ERROR: Overlapping tax rate schedule detected for HSN ${hsnCode}`,
+            422,
+          );
+        }
+      }
+
+      return await tx.taxRate.upsert({
+        where: {
+          organizationId_hsnCode_effectiveFrom: {
+            organizationId: orgId,
+            hsnCode,
+            effectiveFrom,
+          },
+        },
+        update: {
+          rate,
+          cgstRate,
+          sgstRate,
+          igstRate,
+          effectiveTo,
+        },
+        create: {
+          organizationId: orgId,
+          hsnCode,
+          rate,
+          cgstRate,
+          sgstRate,
+          igstRate,
+          effectiveFrom,
+          effectiveTo,
+        },
+      });
     });
   }
 }

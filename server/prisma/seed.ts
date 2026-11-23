@@ -562,32 +562,41 @@ export async function seedBenchmarkMasters() {
     },
   });
 
-  // 11. Tax Rate (5% GST: CGST 2.5%, SGST 2.5%, IGST 5.0%)
+  // 11. Statutory Tax Rates (5%, 12%, 18%, 0% GST Slabs)
   const taxDate = new Date("2026-01-01T00:00:00Z");
-  await prisma.taxRate.upsert({
-    where: {
-      organizationId_hsnCode_effectiveFrom: {
+  const statutorySlabs = [
+    { hsnCode: "21069099", rate: 5.0, cgstRate: 2.5, sgstRate: 2.5, igstRate: 5.0 },
+    { hsnCode: "21069098", rate: 18.0, cgstRate: 9.0, sgstRate: 9.0, igstRate: 18.0 },
+    { hsnCode: "21069097", rate: 12.0, cgstRate: 6.0, sgstRate: 6.0, igstRate: 12.0 },
+    { hsnCode: "21069090", rate: 0.0, cgstRate: 0.0, sgstRate: 0.0, igstRate: 0.0 },
+  ];
+
+  for (const slab of statutorySlabs) {
+    await prisma.taxRate.upsert({
+      where: {
+        organizationId_hsnCode_effectiveFrom: {
+          organizationId: org.id,
+          hsnCode: slab.hsnCode,
+          effectiveFrom: taxDate,
+        },
+      },
+      update: {
+        rate: slab.rate,
+        cgstRate: slab.cgstRate,
+        sgstRate: slab.sgstRate,
+        igstRate: slab.igstRate,
+      },
+      create: {
         organizationId: org.id,
-        hsnCode: "21069099",
+        hsnCode: slab.hsnCode,
+        rate: slab.rate,
+        cgstRate: slab.cgstRate,
+        sgstRate: slab.sgstRate,
+        igstRate: slab.igstRate,
         effectiveFrom: taxDate,
       },
-    },
-    update: {
-      rate: 5.0,
-      cgstRate: 2.5,
-      sgstRate: 2.5,
-      igstRate: 5.0,
-    },
-    create: {
-      organizationId: org.id,
-      hsnCode: "21069099",
-      rate: 5.0,
-      cgstRate: 2.5,
-      sgstRate: 2.5,
-      igstRate: 5.0,
-      effectiveFrom: taxDate,
-    },
-  });
+    });
+  }
 
   console.log("M2 benchmark master data seed successfully completed.");
 }

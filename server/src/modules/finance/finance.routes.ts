@@ -14,6 +14,7 @@ const createInvoiceSchema = z.object({
   salesOrderId: z.string().min(1),
   notes: z.string().optional(),
   dueDate: z.coerce.date().optional(),
+  invoiceDate: z.coerce.date().optional(),
   idempotencyKey: z.string().optional(),
 });
 
@@ -180,6 +181,57 @@ financeRouter.get(
       const supplierId = req.query.supplierId as string | undefined;
       const debitNotes = await financeService.getDebitNotes(orgId, supplierId);
       res.json({ debitNotes });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+const setTaxRateSchema = z.object({
+  hsnCode: z.string().min(1, "HSN code is required"),
+  rate: z.number().min(0, "Rate must be non-negative"),
+  cgstRate: z.number().min(0).optional(),
+  sgstRate: z.number().min(0).optional(),
+  igstRate: z.number().min(0).optional(),
+  effectiveFrom: z.coerce.date(),
+  effectiveTo: z.coerce.date().nullable().optional(),
+});
+
+// GET /api/v1/finance/tax-rates - List statutory tax rates
+financeRouter.get(
+  "/tax-rates",
+  requireAuth,
+  authorize("invoice", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = (req.query.organizationId as string) || "MILL";
+      const hsnCode = req.query.hsnCode as string | undefined;
+      const taxRates = await financeService.getTaxRates(orgId, hsnCode);
+      res.json({ taxRates });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/finance/tax-rates - Set statutory tax rate schedule
+financeRouter.post(
+  "/tax-rates",
+  requireAuth,
+  authorize("invoice", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const parsed = setTaxRateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new AppError(
+          `Invalid tax rate data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
+          400,
+        );
+      }
+
+      const orgId = (req.query.organizationId as string) || "MILL";
+      const record = await financeService.setTaxRate(orgId, parsed.data);
+      res.status(201).json(record);
     } catch (err) {
       next(err);
     }

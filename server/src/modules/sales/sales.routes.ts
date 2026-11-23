@@ -20,6 +20,7 @@ const createOrderSchema = z.object({
   notes: z.string().optional(),
   idempotencyKey: z.string().optional(),
   status: z.nativeEnum(OrderStatus).optional(),
+  orderDate: z.coerce.date().optional(),
   lines: z
     .array(
       z.object({

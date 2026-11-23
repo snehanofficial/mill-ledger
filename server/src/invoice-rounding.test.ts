@@ -54,7 +54,7 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
         organizationId: orgId,
         code: `PROD-TAX18-${runId}`,
         name: "Test 18% Snack",
-        hsnCode: "21069099",
+        hsnCode: "21069098",
         taxRate: 18.0,
       },
     });
@@ -143,14 +143,14 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
     });
 
     const p18 = await prisma.product.create({
-      data: { organizationId: orgId, code: `PROD-18-${runId}`, name: "P18", taxRate: 18.0, hsnCode: "21069099" },
+      data: { organizationId: orgId, code: `PROD-18-${runId}`, name: "P18", taxRate: 18.0, hsnCode: "21069098" },
     });
     const v18 = await prisma.productVariant.create({
       data: { productId: p18.id, sku: `VAR-P18-${runId}`, name: "V18", packSize: 1, uomId },
     });
 
     const p12 = await prisma.product.create({
-      data: { organizationId: orgId, code: `PROD-12-${runId}`, name: "P12", taxRate: 12.0, hsnCode: "21069099" },
+      data: { organizationId: orgId, code: `PROD-12-${runId}`, name: "P12", taxRate: 12.0, hsnCode: "21069097" },
     });
     const v12 = await prisma.productVariant.create({
       data: { productId: p12.id, sku: `VAR-P12-${runId}`, name: "V12", packSize: 1, uomId },
@@ -270,14 +270,14 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
     });
 
     const p18 = await prisma.product.create({
-      data: { organizationId: orgId, code: `PROD-KA-18-${runId}`, name: "P18", taxRate: 18.0, hsnCode: "21069099" },
+      data: { organizationId: orgId, code: `PROD-KA-18-${runId}`, name: "P18", taxRate: 18.0, hsnCode: "21069098" },
     });
     const v18 = await prisma.productVariant.create({
       data: { productId: p18.id, sku: `VAR-KA-18-${runId}`, name: "V18", packSize: 1, uomId },
     });
 
     const p12 = await prisma.product.create({
-      data: { organizationId: orgId, code: `PROD-KA-12-${runId}`, name: "P12", taxRate: 12.0, hsnCode: "21069099" },
+      data: { organizationId: orgId, code: `PROD-KA-12-${runId}`, name: "P12", taxRate: 12.0, hsnCode: "21069097" },
     });
     const v12 = await prisma.productVariant.create({
       data: { productId: p12.id, sku: `VAR-KA-12-${runId}`, name: "V12", packSize: 1, uomId },

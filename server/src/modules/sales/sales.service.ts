@@ -18,6 +18,7 @@ export interface CreateOrderInput {
   notes?: string;
   idempotencyKey?: string;
   status?: OrderStatus;
+  orderDate?: Date;
   lines: CreateOrderLineInput[];
 }
 
@@ -229,7 +230,38 @@ export class SalesService {
           unitPrice = defaultPrice ? Number(defaultPrice) : 50.0;
         }
 
-        const taxRate = Number(variant.product.taxRate); // e.g. 5.00%
+        const hsnCode = variant.product.hsnCode;
+        if (!hsnCode) {
+          throw new AppError(
+            `TAX_CONFIGURATION_ERROR: Product ${variant.product.name} is missing an HSN code`,
+            422,
+          );
+        }
+
+        const effectiveDate = input.orderDate ?? new Date();
+        const taxRateRecord = await tx.taxRate.findFirst({
+          where: {
+            organizationId,
+            hsnCode,
+            effectiveFrom: { lte: effectiveDate },
+            OR: [
+              { effectiveTo: null },
+              { effectiveTo: { gte: effectiveDate } },
+            ],
+          },
+          orderBy: {
+            effectiveFrom: "desc",
+          },
+        });
+
+        if (!taxRateRecord) {
+          throw new AppError(
+            `TAX_CONFIGURATION_ERROR: No active statutory GST rate found for HSN ${hsnCode}`,
+            422,
+          );
+        }
+
+        const taxRate = Number(taxRateRecord.rate);
         const taxRes = calculateLineTax(
           {
             quantity: line.quantity,
@@ -882,16 +914,47 @@ export class SalesService {
       },
     });
 
+    const now = new Date();
+    const hsnCodes = Array.from(
+      new Set(
+        variants
+          .map((v) => v.product.hsnCode)
+          .filter((h): h is string => Boolean(h)),
+      ),
+    );
+    const taxRates = await prisma.taxRate.findMany({
+      where: {
+        organizationId,
+        hsnCode: { in: hsnCodes },
+        effectiveFrom: { lte: now },
+        OR: [{ effectiveTo: null }, { effectiveTo: { gte: now } }],
+      },
+      orderBy: {
+        effectiveFrom: "desc",
+      },
+    });
+
+    const taxRateMap = new Map<string, number>();
+    for (const tr of taxRates) {
+      if (!taxRateMap.has(tr.hsnCode)) {
+        taxRateMap.set(tr.hsnCode, Number(tr.rate));
+      }
+    }
+
     return variants.map((v) => {
       const defaultPrice = v.priceLines[0]?.price
         ? Number(v.priceLines[0].price)
         : 50.0;
+      const dynamicRate = v.product.hsnCode
+        ? taxRateMap.get(v.product.hsnCode)
+        : undefined;
       return {
         id: v.id,
         sku: v.sku,
         name: v.name,
         productName: v.product.name,
-        taxRate: Number(v.product.taxRate),
+        taxRate:
+          dynamicRate !== undefined ? dynamicRate : Number(v.product.taxRate),
         hsnCode: v.product.hsnCode,
         uom: v.uom.code,
         defaultPrice,
