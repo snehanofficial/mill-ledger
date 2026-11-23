@@ -814,7 +814,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -836,12 +836,44 @@
         "commit": null,
         "evidenceLink": "audit/tracker/owner-decisions.md",
         "note": "Unblocked on 2026-11-20 per Owner Decision OD-06 (Dedicated DebitNote model for supplier returns & PaymentStatus.BOUNCED)."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-013.md",
+        "note": "Started remediation for F-013 (Payment bounce/reversals and dedicated DebitNote model)."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "e398f20",
+        "evidenceLink": "audit/evidence/verify/F-013/08-diff-review.txt",
+        "note": "Implemented PaymentStatus.BOUNCED, bouncePayment, DebitNote models and financeService.issueDebitNote."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "e398f20",
+        "evidenceLink": "audit/evidence/verify/F-013/10-expected-vs-actual.txt",
+        "note": "Verified 5/5 regression tests passed, 28/28 suite passed, 18/18 benchmark assertions hold, 10/10 SQL invariants hold."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-013-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm vitest run server/src/payment-bounce.test.ts",
+    "regressionTest": "server/src/payment-bounce.test.ts",
+    "fixCommit": "e398f20",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-013/01-fresh-environment.txt",
+      "audit/evidence/verify/F-013/02-original-repro.txt",
+      "audit/evidence/verify/F-013/03-test-validity.txt",
+      "audit/evidence/verify/F-013/04-mutation-check.txt",
+      "audit/evidence/verify/F-013/05-adversarial-probes.txt",
+      "audit/evidence/verify/F-013/06-sibling-sweep.txt",
+      "audit/evidence/verify/F-013/07-regression-radius.txt",
+      "audit/evidence/verify/F-013/08-diff-review.txt",
+      "audit/evidence/verify/F-013/09-standards-check.txt",
+      "audit/evidence/verify/F-013/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'deleteMany' server/src/modules/ | head -n 20",
