@@ -74,6 +74,7 @@ describe("F-004 / F-101: Production Guard on Seed Script", () => {
         env: {
           ...process.env,
           NODE_ENV: "production",
+          DATABASE_URL: "postgresql://prod_user:secret@db.prod.mill-ledger.internal:5432/mill_ledger_prod?schema=public",
           BETTER_AUTH_SECRET: "long-secure-production-secret-for-guard-test-1234",
           CORS_ORIGIN: "https://millledger.com",
           BETTER_AUTH_URL: "https://millledger.com",
