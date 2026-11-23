@@ -941,7 +941,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -963,12 +963,44 @@
         "commit": null,
         "evidenceLink": "audit/tracker/owner-decisions.md",
         "note": "Unblocked on 2026-11-20 per Owner Decision OD-01 (Dynamic TaxRate master lookup by HSN & effective date, fail-safe if missing)."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "date": "2026-11-23",
+        "commit": null,
+        "evidenceLink": "audit/findings/F-014.md",
+        "note": "Started remediation for F-014 (Dynamic GST TaxRate master resolution)."
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "date": "2026-11-23",
+        "commit": "fcaeef4",
+        "evidenceLink": "audit/evidence/verify/F-014/08-diff-review.txt",
+        "note": "Implemented dynamic statutory TaxRate lookup and schedule overlap prevention."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-23",
+        "commit": "fcaeef4",
+        "evidenceLink": "audit/evidence/verify/F-014/10-expected-vs-actual.txt",
+        "note": "Verified 4/4 regression tests pass, 30/30 full suite passes, 18/18 benchmark assertions match, 10/10 SQL invariants hold."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-014-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm vitest run server/src/tax-rate-effective-date.test.ts",
+    "regressionTest": "server/src/tax-rate-effective-date.test.ts",
+    "fixCommit": "fcaeef4",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-014/01-fresh-environment.txt",
+      "audit/evidence/verify/F-014/02-original-repro.txt",
+      "audit/evidence/verify/F-014/03-test-validity.txt",
+      "audit/evidence/verify/F-014/04-mutation-check.txt",
+      "audit/evidence/verify/F-014/05-adversarial-probes.txt",
+      "audit/evidence/verify/F-014/06-sibling-sweep.txt",
+      "audit/evidence/verify/F-014/07-regression-radius.txt",
+      "audit/evidence/verify/F-014/08-diff-review.txt",
+      "audit/evidence/verify/F-014/09-standards-check.txt",
+      "audit/evidence/verify/F-014/10-expected-vs-actual.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'deleteMany' server/src/modules/ | head -n 20",
@@ -976,8 +1008,8 @@
         "server/src/modules/production/production.service.ts:448:        await tx.productionRunMaterial.deleteMany({"
       ]
     },
-    "needsApproval": "schema",
-    "notes": "Unblocked on 2026-11-20 per Owner Decision OD-01 (Dynamic TaxRate master lookup by HSN & effective date, fail-safe if missing)."
+    "needsApproval": "none",
+    "notes": "Remediated per Owner Decision OD-01 with dynamic TaxRate table schedule lookup by HSN and effective date, fail-safe 422 error, and schedule overlap prevention."
   },
   {
     "id": "F-016",
