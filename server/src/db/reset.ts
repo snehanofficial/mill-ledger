@@ -11,6 +11,8 @@ export async function resetOperationalData() {
     await tx.paymentAllocation.deleteMany();
     await tx.payment.deleteMany();
     await tx.creditNote.deleteMany();
+    await tx.debitNoteLine.deleteMany();
+    await tx.debitNote.deleteMany();
     await tx.dispatchLine.deleteMany();
     await tx.dispatch.deleteMany();
     await tx.salesInvoiceLine.deleteMany();

@@ -718,8 +718,10 @@ export class ReportingService {
       const unalloc = Number(p.unallocatedAmount);
       const alloc = amount - unalloc;
 
-      totalCollected += amount;
-      totalUnallocated += unalloc;
+      if (p.status === "POSTED") {
+        totalCollected += amount;
+        totalUnallocated += unalloc;
+      }
 
       return {
         paymentNumber: p.paymentNumber,

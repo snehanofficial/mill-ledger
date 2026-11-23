@@ -132,3 +132,40 @@ paymentRouter.post(
     }
   },
 );
+
+const bouncePaymentSchema = z.object({
+  reason: z.string().min(1, "Bounce reason is required"),
+  referenceNumber: z.string().optional(),
+  bouncedAt: z.coerce.date().optional(),
+  idempotencyKey: z.string().optional(),
+});
+
+// POST /api/v1/payments/:id/bounce - Bounce payment and restore allocations
+paymentRouter.post(
+  "/:id/bounce",
+  requireAuth,
+  authorize("payment", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const paymentId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!paymentId) {
+        throw new AppError("Payment ID is required", 400);
+      }
+
+      const parsed = bouncePaymentSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new AppError(
+          `Invalid bounce data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
+          400,
+        );
+      }
+
+      const payment = await paymentService.bouncePayment(paymentId, parsed.data);
+      res.json(payment);
+    } catch (err) {
+      next(err);
+    }
+  },
+);

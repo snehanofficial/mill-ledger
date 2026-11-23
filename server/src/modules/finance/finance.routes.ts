@@ -118,3 +118,70 @@ financeRouter.post(
     }
   },
 );
+
+const debitNoteSchema = z.object({
+  supplierId: z.string().min(1, "Supplier ID is required"),
+  purchaseReceiptId: z.string().optional(),
+  reason: z.string().min(1, "Reason is required"),
+  totalAmount: z.number().positive().optional(),
+  taxableAmount: z.number().positive().optional(),
+  taxAmount: z.number().positive().optional(),
+  lines: z
+    .array(
+      z.object({
+        inventoryItemId: z.string().optional(),
+        description: z.string().optional(),
+        quantity: z.number().positive().optional(),
+        uomId: z.string().optional(),
+        unitPrice: z.number().positive().optional(),
+        taxableAmount: z.number(),
+        taxAmount: z.number(),
+        totalAmount: z.number().positive(),
+      }),
+    )
+    .optional(),
+});
+
+// POST /api/v1/finance/debit-notes - Issue supplier debit note
+financeRouter.post(
+  "/debit-notes",
+  requireAuth,
+  authorize("invoice", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const parsed = debitNoteSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new AppError(
+          `Invalid debit note data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
+          400,
+        );
+      }
+
+      const orgId = (req.query.organizationId as string) || "MILL";
+      const debitNote = await financeService.issueDebitNote({
+        ...parsed.data,
+        organizationId: orgId,
+      });
+      res.status(201).json(debitNote);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /api/v1/finance/debit-notes - List debit notes
+financeRouter.get(
+  "/debit-notes",
+  requireAuth,
+  authorize("invoice", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = (req.query.organizationId as string) || "MILL";
+      const supplierId = req.query.supplierId as string | undefined;
+      const debitNotes = await financeService.getDebitNotes(orgId, supplierId);
+      res.json({ debitNotes });
+    } catch (err) {
+      next(err);
+    }
+  },
+);

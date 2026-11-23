@@ -18,6 +18,28 @@ export interface IssueCreditNoteInput {
   totalAmount?: number;
 }
 
+export interface IssueDebitNoteLineInput {
+  inventoryItemId?: string;
+  description?: string;
+  quantity?: number;
+  uomId?: string;
+  unitPrice?: number;
+  taxableAmount: number;
+  taxAmount: number;
+  totalAmount: number;
+}
+
+export interface IssueDebitNoteInput {
+  organizationId?: string;
+  supplierId: string;
+  purchaseReceiptId?: string;
+  reason: string;
+  lines?: IssueDebitNoteLineInput[];
+  taxableAmount?: number;
+  taxAmount?: number;
+  totalAmount?: number;
+}
+
 export class FinanceService {
   /**
    * Helper to derive Indian financial year (e.g. 2025-26) from a date, strictly in IST (Asia/Kolkata)
@@ -346,6 +368,150 @@ export class FinanceService {
     }
 
     return invoice;
+  }
+
+  /**
+   * Issue an immutable debit note against a supplier (e.g. purchase returns, damage deductions)
+   */
+  async issueDebitNote(input: IssueDebitNoteInput) {
+    if (!input.supplierId) {
+      throw new AppError("Supplier ID is required", 400);
+    }
+    if (!input.reason || input.reason.trim() === "") {
+      throw new AppError("Debit note reason is required", 400);
+    }
+
+    return await prisma.$transaction(async (tx) => {
+      const supplier = await tx.supplier.findUnique({
+        where: { id: input.supplierId },
+      });
+      if (!supplier) {
+        throw new AppError(`Supplier ${input.supplierId} not found`, 404);
+      }
+
+      const organizationId = input.organizationId || supplier.organizationId;
+
+      if (input.purchaseReceiptId) {
+        const receipt = await tx.purchaseReceipt.findUnique({
+          where: { id: input.purchaseReceiptId },
+        });
+        if (!receipt) {
+          throw new AppError(
+            `Purchase receipt ${input.purchaseReceiptId} not found`,
+            404,
+          );
+        }
+      }
+
+      // Compute total amounts from lines or inputs
+      let taxableAmount = 0;
+      let taxAmount = 0;
+      let totalAmount = 0;
+
+      if (input.lines && input.lines.length > 0) {
+        for (const line of input.lines) {
+          taxableAmount += Number(line.taxableAmount);
+          taxAmount += Number(line.taxAmount);
+          totalAmount += Number(line.totalAmount);
+        }
+      } else {
+        totalAmount = Number(input.totalAmount ?? 0);
+        taxableAmount = Number(input.taxableAmount ?? totalAmount / 1.05);
+        taxAmount = Number(input.taxAmount ?? totalAmount - taxableAmount);
+      }
+
+      taxableAmount = Number(taxableAmount.toFixed(2));
+      taxAmount = Number(taxAmount.toFixed(2));
+      totalAmount = Number(totalAmount.toFixed(2));
+
+      if (totalAmount <= 0) {
+        throw new AppError(
+          "Debit note total amount must be greater than zero",
+          400,
+        );
+      }
+
+      const count = await tx.debitNote.count({
+        where: { organizationId },
+      });
+      const currentYear = new Date().getFullYear();
+      const debitNoteNumber = `DN-${currentYear}-${(count + 1).toString().padStart(4, "0")}`;
+
+      const debitNote = await tx.debitNote.create({
+        data: {
+          organizationId,
+          debitNoteNumber,
+          supplierId: input.supplierId,
+          purchaseReceiptId: input.purchaseReceiptId,
+          reason: input.reason,
+          status: "POSTED",
+          taxableAmount,
+          taxAmount,
+          totalAmount,
+          postedAt: new Date(),
+          lines:
+            input.lines && input.lines.length > 0
+              ? {
+                  create: input.lines.map((l) => ({
+                    inventoryItemId: l.inventoryItemId,
+                    description: l.description,
+                    quantity: l.quantity,
+                    uomId: l.uomId,
+                    unitPrice: l.unitPrice,
+                    taxableAmount: Number(l.taxableAmount.toFixed(2)),
+                    taxAmount: Number(l.taxAmount.toFixed(2)),
+                    totalAmount: Number(l.totalAmount.toFixed(2)),
+                  })),
+                }
+              : undefined,
+        },
+        include: {
+          supplier: true,
+          purchaseReceipt: true,
+          lines: true,
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          organizationId,
+          action: "DEBIT_NOTE_ISSUED",
+          entity: "debit_note",
+          entityId: debitNote.id,
+          reason: input.reason,
+          details: JSON.stringify({
+            debitNoteNumber,
+            supplierId: input.supplierId,
+            totalAmount,
+          }),
+        },
+      });
+
+      return debitNote;
+    });
+  }
+
+  /**
+   * Get debit notes for an organization
+   */
+  async getDebitNotes(organizationId: string, supplierId?: string) {
+    const org = await prisma.organization.findFirst({
+      where: { OR: [{ id: organizationId }, { code: organizationId }] },
+    });
+    const orgId = org ? org.id : organizationId;
+
+    return await prisma.debitNote.findMany({
+      where: {
+        organizationId: orgId,
+        ...(supplierId ? { supplierId } : {}),
+      },
+      include: {
+        supplier: true,
+        purchaseReceipt: true,
+        lines: true,
+      },
+      orderBy: { postedAt: "desc" },
+    });
   }
 }
 

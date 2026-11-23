@@ -1,10 +1,17 @@
 import { prisma } from "../../db/client.js";
-import { InvoiceStatus, PaymentMode, PaymentStatus } from "@prisma/client";
+import { Prisma, InvoiceStatus, PaymentMode, PaymentStatus } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
 
 export interface PaymentAllocationInput {
   salesInvoiceId: string;
   amount: number;
+}
+
+export interface BouncePaymentInput {
+  reason: string;
+  referenceNumber?: string;
+  bouncedAt?: Date;
+  idempotencyKey?: string;
 }
 
 export interface RecordPaymentInput {
@@ -228,6 +235,165 @@ export class PaymentService {
 
       return payment;
     });
+  }
+
+  /**
+   * Atomically reverse a customer payment (e.g. cheque bounce or chargeback),
+   * mark payment as BOUNCED or REVERSED, audit reverse reason and timestamp,
+   * and restore outstanding balances on all allocated invoices.
+   */
+  async processPaymentReversal(
+    paymentId: string,
+    input: BouncePaymentInput,
+    targetStatus: PaymentStatus = PaymentStatus.BOUNCED,
+  ) {
+    if (!input.reason || input.reason.trim() === "") {
+      throw new AppError("Reversal reason is required", 400);
+    }
+
+    return await prisma.$transaction(async (tx) => {
+      const payment = await tx.payment.findUnique({
+        where: { id: paymentId },
+        include: {
+          customer: true,
+          allocations: {
+            include: { salesInvoice: true },
+          },
+        },
+      });
+
+      if (!payment) {
+        throw new AppError(`Payment ${paymentId} not found`, 404);
+      }
+
+      // Idempotency check: if already bounced/reversed
+      if (
+        payment.status === PaymentStatus.BOUNCED ||
+        payment.status === PaymentStatus.REVERSED
+      ) {
+        if (
+          input.idempotencyKey &&
+          payment.reversalReference === input.idempotencyKey
+        ) {
+          return payment;
+        }
+        throw new AppError(
+          `Payment ${payment.paymentNumber} has already been ${payment.status.toLowerCase()}`,
+          400,
+        );
+      }
+
+      if (payment.status !== PaymentStatus.POSTED) {
+        throw new AppError(
+          `Cannot reverse payment in status ${payment.status}`,
+          400,
+        );
+      }
+
+      const reversalDate = input.bouncedAt || new Date();
+
+      // Reverse each active allocation and restore invoice outstanding balance
+      for (const alloc of payment.allocations) {
+        if (alloc.isReversed) {
+          continue;
+        }
+
+        const invoice = await tx.salesInvoice.findUnique({
+          where: { id: alloc.salesInvoiceId },
+        });
+
+        if (invoice) {
+          const allocAmount = new Prisma.Decimal(alloc.amount);
+          const currentPaid = new Prisma.Decimal(invoice.paidAmount);
+          const currentOutstanding = new Prisma.Decimal(invoice.outstandingAmount);
+
+          const newPaid = Prisma.Decimal.max(0, currentPaid.minus(allocAmount));
+          const newOutstanding = currentOutstanding.plus(allocAmount);
+          const newStatus =
+            newPaid.lessThanOrEqualTo(0.001)
+              ? InvoiceStatus.POSTED
+              : newOutstanding.greaterThan(0.001)
+                ? InvoiceStatus.PARTIALLY_PAID
+                : InvoiceStatus.PAID;
+
+          await tx.salesInvoice.update({
+            where: { id: invoice.id },
+            data: {
+              paidAmount: newPaid,
+              outstandingAmount: newOutstanding,
+              status: newStatus,
+            },
+          });
+        }
+
+        await tx.paymentAllocation.update({
+          where: { id: alloc.id },
+          data: {
+            isReversed: true,
+            reversedAt: reversalDate,
+          },
+        });
+      }
+
+      const updatedPayment = await tx.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: targetStatus,
+          reversalReason: input.reason,
+          reversalReference: input.referenceNumber || input.idempotencyKey,
+          reversedAt: reversalDate,
+        },
+        include: {
+          customer: true,
+          allocations: {
+            include: { salesInvoice: true },
+          },
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          organizationId: payment.organizationId,
+          action:
+            targetStatus === PaymentStatus.BOUNCED
+              ? "PAYMENT_BOUNCED"
+              : "PAYMENT_REVERSED",
+          entity: "payment",
+          entityId: payment.id,
+          reason: input.reason,
+          details: JSON.stringify({
+            paymentNumber: payment.paymentNumber,
+            amount: Number(payment.amount),
+            reversalReference: input.referenceNumber || input.idempotencyKey,
+            reversedAt: reversalDate.toISOString(),
+          }),
+        },
+      });
+
+      return updatedPayment;
+    });
+  }
+
+  /**
+   * Mark a payment as bounced (e.g. cheque/NACH dishonour) and restore invoice balances
+   */
+  async bouncePayment(paymentId: string, input: BouncePaymentInput) {
+    return await this.processPaymentReversal(
+      paymentId,
+      input,
+      PaymentStatus.BOUNCED,
+    );
+  }
+
+  /**
+   * Reverse an online or electronic payment (e.g. chargeback or erroneous entry)
+   */
+  async reversePayment(paymentId: string, input: BouncePaymentInput) {
+    return await this.processPaymentReversal(
+      paymentId,
+      input,
+      PaymentStatus.REVERSED,
+    );
   }
 
   /**
