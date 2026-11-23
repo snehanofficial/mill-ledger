@@ -5,90 +5,37 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { inventoryService } from "./inventory.service.js";
-import { z } from "zod";
 import { AppError } from "../../middleware/error.middleware.js";
+import {
+  handlePostPurchaseReceipt,
+  handleGetPurchaseReceipts,
+  handleGetSuppliers,
+} from "./purchase.routes.js";
 
 export const inventoryRouter = Router();
 
-const createPurchaseReceiptSchema = z.object({
-  organizationId: z.string().min(1),
-  supplierId: z.string().min(1),
-  warehouseId: z.string().min(1),
-  receiptNumber: z.string().min(1),
-  supplierInvoiceNumber: z.string().optional(),
-  notes: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-  items: z
-    .array(
-      z.object({
-        inventoryItemId: z.string().min(1),
-        quantity: z.number().positive(),
-        uomId: z.string().min(1),
-        unitPrice: z.number().min(0),
-      }),
-    )
-    .min(1),
-});
-
-// POST /purchase-receipts (and /api/v1/inventory/purchase-receipts)
+// POST /purchase-receipts (mounted under /api/v1/inventory)
 inventoryRouter.post(
   "/purchase-receipts",
   requireAuth,
   authorize("purchase", "create"),
-  async (req: AuthenticatedRequest, res, next) => {
-    try {
-      const parsed = createPurchaseReceiptSchema.safeParse(req.body);
-      if (!parsed.success) {
-        throw new AppError(
-          `Invalid receipt data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
-      }
-
-      const receipt = await inventoryService.postPurchaseReceipt(parsed.data);
-      res.status(201).json(receipt);
-    } catch (err) {
-      next(err);
-    }
-  },
+  handlePostPurchaseReceipt,
 );
 
-// GET /purchase-receipts
+// GET /purchase-receipts (mounted under /api/v1/inventory)
 inventoryRouter.get(
   "/purchase-receipts",
   requireAuth,
   authorize("purchase", "read"),
-  async (req: AuthenticatedRequest, res, next) => {
-    try {
-      const orgId =
-        (req.query.organizationId as string) ||
-        req.user?.organizationId ||
-        "MILL";
-      const receipts = await inventoryService.getPurchaseReceipts(orgId);
-      res.json({ receipts });
-    } catch (err) {
-      next(err);
-    }
-  },
+  handleGetPurchaseReceipts,
 );
 
-// GET /suppliers
+// GET /suppliers (mounted under /api/v1/inventory)
 inventoryRouter.get(
   "/suppliers",
   requireAuth,
   authorize("purchase", "read"),
-  async (req: AuthenticatedRequest, res, next) => {
-    try {
-      const orgId =
-        (req.query.organizationId as string) ||
-        req.user?.organizationId ||
-        "MILL";
-      const suppliers = await inventoryService.getSuppliers(orgId);
-      res.json({ suppliers });
-    } catch (err) {
-      next(err);
-    }
-  },
+  handleGetSuppliers,
 );
 
 // GET /balances

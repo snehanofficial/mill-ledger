@@ -283,4 +283,87 @@ describe("M3: Purchases and inventory ledger integration", () => {
       "Forbidden: Role SALESMAN lacks permission create on purchase",
     );
   });
+
+  it("F-021: prevents exposure of item movement ledger under /api/v1/purchase-receipts and enforces purchase permission scoping (OWASP A01:2021 & API5:2023)", async () => {
+    const flour = await prisma.inventoryItem.findFirstOrThrow({
+      where: { sku: "RM-FLOUR" },
+    });
+
+    const salesmanCookie = await loginAndGetCookie(
+      "salesman1@millledger.local",
+      "SalesmanPassword123!",
+    );
+
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+
+    // 1. Salesman attempting to read item movement ledger under /api/v1/purchase-receipts is denied (HTTP 403 Forbidden)
+    const salesmanLedgerRes = await fetch(
+      `${baseUrl}/api/v1/purchase-receipts/items/${flour.id}/ledger`,
+      {
+        headers: { Cookie: salesmanCookie },
+      },
+    );
+    expect(salesmanLedgerRes.status).toBe(403);
+    const salesmanLedgerErr = await salesmanLedgerRes.json();
+    expect(salesmanLedgerErr.error).toContain(
+      "Forbidden: Role SALESMAN lacks permission read on purchase",
+    );
+
+    // 2. Salesman attempting to list purchase receipts under /api/v1/purchase-receipts is denied (HTTP 403 Forbidden)
+    const salesmanListRes = await fetch(
+      `${baseUrl}/api/v1/purchase-receipts`,
+      {
+        headers: { Cookie: salesmanCookie },
+      },
+    );
+    expect(salesmanListRes.status).toBe(403);
+
+    // 3. Salesman attempting to create purchase receipt under /api/v1/purchase-receipts is denied (HTTP 403 Forbidden)
+    const salesmanPostRes = await fetch(
+      `${baseUrl}/api/v1/purchase-receipts`,
+      {
+        method: "POST",
+        headers: {
+          Cookie: salesmanCookie,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ receiptNumber: "ILLEGAL" }),
+      },
+    );
+    expect(salesmanPostRes.status).toBe(403);
+
+    // 4. Admin querying non-existent ledger route on /api/v1/purchase-receipts gets HTTP 404 (separation of concerns: ledger is not a purchase-receipts route)
+    const adminLedgerRes = await fetch(
+      `${baseUrl}/api/v1/purchase-receipts/items/${flour.id}/ledger`,
+      {
+        headers: { Cookie: adminCookie },
+      },
+    );
+    expect(adminLedgerRes.status).toBe(404);
+
+    // 5. Admin can access purchase receipts list under /api/v1/purchase-receipts (HTTP 200)
+    const adminListRes = await fetch(
+      `${baseUrl}/api/v1/purchase-receipts`,
+      {
+        headers: { Cookie: adminCookie },
+      },
+    );
+    expect(adminListRes.status).toBe(200);
+    const adminListData = await adminListRes.json();
+    expect(adminListData.receipts).toBeDefined();
+
+    // 6. Authorized inventory ledger access remains intact under official /api/v1/inventory prefix (HTTP 200)
+    const officialInventoryLedgerRes = await fetch(
+      `${baseUrl}/api/v1/inventory/items/${flour.id}/ledger`,
+      {
+        headers: { Cookie: adminCookie },
+      },
+    );
+    expect(officialInventoryLedgerRes.status).toBe(200);
+    const officialInventoryLedgerData = await officialInventoryLedgerRes.json();
+    expect(officialInventoryLedgerData.ledger).toBeDefined();
+  });
 });

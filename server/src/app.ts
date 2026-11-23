@@ -8,6 +8,7 @@ import { authRouter } from "./modules/auth/auth.routes.js";
 import { salesRouter } from "./modules/sales/sales.routes.js";
 import { productionRouter } from "./modules/production/production.routes.js";
 import { inventoryRouter } from "./modules/inventory/inventory.routes.js";
+import { purchaseRouter } from "./modules/inventory/purchase.routes.js";
 import { financeRouter } from "./modules/finance/finance.routes.js";
 import { paymentRouter } from "./modules/finance/payment.routes.js";
 import { reportingRouter } from "./modules/reporting/reporting.routes.js";
@@ -45,7 +46,7 @@ export function createApp() {
   app.use("/api/v1/production", productionRouter);
   app.use("/api/v1/production-runs", productionRouter);
   app.use("/api/v1/inventory", inventoryRouter);
-  app.use("/api/v1/purchase-receipts", inventoryRouter);
+  app.use("/api/v1/purchase-receipts", purchaseRouter);
   app.use("/api/v1/finance", financeRouter);
   app.use("/api/v1/invoices", financeRouter);
   app.use("/api/v1/payments", paymentRouter);
