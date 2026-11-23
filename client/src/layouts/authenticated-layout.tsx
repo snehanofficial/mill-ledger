@@ -6,12 +6,19 @@
  */
 
 import { Suspense, useEffect } from "react";
-import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
+import {
+  Outlet,
+  Navigate,
+  useNavigate,
+  useLocation,
+  useMatches,
+} from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { AuthenticatedShell } from "@/components/shell/authenticated-shell";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { authClient } from "@/lib/auth-client";
 import { offlineDb } from "@/offline/db";
+import type { RouteHandle } from "@/components/shell/use-breadcrumbs";
 
 function RouteLoadingFallback() {
   return (
@@ -28,7 +35,29 @@ export function AuthenticatedLayout() {
   const { user, isLoading } = useCurrentUser();
   const navigate = useNavigate();
   const location = useLocation();
+  const matches = useMatches();
   const queryClient = useQueryClient();
+
+  // WCAG 2.2 SC 2.4.2 & REQ-062: Dynamically update document title based on active view
+  useEffect(() => {
+    const lastWithHandle = [...matches]
+      .reverse()
+      .find(
+        (m) =>
+          (m.handle as RouteHandle | undefined)?.breadcrumb !== undefined,
+      );
+
+    if (lastWithHandle) {
+      const handle = lastWithHandle.handle as RouteHandle;
+      const label =
+        typeof handle.breadcrumb === "function"
+          ? handle.breadcrumb(lastWithHandle.data)
+          : handle.breadcrumb;
+      document.title = `${label} | MillLedger`;
+    } else {
+      document.title = "MillLedger";
+    }
+  }, [matches]);
 
   // Listen for unauthorized session expiration across active API queries
   useEffect(() => {

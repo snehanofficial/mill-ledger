@@ -346,6 +346,7 @@ const router = createBrowserRouter([
             <ShowcasePage />
           </RoleGuard>
         ),
+        handle: { breadcrumb: "Showcase" },
       },
     ],
   },

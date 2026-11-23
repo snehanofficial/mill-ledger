@@ -4,6 +4,7 @@
  * These will be replaced with real portal screens in subsequent milestones.
  */
 
+import { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { FolderKanbanIcon } from "lucide-react";
 
@@ -280,6 +281,10 @@ export function LoginPage() {
 }
 
 export function NotFoundPage() {
+  useEffect(() => {
+    document.title = "Page Not Found | MillLedger";
+  }, []);
+
   return (
     <div className="flex min-h-[60vh] flex-1 flex-col items-center justify-center p-8 text-center">
       <h1 className="text-2xl font-bold text-foreground">

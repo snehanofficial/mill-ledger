@@ -85,6 +85,10 @@ export function LoginPage() {
   const queryClient = useQueryClient();
   const { language, setLanguage } = useLanguage();
 
+  React.useEffect(() => {
+    document.title = "Sign In | MillLedger";
+  }, []);
+
   const { user, isLoading: isCheckingAuth } = useCurrentUser();
 
   const [email, setEmail] = useState("admin@millledger.local");
