@@ -186,7 +186,7 @@ server/src/modules/production/production.service.ts:448:        await tx.product
 |---|---|---|---|
 | **F-023** | P1 | `VERIFIED` | Backend lacks user and role management API endpoints; super admin accounts rely on hardcoded seeded credentials without last-admin demotion safeguards or MFA |
 | **F-024** | P2 | `VERIFIED` | Better Auth password reset endpoint is unconfigured (returns 404); account lockout is not implemented after repeated authentication failures |
-| **F-028** | P2 | `OPEN` | Dexie IndexedDB fails to purge sensitive customer PII and pending offline orders upon user sign-out |
+| **F-028** | P2 | `VERIFIED` | Dexie IndexedDB fails to purge sensitive customer PII and pending offline orders upon user sign-out |
 | **F-029** | P2 | `OPEN` | CI pipeline uses mutable GitHub Action references, lacks package manager release-age protection, and exposes unconstrained database seeds |
 | **F-084** | P2 | `WONT-FIX` | Plaintext Sensitive Customer PII and Outbox Orders Persist in IndexedDB Across User Logout and Account Switches |
 
