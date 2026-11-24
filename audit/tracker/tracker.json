@@ -5034,7 +5034,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -5042,12 +5042,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-054.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "d7c17aa",
+        "evidenceLink": "audit/evidence/verify/F-054/10-summary.txt",
+        "note": "Resolved WCAG 2.5.3 Label in Name mismatch by ensuring accessible name begins with visible button label in both languages."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-054-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-054-regression.test.ts",
+    "fixCommit": "d7c17aa",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-054/01-git-status.txt",
+      "audit/evidence/verify/F-054/02-regression-test.txt",
+      "audit/evidence/verify/F-054/03-typecheck.txt",
+      "audit/evidence/verify/F-054/04-lint.txt",
+      "audit/evidence/verify/F-054/05-build.txt",
+      "audit/evidence/verify/F-054/06-invariants.txt",
+      "audit/evidence/verify/F-054/07-benchmark.txt",
+      "audit/evidence/verify/F-054/08-test-suite.txt",
+      "audit/evidence/verify/F-054/09-diff.txt",
+      "audit/evidence/verify/F-054/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",
