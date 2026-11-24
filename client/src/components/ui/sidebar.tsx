@@ -282,8 +282,7 @@ export function Sidebar({
       data-collapsible={state === "collapsed" ? collapsible : ""}
       className={cn(
         "group hidden md:flex h-svh flex-col bg-sidebar border-r border-sidebar-border",
-        "transition-[width] duration-220 ease-[cubic-bezier(0.2,0,0,1)]",
-        "motion-reduce:transition-none shrink-0",
+        "shrink-0",
         state === "expanded" ? "overflow-visible" : "overflow-hidden",
         variant === "floating" &&
           "rounded-panel border shadow-menu m-2 h-[calc(100svh-1rem)]",
@@ -712,7 +711,7 @@ export function SidebarRail({ className, ...props }: ComponentProps<"button">) {
       title="Resize sidebar"
       className={cn(
         "absolute inset-y-0 z-20 hidden w-6 min-w-6 -translate-x-1/2 cursor-col-resize",
-        "transition-all ease-linear",
+        "transition-colors duration-150",
         "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5",
         "hover:after:bg-border group-data-[side=left]:right-0 md:flex",
         className,

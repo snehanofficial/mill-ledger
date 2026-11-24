@@ -320,20 +320,25 @@ select {
 [data-radix-collapsible-content][data-state="closed"] {
   animation: collapsible-close 120ms cubic-bezier(0.4, 0, 1, 1);
 }
+/* F-063: GPU-composited accordion transitions avoiding layout-thrashing height mutation */
 @keyframes collapsible-open {
   from {
-    height: 0;
+    opacity: 0;
+    transform: translateY(-4px);
   }
   to {
-    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 @keyframes collapsible-close {
   from {
-    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+    transform: translateY(0);
   }
   to {
-    height: 0;
+    opacity: 0;
+    transform: translateY(-4px);
   }
 }
 
