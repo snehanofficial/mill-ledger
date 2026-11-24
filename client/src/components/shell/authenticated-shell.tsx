@@ -48,9 +48,12 @@ import {
   UsersIcon,
   BookOpenIcon,
   HelpCircleIcon,
+  SunIcon,
+  MoonIcon,
 } from "lucide-react";
 
 import { useLanguage } from "@/lib/i18n";
+import { useTheme } from "@/hooks/use-theme";
 
 import { cn } from "@/lib/utils";
 import {
@@ -520,6 +523,7 @@ function SidebarUserMenu({
   const navigate = useNavigate();
   const { isMobile, setOpenMobile, state } = useSidebar();
   const { t } = useLanguage();
+  const { resolvedTheme, toggleTheme } = useTheme();
   const isCollapsed = state === "collapsed" && !isMobile;
 
   return (
@@ -604,6 +608,28 @@ function SidebarUserMenu({
                 aria-hidden
               />
               {t("Documentation & Guide", "Documentation & Guide")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={toggleTheme}
+              className="cursor-pointer"
+            >
+              {resolvedTheme === "dark" ? (
+                <>
+                  <SunIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Light mode", "Light mode")}
+                </>
+              ) : (
+                <>
+                  <MoonIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Dark mode", "Dark mode")}
+                </>
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -871,6 +897,7 @@ function StickyHeader({
 }: StickyHeaderProps) {
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
   const { language, setLanguage, t } = useLanguage();
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   return (
     <header
@@ -926,6 +953,30 @@ function StickyHeader({
           className="h-8 px-2 text-xs font-semibold cursor-pointer text-muted-foreground hover:text-foreground"
         >
           {language === "en" ? "தமிழ்" : "EN"}
+        </Button>
+
+        {/* Theme switch toggle (F-050) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          aria-label={
+            resolvedTheme === "dark"
+              ? t("Switch to light mode", "Switch to light mode")
+              : t("Switch to dark mode", "Switch to dark mode")
+          }
+          title={
+            resolvedTheme === "dark"
+              ? t("Switch to light mode", "Switch to light mode")
+              : t("Switch to dark mode", "Switch to dark mode")
+          }
+          className="size-8 text-muted-foreground hover:text-foreground cursor-pointer"
+        >
+          {resolvedTheme === "dark" ? (
+            <SunIcon className="size-4" aria-hidden="true" />
+          ) : (
+            <MoonIcon className="size-4" aria-hidden="true" />
+          )}
         </Button>
 
         {/* Sync status: fixed-width area to prevent layout shift */}
@@ -1011,6 +1062,28 @@ function StickyHeader({
                 aria-hidden
               />
               Documentation & Guide
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={toggleTheme}
+              className="cursor-pointer"
+            >
+              {resolvedTheme === "dark" ? (
+                <>
+                  <SunIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Light mode", "Light mode")}
+                </>
+              ) : (
+                <>
+                  <MoonIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Dark mode", "Dark mode")}
+                </>
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
