@@ -3,10 +3,11 @@ import { resolve } from "path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "../db/client.js";
 import { resetOperationalData } from "../db/reset.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
 
 const migrationFile = resolve(
   __dirname,
-  "../prisma/migrations/20261120000002_ledger_immutability_triggers/migration.sql"
+  "../../prisma/migrations/20261120000002_ledger_immutability_triggers/migration.sql"
 );
 
 describe("F-009: Database-Level Immutability Enforcement", () => {
@@ -14,6 +15,8 @@ describe("F-009: Database-Level Immutability Enforcement", () => {
     expect(existsSync(migrationFile)).toBe(true);
     const sql = readFileSync(migrationFile, "utf-8");
     await prisma.$executeRawUnsafe(sql);
+    await resetOperationalData();
+    await seedBenchmarkMasters();
   });
 
   afterAll(async () => {
