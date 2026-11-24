@@ -350,3 +350,9 @@ select {
     animation: none;
   }
 }
+
+/* F-055: Touch target sizing utility (WCAG 2.2 SC 2.5.8 & Apple HIG) */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}

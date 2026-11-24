@@ -257,9 +257,9 @@ export function DeviceOutboxSheet({
                         variant="outline"
                         size="sm"
                         onClick={() => retryOrder(ord.id)}
-                        className="h-6 px-2 text-2xs gap-1"
+                        className="h-8 min-h-[32px] px-2.5 text-xs gap-1 sm:h-7 sm:min-h-[28px] sm:px-2 sm:text-2xs"
                       >
-                        <RotateCcwIcon className="size-3" />
+                        <RotateCcwIcon className="size-3.5 sm:size-3" />
                         {t("Retry")}
                       </Button>
                     )}
@@ -268,9 +268,9 @@ export function DeviceOutboxSheet({
                         variant="outline"
                         size="sm"
                         onClick={() => retryOrder(ord.id)}
-                        className="h-6 px-2 text-2xs gap-1"
+                        className="h-8 min-h-[32px] px-2.5 text-xs gap-1 sm:h-7 sm:min-h-[28px] sm:px-2 sm:text-2xs"
                       >
-                        <RefreshCwIcon className="size-3" />
+                        <RefreshCwIcon className="size-3.5 sm:size-3" />
                         {t("action.sync_now", "Sync this")}
                       </Button>
                     )}
@@ -279,9 +279,9 @@ export function DeviceOutboxSheet({
                         variant="ghost"
                         size="sm"
                         onClick={() => setOrderToDiscard(ord)}
-                        className="h-6 px-2 text-2xs text-muted-foreground hover:text-destructive"
+                        className="h-8 min-h-[32px] min-w-[32px] px-2.5 text-xs text-muted-foreground hover:text-destructive sm:h-7 sm:min-h-[28px] sm:min-w-[28px] sm:px-2 sm:text-2xs"
                       >
-                        <Trash2Icon className="size-3" />
+                        <Trash2Icon className="size-3.5 sm:size-3" />
                         Discard
                       </Button>
                     )}

@@ -401,7 +401,7 @@ export function SuppliersPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleStartEdit(s)}
-                          className="h-7 gap-1 text-xs"
+                          className="h-8 min-h-[32px] px-2.5 gap-1 text-xs sm:h-7 sm:min-h-[28px] sm:px-2"
                         >
                           <Edit2Icon className="size-3" />
                           Edit

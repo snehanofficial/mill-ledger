@@ -39,7 +39,7 @@ function BreadcrumbLink({
       children as React.ReactElement<{ className?: string }>,
       {
         className: cn(
-          "transition-colors hover:text-foreground text-muted-foreground font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
+          "transition-colors hover:text-foreground text-muted-foreground font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm inline-flex items-center min-h-6 min-w-6 py-0.5",
           (children.props as { className?: string }).className,
           className,
         ),
@@ -49,7 +49,7 @@ function BreadcrumbLink({
   return (
     <a
       className={cn(
-        "transition-colors hover:text-foreground text-muted-foreground font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
+        "transition-colors hover:text-foreground text-muted-foreground font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm inline-flex items-center min-h-6 min-w-6 py-0.5",
         className,
       )}
       {...props}

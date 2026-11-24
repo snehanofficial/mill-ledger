@@ -537,7 +537,7 @@ export function OrdersPage() {
               variant={activeTab === "stream" ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("stream")}
-              className="text-xs h-7 font-medium cursor-pointer"
+              className="text-xs h-8 min-h-[32px] px-2.5 font-medium cursor-pointer sm:h-7 sm:min-h-[28px] sm:px-2"
             >
               All orders ({orders.length})
             </Button>
@@ -545,7 +545,7 @@ export function OrdersPage() {
               variant={activeTab === "outbox" ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("outbox")}
-              className="text-xs h-7 font-medium flex items-center gap-1.5 cursor-pointer"
+              className="text-xs h-8 min-h-[32px] px-2.5 font-medium flex items-center gap-1.5 cursor-pointer sm:h-7 sm:min-h-[28px] sm:px-2"
             >
               <DatabaseIcon className="size-3" />
               Device outbox
@@ -940,9 +940,9 @@ export function OrdersPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => retryOrder(ord.id)}
-                              className="h-6 px-2 text-2xs gap-1"
+                              className="h-8 min-h-[32px] px-2.5 text-xs gap-1 sm:h-7 sm:min-h-[28px] sm:px-2 sm:text-2xs"
                             >
-                              <RotateCcwIcon className="size-3" />
+                              <RotateCcwIcon className="size-3.5 sm:size-3" />
                               Retry
                             </Button>
                           )}
@@ -951,9 +951,9 @@ export function OrdersPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => retryOrder(ord.id)}
-                              className="h-6 px-2 text-2xs gap-1"
+                              className="h-8 min-h-[32px] px-2.5 text-xs gap-1 sm:h-7 sm:min-h-[28px] sm:px-2 sm:text-2xs"
                             >
-                              <RefreshCwIcon className="size-3" />
+                              <RefreshCwIcon className="size-3.5 sm:size-3" />
                               Sync
                             </Button>
                           )}
@@ -962,9 +962,9 @@ export function OrdersPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => removeOrder(ord.id)}
-                              className="h-6 px-2 text-2xs text-muted-foreground hover:text-destructive"
+                              className="h-8 min-h-[32px] min-w-[32px] px-2.5 text-xs text-muted-foreground hover:text-destructive sm:h-7 sm:min-h-[28px] sm:min-w-[28px] sm:px-2 sm:text-2xs"
                             >
-                              <Trash2Icon className="size-3" />
+                              <Trash2Icon className="size-3.5 sm:size-3" />
                             </Button>
                           )}
                         </div>
@@ -1075,7 +1075,7 @@ export function OrdersPage() {
                                   setSelectedOrderForAction(o);
                                   setActionType("APPROVE");
                                 }}
-                                className="h-7 text-xs text-emerald-600 hover:text-emerald-700"
+                                className="h-8 min-h-[32px] px-2.5 text-xs text-emerald-600 hover:text-emerald-700 sm:h-7 sm:min-h-[28px] sm:px-2"
                               >
                                 Approve
                               </Button>
@@ -1086,7 +1086,7 @@ export function OrdersPage() {
                                   setSelectedOrderForAction(o);
                                   setActionType("REJECT");
                                 }}
-                                className="h-7 text-xs text-destructive hover:bg-destructive/10"
+                                className="h-8 min-h-[32px] px-2.5 text-xs text-destructive hover:bg-destructive/10 sm:h-7 sm:min-h-[28px] sm:px-2"
                               >
                                 Reject
                               </Button>
@@ -1105,7 +1105,7 @@ export function OrdersPage() {
                                     createInvoiceMutation.mutate(o.id)
                                   }
                                   disabled={createInvoiceMutation.isPending}
-                                  className="h-7 text-xs text-primary hover:bg-primary/10 border-primary/30"
+                                  className="h-8 min-h-[32px] px-2.5 text-xs text-primary hover:bg-primary/10 border-primary/30 sm:h-7 sm:min-h-[28px] sm:px-2"
                                 >
                                   {createInvoiceMutation.isPending
                                     ? "Invoicing..."

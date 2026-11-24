@@ -569,7 +569,7 @@ export function InvoicesPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => setSelectedInvoice(inv)}
-                          className="h-7 text-xs"
+                          className="h-8 min-h-[32px] px-2.5 text-xs sm:h-7 sm:min-h-[28px] sm:px-2"
                         >
                           <PrinterIcon className="h-3.5 w-3.5 mr-1" />
                           View
@@ -585,7 +585,7 @@ export function InvoicesPage() {
                               );
                               setShowCreditNoteModal(true);
                             }}
-                            className="h-7 text-xs text-destructive hover:bg-destructive/10"
+                            className="h-8 min-h-[32px] px-2.5 text-xs text-destructive hover:bg-destructive/10 sm:h-7 sm:min-h-[28px] sm:px-2"
                           >
                             Credit note
                           </Button>

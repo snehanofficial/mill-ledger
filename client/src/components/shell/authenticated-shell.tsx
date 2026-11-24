@@ -1322,7 +1322,7 @@ export function AuthenticatedShell({
                     size="sm"
                     onClick={syncManager.syncNow}
                     disabled={syncManager.syncing}
-                    className="h-7 text-xs font-medium cursor-pointer"
+                    className="h-8 min-h-[32px] px-2.5 text-xs font-medium cursor-pointer sm:h-7 sm:min-h-[28px] sm:px-2"
                   >
                     Sync now
                   </Button>
@@ -1331,7 +1331,7 @@ export function AuthenticatedShell({
                   variant="outline"
                   size="sm"
                   onClick={() => setOutboxOpen(true)}
-                  className="h-7 text-xs cursor-pointer"
+                  className="h-8 min-h-[32px] px-2.5 text-xs cursor-pointer sm:h-7 sm:min-h-[28px] sm:px-2"
                 >
                   View outbox
                 </Button>
@@ -1418,7 +1418,7 @@ export function AuthenticatedShell({
                     variant="ghost"
                     size="sm"
                     onClick={markAllAsRead}
-                    className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                    className="h-8 min-h-[32px] px-2.5 text-xs text-muted-foreground hover:text-foreground sm:h-7 sm:min-h-[28px] sm:px-2"
                   >
                     Mark all read
                   </Button>
@@ -1430,7 +1430,7 @@ export function AuthenticatedShell({
                     onClick={clearNotifications}
                     aria-label="Clear all notifications"
                     title="Clear all notifications"
-                    className="size-7 text-muted-foreground hover:text-destructive"
+                    className="size-8 min-h-8 min-w-8 text-muted-foreground hover:text-destructive"
                   >
                     <Trash2Icon className="size-3.5" aria-hidden="true" />
                   </Button>

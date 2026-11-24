@@ -711,7 +711,7 @@ export function SidebarRail({ className, ...props }: ComponentProps<"button">) {
       onClick={toggleSidebar}
       title="Resize sidebar"
       className={cn(
-        "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 cursor-col-resize",
+        "absolute inset-y-0 z-20 hidden w-6 min-w-6 -translate-x-1/2 cursor-col-resize",
         "transition-all ease-linear",
         "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5",
         "hover:after:bg-border group-data-[side=left]:right-0 md:flex",
