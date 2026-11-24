@@ -350,7 +350,7 @@ client/src/pages/payments-page.tsx:897:                    placeholder="e.g. 400
 | **F-001** | P1 | `VERIFIED` | Duplicate "Skip to main content" links violate Playwright strict mode and degrade keyboard navigation |
 | **F-044** | P2 | `WONT-FIX` | Touch Targets Below Minimum 44x44px Across Mobile Viewports |
 | **F-051** | P1 | `VERIFIED` | Missing Accessible Name and APG Dialog Semantics on Core Modal Overlays |
-| **F-052** | P1 | `OPEN` | Unassociated Form Labels and Missing Accessible Names Across Operational Forms |
+| **F-052** | P1 | `VERIFIED` | Unassociated Form Labels and Missing Accessible Names Across Operational Forms |
 | **F-053** | P1 | `OPEN` | and Absence of Route Transition Announcements for Screen Readers |
 | **F-054** | P2 | `OPEN` | Label in Name Mismatch on Multilingual Language Switcher |
 | **F-055** | P2 | `OPEN` | Interactive Touch Targets Below WCAG 2.5.8 Minimum (24x24px) and Apple HIG (44x44px) |

@@ -4846,15 +4846,20 @@
       "Value - Level A)"
     ],
     "files": [
-      "client/src/pages/orders-page.ts",
-      "client/src/pages/production-page.ts",
-      "client/src/pages/purchases-page.ts",
-      "client/src/pages/payments-page.ts",
-      "client/src/pages/dispatch-page.ts"
+      "client/src/pages/orders-page.tsx",
+      "client/src/pages/invoices-page.tsx",
+      "client/src/pages/production-page.tsx",
+      "client/src/pages/purchases-page.tsx",
+      "client/src/pages/payments-page.tsx",
+      "client/src/pages/dispatch-page.tsx",
+      "client/src/pages/suppliers-page.tsx",
+      "client/src/pages/settings-page.tsx",
+      "client/src/pages/reports-page.tsx",
+      "client/src/components/shell/authenticated-shell.tsx"
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -4862,12 +4867,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-052.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "c49b737",
+        "evidenceLink": "audit/evidence/verify/F-052/10-summary.txt",
+        "note": "VERIFIED: Programmatic label associations (htmlFor <-> id) and accessible names (aria-label) added to all inputs, selects, textareas, and search filters across orders, invoices, production, purchases, payments, dispatch, suppliers, settings, reports, and global command search. 10-point verification passed with 0 errors."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-052-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-052-regression.test.ts",
+    "fixCommit": "c49b737",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-052/01-git-status.txt",
+      "audit/evidence/verify/F-052/02-typecheck.txt",
+      "audit/evidence/verify/F-052/03-lint.txt",
+      "audit/evidence/verify/F-052/04-build.txt",
+      "audit/evidence/verify/F-052/05-invariants.txt",
+      "audit/evidence/verify/F-052/06-benchmark.txt",
+      "audit/evidence/verify/F-052/07-regression-test.txt",
+      "audit/evidence/verify/F-052/08-test-suite.txt",
+      "audit/evidence/verify/F-052/09-diff.txt",
+      "audit/evidence/verify/F-052/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",
