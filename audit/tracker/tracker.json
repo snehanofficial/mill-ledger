@@ -4943,14 +4943,11 @@
       "W3C SPA Accessibility Guidelines"
     ],
     "files": [
-      "client/src/routes/route-handles.ts",
-      "client/src/components/shell/authenticated-shell.ts",
-      "client/index.html",
-      "client/src/app.ts"
+      "client/src/layouts/authenticated-layout.tsx"
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -4958,12 +4955,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-053.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "8b3debb",
+        "evidenceLink": "audit/evidence/verify/F-053/10-summary.txt",
+        "note": "VERIFIED: Added persistent #route-announcer live region (role=status, aria-live=polite, aria-atomic=true, sr-only) in AuthenticatedLayout. Dynamically synchronizes document.title to ${label} | MillLedger and announces ${label} view loaded on route transitions. Resets keyboard focus to #main-content. 10-point verification passed with 0 errors."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-053-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-053-regression.test.ts",
+    "fixCommit": "8b3debb",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-053/01-git-status.txt",
+      "audit/evidence/verify/F-053/02-typecheck.txt",
+      "audit/evidence/verify/F-053/03-lint.txt",
+      "audit/evidence/verify/F-053/04-build.txt",
+      "audit/evidence/verify/F-053/05-invariants.txt",
+      "audit/evidence/verify/F-053/06-benchmark.txt",
+      "audit/evidence/verify/F-053/07-regression-test.txt",
+      "audit/evidence/verify/F-053/08-test-suite.txt",
+      "audit/evidence/verify/F-053/09-diff.txt",
+      "audit/evidence/verify/F-053/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",
