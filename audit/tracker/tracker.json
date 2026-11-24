@@ -5723,7 +5723,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -5731,12 +5731,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-062.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "8517041",
+        "evidenceLink": "audit/evidence/verify/F-062/10-summary.txt",
+        "note": "Implemented custom useMotion hook, data-reduce-motion / motion-paused styles, data-pause-motion controls in header and user menus, finite pulse (<=4s) on syncing badges, and motion-reduce:animate-none on skeletons per WCAG 2.2 SC 2.2.2."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-062-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-062-regression.test.ts",
+    "fixCommit": "8517041",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-062/01-git-status.txt",
+      "audit/evidence/verify/F-062/02-regression-test.txt",
+      "audit/evidence/verify/F-062/03-typecheck.txt",
+      "audit/evidence/verify/F-062/04-lint.txt",
+      "audit/evidence/verify/F-062/05-build.txt",
+      "audit/evidence/verify/F-062/06-invariants.txt",
+      "audit/evidence/verify/F-062/07-benchmark.txt",
+      "audit/evidence/verify/F-062/08-test-suite.txt",
+      "audit/evidence/verify/F-062/09-diff.txt",
+      "audit/evidence/verify/F-062/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'transition-\\|animate-' client/src/ | grep -v 'motion-reduce' | head -n 25",
