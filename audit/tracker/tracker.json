@@ -8981,7 +8981,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -8989,12 +8989,27 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-103.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "e9cb60b",
+        "evidenceLink": "audit/evidence/verify/F-103/verification.md",
+        "note": "Configured Prometheus /metrics endpoint, client & server source maps, React ErrorBoundary fallback, Prometheus alerting rules, and operational runbook. 7/7 regression tests pass."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-103-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm exec vitest run audit/tests/f-103-regression.test.ts --config /dev/null",
+    "regressionTest": "audit/tests/f-103-regression.test.ts",
+    "fixCommit": "e9cb60b",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-103/verification.md",
+      "audit/evidence/verify/F-103/regression-test.txt",
+      "audit/evidence/verify/F-103/typecheck.txt",
+      "audit/evidence/verify/F-103/lint.txt",
+      "audit/evidence/verify/F-103/benchmark.txt",
+      "audit/evidence/verify/F-103/invariants.txt",
+      "audit/evidence/verify/F-103/suite-tests.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
@@ -9027,7 +9042,7 @@
       ]
     },
     "needsApproval": "none",
-    "notes": ""
+    "notes": "Decoupled from F-070 per Option 2 directive; implemented prom-client metrics endpoint /metrics, enabled client and server source maps, added React ErrorBoundary, and created Prometheus alert rules."
   },
   {
     "id": "F-104",

@@ -1,0 +1,16 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | audit/tests/f-103-regression.test.ts > F-103 Regression: Observability, Metrics, Source Maps, and Error Boundaries > ensures Prometheus /metrics endpoint is mounted and exposes default and HTTP metrics
+{"level":"INFO","timestamp":"2026-11-24T10:30:40.251Z","requestId":"41409ad0-02cb-4c15-81e7-f0af9608ab8c","method":"GET","path":"/api/v1/health","statusCode":200,"durationMs":5,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | audit/tests/f-103-regression.test.ts > F-103 Regression: Observability, Metrics, Source Maps, and Error Boundaries > ensures Prometheus /metrics endpoint is mounted and exposes default and HTTP metrics
+{"level":"INFO","timestamp":"2026-11-24T10:30:40.263Z","requestId":"e6dd6c3c-3a1c-4d09-8a13-b09da9aae4ab","method":"GET","path":"/metrics","statusCode":200,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+ ✓ audit/tests/f-103-regression.test.ts (7 tests) 39ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  16:00:39
+   Duration  1.15s (transform 298ms, setup 0ms, collect 720ms, tests 39ms, environment 0ms, prepare 62ms)
+
