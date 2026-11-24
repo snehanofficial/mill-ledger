@@ -8225,7 +8225,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -8233,12 +8233,27 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-002.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "d205c44",
+        "evidenceLink": "audit/evidence/verify/F-002/verification.md",
+        "note": "Updated README quick start command to cp .env.example server/.env, added server/.env.example fallback, and updated backend port to 4000. 3/3 regression tests pass."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-002-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm exec vitest run audit/tests/f-002-regression.test.ts --config /dev/null",
+    "regressionTest": "audit/tests/f-002-regression.test.ts",
+    "fixCommit": "d205c44",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-002/verification.md",
+      "audit/evidence/verify/F-002/regression-test.txt",
+      "audit/evidence/verify/F-002/typecheck.txt",
+      "audit/evidence/verify/F-002/lint.txt",
+      "audit/evidence/verify/F-002/benchmark.txt",
+      "audit/evidence/verify/F-002/invariants.txt",
+      "audit/evidence/verify/F-002/suite-tests.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
@@ -8271,7 +8286,7 @@
       ]
     },
     "needsApproval": "none",
-    "notes": ""
+    "notes": "Decoupled from F-070 per Option 2 directive; corrected environment template copy instruction to .env.example, added server/.env.example, and updated backend port to 4000."
   },
   {
     "id": "F-003",

@@ -542,7 +542,7 @@ client/src/pages/reports-page.tsx:643:                request metadata
 
 | ID | Sev | Status | Title |
 |---|---|---|---|
-| **F-002** | P2 | `OPEN` | README instructions specify nonexistent `server/.env.example` path and incorrect backend port 3000 |
+| **F-002** | P2 | `VERIFIED` | README instructions specify nonexistent `server/.env.example` path and incorrect backend port 3000 |
 | **F-003** | P1 | `VERIFIED` | README command `pnpm --filter @mill-ledger/server prisma db seed` fails silently without seeding records |
 | **F-005** | P3 | `VERIFIED` | Unused dependency `cn@^0.5.2` installed in client package.json alongside `clsx` and `tailwind-merge` |
 | **F-094** | P2 | `VERIFIED` | Dead Code, Orphaned Stubs, and Dependency Bloat (10 Unused Dependencies, Orphaned Dictionary, and 22 Dead Placeholder Pages) |
