@@ -20,6 +20,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
   Dialog,
@@ -572,45 +580,45 @@ export function ProductionPage() {
             {/* Recipe BOM selection (MLD-010) */}
               <div className="flex flex-col gap-1.5">
                 <DomainTooltip term="BOM">
-                  <label
+                  <Label
                     htmlFor="production-recipe-select"
                     className="text-xs font-semibold text-muted-foreground cursor-help"
                   >
                     {t("Bill of Materials (BOM) Recipe")}
-                  </label>
+                  </Label>
                 </DomainTooltip>
-                <select
-                  id="production-recipe-select"
-                  value={selectedRecipeId}
-                  onChange={(e) => setSelectedRecipeId(e.target.value)}
-                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                <Select
+                  value={selectedRecipeId || undefined}
+                  onValueChange={setSelectedRecipeId}
                 >
-                  {(recipesData?.recipes || []).map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name} — Target: {r.expectedOutputQty} pkts
-                    </option>
-                  ))}
-                  {(!recipesData?.recipes || recipesData.recipes.length === 0) && (
-                    <option value="">Murukku 200 g (Standard BOM)</option>
-                  )}
-                </select>
+                  <SelectTrigger id="production-recipe-select" className="font-medium">
+                    <SelectValue placeholder="Murukku 200 g (Standard BOM)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(recipesData?.recipes || []).map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name} — Target: {r.expectedOutputQty} pkts
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Output inputs */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="production-good-qty-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     {t("Good packets produced")}
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="production-good-qty-input"
                     type="number"
                     value={actualGoodQty}
                     onChange={(e) => setActualGoodQty(Number(e.target.value))}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-semibold"
+                    className="font-semibold"
                   />
                   <div className="flex items-center gap-1 text-xs">
                     <span>{t("Variance")}:</span>
@@ -634,18 +642,17 @@ export function ProductionPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="production-damaged-pouches-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     {t("Damaged pouches")}
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="production-damaged-pouches-input"
                     type="number"
                     value={damagedPouches}
                     onChange={(e) => setDamagedPouches(Number(e.target.value))}
-                    className="rounded-md border bg-background px-3 py-2 text-sm"
                   />
                   <span className="text-xs text-muted-foreground">
                     Total pouches consumed: {actualGoodQty + damagedPouches}
@@ -656,19 +663,18 @@ export function ProductionPage() {
               {/* Material consumption inputs */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="production-oil-consumed-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     {t("Cooking oil consumed (L)")}
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="production-oil-consumed-input"
                     type="number"
                     step="0.1"
                     value={oilConsumed}
                     onChange={(e) => setOilConsumed(Number(e.target.value))}
-                    className="rounded-md border bg-background px-3 py-2 text-sm"
                   />
                   <div className="flex items-center gap-1 text-xs">
                     <span>{t("Variance")}:</span>
@@ -692,18 +698,17 @@ export function ProductionPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="production-cartons-consumed-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     {t("Cartons used (pieces)")}
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="production-cartons-consumed-input"
                     type="number"
                     value={cartonsConsumed}
                     onChange={(e) => setCartonsConsumed(Number(e.target.value))}
-                    className="rounded-md border bg-background px-3 py-2 text-sm"
                   />
                   <span className="text-xs text-muted-foreground">
                     Capacity: {cartonsHold} packets
@@ -729,51 +734,50 @@ export function ProductionPage() {
               {/* Additional Costs */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="production-labor-cost-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     {t("Direct labour cost (₹)")}
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="production-labor-cost-input"
                     type="number"
                     value={laborCost}
                     onChange={(e) => setLaborCost(Number(e.target.value))}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-semibold"
+                    className="font-semibold"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="production-utility-cost-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     {t("Gas and power cost (₹)")}
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="production-utility-cost-input"
                     type="number"
                     value={utilityCost}
                     onChange={(e) => setUtilityCost(Number(e.target.value))}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-semibold"
+                    className="font-semibold"
                   />
                 </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label
+                <Label
                   htmlFor="production-notes-input"
                   className="text-xs font-semibold text-muted-foreground"
                 >
                   {t("Notes")}
-                </label>
-                <input
+                </Label>
+                <Input
                   id="production-notes-input"
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm"
                 />
               </div>
 
@@ -859,18 +863,17 @@ export function ProductionPage() {
             </DialogHeader>
 
             <div className="mt-2 flex flex-col gap-2">
-              <label
+              <Label
                 htmlFor="reversal-reason-input"
                 className="text-xs font-semibold text-muted-foreground"
               >
                 {t("Reason for reversal")}
-              </label>
-              <input
+              </Label>
+              <Input
                 id="reversal-reason-input"
                 type="text"
                 placeholder={t("e.g. Quality inspection failed on batch")}
                 defaultValue="Batch quality inspection failed"
-                className="rounded-md border bg-background px-3 py-2 text-sm"
               />
             </div>
 

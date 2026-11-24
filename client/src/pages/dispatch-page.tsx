@@ -20,6 +20,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
   Dialog,
@@ -618,52 +626,57 @@ export function DispatchPage() {
               )}
 
               <div className="flex flex-col gap-1.5">
-                <label
+                <Label
                   htmlFor="dispatch-order-select"
                   className="text-xs font-semibold text-foreground"
                 >
                   Select approved sales order *
-                </label>
+                </Label>
                 {eligibleOrders.length === 0 ? (
                   <div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
                     No approved orders ready for dispatch. Please approve an
                     order first.
                   </div>
                 ) : (
-                  <select
-                    id="dispatch-order-select"
-                    value={selectedOrderId}
-                    onChange={(e) => setSelectedOrderId(e.target.value)}
-                    className="w-full h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                  <Select
+                    value={selectedOrderId || undefined}
+                    onValueChange={setSelectedOrderId}
                     required
                   >
-                    <option value="">Choose an order to dispatch...</option>
-                    {eligibleOrders.map((order) => {
-                      const totalQty = order.lines.reduce(
-                        (sum, l) =>
-                          sum + (l.approvedQuantity - l.dispatchedQuantity),
-                        0,
-                      );
-                      return (
-                        <option key={order.id} value={order.id}>
-                          {order.orderNumber} (
-                          {order.customer?.name || "Customer"}) | Remaining:{" "}
-                          {totalQty} units
-                        </option>
-                      );
-                    })}
-                  </select>
+                    <SelectTrigger
+                      id="dispatch-order-select"
+                      className="font-medium"
+                    >
+                      <SelectValue placeholder="Choose an order to dispatch..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {eligibleOrders.map((order) => {
+                        const totalQty = order.lines.reduce(
+                          (sum, l) =>
+                            sum + (l.approvedQuantity - l.dispatchedQuantity),
+                          0,
+                        );
+                        return (
+                          <SelectItem key={order.id} value={order.id}>
+                            {order.orderNumber} (
+                            {order.customer?.name || "Customer"}) | Remaining:{" "}
+                            {totalQty} units
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
                 )}
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="dispatch-vehicle-input"
                     className="text-xs font-semibold text-foreground"
                   >
                     Vehicle number
-                  </label>
+                  </Label>
                   <Input
                     id="dispatch-vehicle-input"
                     placeholder="e.g. TN 38 AB 1234"
@@ -674,12 +687,12 @@ export function DispatchPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="dispatch-driver-name-input"
                     className="text-xs font-semibold text-foreground"
                   >
                     Driver name
-                  </label>
+                  </Label>
                   <Input
                     id="dispatch-driver-name-input"
                     placeholder="e.g. Ravi Kumar"
@@ -691,12 +704,12 @@ export function DispatchPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label
+                <Label
                   htmlFor="dispatch-driver-phone-input"
                   className="text-xs font-semibold text-foreground"
                 >
                   Driver phone number
-                </label>
+                </Label>
                 <Input
                   id="dispatch-driver-phone-input"
                   placeholder="e.g. 9876543210"
@@ -707,12 +720,12 @@ export function DispatchPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label
+                <Label
                   htmlFor="dispatch-notes-input"
                   className="text-xs font-semibold text-foreground"
                 >
                   Dispatch notes
-                </label>
+                </Label>
                 <Input
                   id="dispatch-notes-input"
                   placeholder="e.g. Dispatched via standard carrier"

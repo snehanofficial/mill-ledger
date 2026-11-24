@@ -13,6 +13,15 @@ import { formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   ArrowLeftIcon,
   CheckCircle2Icon,
@@ -374,24 +383,27 @@ export function NewOrderPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Customer Picker */}
             <div className="flex flex-col gap-1.5">
-              <label
+              <Label
                 htmlFor={customerSelectId}
                 className="text-xs font-semibold text-muted-foreground"
               >
                 Select Customer / Retailer
-              </label>
-              <select
-                id={customerSelectId}
-                value={selectedCustomerId}
-                onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+              </Label>
+              <Select
+                value={selectedCustomerId || undefined}
+                onValueChange={setSelectedCustomerId}
               >
-                {customersList.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c.code}) — {c.state}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id={customerSelectId} className="font-medium">
+                  <SelectValue placeholder="Select customer..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {customersList.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name} ({c.code}) — {c.state}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                 <span>Place of Supply: <strong>{customerState}</strong></span>
                 <span>•</span>
@@ -403,19 +415,18 @@ export function NewOrderPage() {
 
             {/* Order Reference Notes */}
             <div className="flex flex-col gap-1.5">
-              <label
+              <Label
                 htmlFor={notesInputId}
                 className="text-xs font-semibold text-muted-foreground"
               >
                 Order Notes & Transport Reference
-              </label>
-              <input
+              </Label>
+              <Input
                 id={notesInputId}
                 type="text"
                 value={orderNotes}
                 onChange={(e) => setOrderNotes(e.target.value)}
                 placeholder="e.g. Weekly shop delivery, via local van carrier"
-                className="rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <span className="text-xs text-muted-foreground mt-0.5">
                 Included in dispatch delivery challan and invoice notes
@@ -600,33 +611,37 @@ export function NewOrderPage() {
 
                       {/* Accessible 44x44px Touch Targets Stepper */}
                       <div className="flex items-center gap-1.5">
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="icon"
                           aria-label={`Decrease quantity of ${product.name}`}
                           onClick={() => handleStep(product, -10)}
                           disabled={qty === 0}
-                          className="min-w-[44px] min-h-[44px] size-11 flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted active:scale-95 text-foreground font-bold text-base transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="min-w-[44px] min-h-[44px] size-11 font-bold text-base"
                         >
                           <MinusIcon className="size-4" />
-                        </button>
+                        </Button>
 
-                        <input
+                        <Input
                           type="number"
                           min="0"
                           value={qty}
                           onChange={(e) => updateQuantity(product, Number(e.target.value))}
                           aria-label={`Quantity of ${product.name}`}
-                          className="w-16 h-11 text-center font-mono font-bold text-base border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-16 h-11 px-2 text-center font-mono font-bold text-base"
                         />
 
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="icon"
                           aria-label={`Increase quantity of ${product.name}`}
                           onClick={() => handleStep(product, 10)}
-                          className="min-w-[44px] min-h-[44px] size-11 flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted active:scale-95 text-foreground font-bold text-base transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="min-w-[44px] min-h-[44px] size-11 font-bold text-base"
                         >
                           <PlusIcon className="size-4" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
 

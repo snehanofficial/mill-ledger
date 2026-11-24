@@ -19,7 +19,16 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import { toast } from "sonner";
@@ -494,19 +503,25 @@ export function PaymentsPage() {
                 className="h-8 w-44 text-xs"
                 aria-label="Search payments"
               />
-              <select
+              <Select
                 value={modeFilter}
-                onChange={(e) => setModeFilter(e.target.value)}
-                className="h-9 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-3 py-1 text-xs font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
-                aria-label="Filter payments by mode"
+                onValueChange={setModeFilter}
               >
-                <option value="ALL">All modes</option>
-                <option value="BANK_TRANSFER">Bank transfer</option>
-                <option value="NEFT_RTGS">NEFT / RTGS</option>
-                <option value="CHEQUE">Cheque</option>
-                <option value="UPI">UPI</option>
-                <option value="CASH">Cash</option>
-              </select>
+                <SelectTrigger
+                  className="h-9 w-auto min-w-36 px-3 py-1 text-xs font-medium"
+                  aria-label="Filter payments by mode"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All modes</SelectItem>
+                  <SelectItem value="BANK_TRANSFER">Bank transfer</SelectItem>
+                  <SelectItem value="NEFT_RTGS">NEFT / RTGS</SelectItem>
+                  <SelectItem value="CHEQUE">Cheque</SelectItem>
+                  <SelectItem value="UPI">UPI</SelectItem>
+                  <SelectItem value="CASH">Cash</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -1123,41 +1138,46 @@ export function PaymentsPage() {
 
               {/* Customer selection */}
               <div className="flex flex-col gap-1.5">
-                <label
+                <Label
                   htmlFor="payment-customer-select"
                   className="text-xs font-semibold text-foreground"
                 >
                   Select customer *
-                </label>
-                <select
-                  id="payment-customer-select"
-                  value={selectedCustomerId}
-                  onChange={(e) => {
-                    setSelectedCustomerId(e.target.value);
+                </Label>
+                <Select
+                  value={selectedCustomerId || undefined}
+                  onValueChange={(value) => {
+                    setSelectedCustomerId(value);
                     setManualAllocations({});
                   }}
-                  className="w-full h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                   required
                 >
-                  <option value="">Choose customer...</option>
-                  {receivables.map((cust) => (
-                    <option key={cust.customerId} value={cust.customerId}>
-                      {cust.customerName} ({cust.customerCode}) | Outstanding:{" "}
-                      {formatINR(cust.netOutstanding)}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    id="payment-customer-select"
+                    className="font-medium"
+                  >
+                    <SelectValue placeholder="Choose customer..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {receivables.map((cust) => (
+                      <SelectItem key={cust.customerId} value={cust.customerId}>
+                        {cust.customerName} ({cust.customerCode}) | Outstanding:{" "}
+                        {formatINR(cust.netOutstanding)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Amount and Payment Mode */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="payment-amount-input"
                     className="text-xs font-semibold text-foreground"
                   >
                     Receipt amount (₹) *
-                  </label>
+                  </Label>
                   <Input
                     id="payment-amount-input"
                     type="number"
@@ -1172,38 +1192,44 @@ export function PaymentsPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="payment-mode-select"
                     className="text-xs font-semibold text-foreground"
                   >
                     Payment mode *
-                  </label>
-                  <select
-                    id="payment-mode-select"
+                  </Label>
+                  <Select
                     value={paymentMode}
-                    onChange={(e) => setPaymentMode(e.target.value)}
-                    className="w-full h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                    onValueChange={setPaymentMode}
                   >
-                    <option value="BANK_TRANSFER">
-                      Bank transfer / NEFT / RTGS
-                    </option>
-                    <option value="UPI">UPI</option>
-                    <option value="CHEQUE">Cheque</option>
-                    <option value="CASH">Cash</option>
-                    <option value="DEMAND_DRAFT">Demand draft</option>
-                  </select>
+                    <SelectTrigger
+                      id="payment-mode-select"
+                      className="font-medium"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BANK_TRANSFER">
+                        Bank transfer / NEFT / RTGS
+                      </SelectItem>
+                      <SelectItem value="UPI">UPI</SelectItem>
+                      <SelectItem value="CHEQUE">Cheque</SelectItem>
+                      <SelectItem value="CASH">Cash</SelectItem>
+                      <SelectItem value="DEMAND_DRAFT">Demand draft</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               {/* Reference and Notes */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="payment-reference-input"
                     className="text-xs font-semibold text-foreground"
                   >
                     Reference number
-                  </label>
+                  </Label>
                   <Input
                     id="payment-reference-input"
                     placeholder="e.g. UTR or Cheque no"
@@ -1214,12 +1240,12 @@ export function PaymentsPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="payment-notes-input"
                     className="text-xs font-semibold text-foreground"
                   >
                     Notes
-                  </label>
+                  </Label>
                   <Input
                     id="payment-notes-input"
                     placeholder="e.g. On account settlement"
@@ -1238,21 +1264,19 @@ export function PaymentsPage() {
                       <span className="text-xs font-semibold text-foreground">
                         Invoice allocation strategy
                       </span>
-                      <label
+                      <Label
                         htmlFor="payment-custom-allocation-toggle"
-                        className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer"
+                        className="flex items-center gap-1.5 text-xs font-normal text-muted-foreground cursor-pointer"
                       >
-                        <input
+                        <Checkbox
                           id="payment-custom-allocation-toggle"
-                          type="checkbox"
                           checked={useManualAllocation}
-                          onChange={(e) =>
-                            setUseManualAllocation(e.target.checked)
+                          onCheckedChange={(checked) =>
+                            setUseManualAllocation(checked === true)
                           }
-                          className="rounded border-border"
                         />
                         Custom allocation
-                      </label>
+                      </Label>
                     </div>
 
                     {!useManualAllocation ? (

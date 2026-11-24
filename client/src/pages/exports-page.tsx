@@ -2,6 +2,7 @@ import { useState, useId } from "react";
 import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -233,13 +234,13 @@ export function ExportsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Dataset Selector */}
             <div className="flex flex-col">
-              <label
+              <Label
                 htmlFor={datasetSelectId}
                 className="mb-1.5 flex items-center gap-1.5 text-label text-muted-foreground"
               >
                 <DatabaseIcon className="size-4 shrink-0" />
                 Report Domain
-              </label>
+              </Label>
               <Select
                 value={selectedReportType}
                 onValueChange={setSelectedReportType}
@@ -265,13 +266,13 @@ export function ExportsPage() {
 
             {/* Date Range Selector */}
             <div className="flex flex-col">
-              <label
+              <Label
                 htmlFor={dateRangeSelectId}
                 className="mb-1.5 flex items-center gap-1.5 text-label text-muted-foreground"
               >
                 <CalendarIcon className="size-4 shrink-0" />
                 Reporting Period
-              </label>
+              </Label>
               <Select
                 value={dateRange}
                 onValueChange={(value) => setDateRange(value as "all" | "month" | "year")}
@@ -299,13 +300,13 @@ export function ExportsPage() {
 
             {/* Format Selector */}
             <div className="flex flex-col">
-              <label
+              <Label
                 htmlFor={formatSelectId}
                 className="mb-1.5 flex items-center gap-1.5 text-label text-muted-foreground"
               >
                 <FileTextIcon className="size-4 shrink-0" />
                 File Format
-              </label>
+              </Label>
               <Select
                 value={selectedFormat}
                 onValueChange={(value) => setSelectedFormat(value as "csv" | "json")}

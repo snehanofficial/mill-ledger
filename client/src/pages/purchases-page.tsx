@@ -21,6 +21,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
   Dialog,
@@ -397,12 +405,12 @@ export function PurchasesPage() {
               {/* Supplier Selection */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <label
+                  <Label
                     htmlFor="purchase-supplier-select"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     Supplier / Mandi Vendor
-                  </label>
+                  </Label>
                   <Link
                     to="/suppliers"
                     className="text-xs text-primary hover:underline font-medium"
@@ -410,116 +418,116 @@ export function PurchasesPage() {
                     + Manage Suppliers
                   </Link>
                 </div>
-                <select
-                  id="purchase-supplier-select"
-                  value={selectedSupplierId}
-                  onChange={(e) => setSelectedSupplierId(e.target.value)}
-                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                <Select
+                  value={selectedSupplierId || undefined}
+                  onValueChange={setSelectedSupplierId}
                 >
-                  {suppliers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.code})
-                    </option>
-                  ))}
-                  {suppliers.length === 0 && (
-                    <option value="">Supplier 1 (SUP-FLOUR-1)</option>
-                  )}
-                </select>
+                  <SelectTrigger id="purchase-supplier-select" className="font-medium">
+                    <SelectValue placeholder="Supplier 1 (SUP-FLOUR-1)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliers.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name} ({s.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Receipt Number & Invoice */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="purchase-receipt-number-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     Receipt #
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="purchase-receipt-number-input"
                     type="text"
                     value={receiptNumber}
                     onChange={(e) => setReceiptNumber(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-mono"
+                    className="font-mono"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="purchase-supplier-invoice-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     Supplier Invoice #
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="purchase-supplier-invoice-input"
                     type="text"
                     value={supplierInvoiceNumber}
                     onChange={(e) => setSupplierInvoiceNumber(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-mono"
+                    className="font-mono"
                   />
                 </div>
               </div>
 
               {/* Item selection */}
               <div className="flex flex-col gap-1.5">
-                <label
+                <Label
                   htmlFor="purchase-item-select"
                   className="text-xs font-semibold text-muted-foreground"
                 >
                   Raw Material Item
-                </label>
-                <select
-                  id="purchase-item-select"
-                  value={selectedItemId}
-                  onChange={(e) => setSelectedItemId(e.target.value)}
-                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                </Label>
+                <Select
+                  value={selectedItemId || undefined}
+                  onValueChange={setSelectedItemId}
                 >
-                  {rawItems.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name} ({item.sku}) — {item.baseUom?.symbol || "units"}
-                    </option>
-                  ))}
-                  {rawItems.length === 0 && (
-                    <option value="">Flour (RM-FLOUR)</option>
-                  )}
-                </select>
+                  <SelectTrigger id="purchase-item-select" className="font-medium">
+                    <SelectValue placeholder="Flour (RM-FLOUR)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {rawItems.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name} ({item.sku}) — {item.baseUom?.symbol || "units"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Quantity and Rate */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="purchase-quantity-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     Quantity received
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="purchase-quantity-input"
                     type="number"
                     step="0.01"
                     min="0.01"
                     value={quantity}
                     onChange={(e) => setQuantity(Number(e.target.value))}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-mono"
+                    className="font-mono"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label
+                  <Label
                     htmlFor="purchase-unit-price-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     Unit Purchase Rate (₹)
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="purchase-unit-price-input"
                     type="number"
                     step="0.01"
                     min="0"
                     value={unitPrice}
                     onChange={(e) => setUnitPrice(Number(e.target.value))}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-mono"
+                    className="font-mono"
                   />
                 </div>
               </div>
@@ -536,19 +544,18 @@ export function PurchasesPage() {
 
               {/* Notes */}
               <div className="flex flex-col gap-1.5">
-                <label
+                <Label
                   htmlFor="purchase-notes-input"
                   className="text-xs font-semibold text-muted-foreground"
                 >
                   Notes / Vehicle Details
-                </label>
-                <input
+                </Label>
+                <Input
                   id="purchase-notes-input"
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="e.g. Mandi Lot #481, Truck TN-38-AX-1029"
-                  className="rounded-md border bg-background px-3 py-2 text-sm"
                 />
               </div>
             </div>

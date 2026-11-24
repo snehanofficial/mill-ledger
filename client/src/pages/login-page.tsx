@@ -10,6 +10,7 @@ import {
 } from "@/hooks/use-current-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardHeader,
@@ -274,12 +275,12 @@ export function LoginPage() {
               )}
 
               <div className="space-y-1.5">
-                <label
+                <Label
                   htmlFor="email"
                   className="block text-sm font-medium text-foreground"
                 >
                   {language === "ta" ? "மின்னஞ்சல்" : "Email address"}
-                </label>
+                </Label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
                     <MailIcon className="size-4" aria-hidden="true" />
@@ -306,12 +307,12 @@ export function LoginPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label
+                <Label
                   htmlFor="password"
                   className="block text-sm font-medium text-foreground"
                 >
                   {language === "ta" ? "கடவுச்சொல்" : "Password"}
-                </label>
+                </Label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
                     <LockIcon className="size-4" aria-hidden="true" />

@@ -5,6 +5,15 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatDate } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -522,78 +531,78 @@ export function SettingsPage() {
 
           <form onSubmit={handleCreateUser} className="mt-2 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label
+              <Label
                 htmlFor="settings-user-name"
                 className="text-xs font-semibold text-muted-foreground"
               >
                 Full Name
-              </label>
-              <input
+              </Label>
+              <Input
                 id="settings-user-name"
                 type="text"
                 required
                 value={newUserName}
                 onChange={(e) => setNewUserName(e.target.value)}
                 placeholder="e.g. Senthil Kumar"
-                className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label
+              <Label
                 htmlFor="settings-user-email"
                 className="text-xs font-semibold text-muted-foreground"
               >
                 Email Address
-              </label>
-              <input
+              </Label>
+              <Input
                 id="settings-user-email"
                 type="email"
                 required
                 value={newUserEmail}
                 onChange={(e) => setNewUserEmail(e.target.value)}
                 placeholder="e.g. senthil@millledger.local"
-                className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label
+              <Label
                 htmlFor="settings-user-password"
                 className="text-xs font-semibold text-muted-foreground"
               >
                 Password
-              </label>
-              <input
+              </Label>
+              <Input
                 id="settings-user-password"
                 type="password"
                 required
                 value={newUserPassword}
                 onChange={(e) => setNewUserPassword(e.target.value)}
                 placeholder="Minimum 8 characters"
-                className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label
+              <Label
                 htmlFor="settings-user-role"
                 className="text-xs font-semibold text-muted-foreground"
               >
                 Role Assignment
-              </label>
-              <select
-                id="settings-user-role"
+              </Label>
+              <Select
                 value={newUserRole}
-                onChange={(e) => setNewUserRole(e.target.value as Role)}
-                className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                onValueChange={(value) => setNewUserRole(value as Role)}
               >
-                <option value="SALESMAN">Salesman (Field sales & bookings)</option>
-                <option value="PRODUCTION">Production Manager (Shop floor & runs)</option>
-                <option value="ACCOUNTANT">Accountant (Invoices, reports & taxes)</option>
-                <option value="ADMIN">Administrator (Full operational management)</option>
-                <option value="OWNER">Owner (Executive & financial oversight)</option>
-              </select>
+                <SelectTrigger id="settings-user-role" className="font-medium">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="SALESMAN">Salesman (Field sales & bookings)</SelectItem>
+                  <SelectItem value="PRODUCTION">Production Manager (Shop floor & runs)</SelectItem>
+                  <SelectItem value="ACCOUNTANT">Accountant (Invoices, reports & taxes)</SelectItem>
+                  <SelectItem value="ADMIN">Administrator (Full operational management)</SelectItem>
+                  <SelectItem value="OWNER">Owner (Executive & financial oversight)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <DialogFooter className="mt-4 border-t pt-4">

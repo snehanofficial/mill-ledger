@@ -9,6 +9,13 @@ import { SkeletonTable } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
   Table,
@@ -732,21 +739,27 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 onChange={(e) => setAuditSearch(e.target.value)}
                 className="h-8 w-56 text-xs"
               />
-              <select
+              <Select
                 value={auditActionFilter}
-                onChange={(e) => setAuditActionFilter(e.target.value)}
-                aria-label="Filter audit events by action"
-                className="h-9 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-3 py-1 text-xs font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                onValueChange={setAuditActionFilter}
               >
-                <option value="ALL">All Actions</option>
-                <option value="CREATE">CREATE</option>
-                <option value="UPDATE">UPDATE</option>
-                <option value="DELETE">DELETE</option>
-                <option value="APPROVE">APPROVE</option>
-                <option value="POST">POST</option>
-                <option value="REVERSE">REVERSE</option>
-                <option value="EXPORT">EXPORT</option>
-              </select>
+                <SelectTrigger
+                  aria-label="Filter audit events by action"
+                  className="h-9 w-auto min-w-32 px-3 py-1 text-xs font-medium"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Actions</SelectItem>
+                  <SelectItem value="CREATE">CREATE</SelectItem>
+                  <SelectItem value="UPDATE">UPDATE</SelectItem>
+                  <SelectItem value="DELETE">DELETE</SelectItem>
+                  <SelectItem value="APPROVE">APPROVE</SelectItem>
+                  <SelectItem value="POST">POST</SelectItem>
+                  <SelectItem value="REVERSE">REVERSE</SelectItem>
+                  <SelectItem value="EXPORT">EXPORT</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

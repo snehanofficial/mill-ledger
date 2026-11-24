@@ -13,6 +13,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { PublicHeader } from "./public-header";
 import { PublicFooter } from "./public-footer";
 import { useLanguage } from "@/lib/i18n";
@@ -376,38 +384,41 @@ export function ContactPage() {
                         <Label htmlFor="inquiry-type">
                           {language === "ta" ? "விசாரணை வகை" : "Inquiry Nature"}
                         </Label>
-                        <select
-                          id="inquiry-type"
+                        <Select
                           value={formData.inquiryType}
-                          onChange={(e) =>
-                            setFormData({ ...formData, inquiryType: e.target.value })
+                          onValueChange={(value) =>
+                            setFormData({ ...formData, inquiryType: value })
                           }
-                          className="w-full h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                         >
-                          <option value="wholesale_purchase">
-                            {language === "ta"
-                              ? "மொத்த அரிசி கொள்முதல் (B2B Bulk Rice)"
-                              : "B2B Finished Rice Purchase (Bulk / Institutional)"}
-                          </option>
-                          <option value="byproduct_purchase">
-                            {language === "ta"
-                              ? "துணை பொருட்கள் கொள்முதல் (குறுணை, தவிடு, உமி)"
-                              : "By-Products Purchase (Broken Rice, Bran, Husk)"}
-                          </option>
-                          <option value="farmer_paddy_intake">
-                            {language === "ta"
-                              ? "விவசாயிகள் நெல் வரவு & எடைமேடை (Farmer Paddy Intake)"
-                              : "Farmer Paddy Delivery & Weighbridge Lot Slot"}
-                          </option>
-                          <option value="custom_processing">
-                            {language === "ta"
-                              ? "வாடகை அரைவை & சோர்டெக்ஸ் பணி (Job-work / Sortexing)"
-                              : "Custom Milling / Buhler Sortex Job-work Contract"}
-                          </option>
-                          <option value="other">
-                            {language === "ta" ? "இதர விபரங்கள்" : "General Commercial Inquiries"}
-                          </option>
-                        </select>
+                          <SelectTrigger id="inquiry-type" className="font-medium">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="wholesale_purchase">
+                              {language === "ta"
+                                ? "மொத்த அரிசி கொள்முதல் (B2B Bulk Rice)"
+                                : "B2B Finished Rice Purchase (Bulk / Institutional)"}
+                            </SelectItem>
+                            <SelectItem value="byproduct_purchase">
+                              {language === "ta"
+                                ? "துணை பொருட்கள் கொள்முதல் (குறுணை, தவிடு, உமி)"
+                                : "By-Products Purchase (Broken Rice, Bran, Husk)"}
+                            </SelectItem>
+                            <SelectItem value="farmer_paddy_intake">
+                              {language === "ta"
+                                ? "விவசாயிகள் நெல் வரவு & எடைமேடை (Farmer Paddy Intake)"
+                                : "Farmer Paddy Delivery & Weighbridge Lot Slot"}
+                            </SelectItem>
+                            <SelectItem value="custom_processing">
+                              {language === "ta"
+                                ? "வாடகை அரைவை & சோர்டெக்ஸ் பணி (Job-work / Sortexing)"
+                                : "Custom Milling / Buhler Sortex Job-work Contract"}
+                            </SelectItem>
+                            <SelectItem value="other">
+                              {language === "ta" ? "இதர விபரங்கள்" : "General Commercial Inquiries"}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       {/* Message / Quantity Requirement */}
@@ -415,7 +426,7 @@ export function ContactPage() {
                         <Label htmlFor="inquiry-message">
                           {language === "ta" ? "விவரம் / தேவைப்படும் அளவு (MT) *" : "Requirement Details / Volume (MT) *"}
                         </Label>
-                        <textarea
+                        <Textarea
                           id="inquiry-message"
                           rows={4}
                           value={formData.message}
@@ -424,7 +435,7 @@ export function ContactPage() {
                           }
                           aria-invalid={!!errors.message}
                           aria-describedby={errors.message ? "error-message" : undefined}
-                          className="w-full h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                          className="font-medium"
                           placeholder={
                             language === "ta"
                               ? "எ.கா. 20 மெட்ரிக் டன் பொன்னி புழுங்கல் அரிசி 50kg பேக்கிங் தேவை..."

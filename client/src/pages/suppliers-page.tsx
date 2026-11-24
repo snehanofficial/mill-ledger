@@ -18,6 +18,16 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -273,25 +283,31 @@ export function SuppliersPage() {
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 max-w-sm">
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input
+          <Input
             type="text"
             placeholder="Search suppliers by name, code, state, GSTIN..."
             aria-label="Search suppliers by name, code, state, GSTIN"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-md border bg-background pl-9 pr-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-10 pl-9 pr-3"
           />
         </div>
-        <select
+        <Select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-10 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-3.5 py-1.5 text-sm text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
-          aria-label="Filter suppliers by status"
+          onValueChange={setStatusFilter}
         >
-          <option value="ALL">All status</option>
-          <option value="ACTIVE">Active only</option>
-          <option value="INACTIVE">Inactive only</option>
-        </select>
+          <SelectTrigger
+            className="h-10 w-auto min-w-36 px-3.5 py-1.5 text-sm"
+            aria-label="Filter suppliers by status"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All status</SelectItem>
+            <SelectItem value="ACTIVE">Active only</SelectItem>
+            <SelectItem value="INACTIVE">Inactive only</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Table */}
@@ -445,125 +461,123 @@ export function SuppliersPage() {
             className="mt-2 flex flex-col gap-3"
           >
               <div className="flex flex-col gap-1">
-                <label
+                <Label
                   htmlFor="supplier-new-code"
                   className="text-xs font-semibold text-muted-foreground"
                 >
                   Vendor Code *
-                </label>
-                <input
+                </Label>
+                <Input
                   id="supplier-new-code"
                   type="text"
                   required
                   placeholder="e.g. SUP-MANDI-02"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                  className="font-medium"
                 />
               </div>
 
               <div className="flex flex-col gap-1">
-                <label
+                <Label
                   htmlFor="supplier-new-name"
                   className="text-xs font-semibold text-muted-foreground"
                 >
                   Supplier / Vendor Name *
-                </label>
-                <input
+                </Label>
+                <Input
                   id="supplier-new-name"
                   type="text"
                   required
                   placeholder="e.g. Thanjavur Agro Mandi"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                  className="font-medium"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label
+                  <Label
                     htmlFor="supplier-new-state"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     State *
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="supplier-new-state"
                     type="text"
                     required
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                    className="font-medium"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label
+                  <Label
                     htmlFor="supplier-new-phone"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     Phone (Optional)
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="supplier-new-phone"
                     type="text"
                     placeholder="9876543210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                    className="font-medium"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label
+                  <Label
                     htmlFor="supplier-new-email"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     Email (Optional)
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="supplier-new-email"
                     type="email"
                     placeholder="mandi@agro.in"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                    className="font-medium"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label
+                  <Label
                     htmlFor="supplier-new-gstin"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     GSTIN (Optional)
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="supplier-new-gstin"
                     type="text"
                     placeholder="33AAAAA0000A1Z5"
                     value={gstin}
                     onChange={(e) => setGstin(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm text-foreground font-mono"
+                    className="font-mono"
                   />
                 </div>
               </div>
 
               <div className="mt-2 flex items-center gap-2">
-                <input
-                  type="checkbox"
+                <Checkbox
                   id="isActiveNew"
                   checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                  className="rounded border"
+                  onCheckedChange={(checked) => setIsActive(checked === true)}
                 />
-                <label
+                <Label
                   htmlFor="isActiveNew"
-                  className="text-xs text-foreground cursor-pointer"
+                  className="text-xs font-normal text-foreground cursor-pointer"
                 >
                   Active for purchase receipts
-                </label>
+                </Label>
               </div>
 
               <DialogFooter className="mt-4 border-t pt-3">
@@ -621,103 +635,101 @@ export function SuppliersPage() {
               className="mt-4 flex flex-col gap-3"
             >
               <div className="flex flex-col gap-1">
-                <label
+                <Label
                   htmlFor="supplier-edit-name"
                   className="text-xs font-semibold text-muted-foreground"
                 >
                   Supplier Name *
-                </label>
-                <input
+                </Label>
+                <Input
                   id="supplier-edit-name"
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                  className="font-medium"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label
+                  <Label
                     htmlFor="supplier-edit-state"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     State *
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="supplier-edit-state"
                     type="text"
                     required
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                    className="font-medium"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label
+                  <Label
                     htmlFor="supplier-edit-phone"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     Phone
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="supplier-edit-phone"
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                    className="font-medium"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label
+                  <Label
                     htmlFor="supplier-edit-email"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     Email
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="supplier-edit-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                    className="font-medium"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label
+                  <Label
                     htmlFor="supplier-edit-gstin"
                     className="text-xs font-semibold text-muted-foreground"
                   >
                     GSTIN
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     id="supplier-edit-gstin"
                     type="text"
                     value={gstin}
                     onChange={(e) => setGstin(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm text-foreground font-mono"
+                    className="font-mono"
                   />
                 </div>
               </div>
 
               <div className="mt-2 flex items-center gap-2">
-                <input
-                  type="checkbox"
+                <Checkbox
                   id="isActiveEdit"
                   checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                  className="rounded border"
+                  onCheckedChange={(checked) => setIsActive(checked === true)}
                 />
-                <label
+                <Label
                   htmlFor="isActiveEdit"
-                  className="text-xs text-foreground cursor-pointer"
+                  className="text-xs font-normal text-foreground cursor-pointer"
                 >
                   Active for purchase receipts
-                </label>
+                </Label>
               </div>
 
               <DialogFooter className="mt-4 border-t pt-3">

@@ -16,6 +16,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
@@ -731,19 +739,25 @@ export function OrdersPage() {
               className="h-8 w-44 text-xs"
               aria-label="Search orders"
             />
-            <select
+            <Select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-9 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-3 py-1 text-xs font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
-              aria-label="Filter orders by status"
+              onValueChange={setStatusFilter}
             >
-              <option value="ALL">All statuses</option>
-              <option value="SUBMITTED">Submitted</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-              <option value="DISPATCHED">Dispatched</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
+              <SelectTrigger
+                className="h-9 w-auto min-w-32 px-3 py-1 text-xs font-medium"
+                aria-label="Filter orders by status"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All statuses</SelectItem>
+                <SelectItem value="SUBMITTED">Submitted</SelectItem>
+                <SelectItem value="APPROVED">Approved</SelectItem>
+                <SelectItem value="REJECTED">Rejected</SelectItem>
+                <SelectItem value="DISPATCHED">Dispatched</SelectItem>
+                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
             <span className="text-xs text-muted-foreground ml-1">
               {activeTab === "stream"
                 ? `${filteredOrders.length} of ${orders.length} orders`
@@ -1430,28 +1444,31 @@ export function OrdersPage() {
 
             {/* Customer selection */}
             <div className="flex flex-col gap-1.5">
-              <label
+              <Label
                 htmlFor="order-customer-select"
                 className="text-xs font-semibold text-muted-foreground"
               >
                 Customer
-              </label>
-              <select
-                id="order-customer-select"
-                value={selectedCustomerId}
-                onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+              </Label>
+              <Select
+                value={selectedCustomerId || undefined}
+                onValueChange={setSelectedCustomerId}
               >
-                {customersList.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c?.state || "Tamil Nadu"},{" "}
-                    {c?.state?.trim().toLowerCase() === "tamil nadu"
-                      ? "Intra-state"
-                      : "Inter-state"}
-                    )
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="order-customer-select" className="font-medium">
+                  <SelectValue placeholder="Select customer..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {customersList.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name} ({c?.state || "Tamil Nadu"},{" "}
+                      {c?.state?.trim().toLowerCase() === "tamil nadu"
+                        ? "Intra-state"
+                        : "Inter-state"}
+                      )
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <span className="text-xs text-muted-foreground">
                 Place of supply: {customerState} (
                 {isIntraState ? "CGST 2.5% + SGST 2.5%" : "IGST 5.0%"})
@@ -1472,24 +1489,27 @@ export function OrdersPage() {
                 />
               </div>
               <div className="flex flex-1 flex-col gap-1">
-                <label
+                <Label
                   htmlFor="order-product-select"
                   className="text-xs font-semibold text-muted-foreground"
                 >
                   Product item
-                </label>
-                <select
-                  id="order-product-select"
-                  value={selectedProductId}
-                  onChange={(e) => setSelectedProductId(e.target.value)}
-                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                </Label>
+                <Select
+                  value={selectedProductId || undefined}
+                  onValueChange={setSelectedProductId}
                 >
-                  {productsList.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({formatINR(p.defaultPrice)})
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger id="order-product-select" className="font-medium">
+                    <SelectValue placeholder="Select product..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {productsList.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name} ({formatINR(p.defaultPrice)})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <span className="text-xs text-muted-foreground">
                   Standard price: {formatINR(unitPrice)} / pkt (SKU:{" "}
                   {activeProduct?.sku || "—"})
@@ -1499,18 +1519,18 @@ export function OrdersPage() {
 
             {/* Quantity */}
             <div className="flex flex-col gap-1.5">
-              <label
+              <Label
                 htmlFor="order-quantity-input"
                 className="text-xs font-semibold text-muted-foreground"
               >
                 Order quantity (pkts)
-              </label>
-              <input
+              </Label>
+              <Input
                 id="order-quantity-input"
                 type="number"
                 value={orderQuantity}
                 onChange={(e) => setOrderQuantity(Number(e.target.value))}
-                className="rounded-md border bg-background px-3 py-2 text-sm font-semibold"
+                className="font-semibold"
               />
               <span className="text-xs text-muted-foreground">
                 Available: {availablePackets} pkts
@@ -1536,18 +1556,17 @@ export function OrdersPage() {
             )}
 
             <div className="flex flex-col gap-1.5">
-              <label
+              <Label
                 htmlFor="order-notes-input"
                 className="text-xs font-semibold text-muted-foreground"
               >
                 Order notes
-              </label>
-              <input
+              </Label>
+              <Input
                 id="order-notes-input"
                 type="text"
                 value={orderNotes}
                 onChange={(e) => setOrderNotes(e.target.value)}
-                className="rounded-md border bg-background px-3 py-2 text-sm"
               />
             </div>
 
@@ -1656,12 +1675,12 @@ export function OrdersPage() {
           destructive
         >
           <div className="flex flex-col gap-1.5 pt-2">
-            <label
+            <Label
               htmlFor="rejection-reason"
               className="text-xs font-semibold text-muted-foreground"
             >
               Reason for rejection
-            </label>
+            </Label>
             <Input
               id="rejection-reason"
               type="text"

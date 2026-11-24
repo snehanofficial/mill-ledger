@@ -17,6 +17,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -355,18 +363,24 @@ export function InvoicesPage() {
               className="h-8 w-44 text-xs"
               aria-label="Search invoices"
             />
-            <select
+            <Select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-9 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-3 py-1 text-xs font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
-              aria-label="Filter invoices by status"
+              onValueChange={setStatusFilter}
             >
-              <option value="ALL">All statuses</option>
-              <option value="POSTED">Posted</option>
-              <option value="PAID">Paid</option>
-              <option value="PARTIAL">Partial</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
+              <SelectTrigger
+                className="h-9 w-auto min-w-32 px-3 py-1 text-xs font-medium"
+                aria-label="Filter invoices by status"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All statuses</SelectItem>
+                <SelectItem value="POSTED">Posted</SelectItem>
+                <SelectItem value="PAID">Paid</SelectItem>
+                <SelectItem value="PARTIAL">Partial</SelectItem>
+                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -839,34 +853,33 @@ export function InvoicesPage() {
 
             <div className="mt-2 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label
+                <Label
                   htmlFor="credit-note-reason"
                   className="text-xs font-semibold text-muted-foreground"
                 >
                   Reason for credit note
-                </label>
-                <input
+                </Label>
+                <Input
                   id="credit-note-reason"
                   type="text"
                   value={creditNoteReason}
                   onChange={(e) => setCreditNoteReason(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label
+                <Label
                   htmlFor="credit-note-amount"
                   className="text-xs font-semibold text-muted-foreground"
                 >
                   Adjustment amount (₹)
-                </label>
-                <input
+                </Label>
+                <Input
                   id="credit-note-amount"
                   type="number"
                   value={creditNoteAmount}
                   onChange={(e) => setCreditNoteAmount(Number(e.target.value))}
-                  className="rounded-md border bg-background px-3 py-2 text-sm font-semibold"
+                  className="font-semibold"
                 />
                 <span className="text-xs text-muted-foreground">
                   Maximum adjustable:{" "}
@@ -936,12 +949,12 @@ export function InvoicesPage() {
 
           <div className="mt-2 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label
+              <Label
                 htmlFor="invoice-order-select"
                 className="text-xs font-semibold text-muted-foreground"
               >
                 Approved Sales Order *
-              </label>
+              </Label>
               {isLoadingApprovedOrders ? (
                 <div className="py-2 text-xs text-muted-foreground">
                   Loading approved orders...
@@ -951,37 +964,42 @@ export function InvoicesPage() {
                   No approved orders awaiting invoicing.
                 </div>
               ) : (
-                <select
-                  id="invoice-order-select"
-                  value={selectedOrderIdForInvoice}
-                  onChange={(e) => setSelectedOrderIdForInvoice(e.target.value)}
-                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                <Select
+                  value={selectedOrderIdForInvoice || undefined}
+                  onValueChange={setSelectedOrderIdForInvoice}
                 >
-                  <option value="">Select an approved order...</option>
-                  {eligibleOrders.map((ord) => (
-                    <option key={ord.id} value={ord.id}>
-                      {ord.orderNumber} — {ord.customer.name} (
-                      {formatINR(ord.totalAmount)})
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    id="invoice-order-select"
+                    className="font-medium"
+                  >
+                    <SelectValue placeholder="Select an approved order..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {eligibleOrders.map((ord) => (
+                      <SelectItem key={ord.id} value={ord.id}>
+                        {ord.orderNumber} — {ord.customer.name} (
+                        {formatINR(ord.totalAmount)})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label
+              <Label
                 htmlFor="invoice-notes-input"
                 className="text-xs font-semibold text-muted-foreground"
               >
                 Invoice Notes (Optional)
-              </label>
-              <input
+              </Label>
+              <Input
                 id="invoice-notes-input"
                 type="text"
                 placeholder="e.g. Standard 30 days payment term"
                 value={invoiceNotes}
                 onChange={(e) => setInvoiceNotes(e.target.value)}
-                className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
+                className="font-medium"
               />
             </div>
           </div>

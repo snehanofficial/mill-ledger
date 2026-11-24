@@ -19,6 +19,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   CheckCircleIcon,
   RefreshCwIcon,
   PackageIcon,
@@ -204,17 +211,23 @@ export function StockPage() {
               className="h-8 w-52 text-xs"
               aria-label="Search stock"
             />
-            <select
+            <Select
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="h-9 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-3 py-1 text-xs font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
-              aria-label="Filter items by category"
+              onValueChange={setCategoryFilter}
             >
-              <option value="ALL">All categories</option>
-              <option value="RAW_MATERIAL">Raw Material</option>
-              <option value="FINISHED_GOODS">Finished Goods</option>
-              <option value="PACKAGING">Packaging</option>
-            </select>
+              <SelectTrigger
+                className="h-9 w-auto min-w-36 px-3 py-1 text-xs font-medium"
+                aria-label="Filter items by category"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All categories</SelectItem>
+                <SelectItem value="RAW_MATERIAL">Raw Material</SelectItem>
+                <SelectItem value="FINISHED_GOODS">Finished Goods</SelectItem>
+                <SelectItem value="PACKAGING">Packaging</SelectItem>
+              </SelectContent>
+            </Select>
             <Badge variant="outline" className="gap-1.5 text-xs text-emerald-600">
               <CheckCircleIcon className="size-3.5" aria-hidden="true" />
               <span>Movements Reconciled</span>
