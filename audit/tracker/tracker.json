@@ -8544,7 +8544,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -8552,12 +8552,26 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-095.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "5fce7ce",
+        "evidenceLink": "audit/evidence/verify/F-095/verification.md",
+        "note": "Enforced strict mode in frontend tsconfig, eliminated all 14 domain-layer any types, verified 0 domain any types via AST audit, and passed full 10-point verification."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-095-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-095-regression.test.ts",
+    "fixCommit": "5fce7ce",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-095/verification.md",
+      "audit/evidence/verify/F-095/regression-test.txt",
+      "audit/evidence/verify/F-095/typecheck.txt",
+      "audit/evidence/verify/F-095/lint.txt",
+      "audit/evidence/verify/F-095/benchmark.txt",
+      "audit/evidence/verify/F-095/invariants.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
