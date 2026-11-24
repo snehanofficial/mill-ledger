@@ -4217,15 +4217,21 @@
       "Phase 7 Specification Check 4"
     ],
     "files": [
-      "client/src/pages/orders-page.ts",
-      "client/src/pages/invoices-page.ts",
-      "client/src/pages/reports-page.ts",
-      "orders-page.ts",
-      "tests/url-filters.spec.ts"
+      "client/src/hooks/use-url-state.ts",
+      "client/src/pages/customers-page.tsx",
+      "client/src/pages/dispatch-page.tsx",
+      "client/src/pages/invoices-page.tsx",
+      "client/src/pages/orders-page.tsx",
+      "client/src/pages/payments-page.tsx",
+      "client/src/pages/production-page.tsx",
+      "client/src/pages/purchases-page.tsx",
+      "client/src/pages/reports-page.tsx",
+      "client/src/pages/stock-page.tsx",
+      "client/src/pages/suppliers-page.tsx"
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -4233,12 +4239,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-046.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "8e6e098",
+        "evidenceLink": "audit/evidence/verify/F-046/10-summary.txt",
+        "note": "Implemented useUrlState hook and synchronized tabs, search, and status filters across all primary operational views."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-046-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-046-regression.test.ts",
+    "regressionTest": "audit/tests/f-046-regression.test.ts",
+    "fixCommit": "8e6e098",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-046/01-pre-fix-repro.txt",
+      "audit/evidence/verify/F-046/02-regression-test.txt",
+      "audit/evidence/verify/F-046/03-typecheck.txt",
+      "audit/evidence/verify/F-046/04-lint.txt",
+      "audit/evidence/verify/F-046/05-build.txt",
+      "audit/evidence/verify/F-046/06-unit-tests.txt",
+      "audit/evidence/verify/F-046/07-benchmark.txt",
+      "audit/evidence/verify/F-046/08-invariants.txt",
+      "audit/evidence/verify/F-046/09-git-diff.txt",
+      "audit/evidence/verify/F-046/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn '<table\\|useForm' client/src/pages/ | head -n 25",

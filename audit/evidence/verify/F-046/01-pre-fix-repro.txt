@@ -1,0 +1,16 @@
+=== Pre-Fix Defect Reproduction: F-046 ===
+Finding: F-046 Ephemeral Filter, Sort, and Tab State Not Preserved in URL
+Severity: P2 (Tier T6, CLUSTER-09)
+Applicable Standards: NN/g H3 (User Control and Freedom), NN/g H4 (Consistency and Standards), Phase 7 Specification Check 4
+
+Defect Summary:
+Prior to this remediation, core operational and reporting views (orders, invoices, reports, payments, suppliers, customers, stock, dispatch, purchases, production) held all filter dropdowns, active tab selections, search queries, and sub-views in local React `useState`. Zero files in the client imported or used `useSearchParams` or `URLSearchParams`. Consequently, navigating away, refreshing the browser (F5), deep-linking, or sharing filtered links (e.g. `/orders?status=SUBMITTED&q=Madurai`) immediately destroyed all user working context and reset the view to default.
+
+Reproduction Evidence:
+1. Search in `client/src`:
+   `grep -rn 'useSearchParams' client/src`
+   Returned 0 matches.
+2. In `client/src/pages/orders-page.tsx`, `client/src/pages/invoices-page.tsx`, and `client/src/pages/reports-page.tsx`:
+   - All tabs (`activeTab`) and filters were declared via isolated `useState`.
+   - Browser URL stayed bare without query parameters regardless of user interactions.
+   - Deep links could not restore specific tabs or filtered views.
