@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { prisma } from "./db/client.js";
-import { productionService } from "./modules/production/production.service.js";
+import { prisma } from "../db/client.js";
+import { productionService } from "../modules/production/production.service.js";
 import { ItemCategory, RecipeItemType } from "@prisma/client";
 
 describe("F-016: Dynamic Packaging Capacity Mismatch Warning and Database Persistence", () => {

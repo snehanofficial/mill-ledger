@@ -1,9 +1,9 @@
 import { createServer, type Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createApp } from "./app.js";
-import { prisma } from "./db/client.js";
-import { resetOperationalData } from "./db/reset.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
+import { createApp } from "../app.js";
+import { prisma } from "../db/client.js";
+import { resetOperationalData } from "../db/reset.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
 
 describe("M3: Purchases and inventory ledger integration", () => {
   let server: Server;

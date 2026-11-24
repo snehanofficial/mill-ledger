@@ -1,10 +1,10 @@
 import { beforeAll, afterAll, describe, expect, it } from "vitest";
 import { createServer, type Server } from "node:http";
-import { createApp } from "./app.js";
-import { prisma } from "./db/client.js";
-import { resetOperationalData } from "./db/reset.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
-import { inventoryService } from "./modules/inventory/inventory.service.js";
+import { createApp } from "../app.js";
+import { prisma } from "../db/client.js";
+import { resetOperationalData } from "../db/reset.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
+import { inventoryService } from "../modules/inventory/inventory.service.js";
 
 describe("M9: Offline synchronization and idempotency verification", () => {
   let server: Server;

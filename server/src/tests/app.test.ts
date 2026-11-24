@@ -1,6 +1,6 @@
 import { createServer, type Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createApp } from "./app.js";
+import { createApp } from "../app.js";
 
 describe("Express application HTTP integration", () => {
   let server: Server;

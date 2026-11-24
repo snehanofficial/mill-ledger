@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { prisma } from "./db/client.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
-import { salesService } from "./modules/sales/sales.service.js";
+import { prisma } from "../db/client.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
+import { salesService } from "../modules/sales/sales.service.js";
 import type { UserContext } from "@mill-ledger/shared";
 
 describe("F-007: Concurrency race condition in sales order approval (ATP stock overselling)", () => {

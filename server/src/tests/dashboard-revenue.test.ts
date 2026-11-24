@@ -1,9 +1,9 @@
 import { describe, expect, it, beforeAll } from "vitest";
-import { prisma } from "./db/client.js";
-import { resetOperationalData } from "./db/reset.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
-import { reportingService } from "./modules/reporting/reporting.service.js";
-import { financeService } from "./modules/finance/finance.service.js";
+import { prisma } from "../db/client.js";
+import { resetOperationalData } from "../db/reset.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
+import { reportingService } from "../modules/reporting/reporting.service.js";
+import { financeService } from "../modules/finance/finance.service.js";
 import { InvoiceStatus } from "@prisma/client";
 
 describe("F-036 Regression Test: Dashboard Sales Revenue Line-less Invoice Reconciliation", () => {

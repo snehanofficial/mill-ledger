@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { runFullSeed } from "./db/seed.js";
+import { runFullSeed } from "../db/seed.js";
 
 describe("Supply Chain Security & Production Guardrails (F-029)", () => {
   it("pins all GitHub Actions in CI workflow to full 40-character commit SHAs", () => {

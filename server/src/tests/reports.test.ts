@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { createApp } from "./app.js";
+import { createApp } from "../app.js";
 import { createServer, type Server } from "node:http";
-import { prisma } from "./db/client.js";
-import { resetOperationalData } from "./db/reset.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
+import { prisma } from "../db/client.js";
+import { resetOperationalData } from "../db/reset.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
 
 describe("M8: Reporting, audit logs, and owner dashboard", () => {
   let server: Server;

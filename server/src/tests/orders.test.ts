@@ -1,11 +1,11 @@
 import { createServer, type Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createApp } from "./app.js";
-import { prisma } from "./db/client.js";
-import { resetOperationalData } from "./db/reset.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
-import { inventoryService } from "./modules/inventory/inventory.service.js";
-import { salesService } from "./modules/sales/sales.service.js";
+import { createApp } from "../app.js";
+import { prisma } from "../db/client.js";
+import { resetOperationalData } from "../db/reset.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
+import { inventoryService } from "../modules/inventory/inventory.service.js";
+import { salesService } from "../modules/sales/sales.service.js";
 
 describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations", () => {
   let server: Server;

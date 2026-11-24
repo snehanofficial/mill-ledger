@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { prisma } from "./db/client.js";
-import { resetOperationalData } from "./db/reset.js";
+import { prisma } from "../db/client.js";
+import { resetOperationalData } from "../db/reset.js";
 
 const migrationFile = resolve(
   __dirname,

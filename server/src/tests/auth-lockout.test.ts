@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import type { Server } from "node:http";
-import { createApp } from "./app.js";
-import { lockoutService, MAX_FAILED_ATTEMPTS } from "./lib/lockout.js";
+import { createApp } from "../app.js";
+import { lockoutService, MAX_FAILED_ATTEMPTS } from "../lib/lockout.js";
 
 describe("F-024: Password Reset Endpoint and Account Lockout Policy", () => {
   let server: Server;

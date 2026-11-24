@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import type { Server } from "node:http";
-import { createApp } from "./app.js";
-import { prisma } from "./db/client.js";
-import { bootstrapAdmin } from "./scripts/bootstrap-admin.js";
-import { seedUsers } from "./db/seed.js";
+import { createApp } from "../app.js";
+import { prisma } from "../db/client.js";
+import { bootstrapAdmin } from "../scripts/bootstrap-admin.js";
+import { seedUsers } from "../db/seed.js";
 
 describe("F-023: User and Role Management APIs and Admin Safeguards", () => {
   let server: Server;

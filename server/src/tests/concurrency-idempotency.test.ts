@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { prisma } from "./db/client.js";
-import { resetOperationalData } from "./db/reset.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
-import { salesService } from "./modules/sales/sales.service.js";
-import { financeService } from "./modules/finance/finance.service.js";
-import { paymentService } from "./modules/finance/payment.service.js";
-import { inventoryService } from "./modules/inventory/inventory.service.js";
-import { productionService } from "./modules/production/production.service.js";
+import { prisma } from "../db/client.js";
+import { resetOperationalData } from "../db/reset.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
+import { salesService } from "../modules/sales/sales.service.js";
+import { financeService } from "../modules/finance/finance.service.js";
+import { paymentService } from "../modules/finance/payment.service.js";
+import { inventoryService } from "../modules/inventory/inventory.service.js";
+import { productionService } from "../modules/production/production.service.js";
 import type { UserContext } from "@mill-ledger/shared";
 
 describe("F-015 Regression: Concurrent Idempotency Race Condition Resolution", () => {

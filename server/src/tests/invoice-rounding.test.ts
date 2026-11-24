@@ -1,9 +1,9 @@
 import { describe, expect, it, beforeAll } from "vitest";
-import { prisma } from "./db/client.js";
-import { resetOperationalData } from "./db/reset.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
-import { financeService } from "./modules/finance/finance.service.js";
-import { calculateLineTax, calculateOrderOrInvoiceTax } from "./modules/finance/tax.util.js";
+import { prisma } from "../db/client.js";
+import { resetOperationalData } from "../db/reset.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
+import { financeService } from "../modules/finance/finance.service.js";
+import { calculateLineTax, calculateOrderOrInvoiceTax } from "../modules/finance/tax.util.js";
 
 describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGST Act)", () => {
   let orgId: string;

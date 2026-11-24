@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { prisma } from "./db/client.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
-import { inventoryService } from "./modules/inventory/inventory.service.js";
+import { prisma } from "../db/client.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
+import { inventoryService } from "../modules/inventory/inventory.service.js";
 
 describe("MLD-011: Inventory atomic concurrency and non-negative constraints", () => {
   let orgId: string;
@@ -89,7 +89,7 @@ describe("MLD-011: Inventory atomic concurrency and non-negative constraints", (
             },
           ],
         }),
-      );
+    );
 
     const results = await Promise.all(promises);
     expect(results).toHaveLength(concurrencyCount);

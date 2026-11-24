@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { prisma } from "./db/client.js";
-import { salesService } from "./modules/sales/sales.service.js";
-import { financeService } from "./modules/finance/finance.service.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
+import { prisma } from "../db/client.js";
+import { salesService } from "../modules/sales/sales.service.js";
+import { financeService } from "../modules/finance/finance.service.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
 import type { UserContext } from "@mill-ledger/shared";
 
 describe("F-014: Dynamic Statutory TaxRate Master Resolution and Effective Date Scheduling", () => {

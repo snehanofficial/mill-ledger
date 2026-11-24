@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { prisma } from "./db/client.js";
+import { prisma } from "../db/client.js";
 import { ItemCategory, MovementType, RecipeItemType } from "@prisma/client";
-import { seedBenchmarkMasters } from "./db/seed.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
 
 describe("M2: Masters, BOM, and opening stock verification", () => {
   beforeAll(async () => {

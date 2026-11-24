@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { financeService } from "./modules/finance/finance.service.js";
+import { financeService } from "../modules/finance/finance.service.js";
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

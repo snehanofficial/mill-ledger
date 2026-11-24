@@ -1,10 +1,10 @@
 import { createServer, type Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createApp } from "./app.js";
-import { prisma } from "./db/client.js";
-import { resetOperationalData } from "./db/reset.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
-import { inventoryService } from "./modules/inventory/inventory.service.js";
+import { createApp } from "../app.js";
+import { prisma } from "../db/client.js";
+import { resetOperationalData } from "../db/reset.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
+import { inventoryService } from "../modules/inventory/inventory.service.js";
 
 describe("M6: Invoice generation, physical dispatch, reservation release, and credit note", () => {
   let server: Server;

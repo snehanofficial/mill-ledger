@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { prisma } from "./db/client.js";
-import { resetOperationalData } from "./db/reset.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
-import { paymentService } from "./modules/finance/payment.service.js";
-import { financeService } from "./modules/finance/finance.service.js";
+import { prisma } from "../db/client.js";
+import { resetOperationalData } from "../db/reset.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
+import { paymentService } from "../modules/finance/payment.service.js";
+import { financeService } from "../modules/finance/finance.service.js";
 import { InvoiceStatus, PaymentStatus } from "@prisma/client";
 
 describe("F-013 Regression: Payment Bounce, Reversals and Supplier Debit Notes", () => {

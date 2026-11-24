@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { prisma } from "./db/client.js";
-import { seedBenchmarkMasters } from "./db/seed.js";
-import { sequenceService } from "./modules/finance/sequence.service.js";
+import { prisma } from "../db/client.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
+import { sequenceService } from "../modules/finance/sequence.service.js";
 
 describe("MLD-012: Atomic document sequence generation and concurrency", () => {
   let orgId: string;
