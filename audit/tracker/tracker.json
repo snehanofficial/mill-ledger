@@ -6085,7 +6085,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -6093,12 +6093,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-066.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "fc6d911",
+        "evidenceLink": "audit/evidence/verify/F-066/10-summary.txt",
+        "note": "Paired all outbox synchronization status badges (queued, syncing, conflict, synced) with explicit visual status icons (ClockIcon, RefreshCwIcon, AlertTriangleIcon, CheckCircle2Icon) across desktop table and mobile cards per WCAG 2.2 SC 1.4.1 and Phase 9 requirements."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-066-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-066-regression.test.ts",
+    "fixCommit": "fc6d911",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-066/01-git-status.txt",
+      "audit/evidence/verify/F-066/02-regression-test.txt",
+      "audit/evidence/verify/F-066/03-typecheck.txt",
+      "audit/evidence/verify/F-066/04-lint.txt",
+      "audit/evidence/verify/F-066/05-build.txt",
+      "audit/evidence/verify/F-066/06-invariants.txt",
+      "audit/evidence/verify/F-066/07-benchmark.txt",
+      "audit/evidence/verify/F-066/08-test-suite.txt",
+      "audit/evidence/verify/F-066/09-diff.txt",
+      "audit/evidence/verify/F-066/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'transition-\\|animate-' client/src/ | grep -v 'motion-reduce' | head -n 25",
