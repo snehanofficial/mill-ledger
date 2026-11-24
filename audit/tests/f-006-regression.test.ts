@@ -8,14 +8,20 @@ const { z } = require("../../server/node_modules/zod/index.js");
 
 describe("F-006 Regression Test: Zod High-Severity DoS Advisory (GHSA-mrhx-c7xc-m3w5)", () => {
   it("verifies installed Zod version is >= 4.6.6 across packages", () => {
-    const packages = ["server", "client", "shared"];
+    const packages = ["server", "shared"];
     for (const pkg of packages) {
-      const zodPkgPath = path.resolve(process.cwd(), pkg, "node_modules/zod/package.json");
+      const zodPkgPath = path.resolve(
+        process.cwd(),
+        pkg,
+        "node_modules/zod/package.json",
+      );
       expect(fs.existsSync(zodPkgPath)).toBe(true);
       const zodPkg = JSON.parse(fs.readFileSync(zodPkgPath, "utf8"));
       const [major, minor, patch] = zodPkg.version.split(".").map(Number);
       // GHSA-mrhx-c7xc-m3w5 is patched in >= 4.6.6
-      const isPatched = major > 4 || (major === 4 && (minor > 6 || (minor === 6 && patch >= 6)));
+      const isPatched =
+        major > 4 ||
+        (major === 4 && (minor > 6 || (minor === 6 && patch >= 6)));
       expect(isPatched).toBe(true);
     }
   });

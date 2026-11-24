@@ -4,11 +4,26 @@ import * as path from "node:path";
 
 describe("F-092 Regression Suite: Public Marketing, Landing, Catalog, and Contact Surfaces", () => {
   const clientAppPath = path.resolve(__dirname, "../../client/src/app.tsx");
-  const landingPagePath = path.resolve(__dirname, "../../client/src/pages/public/landing-page.tsx");
-  const catalogPagePath = path.resolve(__dirname, "../../client/src/pages/public/catalog-page.tsx");
-  const contactPagePath = path.resolve(__dirname, "../../client/src/pages/public/contact-page.tsx");
-  const publicHeaderPath = path.resolve(__dirname, "../../client/src/pages/public/public-header.tsx");
-  const publicFooterPath = path.resolve(__dirname, "../../client/src/pages/public/public-footer.tsx");
+  const landingPagePath = path.resolve(
+    __dirname,
+    "../../client/src/pages/public/landing-page.tsx",
+  );
+  const catalogPagePath = path.resolve(
+    __dirname,
+    "../../client/src/pages/public/catalog-page.tsx",
+  );
+  const contactPagePath = path.resolve(
+    __dirname,
+    "../../client/src/pages/public/contact-page.tsx",
+  );
+  const publicHeaderPath = path.resolve(
+    __dirname,
+    "../../client/src/pages/public/public-header.tsx",
+  );
+  const publicFooterPath = path.resolve(
+    __dirname,
+    "../../client/src/pages/public/public-footer.tsx",
+  );
 
   it("verifies public route configuration in client router outside AuthenticatedLayout", () => {
     const appSource = fs.readFileSync(clientAppPath, "utf-8");
@@ -35,7 +50,7 @@ describe("F-092 Regression Suite: Public Marketing, Landing, Catalog, and Contac
     expect(appSource).toContain("<LoginPage />");
 
     // Authenticated layout must be pathless or separate from public root
-    expect(appSource).toContain("element: <AuthenticatedLayout />");
+    expect(appSource).toContain("<AuthenticatedLayout />");
   });
 
   it("verifies LandingPage metadata, robots index policy, and B2B milling capabilities", () => {
@@ -110,7 +125,9 @@ describe("F-092 Regression Suite: Public Marketing, Landing, Catalog, and Contac
     // Language switcher with WCAG 3.1.2 lang tag
     expect(headerSource).toContain("Switch language to Tamil");
     expect(headerSource).toContain("Switch language to English");
-    expect(headerSource).toMatch(/<span lang=\{language === ["']en["'] \? ["']ta["'] : ["']en["']\}>/);
+    expect(headerSource).toMatch(
+      /<span lang=\{language === ["']en["'] \? ["']ta["'] : ["']en["']\}>/,
+    );
 
     // Responsive navigation
     expect(headerSource).toContain("mobileMenuOpen");

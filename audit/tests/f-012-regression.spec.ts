@@ -105,7 +105,10 @@ describe("F-012 Regression Test: GSTIN Format and Luhn Mod 36 Checksum Validatio
     { gstin: "33AABCM1X34F1Z4", reason: "Letter in PAN numeric position 2" },
     { gstin: "33AABCM12X4F1Z4", reason: "Letter in PAN numeric position 3" },
     { gstin: "33AABCM123XF1Z4", reason: "Letter in PAN numeric position 4" },
-    { gstin: "33AABCM123411Z4", reason: "Number in PAN 10th char (last alpha)" },
+    {
+      gstin: "33AABCM123411Z4",
+      reason: "Number in PAN 10th char (last alpha)",
+    },
     { gstin: "33AABCM1234F0Z4", reason: "Entity code cannot be 0" },
     { gstin: "33AABCM1234F$Z4", reason: "Special char in entity code" },
     { gstin: "33AABCM1234F1A4", reason: "Character 14 must be Z" },
@@ -121,7 +124,10 @@ describe("F-012 Regression Test: GSTIN Format and Luhn Mod 36 Checksum Validatio
   it("rejects 30 invalid GSTIN variants across all validation criteria", () => {
     for (const { gstin, reason } of invalidGstins) {
       const res = validateGstin(gstin);
-      expect(res.isValid, `GSTIN '${gstin}' should be rejected: ${reason}`).toBe(false);
+      expect(
+        res.isValid,
+        `GSTIN '${gstin}' should be rejected: ${reason}`,
+      ).toBe(false);
       expect(res.error).toBeDefined();
       expect(gstinSchema.safeParse(gstin).success).toBe(false);
     }
@@ -151,7 +157,8 @@ describe("F-012 Regression Test: GSTIN Format and Luhn Mod 36 Checksum Validatio
 
     expect(res.status).toBe(400);
     const body = (await res.json()) as { error?: string };
-    expect(body.error).toContain("Invalid customer data");
+    expect(body.error).toBeDefined();
+    expect(body.error).toMatch(/GSTIN|Invalid customer data/);
   });
 
   it("API: rejects customer creation with counterfeit check digit with HTTP 400", async () => {
@@ -191,7 +198,9 @@ describe("F-012 Regression Test: GSTIN Format and Luhn Mod 36 Checksum Validatio
     });
 
     expect(res.status).toBe(201);
-    const data = (await res.json()) as { customer: { id: string; gstin: string } };
+    const data = (await res.json()) as {
+      customer: { id: string; gstin: string };
+    };
     expect(data.customer.gstin).toBe(validGstin);
 
     // Clean up

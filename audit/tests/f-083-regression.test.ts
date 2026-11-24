@@ -82,51 +82,55 @@ describe("F-083 Regression: Insufficient Stock Offline Order Conflict Queue Tria
     };
 
     vi.spyOn(offlineDb.outbox, "where").mockReturnValue(mockWhere as any);
-    vi.spyOn(offlineDb.outbox, "update").mockImplementation(async (id: any, changes: any) => {
-      updatedMap.set(String(id), { ...(updatedMap.get(String(id)) || {}), ...changes });
-      return 1;
-    });
+    vi.spyOn(offlineDb.outbox, "update").mockImplementation(
+      async (id: any, changes: any) => {
+        updatedMap.set(String(id), {
+          ...(updatedMap.get(String(id)) || {}),
+          ...changes,
+        });
+        return 1;
+      },
+    );
 
-    vi.spyOn(apiClient, "post").mockImplementation(async (url: string, payload: any) => {
-      if (payload.customerId === "cust-shortage-1") {
-        return {
-          data: {
-            order: {
-              id: "server-so-shortage",
-              orderNumber: "SO-2026-SHORTAGE",
+    vi.spyOn(apiClient, "post").mockImplementation(
+      async (url: string, payload: any) => {
+        if (payload.customerId === "cust-shortage-1") {
+          return {
+            data: {
+              order: {
+                id: "server-so-shortage",
+                orderNumber: "SO-2026-SHORTAGE",
+              },
+              shortages: [{ productVariantId: "p-murukku", shortage: 450 }],
             },
-            shortages: [
-              { productVariantId: "p-murukku", shortage: 450 },
-            ],
-          },
-        } as any;
-      }
+          } as any;
+        }
 
-      if (payload.customerId === "cust-valid-2") {
-        return {
-          data: {
-            order: {
-              id: "server-so-valid",
-              orderNumber: "SO-2026-VALID",
+        if (payload.customerId === "cust-valid-2") {
+          return {
+            data: {
+              order: {
+                id: "server-so-valid",
+                orderNumber: "SO-2026-VALID",
+              },
+              shortages: [{ productVariantId: "p-murukku", shortage: 0 }],
             },
-            shortages: [
-              { productVariantId: "p-murukku", shortage: 0 },
-            ],
-          },
-        } as any;
-      }
+          } as any;
+        }
 
-      if (payload.customerId === "cust-conflict-3") {
-        const error: any = new Error("Account credit limit locked");
-        error.response = {
-          status: 409,
-          data: { error: "Account credit limit locked" },
-        };
-        throw error;
-      }
+        if (payload.customerId === "cust-conflict-3") {
+          const error: any = new Error("Account credit limit locked");
+          error.isAxiosError = true;
+          error.response = {
+            status: 409,
+            data: { error: "Account credit limit locked" },
+          };
+          throw error;
+        }
 
-      throw new Error("Unexpected order payload");
-    });
+        throw new Error("Unexpected order payload");
+      },
+    );
 
     const result = await processOutbox("salesman-user");
 
@@ -138,7 +142,9 @@ describe("F-083 Regression: Insufficient Stock Offline Order Conflict Queue Tria
     const shortageOrd = updatedMap.get("shortage-order-1");
     expect(shortageOrd.status).toBe("conflict");
     expect(shortageOrd.lastErrorCode).toBe("STOCK_INSUFFICIENT");
-    expect(shortageOrd.lastErrorMessage).toContain("shortage of 450 units detected");
+    expect(shortageOrd.lastErrorMessage).toContain(
+      "shortage of 450 units detected",
+    );
     expect(shortageOrd.serverOrderId).toBe("server-so-shortage");
     expect(shortageOrd.serverOrderNumber).toBe("SO-2026-SHORTAGE");
 

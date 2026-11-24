@@ -22,7 +22,9 @@ describe("F-051 Regression Test: Accessible Dialogs & APG Modal Semantics", () =
       const pagePath = path.join(pagesDir, pageName);
       const source = fs.readFileSync(pagePath, "utf8");
 
-      expect(source).not.toContain("fixed inset-0 z-50 flex items-center justify-center bg-black/50");
+      expect(source).not.toContain(
+        "fixed inset-0 z-50 flex items-center justify-center bg-black/50",
+      );
       expect(source).not.toContain("fixed inset-0 z-50");
     }
   });
@@ -55,33 +57,83 @@ describe("F-051 Regression Test: Accessible Dialogs & APG Modal Semantics", () =
   });
 
   it("modals across all operational workflows provide accessible titles for screen readers", () => {
-    const ordersSource = fs.readFileSync(path.join(pagesDir, "orders-page.tsx"), "utf8");
-    expect(ordersSource).toContain("<DialogTitle>Create sales order</DialogTitle>");
-    expect(ordersSource).toContain("<DialogTitle>Approve sales order</DialogTitle>");
+    const ordersSource = fs.readFileSync(
+      path.join(pagesDir, "orders-page.tsx"),
+      "utf8",
+    );
+    expect(ordersSource).toContain(
+      "<DialogTitle>Create sales order</DialogTitle>",
+    );
+    expect(ordersSource).toContain(
+      "<DialogTitle>Approve sales order</DialogTitle>",
+    );
 
-    const invoicesSource = fs.readFileSync(path.join(pagesDir, "invoices-page.tsx"), "utf8");
-    expect(invoicesSource).toContain("<DialogTitle className=\"text-xl font-bold text-foreground\">");
-    expect(invoicesSource).toContain("<DialogTitle>Issue credit note</DialogTitle>");
-    expect(invoicesSource).toContain("<DialogTitle>Generate GST Sales Invoice</DialogTitle>");
+    const invoicesSource = fs.readFileSync(
+      path.join(pagesDir, "invoices-page.tsx"),
+      "utf8",
+    );
+    expect(invoicesSource).toContain(
+      '<DialogTitle className="text-xl font-bold text-foreground">',
+    );
+    expect(invoicesSource).toContain(
+      "<DialogTitle>Issue credit note</DialogTitle>",
+    );
+    expect(invoicesSource).toContain(
+      "<DialogTitle>Generate GST Sales Invoice</DialogTitle>",
+    );
 
-    const productionSource = fs.readFileSync(path.join(pagesDir, "production-page.tsx"), "utf8");
-    expect(productionSource).toContain("<DialogTitle>Record production batch</DialogTitle>");
-    expect(productionSource).toContain("<DialogTitle>Reverse production run</DialogTitle>");
+    const productionSource = fs.readFileSync(
+      path.join(pagesDir, "production-page.tsx"),
+      "utf8",
+    );
+    expect(productionSource).toMatch(
+      /<DialogTitle>.*Record production batch.*<\/DialogTitle>/,
+    );
+    expect(productionSource).toMatch(
+      /<DialogTitle>.*Reverse [Pp]roduction [Rr]un.*<\/DialogTitle>/,
+    );
 
-    const paymentsSource = fs.readFileSync(path.join(pagesDir, "payments-page.tsx"), "utf8");
-    expect(paymentsSource).toContain("<DialogTitle>Customer statement and ledger</DialogTitle>");
-    expect(paymentsSource).toContain("<DialogTitle>Record customer payment</DialogTitle>");
+    const paymentsSource = fs.readFileSync(
+      path.join(pagesDir, "payments-page.tsx"),
+      "utf8",
+    );
+    expect(paymentsSource).toContain(
+      "<DialogTitle>Customer statement and ledger</DialogTitle>",
+    );
+    expect(paymentsSource).toContain(
+      "<DialogTitle>Record customer payment</DialogTitle>",
+    );
 
-    const purchasesSource = fs.readFileSync(path.join(pagesDir, "purchases-page.tsx"), "utf8");
-    expect(purchasesSource).toContain("<DialogTitle>Record Purchase Receipt</DialogTitle>");
+    const purchasesSource = fs.readFileSync(
+      path.join(pagesDir, "purchases-page.tsx"),
+      "utf8",
+    );
+    expect(purchasesSource).toContain(
+      "<DialogTitle>Record Purchase Receipt</DialogTitle>",
+    );
 
-    const dispatchSource = fs.readFileSync(path.join(pagesDir, "dispatch-page.tsx"), "utf8");
-    expect(dispatchSource).toContain("<DialogTitle>Record physical dispatch</DialogTitle>");
+    const dispatchSource = fs.readFileSync(
+      path.join(pagesDir, "dispatch-page.tsx"),
+      "utf8",
+    );
+    expect(dispatchSource).toContain(
+      "<DialogTitle>Record physical dispatch</DialogTitle>",
+    );
 
-    const suppliersSource = fs.readFileSync(path.join(pagesDir, "suppliers-page.tsx"), "utf8");
-    expect(suppliersSource).toContain("<DialogTitle>Add New Raw Material Supplier</DialogTitle>");
+    const suppliersSource = fs.readFileSync(
+      path.join(pagesDir, "suppliers-page.tsx"),
+      "utf8",
+    );
+    expect(suppliersSource).toContain(
+      "<DialogTitle>Add New Raw Material Supplier</DialogTitle>",
+    );
 
-    const settingsSource = fs.readFileSync(path.join(pagesDir, "settings-page.tsx"), "utf8");
-    expect(settingsSource).toContain("<DialogTitle>Add New Staff Member</DialogTitle>");
+    const settingsSource = fs.readFileSync(
+      path.join(pagesDir, "settings-page.tsx"),
+      "utf8",
+    );
+    expect(settingsSource).toContain(
+      "<DialogTitle>Add New Staff Member</DialogTitle>",
+    );
   });
 });

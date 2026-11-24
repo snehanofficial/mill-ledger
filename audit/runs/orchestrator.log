@@ -10787,3 +10787,24 @@
 09:49:49 │  … fixer/CLUSTER-01 [RUNNING]: 1m30s elapsed, 5 tool calls, 6.2 KB output; last: {"event":"step_update","step_update":{"conversation_id":"87bc7702-34d6-4b1b-8d5a-5ac81b49a…
 09:49:53 │  🔧 read_file: /home/snehan/projects/web/mill-ledger/server/src/modules/finance/finance.service.ts
 09:50:08 │  🔧 read_file: /home/snehan/projects/web/mill-ledger/server/src/modules/finance/finance.service.ts
+18:10:49 
+18:10:49 ⚠ INACTIVITY STALL DETECTED: No activity on child PID 757895 for 1s (threshold: 1s).
+18:10:49   Capturing process diagnostics and terminating stalled process tree...
+18:10:49   Process tree snapshot:
+18:10:49     PID    PPID    SPID STAT WCHAN                CMD
+18:10:49  757895  757762  757895 Ss   do_wait              /bin/sh -c sleep 30
+18:10:49 
+18:21:07 
+18:21:07 ⚠ INACTIVITY STALL DETECTED: No activity on child PID 768868 for 1s (threshold: 1s).
+18:21:07   Capturing process diagnostics and terminating stalled process tree...
+18:21:08   Process tree snapshot:
+18:21:08     PID    PPID    SPID STAT WCHAN                CMD
+18:21:08  768868  768798  768868 Ss   do_wait              /bin/sh -c sleep 30
+18:21:08 
+18:22:28 
+18:22:28 ⚠ INACTIVITY STALL DETECTED: No activity on child PID 771283 for 1s (threshold: 1s).
+18:22:28   Capturing process diagnostics and terminating stalled process tree...
+18:22:28   Process tree snapshot:
+18:22:28     PID    PPID    SPID STAT WCHAN                CMD
+18:22:28  771283  771275  771283 Ss   do_wait              /bin/sh -c sleep 30
+18:22:28 

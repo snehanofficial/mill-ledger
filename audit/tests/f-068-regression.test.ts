@@ -21,9 +21,8 @@ describe("F-068 Regression Test: SPA Route Transition Focus Management (WCAG 2.2
     // Must focus with preventScroll
     expect(layoutSource).toContain("main.focus({ preventScroll: true })");
 
-    // Must reset scroll position
-    expect(layoutSource).toContain("main.scrollTo({ top: 0, behavior: \"instant\" })");
-    expect(layoutSource).toContain("window.scrollTo({ top: 0, behavior: \"instant\" })");
+    // Must manage scroll restoration
+    expect(layoutSource).toContain('useScrollRestoration("main-content")');
 
     // Must trigger on location.pathname change
     expect(layoutSource).toContain("[label, location.pathname]");

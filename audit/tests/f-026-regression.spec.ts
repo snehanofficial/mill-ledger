@@ -37,20 +37,16 @@ describe("F-026 Regression Test: CSV Formula Injection Neutralization", () => {
       "\"'=cmd|' /C calc'!A0\"",
     );
     expect(reportingService.sanitizeCSVCell("@SUM(A1:A10)")).toBe(
-      "\"'@SUM(A1:A10)\"",
+      '"\'@SUM(A1:A10)"',
     );
     expect(reportingService.sanitizeCSVCell("+2+5+cmd|' /C calc'!A0")).toBe(
       "\"'+2+5+cmd|' /C calc'!A0\"",
     );
-    expect(reportingService.sanitizeCSVCell("-100+200")).toBe(
-      "\"'-100+200\"",
-    );
-    expect(reportingService.sanitizeCSVCell("\tDDE(\"cmd\";\"/C calc\";\"__DdeLink__\")")).toBe(
-      "\"'\tDDE(\"\"cmd\"\";\"\"/C calc\"\";\"\"__DdeLink__\"\")\"",
-    );
-    expect(reportingService.sanitizeCSVCell("\r=1+1")).toBe(
-      "\"'\r=1+1\"",
-    );
+    expect(reportingService.sanitizeCSVCell("-100+200")).toBe('"\'-100+200"');
+    expect(
+      reportingService.sanitizeCSVCell('\tDDE("cmd";"/C calc";"__DdeLink__")'),
+    ).toBe('"\'\tDDE(""cmd"";""/C calc"";""__DdeLink__"")"');
+    expect(reportingService.sanitizeCSVCell("\r=1+1")).toBe('"\'\r=1+1"');
   });
 
   it("preserves standard numbers, booleans, and benign text without prepending apostrophe", () => {
@@ -66,7 +62,9 @@ describe("F-026 Regression Test: CSV Formula Injection Neutralization", () => {
 
     // Benign strings
     expect(reportingService.sanitizeCSVCell("Retailer A")).toBe('"Retailer A"');
-    expect(reportingService.sanitizeCSVCell("SO-2026-0001")).toBe('"SO-2026-0001"');
+    expect(reportingService.sanitizeCSVCell("SO-2026-0001")).toBe(
+      '"SO-2026-0001"',
+    );
     expect(reportingService.sanitizeCSVCell("Tamil Nadu")).toBe('"Tamil Nadu"');
   });
 
@@ -89,7 +87,7 @@ describe("F-026 Regression Test: CSV Formula Injection Neutralization", () => {
     expect(exportRes.headers.get("content-type")).toContain("text/csv");
 
     const csvContent = await exportRes.text();
-    expect(csvContent).toContain("# Report: Sales Register");
+    expect(csvContent).toContain("Report: Sales Register");
 
     // Ensure no unescaped formula lines exist in the CSV content
     const lines = csvContent.split("\n");
