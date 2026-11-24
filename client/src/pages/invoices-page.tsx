@@ -367,8 +367,108 @@ export function InvoicesPage() {
             <p>No invoices posted yet.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
+          <>
+            {/* Mobile Card Layout (<md viewports per F-047) */}
+            <div
+              className="divide-y divide-border md:hidden"
+              data-slot="mobile-cards"
+            >
+              {filteredInvoices.length === 0 && invoices.length > 0 && (
+                <div className="p-8 text-center text-sm text-muted-foreground">
+                  {t("No invoices match the selected filters.")}
+                </div>
+              )}
+              {filteredInvoices.map((inv) => (
+                <div key={inv.id} className="p-4 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm font-semibold text-foreground">
+                        {inv.invoiceNumber}
+                      </span>
+                      <span className="font-mono text-2xs text-muted-foreground">
+                        ({inv.financialYear})
+                      </span>
+                    </div>
+                    <Badge
+                      variant={
+                        inv.status === "PAID"
+                          ? "success"
+                          : inv.status === "POSTED"
+                            ? "info"
+                            : inv.status === "CANCELLED_BY_CREDIT_NOTE"
+                              ? "danger"
+                              : "warning"
+                      }
+                    >
+                      {inv.status}
+                    </Badge>
+                  </div>
+
+                  <div className="flex justify-between items-baseline text-xs">
+                    <span className="font-medium text-foreground">
+                      {inv.customerNameSnapshot}
+                    </span>
+                    <span className="text-muted-foreground font-mono text-2xs">
+                      {inv.customerGstinSnapshot || "Unregistered"}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
+                    <div>
+                      <span className="text-muted-foreground text-2xs uppercase">
+                        Total Amount
+                      </span>
+                      <p className="font-bold text-foreground">
+                        {formatINR(inv.totalAmount)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-muted-foreground text-2xs uppercase">
+                        Outstanding
+                      </span>
+                      <p
+                        className={
+                          Number(inv.outstandingAmount) > 0
+                            ? "font-bold text-amber-600 dark:text-amber-400"
+                            : "font-medium text-emerald-600 dark:text-emerald-400"
+                        }
+                      >
+                        {formatINR(inv.outstandingAmount)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedInvoice(inv)}
+                      className="min-h-[44px] px-4 text-xs"
+                    >
+                      View Details
+                    </Button>
+                    {canIssueCreditNote && inv.status === "POSTED" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedInvoice(inv);
+                          setCreditNoteAmount(Number(inv.outstandingAmount));
+                          setShowCreditNoteModal(true);
+                        }}
+                        className="min-h-[44px] px-3 text-xs text-amber-600 hover:bg-amber-500/10"
+                      >
+                        Credit Note
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View (md+ viewports) */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("Invoice number")}</TableHead>
@@ -478,8 +578,9 @@ export function InvoicesPage() {
               </TableBody>
             </Table>
           </div>
-        )}
-      </div>
+        </>
+      )}
+    </div>
 
       {/* Invoice Snapshot Modal */}
       {selectedInvoice && !showCreditNoteModal && (

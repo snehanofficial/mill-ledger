@@ -24,7 +24,10 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("border-b border-border bg-muted/50", className)}
+      className={cn(
+        "sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur-xs",
+        className,
+      )}
       {...props}
     />
   );
@@ -79,7 +82,7 @@ function TableHead({
       data-slot="table-head"
       scope={scope}
       className={cn(
-        "h-10 px-4 text-left align-middle text-xs font-semibold text-muted-foreground whitespace-nowrap",
+        "h-10 px-4 text-left align-middle text-xs font-semibold text-muted-foreground whitespace-nowrap bg-background/95",
         className,
       )}
       {...props}

@@ -513,8 +513,93 @@ export function PaymentsPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <>
+              {/* Mobile Card Layout (<md viewports per F-047) */}
+              <div
+                className="divide-y divide-border md:hidden"
+                data-slot="mobile-cards"
+              >
+                {filteredPayments.length === 0 && payments.length > 0 && (
+                  <div className="p-8 text-center text-sm text-muted-foreground">
+                    {t("No payments match the selected filters.")}
+                  </div>
+                )}
+                {filteredPayments.map((p) => (
+                  <div key={p.id} className="p-4 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-sm font-semibold text-foreground">
+                        {p.paymentNumber}
+                      </span>
+                      <Badge
+                        variant={p.status === "POSTED" ? "success" : "default"}
+                      >
+                        {p.status}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-baseline text-xs">
+                      <div>
+                        <span className="font-medium text-foreground">
+                          {p.customer?.name ?? "Customer"}
+                        </span>
+                        <span className="ml-1 font-mono text-2xs text-muted-foreground">
+                          ({p.customer?.code})
+                        </span>
+                      </div>
+                      <span className="text-muted-foreground font-mono text-2xs">
+                        {formatDate(p.paymentDate)}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
+                      <div>
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Mode & Ref
+                        </span>
+                        <p className="font-medium text-foreground">
+                          {p.paymentMode.replace(/_/g, " ")}
+                          {p.referenceNumber && (
+                            <span className="block font-mono text-2xs text-muted-foreground">
+                              {p.referenceNumber}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Total Amount
+                        </span>
+                        <p className="font-bold text-foreground">
+                          {formatINR(p.amount)}
+                        </p>
+                      </div>
+                    </div>
+                    {Number(p.unallocatedAmount) > 0 && (
+                      <div className="flex justify-between items-center text-xs px-1">
+                        <span className="text-muted-foreground">Unallocated:</span>
+                        <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
+                          {formatINR(p.unallocatedAmount)}
+                        </span>
+                      </div>
+                    )}
+                    {p.allocations.length > 0 && (
+                      <div className="text-2xs text-muted-foreground pt-1">
+                        <span className="font-medium">Allocated: </span>
+                        {p.allocations.map((a) => (
+                          <span
+                            key={a.id}
+                            className="font-mono text-emerald-600 dark:text-emerald-400 mr-2"
+                          >
+                            {a.salesInvoice?.invoiceNumber}: {formatINR(a.amount)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View (md+ viewports) */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("Receipt number")}</TableHead>
@@ -615,7 +700,8 @@ export function PaymentsPage() {
                 </TableBody>
               </Table>
             </div>
-          )}
+          </>
+        )}
         </div>
       )}
 
@@ -652,8 +738,92 @@ export function PaymentsPage() {
               <p className="font-medium text-foreground">No customer records</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <>
+              {/* Mobile Card Layout (<md viewports per F-047) */}
+              <div
+                className="divide-y divide-border md:hidden"
+                data-slot="mobile-cards"
+              >
+                {filteredReceivables.length === 0 && receivables.length > 0 && (
+                  <div className="p-8 text-center text-sm text-muted-foreground">
+                    {t("No customer receivables match the search query.")}
+                  </div>
+                )}
+                {filteredReceivables.map((r) => (
+                  <div key={r.customerId} className="p-4 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-foreground">{r.customerName}</p>
+                        <span className="font-mono text-2xs text-muted-foreground">
+                          {r.customerCode} ({r.state})
+                        </span>
+                      </div>
+                      <Badge
+                        variant={r.openInvoicesCount > 0 ? "warning" : "secondary"}
+                      >
+                        {r.openInvoicesCount} open
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
+                      <div>
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Invoiced
+                        </span>
+                        <p className="font-mono font-medium">
+                          {formatINR(r.totalInvoiced)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Collections
+                        </span>
+                        <p className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                          {formatINR(r.totalPaid)}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Credit Notes
+                        </span>
+                        <p className="font-mono font-medium text-muted-foreground">
+                          {formatINR(r.totalCreditNotes)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Outstanding
+                        </span>
+                        <p
+                          className={`font-mono font-bold ${
+                            r.netOutstanding > 0
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "text-emerald-600 dark:text-emerald-400"
+                          }`}
+                        >
+                          {formatINR(r.netOutstanding)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end pt-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setSelectedCustomerIdForLedger(r.customerId)
+                        }
+                        className="min-h-[44px] w-full gap-1.5 text-xs justify-center"
+                      >
+                        <HistoryIcon className="h-4 w-4" />
+                        View ledger
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View (md+ viewports) */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("Customer")}</TableHead>
@@ -737,7 +907,8 @@ export function PaymentsPage() {
                 </TableBody>
               </Table>
             </div>
-          )}
+          </>
+        )}
         </div>
       )}
 

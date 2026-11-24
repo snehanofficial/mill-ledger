@@ -344,112 +344,194 @@ export function DispatchPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("Dispatch number")}</TableHead>
-                  <TableHead>{t("Date and time")}</TableHead>
-                  <TableHead>{t("Sales order")}</TableHead>
-                  <TableHead>{t("Customer")}</TableHead>
-                  <TableHead>{t("Vehicle and driver")}</TableHead>
-                  <TableHead>{t("Dispatched items")}</TableHead>
-                  <TableHead>{t("Invoice link")}</TableHead>
-                  <TableHead className="text-right">{t("Status")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredDispatches.length === 0 && dispatches.length > 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={8}
-                      className="py-8 text-center text-sm text-muted-foreground"
-                    >
-                      {t("No dispatches match the search query.")}
-                    </TableCell>
-                  </TableRow>
-                )}
-                {filteredDispatches.map((disp) => (
-                  <TableRow key={disp.id}>
-                    <TableCell className="font-mono text-sm font-semibold text-foreground">
+          <>
+            {/* Mobile Card Layout (<md viewports per F-047) */}
+            <div
+              className="divide-y divide-border md:hidden"
+              data-slot="mobile-cards"
+            >
+              {filteredDispatches.length === 0 && dispatches.length > 0 && (
+                <div className="p-8 text-center text-sm text-muted-foreground">
+                  {t("No dispatches match the search query.")}
+                </div>
+              )}
+              {filteredDispatches.map((disp) => (
+                <div key={disp.id} className="p-4 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-sm font-semibold text-foreground">
                       {disp.dispatchNumber}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {formatDateTime(disp.dispatchedAt)}
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono text-xs font-medium">
-                        {disp.salesOrder?.orderNumber ?? "N/A"}
+                    </span>
+                    <Badge
+                      variant={disp.status === "POSTED" ? "success" : "default"}
+                    >
+                      {disp.status}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-baseline text-xs">
+                    <div>
+                      <span className="font-medium text-foreground">
+                        {disp.salesOrder?.customer?.name ?? "Unknown"}
                       </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">
-                          {disp.salesOrder?.customer?.name ?? "Unknown"}
+                      <span className="ml-1 text-muted-foreground">
+                        ({disp.salesOrder?.customer?.city})
+                      </span>
+                    </div>
+                    <span className="text-muted-foreground font-mono text-2xs">
+                      {formatDateTime(disp.dispatchedAt)}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
+                    <div>
+                      <span className="text-muted-foreground text-2xs uppercase">
+                        Order & Invoice
+                      </span>
+                      <p className="font-mono font-medium text-foreground">
+                        SO: {disp.salesOrder?.orderNumber ?? "N/A"}
+                      </p>
+                      {disp.salesInvoice ? (
+                        <p className="font-mono text-2xs text-emerald-600 dark:text-emerald-400">
+                          INV: {disp.salesInvoice.invoiceNumber}
+                        </p>
+                      ) : (
+                        <p className="text-2xs text-muted-foreground">Direct dispatch</p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <span className="text-muted-foreground text-2xs uppercase">
+                        Vehicle / Driver
+                      </span>
+                      <p className="font-mono font-medium text-foreground">
+                        {disp.vehicleNumber || "None"}
+                      </p>
+                      {disp.driverName && (
+                        <p className="text-2xs text-muted-foreground">
+                          {disp.driverName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {disp.lines.length > 0 && (
+                    <div className="text-2xs text-muted-foreground pt-1">
+                      <span className="font-medium">Items: </span>
+                      {disp.lines.map((l) => (
+                        <span key={l.id} className="inline-block bg-muted px-2 py-0.5 rounded mr-1">
+                          {l.inventoryItem?.name} × {l.quantity}
                         </span>
-                        <span className="text-xs text-muted-foreground">
-                          {disp.salesOrder?.customer?.city},{" "}
-                          {disp.salesOrder?.customer?.state}
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View (md+ viewports) */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("Dispatch number")}</TableHead>
+                    <TableHead>{t("Date and time")}</TableHead>
+                    <TableHead>{t("Sales order")}</TableHead>
+                    <TableHead>{t("Customer")}</TableHead>
+                    <TableHead>{t("Vehicle and driver")}</TableHead>
+                    <TableHead>{t("Dispatched items")}</TableHead>
+                    <TableHead>{t("Invoice link")}</TableHead>
+                    <TableHead className="text-right">{t("Status")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredDispatches.length === 0 && dispatches.length > 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={8}
+                        className="py-8 text-center text-sm text-muted-foreground"
+                      >
+                        {t("No dispatches match the search query.")}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {filteredDispatches.map((disp) => (
+                    <TableRow key={disp.id}>
+                      <TableCell className="font-mono text-sm font-semibold text-foreground">
+                        {disp.dispatchNumber}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {formatDateTime(disp.dispatchedAt)}
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-mono text-xs font-medium">
+                          {disp.salesOrder?.orderNumber ?? "N/A"}
                         </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col text-xs">
-                        <span className="font-mono font-medium">
-                          {disp.vehicleNumber || "No vehicle specified"}
-                        </span>
-                        {disp.driverName && (
-                          <span className="text-muted-foreground">
-                            {disp.driverName}
-                            {disp.driverPhone ? ` (${disp.driverPhone})` : ""}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">
+                            {disp.salesOrder?.customer?.name ?? "Unknown"}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {disp.salesOrder?.customer?.city},{" "}
+                            {disp.salesOrder?.customer?.state}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col text-xs">
+                          <span className="font-mono font-medium">
+                            {disp.vehicleNumber || "No vehicle specified"}
+                          </span>
+                          {disp.driverName && (
+                            <span className="text-muted-foreground">
+                              {disp.driverName}
+                              {disp.driverPhone ? ` (${disp.driverPhone})` : ""}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          {disp.lines.map((line) => (
+                            <div
+                              key={line.id}
+                              className="flex items-center gap-1.5 text-xs"
+                            >
+                              <span className="font-medium">
+                                {line.inventoryItem?.name || "Product"}
+                              </span>
+                              <span className="font-mono text-muted-foreground">
+                                x {line.quantity}{" "}
+                                {line.inventoryItem?.unitOfMeasure || "units"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {disp.salesInvoice ? (
+                          <div className="flex items-center gap-1 font-mono text-xs text-emerald-600 dark:text-emerald-400">
+                            <FileTextIcon className="h-3 w-3" />
+                            {disp.salesInvoice.invoiceNumber}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            Direct dispatch
                           </span>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        {disp.lines.map((line) => (
-                          <div
-                            key={line.id}
-                            className="flex items-center gap-1.5 text-xs"
-                          >
-                            <span className="font-medium">
-                              {line.inventoryItem?.name || "Product"}
-                            </span>
-                            <span className="font-mono text-muted-foreground">
-                              x {line.quantity}{" "}
-                              {line.inventoryItem?.unitOfMeasure || "units"}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {disp.salesInvoice ? (
-                        <div className="flex items-center gap-1 font-mono text-xs text-emerald-600 dark:text-emerald-400">
-                          <FileTextIcon className="h-3 w-3" />
-                          {disp.salesInvoice.invoiceNumber}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">
-                          Direct dispatch
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge
-                        variant={
-                          disp.status === "POSTED" ? "success" : "default"
-                        }
-                      >
-                        {disp.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Badge
+                          variant={
+                            disp.status === "POSTED" ? "success" : "default"
+                          }
+                        >
+                          {disp.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )}
       </div>
 

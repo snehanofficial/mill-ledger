@@ -609,8 +609,226 @@ export function OrdersPage() {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
+          <>
+            {/* Mobile Card Layout (<md viewports per F-047) */}
+            <div
+              className="divide-y divide-border md:hidden"
+              data-slot="mobile-cards"
+            >
+              {/* Local outbox items shown on mobile */}
+              {(activeTab === "outbox"
+                ? outboxOrders
+                : outboxOrders.filter((o) => o.status !== "synced")
+              ).map((ord) => {
+                const qty = ord.items.reduce((s, it) => s + it.quantity, 0);
+                const taxable = ord.items.reduce(
+                  (s, it) => s + it.quantity * it.quotedUnitPrice,
+                  0,
+                );
+                const total = taxable * 1.05;
+                return (
+                  <div key={ord.id} className="p-4 bg-amber-500/5 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 font-mono text-sm font-semibold text-foreground">
+                        <DatabaseIcon className="size-3.5 text-amber-600 shrink-0" />
+                        <span>Local: {ord.id.slice(-6).toUpperCase()}</span>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-xs"
+                      >
+                        {ord.status === "queued" ? "Waiting to sync" : ord.status}
+                      </Badge>
+                    </div>
+
+                    <div className="flex justify-between items-baseline text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">
+                        {ord.customerName} ({ord.customerState})
+                      </span>
+                      <span>You (Outbox)</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 rounded-lg bg-card/60 p-2.5 border text-xs">
+                      <div>
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Ordered
+                        </span>
+                        <p className="font-medium text-foreground">
+                          {formatQuantity(qty, { unit: "pkts" })}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Total
+                        </span>
+                        <p className="font-bold text-foreground">
+                          {formatINR(total)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      {ord.status === "queued" && isOnline && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => retryOrder(ord.id)}
+                          className="min-h-[44px] px-4 text-xs gap-1.5"
+                        >
+                          <RefreshCwIcon className="size-3.5" />
+                          Sync Now
+                        </Button>
+                      )}
+                      {ord.status !== "syncing" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeOrder(ord.id)}
+                          className="min-h-[44px] px-3 text-xs text-muted-foreground hover:text-destructive"
+                          aria-label="Remove outbox order"
+                        >
+                          <Trash2Icon className="size-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Server orders shown on mobile */}
+              {activeTab === "stream" &&
+                filteredOrders.length === 0 &&
+                orders.length > 0 && (
+                  <div className="p-8 text-center text-sm text-muted-foreground">
+                    {t("No orders match the selected filters.")}
+                  </div>
+                )}
+
+              {activeTab === "stream" &&
+                filteredOrders.map((o) => {
+                  const line = o.lines[0];
+                  const qty = Number(line?.quotedQuantity ?? 0);
+                  const shortage = o.totalShortage ?? 0;
+
+                  return (
+                    <div key={o.id} className="p-4 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-sm font-semibold text-foreground">
+                          {o.orderNumber}
+                        </span>
+                        <Badge
+                          variant={
+                            o.status === "APPROVED"
+                              ? "success"
+                              : o.status === "REJECTED"
+                                ? "danger"
+                                : o.status === "SUBMITTED"
+                                  ? "warning"
+                                  : "neutral"
+                          }
+                        >
+                          {o.status}
+                        </Badge>
+                      </div>
+
+                      <div className="flex justify-between items-baseline text-xs">
+                        <span className="font-medium text-foreground">
+                          {o.customer.name}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {o.salesman.name}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
+                        <div>
+                          <span className="text-muted-foreground text-2xs uppercase">
+                            Ordered
+                          </span>
+                          <p className="font-medium text-foreground">
+                            {formatQuantity(qty, { unit: "pkts" })}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-2xs uppercase">
+                            Shortage
+                          </span>
+                          <p
+                            className={
+                              shortage > 0
+                                ? "font-semibold text-amber-600"
+                                : "text-muted-foreground"
+                            }
+                          >
+                            {shortage > 0 ? `${shortage} pkts` : "None"}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-muted-foreground text-2xs uppercase">
+                            Total
+                          </span>
+                          <p className="font-bold text-foreground">
+                            {formatINR(o.totalAmount)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Action buttons (min 44px tap target height) */}
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        {o.status === "SUBMITTED" && canApproveOrder ? (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedOrderForAction(o);
+                                setActionType("APPROVE");
+                              }}
+                              className="min-h-[44px] px-4 text-xs font-semibold text-emerald-600 hover:text-emerald-700"
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedOrderForAction(o);
+                                setActionType("REJECT");
+                              }}
+                              className="min-h-[44px] px-4 text-xs text-destructive hover:bg-destructive/10"
+                            >
+                              Reject
+                            </Button>
+                          </>
+                        ) : (
+                          o.status === "APPROVED" &&
+                          (o.invoices && o.invoices.length > 0 ? (
+                            <Badge variant="secondary" className="text-xs">
+                              Invoiced ({o.invoices[0].invoiceNumber})
+                            </Badge>
+                          ) : canCreateInvoice ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => createInvoiceMutation.mutate(o.id)}
+                              disabled={createInvoiceMutation.isPending}
+                              className="min-h-[44px] px-4 text-xs font-semibold text-primary hover:bg-primary/10 border-primary/30"
+                            >
+                              {createInvoiceMutation.isPending
+                                ? "Invoicing..."
+                                : "Invoice Order"}
+                            </Button>
+                          ) : null)
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+
+            {/* Desktop Table View (md+ viewports) */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("Order number")}</TableHead>
@@ -905,8 +1123,9 @@ export function OrdersPage() {
               </TableBody>
             </Table>
           </div>
-        )}
-      </div>
+        </>
+      )}
+    </div>
 
       {/* New Order Modal */}
       {showNewOrderModal && (

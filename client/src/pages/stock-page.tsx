@@ -241,30 +241,16 @@ export function StockPage() {
             benchmark masters.
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[120px]">{t("SKU")}</TableHead>
-                <TableHead>{t("Item Name")}</TableHead>
-                <TableHead className="w-[140px]">{t("Category")}</TableHead>
-                <TableHead className="text-right">{t("On Hand")}</TableHead>
-                <TableHead className="text-right">{t("Avg Unit Cost")}</TableHead>
-                <TableHead className="text-right">{t("Total Value")}</TableHead>
-                <TableHead className="w-[120px] text-center">
-                  {t("Ledger Status")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <>
+            {/* Mobile Card Layout (<md viewports per F-047) */}
+            <div
+              className="divide-y divide-border md:hidden"
+              data-slot="mobile-cards"
+            >
               {filteredBalances.length === 0 && balances.length > 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={7}
-                    className="py-8 text-center text-sm text-muted-foreground"
-                  >
-                    {t("No items match the selected filters.")}
-                  </TableCell>
-                </TableRow>
+                <div className="p-8 text-center text-sm text-muted-foreground">
+                  {t("No items match the selected filters.")}
+                </div>
               )}
               {filteredBalances.map((item) => {
                 const totalValue = item.onHand * item.weightedAverageCost;
@@ -274,66 +260,184 @@ export function StockPage() {
                 };
 
                 return (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-mono text-xs font-medium text-foreground">
-                      {item.sku}
-                    </TableCell>
-                    <TableCell className="font-medium text-foreground">
+                  <div key={item.id} className="p-4 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-semibold text-foreground">
+                          {item.sku}
+                        </span>
+                        <Badge
+                          variant={categoryConfig.variant}
+                          className="text-2xs"
+                        >
+                          {categoryConfig.label}
+                        </Badge>
+                      </div>
+                      <div>
+                        {item.reconciled ? (
+                          <span
+                            className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600"
+                            title="Ledger sum equals on-hand balance"
+                          >
+                            <CheckCircleIcon
+                              className="size-3.5"
+                              aria-hidden="true"
+                            />
+                            Balanced
+                          </span>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1 text-xs font-medium text-amber-600"
+                            title="Ledger variance detected"
+                          >
+                            <AlertTriangleIcon
+                              className="size-3.5"
+                              aria-hidden="true"
+                            />
+                            Variance
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <p className="font-medium text-sm text-foreground">
                       {item.name}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={categoryConfig.variant}
-                        className="text-xs"
-                      >
-                        {categoryConfig.label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatQuantity(item.onHand)}{" "}
-                      <span className="text-xs text-muted-foreground">
-                        {item.baseUom.symbol}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      {formatINR(item.weightedAverageCost, {
-                        maximumFractionDigits:
-                          item.weightedAverageCost % 1 === 0 ? 2 : 3,
-                      })}
-                    </TableCell>
-                    <TableCell className="text-right font-medium text-foreground">
-                      {formatINR(totalValue)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {item.reconciled ? (
-                        <span
-                          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600"
-                          title="Ledger sum equals on-hand balance"
-                        >
-                          <CheckCircleIcon
-                            className="size-3.5"
-                            aria-hidden="true"
-                          />
-                          Balanced
+                    </p>
+
+                    <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
+                      <div>
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          On Hand
                         </span>
-                      ) : (
-                        <span
-                          className="inline-flex items-center gap-1 text-xs font-medium text-amber-600"
-                          title="Ledger variance detected"
-                        >
-                          <AlertTriangleIcon
-                            className="size-3.5"
-                            aria-hidden="true"
-                          />
-                          Variance
+                        <p className="font-semibold text-foreground">
+                          {formatQuantity(item.onHand)}{" "}
+                          <span className="text-2xs text-muted-foreground font-normal">
+                            {item.baseUom.symbol}
+                          </span>
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Avg Unit Cost
                         </span>
-                      )}
-                    </TableCell>
-                  </TableRow>
+                        <p className="font-medium text-muted-foreground">
+                          {formatINR(item.weightedAverageCost, {
+                            maximumFractionDigits:
+                              item.weightedAverageCost % 1 === 0 ? 2 : 3,
+                          })}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Total Value
+                        </span>
+                        <p className="font-bold text-foreground">
+                          {formatINR(totalValue)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
-            </TableBody>
-          </Table>
+            </div>
+
+            {/* Desktop Table View (md+ viewports) */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[120px]">{t("SKU")}</TableHead>
+                    <TableHead>{t("Item Name")}</TableHead>
+                    <TableHead className="w-[140px]">{t("Category")}</TableHead>
+                    <TableHead className="text-right">{t("On Hand")}</TableHead>
+                    <TableHead className="text-right">{t("Avg Unit Cost")}</TableHead>
+                    <TableHead className="text-right">{t("Total Value")}</TableHead>
+                    <TableHead className="w-[120px] text-center">
+                      {t("Ledger Status")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredBalances.length === 0 && balances.length > 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className="py-8 text-center text-sm text-muted-foreground"
+                      >
+                        {t("No items match the selected filters.")}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {filteredBalances.map((item) => {
+                    const totalValue = item.onHand * item.weightedAverageCost;
+                    const categoryConfig = CATEGORY_LABELS[item.category] || {
+                      label: item.category,
+                      variant: "secondary",
+                    };
+
+                    return (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-mono text-xs font-medium text-foreground">
+                          {item.sku}
+                        </TableCell>
+                        <TableCell className="font-medium text-foreground">
+                          {item.name}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={categoryConfig.variant}
+                            className="text-xs"
+                          >
+                            {categoryConfig.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {formatQuantity(item.onHand)}{" "}
+                          <span className="text-xs text-muted-foreground">
+                            {item.baseUom.symbol}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          {formatINR(item.weightedAverageCost, {
+                            maximumFractionDigits:
+                              item.weightedAverageCost % 1 === 0 ? 2 : 3,
+                          })}
+                        </TableCell>
+                        <TableCell className="text-right font-medium text-foreground">
+                          {formatINR(totalValue)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {item.reconciled ? (
+                            <span
+                              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600"
+                              title="Ledger sum equals on-hand balance"
+                            >
+                              <CheckCircleIcon
+                                className="size-3.5"
+                                aria-hidden="true"
+                              />
+                              Balanced
+                            </span>
+                          ) : (
+                            <span
+                              className="inline-flex items-center gap-1 text-xs font-medium text-amber-600"
+                              title="Ledger variance detected"
+                            >
+                              <AlertTriangleIcon
+                                className="size-3.5"
+                                aria-hidden="true"
+                              />
+                              Variance
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )}
       </div>
     </div>
