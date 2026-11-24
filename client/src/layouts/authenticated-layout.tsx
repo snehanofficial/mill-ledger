@@ -18,6 +18,9 @@ import { AuthenticatedShell } from "@/components/shell/authenticated-shell";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { authClient } from "@/lib/auth-client";
 import { offlineDb } from "@/offline/db";
+import { saveActiveFormDraft } from "@/lib/form-draft";
+import { useSessionTimeout } from "@/hooks/use-session-timeout";
+import { SessionTimeoutModal } from "@/components/shell/session-timeout-modal";
 import type { RouteHandle } from "@/components/shell/use-breadcrumbs";
 
 function RouteLoadingFallback() {
@@ -67,13 +70,27 @@ export function AuthenticatedLayout() {
     }
   }, [label, location.pathname]);
 
-  // Listen for unauthorized session expiration across active API queries
-  useEffect(() => {
-    const handleUnauthorized = () => {
+  // WCAG 2.2 SC 2.2.1 & SC 3.3.7: Proactive idle session warning and draft preservation
+  const { isWarningOpen, secondsRemaining, extendSession } = useSessionTimeout({
+    onTimeout: () => {
+      saveActiveFormDraft(location.pathname);
       queryClient.clear();
       navigate("/auth/login", {
         replace: true,
-        state: { from: location },
+        state: { from: location, sessionExpired: true },
+      });
+    },
+  });
+
+  // Listen for unauthorized session expiration across active API queries
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      // WCAG 2.2 SC 3.3.7: Serialize in-progress form inputs before redirect
+      saveActiveFormDraft(location.pathname);
+      queryClient.clear();
+      navigate("/auth/login", {
+        replace: true,
+        state: { from: location, sessionExpired: true },
       });
     };
 
@@ -142,6 +159,12 @@ export function AuthenticatedLayout() {
       >
         {routeAnnouncement}
       </div>
+      <SessionTimeoutModal
+        isOpen={isWarningOpen}
+        secondsRemaining={secondsRemaining}
+        onExtend={extendSession}
+        onSignOut={handleSignOut}
+      />
       <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>
         <Suspense fallback={<RouteLoadingFallback />}>
           <Outlet />

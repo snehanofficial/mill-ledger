@@ -98,6 +98,9 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const isSessionExpired = Boolean(
+    (location.state as { sessionExpired?: boolean })?.sessionExpired,
+  );
 
   // Derive target return URL with open-redirect protection
   const rawFrom = (
@@ -248,6 +251,22 @@ export function LoginPage() {
                   }
                 >
                   {errorMessage}
+                </Alert>
+              )}
+
+              {isSessionExpired && !errorMessage && (
+                <Alert
+                  variant="warning"
+                  role="status"
+                  title={
+                    language === "ta"
+                      ? "அமர்வு காலாவதியானது"
+                      : "Session Expired"
+                  }
+                >
+                  {language === "ta"
+                    ? "செயலற்ற தன்மை காரணமாக உங்கள் அமர்வு காலாவதியானது. உங்கள் வேலையைத் தொடர மீண்டும் உள்நுழையவும்."
+                    : "Your session expired due to inactivity. Please sign in to resume your work."}
                 </Alert>
               )}
 
