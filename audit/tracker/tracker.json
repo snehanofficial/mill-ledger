@@ -8746,7 +8746,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -8754,12 +8754,27 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-098.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "07787f3",
+        "evidenceLink": "audit/evidence/verify/F-098/verification.md",
+        "note": "Fixed modular monolith typo in README, verified backend port 4000, and reconciled scope claims truthfully. 3/3 regression tests pass."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-098-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm exec vitest run audit/tests/f-098-regression.test.ts --config /dev/null",
+    "regressionTest": "audit/tests/f-098-regression.test.ts",
+    "fixCommit": "07787f3",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-098/verification.md",
+      "audit/evidence/verify/F-098/regression-test.txt",
+      "audit/evidence/verify/F-098/typecheck.txt",
+      "audit/evidence/verify/F-098/lint.txt",
+      "audit/evidence/verify/F-098/benchmark.txt",
+      "audit/evidence/verify/F-098/invariants.txt",
+      "audit/evidence/verify/F-098/suite-tests.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
@@ -8792,7 +8807,7 @@
       ]
     },
     "needsApproval": "none",
-    "notes": ""
+    "notes": "Decoupled from F-070 per Option 2 directive; corrected modular monolith typo, verified port 4000, and reconciled scope claims."
   },
   {
     "id": "F-099",

@@ -548,7 +548,7 @@ client/src/pages/reports-page.tsx:643:                request metadata
 | **F-094** | P2 | `VERIFIED` | Dead Code, Orphaned Stubs, and Dependency Bloat (10 Unused Dependencies, Orphaned Dictionary, and 22 Dead Placeholder Pages) |
 | **F-095** | P1 | `VERIFIED` | Domain Layer Type Safety Breach: 14 Explicit `any` Types, 4 Double Casts (`as unknown as`), and Missing `--strict` in Frontend tsconfig |
 | **F-096** | P1 | `VERIFIED` | Test Assertion Blindspots: Surviving Mutants in GST and Payment Allocation Logic (Stryker 59.32% Mutation Score, Zero Inter-State & Error Boundary Tests) |
-| **F-098** | P3 | `OPEN` | Documentation Drift and False Claims: "Modular Monolog" Typo, False API Port, and Overstated Deliverables in README |
+| **F-098** | P3 | `VERIFIED` | Documentation Drift and False Claims: "Modular Monolog" Typo, False API Port, and Overstated Deliverables in README |
 | **F-099** | P1 | `VERIFIED` | Broken Production Dockerfile: Missing `tsconfig.json` Causes Build Failure, Unpruned DevDependencies, and Static Client Files Never Served by API Server |
 | **F-102** | P1 | `VERIFIED` | Missing Readiness Endpoint, Health Check Omits Database Connectivity, and Express Missing Request Timeout & Trust Proxy Settings |
 | **F-103** | P2 | `VERIFIED` | Total Absence of Observability: Unstructured Console Logging, Zero Source Maps, No Error Tracking, No Metrics, and Missing Alert Rules |
