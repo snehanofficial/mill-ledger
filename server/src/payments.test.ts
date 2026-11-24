@@ -365,4 +365,176 @@ describe("M7: Payments, customer ledger, allocations, and costing", () => {
     expect(Number(clearedInvoice.paidAmount)).toBe(7875);
     expect(Number(clearedInvoice.outstandingAmount)).toBe(0);
   });
+
+  describe("F-096: Payment allocation error guards and boundary validation", () => {
+    it("rejects allocation sum exceeding total payment amount with HTTP 400", async () => {
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const invoice = await prisma.salesInvoice.findFirstOrThrow();
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: retailerA.id,
+          amount: 500,
+          allocations: [
+            {
+              salesInvoiceId: invoice.id,
+              amount: 600, // 600 > 500
+            },
+          ],
+        }),
+      });
+      expect(res.status).toBe(400);
+      const data = (await res.json()) as { message: string };
+      expect(data.message).toMatch(/cannot exceed total payment amount/i);
+    });
+
+    it("rejects allocation with zero or negative amount with HTTP 400", async () => {
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const invoice = await prisma.salesInvoice.findFirstOrThrow();
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: retailerA.id,
+          amount: 500,
+          allocations: [
+            {
+              salesInvoiceId: invoice.id,
+              amount: -50, // negative allocation
+            },
+          ],
+        }),
+      });
+      expect(res.status).toBe(400);
+      const data = (await res.json()) as { message: string };
+      expect(data.message).toMatch(/greater than zero|positive/i);
+    });
+
+    it("rejects allocation to a non-existent invoice ID with HTTP 404", async () => {
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: retailerA.id,
+          amount: 500,
+          allocations: [
+            {
+              salesInvoiceId: "cmw_non_existent_invoice_999",
+              amount: 500,
+            },
+          ],
+        }),
+      });
+      expect(res.status).toBe(404);
+      const data = (await res.json()) as { message: string };
+      expect(data.message).toMatch(/not found/i);
+    });
+
+    it("rejects cross-customer payment allocation (IDOR protection) with HTTP 400", async () => {
+      const distB = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-DIST-B" },
+      });
+      // Invoice belongs to Retailer A
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const retailerAInvoice = await prisma.salesInvoice.findFirstOrThrow({
+        where: { customerId: retailerA.id },
+      });
+
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      // Attempt to allocate payment recorded for Distributor B against Retailer A's invoice
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: distB.id,
+          amount: 500,
+          allocations: [
+            {
+              salesInvoiceId: retailerAInvoice.id,
+              amount: 500,
+            },
+          ],
+        }),
+      });
+      expect(res.status).toBe(400);
+      const data = (await res.json()) as { message: string };
+      expect(data.message).toMatch(/does not belong to customer/i);
+    });
+
+    it("rejects allocation exceeding invoice outstanding balance with HTTP 400", async () => {
+      // Find an invoice and get its current outstanding balance
+      const invoice = await prisma.salesInvoice.findFirstOrThrow({
+        where: { status: "PAID" },
+      });
+      expect(Number(invoice.outstandingAmount)).toBe(0);
+
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: invoice.customerId,
+          amount: 500,
+          allocations: [
+            {
+              salesInvoiceId: invoice.id,
+              amount: 500,
+            },
+          ],
+        }),
+      });
+      // Outstanding balance is 0 or status is PAID (cannot allocate)
+      expect(res.status).toBe(400);
+      const data = (await res.json()) as { message: string };
+      expect(data.message).toMatch(/cannot allocate payment to invoice|exceeds invoice .* outstanding balance/i);
+    });
+  });
 });

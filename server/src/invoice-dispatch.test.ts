@@ -504,4 +504,112 @@ describe("M6: Invoice generation, physical dispatch, reservation release, and cr
     });
     expect(sm2GetOtherRes.status).toBe(404);
   });
+
+  it("F-096: generates inter-state invoice for Karnataka delivery asserting 100% IGST allocation and 0 CGST/SGST", async () => {
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { code: "MILL" },
+    });
+    const warehouse = await prisma.warehouse.findFirstOrThrow({
+      where: { code: "WH-1" },
+    });
+    const distB = await prisma.customer.findFirstOrThrow({
+      where: { code: "CUST-DIST-B" },
+    });
+    const murukkuVariant = await prisma.productVariant.findFirstOrThrow({
+      where: { sku: "VAR-MURUKKU-200G" },
+    });
+
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+
+    const sm2Cookie = await loginAndGetCookie(
+      "salesman2@millledger.local",
+      "SalesmanPassword123!",
+    );
+
+    const orderRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: sm2Cookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: distB.id,
+        warehouseId: warehouse.id,
+        orderNumber: "SO-INTERSTATE-TEST-F096",
+        lines: [
+          {
+            productVariantId: murukkuVariant.id,
+            quantity: 50,
+            unitPrice: 50.0,
+          },
+        ],
+      }),
+    });
+    expect(orderRes.status).toBe(201);
+    const orderData = (await orderRes.json()) as { order: { id: string } };
+    const orderId = orderData.order.id;
+
+    const approveRes = await fetch(
+      `${baseUrl}/api/v1/sales/orders/${orderId}/approve`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({}),
+      },
+    );
+    expect(approveRes.status).toBe(200);
+
+    const invoiceRes = await fetch(`${baseUrl}/api/v1/finance/invoices`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: adminCookie,
+      },
+      body: JSON.stringify({
+        salesOrderId: orderId,
+        notes: "Inter-state IGST test for F-096",
+        idempotencyKey: "idem-f096-dist-b-invoice",
+      }),
+    });
+
+    expect(invoiceRes.status).toBe(201);
+    const invoice = (await invoiceRes.json()) as {
+      id: string;
+      taxableAmount: number;
+      cgstAmount: number;
+      sgstAmount: number;
+      igstAmount: number;
+      totalTaxAmount: number;
+      totalAmount: number;
+      deliveryStateSnapshot: string;
+    };
+
+    expect(Number(invoice.taxableAmount)).toBe(2500);
+    expect(Number(invoice.cgstAmount)).toBe(0);
+    expect(Number(invoice.sgstAmount)).toBe(0);
+    expect(Number(invoice.igstAmount)).toBe(125);
+    expect(Number(invoice.totalTaxAmount)).toBe(125);
+    expect(Number(invoice.totalAmount)).toBe(2625);
+    expect(invoice.deliveryStateSnapshot).toBe("Karnataka");
+
+    const dbInvoice = await prisma.salesInvoice.findUniqueOrThrow({
+      where: { id: invoice.id },
+      include: { lines: true },
+    });
+    expect(dbInvoice.lines).toHaveLength(1);
+    const line = dbInvoice.lines[0];
+    expect(Number(line.taxableAmount)).toBe(2500);
+    expect(Number(line.cgstAmount)).toBe(0);
+    expect(Number(line.sgstAmount)).toBe(0);
+    expect(Number(line.igstAmount)).toBe(125);
+    expect(Number(line.taxAmount)).toBe(125);
+    expect(Number(line.lineTotal)).toBe(2625);
+  });
 });
