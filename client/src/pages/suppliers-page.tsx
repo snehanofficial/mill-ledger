@@ -19,6 +19,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   RefreshCwIcon,
   CheckCircle2Icon,
   MapPinIcon,
@@ -408,32 +416,31 @@ export function SuppliersPage() {
       </div>
 
       {/* Add Supplier Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
-            <h3 className="text-lg font-bold text-foreground">
-              Add New Raw Material Supplier
-            </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Raw Material Supplier</DialogTitle>
+            <DialogDescription>
               Register a new mandi vendor, farmer, or mill supplier for
               purchase intake receipts.
-            </p>
+            </DialogDescription>
+          </DialogHeader>
 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                createSupplierMutation.mutate({
-                  code: code.trim(),
-                  name: name.trim(),
-                  state: state.trim(),
-                  phone: phone.trim() || undefined,
-                  email: email.trim() || undefined,
-                  gstin: gstin.trim() || undefined,
-                  isActive,
-                });
-              }}
-              className="mt-4 flex flex-col gap-3"
-            >
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              createSupplierMutation.mutate({
+                code: code.trim(),
+                name: name.trim(),
+                state: state.trim(),
+                phone: phone.trim() || undefined,
+                email: email.trim() || undefined,
+                gstin: gstin.trim() || undefined,
+                isActive,
+              });
+            }}
+            className="mt-2 flex flex-col gap-3"
+          >
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-muted-foreground">
                   Vendor Code *
@@ -532,7 +539,7 @@ export function SuppliersPage() {
                 </label>
               </div>
 
-              <div className="mt-4 flex items-center justify-end gap-3 border-t pt-3">
+              <DialogFooter className="mt-4 border-t pt-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -548,22 +555,26 @@ export function SuppliersPage() {
                 >
                   {createSupplierMutation.isPending ? "Adding..." : "Save Supplier"}
                 </Button>
-              </div>
+              </DialogFooter>
             </form>
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Supplier Modal */}
-      {editingSupplier && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
-            <h3 className="text-lg font-bold text-foreground">
-              Edit Supplier: {editingSupplier.code}
-            </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Update contact info, jurisdiction state, or active status.
-            </p>
+      <Dialog
+        open={editingSupplier !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditingSupplier(null);
+        }}
+      >
+        {editingSupplier && (
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Supplier: {editingSupplier.code}</DialogTitle>
+              <DialogDescription>
+                Update contact info, jurisdiction state, or active status.
+              </DialogDescription>
+            </DialogHeader>
 
             <form
               onSubmit={(e) => {
@@ -662,7 +673,7 @@ export function SuppliersPage() {
                 </label>
               </div>
 
-              <div className="mt-4 flex items-center justify-end gap-3 border-t pt-3">
+              <DialogFooter className="mt-4 border-t pt-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -680,11 +691,11 @@ export function SuppliersPage() {
                     ? "Updating..."
                     : "Update Supplier"}
                 </Button>
-              </div>
+              </DialogFooter>
             </form>
-          </div>
-        </div>
-      )}
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

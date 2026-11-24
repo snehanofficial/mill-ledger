@@ -22,6 +22,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   PlusIcon,
   RefreshCwIcon,
   TruckIcon,
@@ -359,28 +367,16 @@ export function PurchasesPage() {
       </div>
 
       {/* Record Purchase Receipt Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in-0 zoom-in-95">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div>
-                <h3 className="text-base font-semibold text-foreground">
-                  Record Purchase Receipt
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Intake raw materials, update stock, and recalculate WAC.
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowModal(false)}
-              >
-                ✕
-              </Button>
-            </div>
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Record Purchase Receipt</DialogTitle>
+            <DialogDescription>
+              Intake raw materials, update stock, and recalculate WAC.
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="mt-4 flex flex-col gap-4">
+          <div className="mt-2 flex flex-col gap-4">
               {/* Supplier Selection */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
@@ -512,7 +508,7 @@ export function PurchasesPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-2 border-t border-border pt-4">
+            <DialogFooter className="mt-6 border-t border-border pt-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -528,10 +524,9 @@ export function PurchasesPage() {
               >
                 {createReceiptMutation.isPending ? "Posting..." : "Post Purchase Receipt"}
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

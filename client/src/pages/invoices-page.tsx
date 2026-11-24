@@ -20,6 +20,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   FileTextIcon,
@@ -583,28 +591,27 @@ export function InvoicesPage() {
     </div>
 
       {/* Invoice Snapshot Modal */}
-      {selectedInvoice && !showCreditNoteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-card p-6 shadow-xl border">
-            <div className="flex items-center justify-between border-b pb-4">
-              <div>
-                <span className="text-xs font-mono uppercase text-muted-foreground">
-                  Tax Invoice
-                </span>
-                <h3 className="text-xl font-bold text-foreground">
-                  {selectedInvoice.invoiceNumber}
-                </h3>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedInvoice(null)}
-              >
-                ✕
-              </Button>
-            </div>
+      <Dialog
+        open={selectedInvoice !== null && !showCreditNoteModal}
+        onOpenChange={(open) => {
+          if (!open) setSelectedInvoice(null);
+        }}
+      >
+        {selectedInvoice && !showCreditNoteModal && (
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <span className="text-xs font-mono uppercase text-muted-foreground">
+                Tax Invoice
+              </span>
+              <DialogTitle className="text-xl font-bold text-foreground">
+                {selectedInvoice.invoiceNumber}
+              </DialogTitle>
+              <DialogDescription className="sr-only">
+                Tax invoice details for {selectedInvoice.invoiceNumber}
+              </DialogDescription>
+            </DialogHeader>
 
-            <div className="mt-4 flex flex-col gap-6 text-sm">
+            <div className="mt-2 flex flex-col gap-6 text-sm">
               {/* Header Parties */}
               <div className="grid grid-cols-2 gap-4 border-b pb-4">
                 <div>
@@ -738,7 +745,7 @@ export function InvoicesPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-3 border-t pt-4">
+            <DialogFooter className="mt-6 border-t pt-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -754,24 +761,32 @@ export function InvoicesPage() {
                 <PrinterIcon className="h-4 w-4" />
                 Print / Save PDF
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
 
       {/* Credit Note Modal */}
-      {showCreditNoteModal && selectedInvoice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
-            <h3 className="text-lg font-bold text-foreground">
-              Issue credit note
-            </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Adjust invoice {selectedInvoice.invoiceNumber} without deleting
-              the immutable record.
-            </p>
+      <Dialog
+        open={showCreditNoteModal && selectedInvoice !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowCreditNoteModal(false);
+            setCreditNoteReason("");
+          }
+        }}
+      >
+        {showCreditNoteModal && selectedInvoice && (
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Issue credit note</DialogTitle>
+              <DialogDescription>
+                Adjust invoice {selectedInvoice.invoiceNumber} without deleting
+                the immutable record.
+              </DialogDescription>
+            </DialogHeader>
 
-            <div className="mt-4 flex flex-col gap-4">
+            <div className="mt-2 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">
                   Reason for credit note
@@ -801,7 +816,7 @@ export function InvoicesPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
+            <DialogFooter className="mt-6 border-t pt-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -836,24 +851,32 @@ export function InvoicesPage() {
                   </>
                 )}
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
 
       {/* Generate Invoice Modal (F-037) */}
-      {showCreateInvoiceModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
-            <h3 className="text-lg font-bold text-foreground">
-              Generate GST Sales Invoice
-            </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
+      <Dialog
+        open={showCreateInvoiceModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowCreateInvoiceModal(false);
+            setSelectedOrderIdForInvoice("");
+            setInvoiceNotes("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Generate GST Sales Invoice</DialogTitle>
+            <DialogDescription>
               Select an approved order to calculate statutory taxes and post an
               immutable sales invoice.
-            </p>
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="mt-4 flex flex-col gap-4">
+          <div className="mt-2 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">
                   Approved Sales Order *
@@ -899,7 +922,7 @@ export function InvoicesPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
+            <DialogFooter className="mt-6 border-t pt-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -928,10 +951,9 @@ export function InvoicesPage() {
                   ? "Posting..."
                   : "Post Invoice"}
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

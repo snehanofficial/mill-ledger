@@ -6,6 +6,14 @@ import { formatDate } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -431,107 +439,96 @@ export function SettingsPage() {
       )}
 
       {/* Add User Modal */}
-      {showAddUserModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div>
-                <h3 className="text-base font-bold text-foreground">Add New Staff Member</h3>
-                <p className="text-xs text-muted-foreground">
-                  Create credentials and assign operational role
-                </p>
-              </div>
+      <Dialog open={showAddUserModal} onOpenChange={setShowAddUserModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Staff Member</DialogTitle>
+            <DialogDescription>
+              Create credentials and assign operational role
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateUser} className="mt-2 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">
+                Full Name
+              </label>
+              <input
+                type="text"
+                required
+                value={newUserName}
+                onChange={(e) => setNewUserName(e.target.value)}
+                placeholder="e.g. Senthil Kumar"
+                className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">
+                Email Address
+              </label>
+              <input
+                type="email"
+                required
+                value={newUserEmail}
+                onChange={(e) => setNewUserEmail(e.target.value)}
+                placeholder="e.g. senthil@millledger.local"
+                className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">
+                Password
+              </label>
+              <input
+                type="password"
+                required
+                value={newUserPassword}
+                onChange={(e) => setNewUserPassword(e.target.value)}
+                placeholder="Minimum 8 characters"
+                className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">
+                Role Assignment
+              </label>
+              <select
+                value={newUserRole}
+                onChange={(e) => setNewUserRole(e.target.value as Role)}
+                className="rounded-md border bg-background px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="SALESMAN">Salesman (Field sales & bookings)</option>
+                <option value="PRODUCTION">Production Manager (Shop floor & runs)</option>
+                <option value="ACCOUNTANT">Accountant (Invoices, reports & taxes)</option>
+                <option value="ADMIN">Administrator (Full operational management)</option>
+                <option value="OWNER">Owner (Executive & financial oversight)</option>
+              </select>
+            </div>
+
+            <DialogFooter className="mt-4 border-t pt-4">
               <Button
-                variant="ghost"
+                type="button"
+                variant="outline"
                 size="sm"
                 onClick={() => setShowAddUserModal(false)}
               >
-                ✕
+                Cancel
               </Button>
-            </div>
-
-            <form onSubmit={handleCreateUser} className="mt-4 flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={newUserName}
-                  onChange={(e) => setNewUserName(e.target.value)}
-                  placeholder="e.g. Senthil Kumar"
-                  className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={newUserEmail}
-                  onChange={(e) => setNewUserEmail(e.target.value)}
-                  placeholder="e.g. senthil@millledger.local"
-                  className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={newUserPassword}
-                  onChange={(e) => setNewUserPassword(e.target.value)}
-                  placeholder="Minimum 8 characters"
-                  className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Role Assignment
-                </label>
-                <select
-                  value={newUserRole}
-                  onChange={(e) => setNewUserRole(e.target.value as Role)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="SALESMAN">Salesman (Field sales & bookings)</option>
-                  <option value="PRODUCTION">Production Manager (Shop floor & runs)</option>
-                  <option value="ACCOUNTANT">Accountant (Invoices, reports & taxes)</option>
-                  <option value="ADMIN">Administrator (Full operational management)</option>
-                  <option value="OWNER">Owner (Executive & financial oversight)</option>
-                </select>
-              </div>
-
-              <div className="mt-4 flex items-center justify-end gap-3 border-t pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowAddUserModal(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={createUserMutation.isPending}
-                  className="cursor-pointer"
-                >
-                  {createUserMutation.isPending ? "Creating..." : "Create User"}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+              <Button
+                type="submit"
+                size="sm"
+                disabled={createUserMutation.isPending}
+                className="cursor-pointer"
+              >
+                {createUserMutation.isPending ? "Creating..." : "Create User"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

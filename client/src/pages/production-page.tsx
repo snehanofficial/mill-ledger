@@ -22,6 +22,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   FactoryIcon,
   RefreshCwIcon,
   AlertTriangleIcon,
@@ -550,29 +558,17 @@ export function ProductionPage() {
       </div>
 
       {/* New Batch Modal */}
-      {showNewBatchModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-xl bg-card p-6 shadow-xl border">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div>
-                <h3 className="text-lg font-bold text-foreground">
-                  Record production batch
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Murukku 200g standard batch (Benchmark: 200 expected packets)
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowNewBatchModal(false)}
-              >
-                ✕
-              </Button>
-            </div>
+      <Dialog open={showNewBatchModal} onOpenChange={setShowNewBatchModal}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Record production batch</DialogTitle>
+            <DialogDescription>
+              Murukku 200g standard batch (Benchmark: 200 expected packets)
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="mt-4 flex flex-col gap-4">
-              {/* Recipe BOM selection (MLD-010) */}
+          <div className="mt-2 flex flex-col gap-4">
+            {/* Recipe BOM selection (MLD-010) */}
               <div className="flex flex-col gap-1.5">
                 <DomainTooltip term="BOM">
                   <label className="text-xs font-semibold text-muted-foreground cursor-help">
@@ -779,7 +775,7 @@ export function ProductionPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
+            <DialogFooter className="mt-6 border-t pt-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -805,25 +801,29 @@ export function ProductionPage() {
                   </>
                 )}
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Reversal Confirmation Modal */}
-      {selectedRun && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
-            <h3 className="text-lg font-bold text-foreground">
-              Reverse production run
-            </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              This will atomically restore raw materials and packaging back into
-              inventory and deduct {Number(selectedRun.actualGoodQty)} finished
-              packets.
-            </p>
+      <Dialog
+        open={selectedRun !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedRun(null);
+        }}
+      >
+        {selectedRun && (
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Reverse production run</DialogTitle>
+              <DialogDescription>
+                This will atomically restore raw materials and packaging back into
+                inventory and deduct {Number(selectedRun.actualGoodQty)} finished
+                packets.
+              </DialogDescription>
+            </DialogHeader>
 
-            <div className="mt-4 flex flex-col gap-2">
+            <div className="mt-2 flex flex-col gap-2">
               <label className="text-xs font-semibold text-muted-foreground">
                 Reversal reason
               </label>
@@ -836,7 +836,7 @@ export function ProductionPage() {
               />
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
+            <DialogFooter className="mt-6 border-t pt-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -862,10 +862,10 @@ export function ProductionPage() {
                 <RotateCcwIcon className="h-4 w-4" />
                 Confirm reversal
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

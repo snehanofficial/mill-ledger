@@ -22,6 +22,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   TruckIcon,
   RefreshCwIcon,
   AlertTriangleIcon,
@@ -29,7 +37,6 @@ import {
   PlusCircleIcon,
   PackageCheckIcon,
   FileTextIcon,
-  XIcon,
 } from "lucide-react";
 
 interface DispatchLine {
@@ -545,30 +552,22 @@ export function DispatchPage() {
       </div>
 
       {/* Record Dispatch Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-xl border bg-card p-6 shadow-xl">
-            <div className="flex items-center justify-between border-b pb-4">
-              <div className="flex items-center gap-2">
-                <TruckIcon className="h-5 w-5 text-foreground" />
-                <h3 className="text-lg font-semibold text-foreground">
-                  Record physical dispatch
-                </h3>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowCreateModal(false)}
-                className="h-8 w-8 p-0"
-              >
-                <XIcon className="h-4 w-4" />
-              </Button>
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <TruckIcon className="h-5 w-5 text-foreground" />
+              <DialogTitle>Record physical dispatch</DialogTitle>
             </div>
+            <DialogDescription className="sr-only">
+              Record physical dispatch and warehouse inventory deduction
+            </DialogDescription>
+          </DialogHeader>
 
-            <form
-              onSubmit={handleSubmitDispatch}
-              className="mt-4 flex flex-col gap-4"
-            >
+          <form
+            onSubmit={handleSubmitDispatch}
+            className="mt-2 flex flex-col gap-4"
+          >
               {dispatchError && (
                 <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
                   <AlertTriangleIcon className="h-4 w-4 shrink-0" />
@@ -669,7 +668,7 @@ export function DispatchPage() {
                 hand and release active stock reservations atomically.
               </div>
 
-              <div className="flex items-center justify-end gap-2 border-t pt-4">
+              <DialogFooter className="border-t pt-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -693,11 +692,10 @@ export function DispatchPage() {
                   )}
                   Confirm dispatch
                 </Button>
-              </div>
+              </DialogFooter>
             </form>
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
       {/* Confirmation Dialog for Irreversible Dispatch (F-048) */}
       {showConfirmDispatchDialog && (

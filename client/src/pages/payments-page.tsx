@@ -22,6 +22,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   CreditCardIcon,
   RefreshCwIcon,
   AlertTriangleIcon,
@@ -31,7 +39,6 @@ import {
   CheckCircle2Icon,
   UserCheckIcon,
   LayersIcon,
-  XIcon,
 } from "lucide-react";
 
 interface PaymentAllocation {
@@ -914,25 +921,23 @@ export function PaymentsPage() {
       )}
 
       {/* Customer Detailed Ledger Modal */}
-      {selectedCustomerIdForLedger && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border bg-card p-6 shadow-xl">
-            <div className="flex items-center justify-between border-b pb-4">
+      <Dialog
+        open={selectedCustomerIdForLedger !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedCustomerIdForLedger(null);
+        }}
+      >
+        {selectedCustomerIdForLedger && (
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
               <div className="flex items-center gap-2">
                 <HistoryIcon className="h-5 w-5 text-foreground" />
-                <h3 className="text-lg font-semibold text-foreground">
-                  Customer statement and ledger
-                </h3>
+                <DialogTitle>Customer statement and ledger</DialogTitle>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedCustomerIdForLedger(null)}
-                className="h-8 w-8 p-0"
-              >
-                <XIcon className="h-4 w-4" />
-              </Button>
-            </div>
+              <DialogDescription className="sr-only">
+                Statement and transaction history for customer
+              </DialogDescription>
+            </DialogHeader>
 
             {loadingLedger || !customerLedger ? (
               <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
@@ -940,7 +945,7 @@ export function PaymentsPage() {
                 Loading ledger entries...
               </div>
             ) : (
-              <div className="mt-4 flex flex-col gap-6">
+              <div className="mt-2 flex flex-col gap-6">
                 {/* Account details and ageing cards */}
                 <div className="rounded-lg border bg-muted/30 p-4">
                   <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -1068,35 +1073,27 @@ export function PaymentsPage() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      )}
+          </DialogContent>
+        )}
+      </Dialog>
 
       {/* Record Payment Modal */}
-      {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border bg-card p-6 shadow-xl">
-            <div className="flex items-center justify-between border-b pb-4">
-              <div className="flex items-center gap-2">
-                <CreditCardIcon className="h-5 w-5 text-foreground" />
-                <h3 className="text-lg font-semibold text-foreground">
-                  Record customer payment
-                </h3>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowPaymentModal(false)}
-                className="h-8 w-8 p-0"
-              >
-                <XIcon className="h-4 w-4" />
-              </Button>
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <CreditCardIcon className="h-5 w-5 text-foreground" />
+              <DialogTitle>Record customer payment</DialogTitle>
             </div>
+            <DialogDescription className="sr-only">
+              Record receipt of customer payment and allocate against outstanding invoices
+            </DialogDescription>
+          </DialogHeader>
 
-            <form
-              onSubmit={handleRecordPaymentSubmit}
-              className="mt-4 flex flex-col gap-4"
-            >
+          <form
+            onSubmit={handleRecordPaymentSubmit}
+            className="mt-2 flex flex-col gap-4"
+          >
               {paymentError && (
                 <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
                   <AlertTriangleIcon className="h-4 w-4 shrink-0" />
@@ -1265,7 +1262,7 @@ export function PaymentsPage() {
                   </div>
                 )}
 
-              <div className="flex items-center justify-end gap-2 border-t pt-4">
+              <DialogFooter className="border-t pt-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -1287,11 +1284,10 @@ export function PaymentsPage() {
                   )}
                   Save payment
                 </Button>
-              </div>
+              </DialogFooter>
             </form>
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

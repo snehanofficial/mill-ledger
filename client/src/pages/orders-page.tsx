@@ -22,6 +22,14 @@ import { Input } from "@/components/ui/input";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   ShoppingCartIcon,
   RefreshCwIcon,
   AlertTriangleIcon,
@@ -1131,29 +1139,17 @@ export function OrdersPage() {
     </div>
 
       {/* New Order Modal */}
-      {showNewOrderModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-card p-6 shadow-xl border">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div>
-                <h3 className="text-lg font-bold text-foreground">
-                  Create sales order
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Select customer and enter order quantities
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowNewOrderModal(false)}
-              >
-                ✕
-              </Button>
-            </div>
+      <Dialog open={showNewOrderModal} onOpenChange={setShowNewOrderModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create sales order</DialogTitle>
+            <DialogDescription>
+              Select customer and enter order quantities
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="mt-4 flex flex-col gap-4">
-              {/* Offline mode banner */}
+          <div className="mt-2 flex flex-col gap-4">
+            {/* Offline mode banner */}
               {!isOnline && (
                 <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300 border border-amber-500/20">
                   <WifiOffIcon className="size-4 shrink-0 text-amber-600" />
@@ -1276,7 +1272,7 @@ export function OrdersPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
+            <DialogFooter className="mt-6 border-t pt-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -1302,10 +1298,9 @@ export function OrdersPage() {
                   </>
                 )}
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Rejection Confirmation Dialog for Irreversible Action (F-048) */}
       {selectedOrderForAction && actionType === "REJECT" && (
@@ -1374,27 +1369,27 @@ export function OrdersPage() {
       )}
 
       {/* Approve Dialog */}
-      {selectedOrderForAction && actionType === "APPROVE" && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="approve-order-title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-        >
-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
-            <h3
-              id="approve-order-title"
-              className="text-lg font-bold text-foreground"
-            >
-              Approve sales order
-            </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Order {selectedOrderForAction.orderNumber} for{" "}
-              {selectedOrderForAction.customer.name} (
-              {Number(selectedOrderForAction.lines[0]?.quotedQuantity)} packets)
-            </p>
+      <Dialog
+        open={selectedOrderForAction !== null && actionType === "APPROVE"}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedOrderForAction(null);
+            setActionType(null);
+          }
+        }}
+      >
+        {selectedOrderForAction && actionType === "APPROVE" && (
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Approve sales order</DialogTitle>
+              <DialogDescription>
+                Order {selectedOrderForAction.orderNumber} for{" "}
+                {selectedOrderForAction.customer.name} (
+                {Number(selectedOrderForAction.lines[0]?.quotedQuantity)} packets)
+              </DialogDescription>
+            </DialogHeader>
 
-            <div className="mt-4 flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
               <p className="text-xs text-foreground">
                 Approving this order will atomically reserve{" "}
                 <span className="font-semibold">
@@ -1415,7 +1410,7 @@ export function OrdersPage() {
               ) : null}
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
+            <DialogFooter className="mt-6 border-t pt-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -1437,10 +1432,10 @@ export function OrdersPage() {
                 <CheckCircle2Icon className="h-4 w-4" />
                 Confirm approval
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }
