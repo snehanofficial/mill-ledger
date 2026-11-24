@@ -4571,7 +4571,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -4579,12 +4579,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-001.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "d0a8d11",
+        "evidenceLink": "audit/evidence/verify/F-001/01-pre-fix-repro.txt",
+        "note": "VERIFIED: Removed duplicate skip-to-main link from StickyHeader in client/src/components/shell/authenticated-shell.tsx. Preserved canonical top-level skip link at root of AuthenticatedShell prior to navigation landmarks to ensure correct keyboard focus order (WCAG 2.2 SC 2.4.1, SC 2.4.3). Added bilingual Tamil/English support. Un-quarantined and updated e2e/app-shell.spec.ts. Verified via audit/tests/f-001-regression.test.ts, full typecheck, lint, clean build, 18/18 benchmark assertions, 10/10 SQL database invariants, and 39/39 passing unit test suites."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-001-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-001-regression.test.ts",
+    "regressionTest": "audit/tests/f-001-regression.test.ts",
+    "fixCommit": "d0a8d11",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-001/01-pre-fix-repro.txt",
+      "audit/evidence/verify/F-001/02-regression-test.txt",
+      "audit/evidence/verify/F-001/03-typecheck.txt",
+      "audit/evidence/verify/F-001/04-lint.txt",
+      "audit/evidence/verify/F-001/05-build.txt",
+      "audit/evidence/verify/F-001/06-unit-tests.txt",
+      "audit/evidence/verify/F-001/07-benchmark.txt",
+      "audit/evidence/verify/F-001/08-invariants.txt",
+      "audit/evidence/verify/F-001/09-git-diff.txt",
+      "audit/evidence/verify/F-001/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",

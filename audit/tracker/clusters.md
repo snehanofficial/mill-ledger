@@ -347,7 +347,7 @@ client/src/pages/payments-page.tsx:897:                    placeholder="e.g. 400
 
 | ID | Sev | Status | Title |
 |---|---|---|---|
-| **F-001** | P1 | `OPEN` | Duplicate "Skip to main content" links violate Playwright strict mode and degrade keyboard navigation |
+| **F-001** | P1 | `VERIFIED` | Duplicate "Skip to main content" links violate Playwright strict mode and degrade keyboard navigation |
 | **F-044** | P2 | `WONT-FIX` | Touch Targets Below Minimum 44x44px Across Mobile Viewports |
 | **F-051** | P1 | `OPEN` | Missing Accessible Name and APG Dialog Semantics on Core Modal Overlays |
 | **F-052** | P1 | `OPEN` | Unassociated Form Labels and Missing Accessible Names Across Operational Forms |
