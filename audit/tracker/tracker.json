@@ -5863,15 +5863,13 @@
       "- W3C WCAG 2.2 Success Criterion 4.1.3 Status Messages (Level AA)"
     ],
     "files": [
-      "client/src/components/ui/sonner.ts",
-      "client/src/components/shell/authenticated-shell.ts",
-      "sonner.ts",
-      "///home/snehan/projects/web/mill-ledger/client/src/components/ui/sonner.ts",
-      "authenticated-shell.ts"
+      "client/src/lib/notifications-store.ts",
+      "client/src/components/ui/sonner.tsx",
+      "client/src/components/shell/authenticated-shell.tsx"
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -5879,12 +5877,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-065.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "1466a27",
+        "evidenceLink": "audit/evidence/verify/F-065/10-summary.txt",
+        "note": "VERIFIED: Added role=status, aria-live=polite, and focus pause handling on Sonner toasts. Integrated persistent notification store into AuthenticatedShell header badge and interactive drawer."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-065-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-065-regression.test.ts",
+    "fixCommit": "1466a27",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-065/01-git-status.txt",
+      "audit/evidence/verify/F-065/02-typecheck.txt",
+      "audit/evidence/verify/F-065/03-lint.txt",
+      "audit/evidence/verify/F-065/04-build.txt",
+      "audit/evidence/verify/F-065/05-invariants.txt",
+      "audit/evidence/verify/F-065/06-benchmark.txt",
+      "audit/evidence/verify/F-065/07-regression-test.txt",
+      "audit/evidence/verify/F-065/08-test-suite.txt",
+      "audit/evidence/verify/F-065/09-diff.txt",
+      "audit/evidence/verify/F-065/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'transition-\\|animate-' client/src/ | grep -v 'motion-reduce' | head -n 25",

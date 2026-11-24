@@ -1,0 +1,1 @@
+F-065 verified: Sonner toasts configured with role=status, aria-live=polite, keyboard focus pause handling, adequate duration, and persistent notification store wired into header and drawer.
