@@ -205,8 +205,8 @@ export function LoginPage() {
           onClick={() => setLanguage(language === "en" ? "ta" : "en")}
           aria-label={
             language === "en"
-              ? "Switch language to Tamil"
-              : "Switch language to English"
+              ? "தமிழ் (Switch language to Tamil)"
+              : "English (ஆங்கிலத்திற்கு மாற்று)"
           }
         >
           <span lang={language === "en" ? "ta" : "en"}>

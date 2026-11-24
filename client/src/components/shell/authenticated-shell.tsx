@@ -988,8 +988,8 @@ function StickyHeader({
           onClick={() => setLanguage(language === "en" ? "ta" : "en")}
           aria-label={
             language === "en"
-              ? "Switch language to Tamil"
-              : "Switch language to English"
+              ? "தமிழ் - Switch language to Tamil"
+              : "EN - Switch language to English"
           }
           className="h-8 px-2 text-xs font-semibold cursor-pointer text-muted-foreground hover:text-foreground"
         >
