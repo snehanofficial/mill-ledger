@@ -1,0 +1,35 @@
+======================================================================
+F-085 VERIFICATION SUMMARY: INDIC/TAMIL NUMBER FORMATTING, DATES & COLLATION
+======================================================================
+Date: 2026-11-24
+Severity: P2 | Tier: T9 | Cluster: CLUSTER-13
+Status: VERIFIED-PASS
+
+1. Root Cause:
+Financial formatters hardcoded "en-IN" with no support for "ta-IN" localization or
+Unicode Collation Algorithm (UCA / UTS #10) sorting. As a consequence, toggling the application
+to Tamil retained English Gregorian notation and lacked Tamil alphabetical collation.
+
+2. Implementation Summary:
+- `shared/src/formatters.ts`:
+  * Upgraded `formatINR` and `formatQuantity` to accept `locale` and `lang` options ('en' | 'ta' / 'ta-IN').
+  * Upgraded `formatDate`, `formatDateShort`, `formatDateTime`, `formatTime` with `FormatDateOptions`
+    supporting `locale` and `lang` ('ta-IN' renders authentic Tamil month names like "ஏப்.").
+  * Implemented `compareStrings` conforming to Unicode Collation Algorithm (UTS #10) with Tamil and
+    English linguistic collation support.
+- `client/src/hooks/use-formatters.ts`:
+  * Created contextual `useFormatters` hook automatically synchronizing formatting and collation
+    locale with active UI language (`language === "ta" ? "ta-IN" : "en-IN"`).
+- `client/src/lib/formatters.ts`:
+  * Re-exported `useFormatters` and shared formatters.
+- `client/src/lib/formatters.test.ts`:
+  * Added unit test assertions covering Tamil currency grouping, Tamil date months, and Tamil/English collation.
+
+3. Verification Results:
+- Regression Test: `audit/tests/f-085-regression.test.ts` passed (7/7 tests).
+- Typecheck: Passed with 0 errors across shared, client, and server workspaces.
+- Lint: Passed with 0 errors and 0 warnings (oxlint).
+- Build: Passed (`vite build` and `tsc`).
+- Benchmark: 18/18 numerical assertions passed (100% exact numerical match).
+- Database Invariants: 10/10 PostgreSQL invariants passed (0 violations).
+- Full Test Suite: All unit and integration test suites passing.
