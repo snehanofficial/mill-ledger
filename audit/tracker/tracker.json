@@ -8280,9 +8280,7 @@
     "category": "Core Workflow / Seed Reliability",
     "tier": "T11",
     "cluster": "CLUSTER-15",
-    "dependsOn": [
-      "F-070"
-    ],
+    "dependsOn": [],
     "blocks": [],
     "relatedFindings": [],
     "standardsRefs": [
@@ -8296,7 +8294,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -8304,12 +8302,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-003.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "7f8ba18",
+        "evidenceLink": "audit/evidence/verify/F-003/10-summary.txt",
+        "note": "Decoupled from F-070; configured migrations.seed: tsx ./prisma/seed.ts in server/prisma.config.ts. Prisma 7 CLI db seed verified executing and seeding test users and benchmark masters."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-003-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-003-regression.test.ts",
+    "fixCommit": "7f8ba18",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-003/01-git-status.txt",
+      "audit/evidence/verify/F-003/02-regression-test.txt",
+      "audit/evidence/verify/F-003/03-typecheck.txt",
+      "audit/evidence/verify/F-003/04-lint.txt",
+      "audit/evidence/verify/F-003/05-build.txt",
+      "audit/evidence/verify/F-003/06-invariants.txt",
+      "audit/evidence/verify/F-003/07-benchmark.txt",
+      "audit/evidence/verify/F-003/08-test-suite.txt",
+      "audit/evidence/verify/F-003/09-diff.txt",
+      "audit/evidence/verify/F-003/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
@@ -8342,7 +8358,7 @@
       ]
     },
     "needsApproval": "none",
-    "notes": ""
+    "notes": "Decoupled from F-070 per Option 2 directive; added migrations.seed to server/prisma.config.ts for Prisma 7 CLI."
   },
   {
     "id": "F-005",
