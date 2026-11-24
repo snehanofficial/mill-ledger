@@ -97,14 +97,14 @@ export function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {t("Overview")}
             </h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="max-w-[60ch] text-sm text-muted-foreground">
             {t("Executive operational overview and real time reconciled business metrics")}
           </p>
         </div>

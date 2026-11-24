@@ -591,14 +591,14 @@ export function OrdersPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {t("Orders")}
             </h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="max-w-[60ch] text-sm text-muted-foreground">
             {t(
               "Salesman mobile orders, admin approval, shortages, and atomic stock reservations",
             )}
@@ -734,7 +734,7 @@ export function OrdersPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="h-9 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-3 py-1 text-xs font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
               aria-label="Filter orders by status"
             >
               <option value="ALL">All statuses</option>
@@ -1440,7 +1440,7 @@ export function OrdersPage() {
                 id="order-customer-select"
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+                className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
               >
                 {customersList.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -1482,7 +1482,7 @@ export function OrdersPage() {
                   id="order-product-select"
                   value={selectedProductId}
                   onChange={(e) => setSelectedProductId(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-1.5 text-sm font-medium"
+                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                 >
                   {productsList.map((p) => (
                     <option key={p.id} value={p.id}>

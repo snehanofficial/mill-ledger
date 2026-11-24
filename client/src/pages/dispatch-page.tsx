@@ -263,14 +263,14 @@ export function DispatchPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {t("Dispatch")}
             </h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="max-w-[60ch] text-sm text-muted-foreground">
             {t("Physical stock movements, reservation release, and warehouse fulfillment records")}
           </p>
         </div>
@@ -634,7 +634,7 @@ export function DispatchPage() {
                     id="dispatch-order-select"
                     value={selectedOrderId}
                     onChange={(e) => setSelectedOrderId(e.target.value)}
-                    className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
+                    className="w-full h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                     required
                   >
                     <option value="">Choose an order to dispatch...</option>

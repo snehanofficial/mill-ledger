@@ -3,6 +3,20 @@ import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   DownloadIcon,
   ShieldCheckIcon,
   RefreshCwIcon,
@@ -15,6 +29,7 @@ import {
   CreditCardIcon,
   PackageIcon,
   HistoryIcon,
+  FileTextIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -176,25 +191,25 @@ export function ExportsPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-page-title text-foreground">
               Enterprise Data Export Hub
             </h1>
             <Badge variant="outline" className="text-xs">
               M8 Certified
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground max-w-[60ch]">
             Generate authorized statutory GST filings, closing inventory balances, and auditor reconciliation packages.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Badge
-            variant="outline"
-            className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-xs flex items-center gap-1.5"
+            variant="success"
+            className="text-xs"
           >
             <ShieldCheckIcon className="size-3.5" />
             DPDP & Section 170 CGST Compliant
@@ -203,142 +218,165 @@ export function ExportsPage() {
       </div>
 
       {/* Main Interactive Export Configuration Card */}
-      <div className="rounded-xl border bg-card p-5 sm:p-6 shadow-xs flex flex-col gap-5">
-        <div className="border-b pb-4">
-          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+      <Card className="border-border/80">
+        <CardHeader className="border-b border-border/60 px-5 py-4 sm:px-6">
+          <CardTitle className="flex items-center gap-2">
             <FolderDownIcon className="size-4 text-primary" />
             Configure Export Parameters
-          </h2>
-          <p className="text-xs text-muted-foreground">
+          </CardTitle>
+          <CardDescription>
             Select domain, reporting period, and file encoding format
-          </p>
-        </div>
+          </CardDescription>
+        </CardHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Dataset Selector */}
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor={datasetSelectId}
-              className="text-xs font-semibold text-muted-foreground"
-            >
-              Report Domain
-            </label>
-            <select
-              id={datasetSelectId}
-              value={selectedReportType}
-              onChange={(e) => setSelectedReportType(e.target.value)}
-              className="rounded-lg border bg-background px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              {DATASETS.map((d) => (
-                <option key={d.reportType} value={d.reportType}>
-                  {d.name} ({d.category})
-                </option>
-              ))}
-            </select>
-            <span className="text-xs text-muted-foreground">
-              {activeDataset.description}
-            </span>
-          </div>
-
-          {/* Date Range Selector */}
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor={dateRangeSelectId}
-              className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5"
-            >
-              <CalendarIcon className="size-3.5" />
-              Reporting Period
-            </label>
-            <select
-              id={dateRangeSelectId}
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value as any)}
-              className="rounded-lg border bg-background px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="all">All Historical Records</option>
-              <option value="month">Current Month to Date</option>
-              <option value="year">Current Financial Year (2025-26)</option>
-            </select>
-            <span className="text-xs text-muted-foreground">
-              {dateRange === "all"
-                ? "Includes full operational ledger history"
-                : dateRange === "month"
-                  ? "Filtered from the 1st of this calendar month"
-                  : "Filtered from April 1 (Statutory Indian FY)"}
-            </span>
-          </div>
-
-          {/* Format Selector */}
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor={formatSelectId}
-              className="text-xs font-semibold text-muted-foreground"
-            >
-              File Format
-            </label>
-            <select
-              id={formatSelectId}
-              value={selectedFormat}
-              onChange={(e) => setSelectedFormat(e.target.value as any)}
-              className="rounded-lg border bg-background px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="csv">CSV (Spreadsheet / Microsoft Excel / Tally)</option>
-              <option value="json">JSON (Standard Machine-Readable Payload)</option>
-            </select>
-            <span className="text-xs text-muted-foreground">
-              {selectedFormat === "csv"
-                ? "UTF-8 with commas, escaped quotes, and decimal headers"
-                : "Structured array of typed schema objects"}
-            </span>
-          </div>
-        </div>
-
-        {/* Selected Schema Fields Preview */}
-        <div className="rounded-lg bg-muted/40 border border-border/60 p-4 flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-              Export Schema Columns ({activeDataset.fields.length} attributes)
-            </span>
-            <Badge variant="outline" className="text-[10px]">
-              Schema Match 100%
-            </Badge>
-          </div>
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            {activeDataset.fields.map((field) => (
-              <span
-                key={field}
-                className="rounded-md border bg-card px-2 py-1 font-mono text-[11px] text-muted-foreground font-medium"
+        <CardContent className="flex flex-col gap-5 px-5 py-4 sm:px-6 sm:pb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Dataset Selector */}
+            <div className="flex flex-col">
+              <label
+                htmlFor={datasetSelectId}
+                className="mb-1.5 flex items-center gap-1.5 text-label text-muted-foreground"
               >
-                {field}
+                <DatabaseIcon className="size-4 shrink-0" />
+                Report Domain
+              </label>
+              <Select
+                value={selectedReportType}
+                onValueChange={setSelectedReportType}
+              >
+                <SelectTrigger
+                  id={datasetSelectId}
+                  className="h-11 px-4 bg-surface-muted/70 dark:bg-surface-muted border-input/45 dark:border-input font-medium"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DATASETS.map((d) => (
+                    <SelectItem key={d.reportType} value={d.reportType}>
+                      {d.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="mt-1.5 text-xs text-muted-foreground">
+                {activeDataset.description}
               </span>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Action Button */}
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <Button
-            size="lg"
-            onClick={handleDownload}
-            disabled={isExporting}
-            className="gap-2 cursor-pointer font-semibold shadow-xs"
-          >
-            {isExporting ? (
-              <>
-                <RefreshCwIcon className="size-4 animate-spin" />
-                <span>Generating Export...</span>
-              </>
-            ) : (
-              <>
-                <DownloadIcon className="size-4" />
-                <span>
-                  Download {activeDataset.name} ({selectedFormat.toUpperCase()})
+            {/* Date Range Selector */}
+            <div className="flex flex-col">
+              <label
+                htmlFor={dateRangeSelectId}
+                className="mb-1.5 flex items-center gap-1.5 text-label text-muted-foreground"
+              >
+                <CalendarIcon className="size-4 shrink-0" />
+                Reporting Period
+              </label>
+              <Select
+                value={dateRange}
+                onValueChange={(value) => setDateRange(value as "all" | "month" | "year")}
+              >
+                <SelectTrigger
+                  id={dateRangeSelectId}
+                  className="h-11 px-4 bg-surface-muted/70 dark:bg-surface-muted border-input/45 dark:border-input font-medium"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Historical Records</SelectItem>
+                  <SelectItem value="month">Current Month to Date</SelectItem>
+                  <SelectItem value="year">Current Financial Year (2025-26)</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="mt-1.5 text-xs text-muted-foreground">
+                {dateRange === "all"
+                  ? "Includes full operational ledger history"
+                  : dateRange === "month"
+                    ? "Filtered from the 1st of this calendar month"
+                    : "Filtered from April 1 (Statutory Indian FY)"}
+              </span>
+            </div>
+
+            {/* Format Selector */}
+            <div className="flex flex-col">
+              <label
+                htmlFor={formatSelectId}
+                className="mb-1.5 flex items-center gap-1.5 text-label text-muted-foreground"
+              >
+                <FileTextIcon className="size-4 shrink-0" />
+                File Format
+              </label>
+              <Select
+                value={selectedFormat}
+                onValueChange={(value) => setSelectedFormat(value as "csv" | "json")}
+              >
+                <SelectTrigger
+                  id={formatSelectId}
+                  className="h-11 px-4 bg-surface-muted/70 dark:bg-surface-muted border-input/45 dark:border-input font-medium"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="csv">CSV (Spreadsheet / Microsoft Excel / Tally)</SelectItem>
+                  <SelectItem value="json">JSON (Standard Machine-Readable Payload)</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="mt-1.5 text-xs text-muted-foreground">
+                {selectedFormat === "csv"
+                  ? "UTF-8 with commas, escaped quotes, and decimal headers"
+                  : "Structured array of typed schema objects"}
+              </span>
+            </div>
+          </div>
+
+          {/* Selected Schema Fields Preview */}
+          <div className="rounded-medium bg-surface-muted/60 border border-border/60 p-4 flex flex-col gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                Export Schema Columns ({activeDataset.fields.length} attributes)
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <span className="size-2 rounded-full bg-success" aria-hidden="true" />
+                Schema Match 100%
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {activeDataset.fields.map((field) => (
+                <span
+                  key={field}
+                  className="rounded-small border border-border/70 bg-card px-2 py-1 font-mono text-[11px] text-muted-foreground font-medium"
+                >
+                  {field}
                 </span>
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <div className="flex items-center justify-end gap-3 pt-1">
+            <Button
+              size="lg"
+              onClick={handleDownload}
+              disabled={isExporting}
+              className="gap-2 cursor-pointer font-semibold shadow-xs"
+            >
+              {isExporting ? (
+                <>
+                  <RefreshCwIcon className="size-4 animate-spin" />
+                  <span>Generating Export...</span>
+                </>
+              ) : (
+                <>
+                  <DownloadIcon className="size-4" />
+                  <span>
+                    Download {activeDataset.name} ({selectedFormat.toUpperCase()})
+                  </span>
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Dataset Directory Grid */}
       <section aria-labelledby="available-exports-heading" className="flex flex-col gap-4">

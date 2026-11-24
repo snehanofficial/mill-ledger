@@ -202,14 +202,14 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Reports & Audit
             </h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="max-w-[60ch] text-sm text-muted-foreground">
             Tax registers, stock valuation, production costing, and system
             activity logs
           </p>
@@ -736,7 +736,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 value={auditActionFilter}
                 onChange={(e) => setAuditActionFilter(e.target.value)}
                 aria-label="Filter audit events by action"
-                className="h-8 rounded-control border border-input bg-background px-2 text-xs text-foreground shadow-xs outline-none"
+                className="h-9 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-3 py-1 text-xs font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
               >
                 <option value="ALL">All Actions</option>
                 <option value="CREATE">CREATE</option>

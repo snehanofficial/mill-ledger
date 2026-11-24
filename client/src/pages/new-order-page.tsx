@@ -384,7 +384,7 @@ export function NewOrderPage() {
                 id={customerSelectId}
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="rounded-lg border bg-background px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+                className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
               >
                 {customersList.map((c) => (
                   <option key={c.id} value={c.id}>

@@ -382,7 +382,7 @@ export function ContactPage() {
                           onChange={(e) =>
                             setFormData({ ...formData, inquiryType: e.target.value })
                           }
-                          className="w-full rounded-control border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          className="w-full h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                         >
                           <option value="wholesale_purchase">
                             {language === "ta"
@@ -424,7 +424,7 @@ export function ContactPage() {
                           }
                           aria-invalid={!!errors.message}
                           aria-describedby={errors.message ? "error-message" : undefined}
-                          className="w-full rounded-control border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          className="w-full h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                           placeholder={
                             language === "ta"
                               ? "எ.கா. 20 மெட்ரிக் டன் பொன்னி புழுங்கல் அரிசி 50kg பேக்கிங் தேவை..."

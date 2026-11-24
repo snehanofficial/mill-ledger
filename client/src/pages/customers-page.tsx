@@ -69,7 +69,7 @@ export function CustomersPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -79,7 +79,7 @@ export function CustomersPage() {
               Live Master Data
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="max-w-[60ch] text-sm text-muted-foreground">
             Retailers, distributors, state tax jurisdictions, and sales assignments.
           </p>
         </div>

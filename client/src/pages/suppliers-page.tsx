@@ -188,7 +188,7 @@ export function SuppliersPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -198,7 +198,7 @@ export function SuppliersPage() {
               Live Master Data
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="max-w-[60ch] text-sm text-muted-foreground">
             Raw material suppliers, mandi vendors, state tax jurisdictions, and
             procurement contracts.
           </p>
@@ -285,7 +285,7 @@ export function SuppliersPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-9.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-10 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-3.5 py-1.5 text-sm text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
           aria-label="Filter suppliers by status"
         >
           <option value="ALL">All status</option>
@@ -458,7 +458,7 @@ export function SuppliersPage() {
                   placeholder="e.g. SUP-MANDI-02"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm text-foreground"
+                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                 />
               </div>
 
@@ -476,7 +476,7 @@ export function SuppliersPage() {
                   placeholder="e.g. Thanjavur Agro Mandi"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm text-foreground"
+                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                 />
               </div>
 
@@ -494,7 +494,7 @@ export function SuppliersPage() {
                     required
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm text-foreground"
+                    className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -510,7 +510,7 @@ export function SuppliersPage() {
                     placeholder="9876543210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm text-foreground"
+                    className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                   />
                 </div>
               </div>
@@ -529,7 +529,7 @@ export function SuppliersPage() {
                     placeholder="mandi@agro.in"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm text-foreground"
+                    className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -633,7 +633,7 @@ export function SuppliersPage() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm text-foreground"
+                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                 />
               </div>
 
@@ -651,7 +651,7 @@ export function SuppliersPage() {
                     required
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm text-foreground"
+                    className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -666,7 +666,7 @@ export function SuppliersPage() {
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm text-foreground"
+                    className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                   />
                 </div>
               </div>
@@ -684,7 +684,7 @@ export function SuppliersPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm text-foreground"
+                    className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                   />
                 </div>
                 <div className="flex flex-col gap-1">

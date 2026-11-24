@@ -104,12 +104,12 @@ export function StockPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header and Controls */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Inventory & Stock Ledger
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="max-w-[60ch] text-sm text-muted-foreground">
             Real time stock balances, weighted average costing, and ledger
             reconciliation.
           </p>
@@ -207,7 +207,7 @@ export function StockPage() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="h-9 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-3 py-1 text-xs font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
               aria-label="Filter items by category"
             >
               <option value="ALL">All categories</option>

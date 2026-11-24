@@ -211,7 +211,7 @@ export function PurchasesPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -221,7 +221,7 @@ export function PurchasesPage() {
               {t("Live Ledger")}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="max-w-[60ch] text-sm text-muted-foreground">
             {t("Mandi raw material receipts, supplier invoicing, and automated weighted-average cost updating.")}
           </p>
         </div>
@@ -414,7 +414,7 @@ export function PurchasesPage() {
                   id="purchase-supplier-select"
                   value={selectedSupplierId}
                   onChange={(e) => setSelectedSupplierId(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                 >
                   {suppliers.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -473,7 +473,7 @@ export function PurchasesPage() {
                   id="purchase-item-select"
                   value={selectedItemId}
                   onChange={(e) => setSelectedItemId(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+                  className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                 >
                   {rawItems.map((item) => (
                     <option key={item.id} value={item.id}>

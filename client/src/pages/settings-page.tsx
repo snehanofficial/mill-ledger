@@ -146,26 +146,23 @@ export function SettingsPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-page-title text-foreground">
               Mill Settings & Administration
             </h1>
             <Badge variant="outline" className="text-xs">
               System Admin
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground max-w-[60ch]">
             Configure enterprise parameters, manage staff access roles, and maintain statutory GST settings.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Badge
-            variant="outline"
-            className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-xs flex items-center gap-1.5"
-          >
+        <div className="flex shrink-0 items-center gap-2">
+          <Badge variant="success" className="text-xs">
             <ShieldCheckIcon className="size-3.5" />
             RBAC & ABAC Enforced
           </Badge>
@@ -215,8 +212,8 @@ export function SettingsPage() {
       {/* TAB 1: Mill & Statutory Parameters */}
       {activeTab === "mill" && (
         <div className="flex flex-col gap-6">
-          <div className="rounded-xl border bg-card p-5 sm:p-6 shadow-xs flex flex-col gap-5">
-            <div className="border-b pb-4">
+          <div className="rounded-xl border border-border/80 bg-card shadow-xs">
+            <div className="border-b border-border/60 px-5 py-4 sm:px-6">
               <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                 <Building2Icon className="size-4 text-primary" />
                 Mill Organization Profile
@@ -226,7 +223,7 @@ export function SettingsPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 px-5 py-4 sm:px-6 sm:pb-6">
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-xs text-muted-foreground font-semibold">Legal Entity Name</span>
                 <span className="text-sm font-bold text-foreground">MillLedger Foods Pvt Ltd</span>
@@ -254,8 +251,8 @@ export function SettingsPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border bg-card p-5 sm:p-6 shadow-xs flex flex-col gap-5">
-            <div className="border-b pb-4">
+          <div className="rounded-xl border border-border/80 bg-card shadow-xs">
+            <div className="border-b border-border/60 px-5 py-4 sm:px-6">
               <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                 <FileTextIcon className="size-4 text-primary" />
                 Accounting & Decimal Standards
@@ -265,7 +262,7 @@ export function SettingsPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 px-5 py-4 sm:px-6 sm:pb-6">
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-xs text-muted-foreground font-semibold">Inventory Costing Method</span>
                 <span className="text-sm font-bold text-foreground">Weighted-Average Costing (WAC)</span>
@@ -294,8 +291,8 @@ export function SettingsPage() {
           </div>
 
           {/* Accessibility & Motion Control (F-062: WCAG 2.2 SC 2.2.2 Pause, Stop, Hide) */}
-          <div className="rounded-xl border bg-card p-5 sm:p-6 shadow-xs flex flex-col gap-5">
-            <div className="border-b pb-4 flex items-center justify-between">
+          <div className="rounded-xl border border-border/80 bg-card shadow-xs">
+            <div className="border-b border-border/60 px-5 py-4 sm:px-6 flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                   <PlayIcon className="size-4 text-primary" />
@@ -326,7 +323,7 @@ export function SettingsPage() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-5 py-4 sm:px-6 sm:pb-6">
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-xs text-muted-foreground font-semibold">Continuous Animation State</span>
                 <span className="text-sm font-bold text-foreground">
@@ -467,8 +464,8 @@ export function SettingsPage() {
       {/* TAB 3: DPDP Act 2023 Compliance */}
       {activeTab === "dpdp" && (
         <div className="flex flex-col gap-6">
-          <div className="rounded-xl border bg-card p-5 sm:p-6 shadow-xs flex flex-col gap-4">
-            <div className="border-b pb-4">
+          <div className="rounded-xl border border-border/80 bg-card shadow-xs">
+            <div className="border-b border-border/60 px-5 py-4 sm:px-6">
               <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                 <ShieldCheckIcon className="size-4 text-emerald-600" />
                 Data Protection & Privacy Policy (DPDP Act 2023)
@@ -478,7 +475,7 @@ export function SettingsPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-5 py-4 sm:px-6 sm:pb-6">
               <div className="p-4 rounded-lg border bg-muted/20 flex flex-col gap-1.5">
                 <span className="text-xs font-bold text-foreground">Section 11: Right to Access</span>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -589,7 +586,7 @@ export function SettingsPage() {
                 id="settings-user-role"
                 value={newUserRole}
                 onChange={(e) => setNewUserRole(e.target.value as Role)}
-                className="rounded-md border bg-background px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+                className="h-11 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm font-medium text-foreground shadow-xs outline-none transition-colors hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
               >
                 <option value="SALESMAN">Salesman (Field sales & bookings)</option>
                 <option value="PRODUCTION">Production Manager (Shop floor & runs)</option>
