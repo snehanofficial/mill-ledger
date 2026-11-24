@@ -500,3 +500,23 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 export function useLanguage() {
   return useContext(LanguageContext);
 }
+
+/**
+ * LangPart: Inline language of parts wrapper (WCAG 2.2 SC 3.1.2 Level AA / F-060)
+ * Wraps foreign words, phrases, or script switchers with explicit `lang` tag.
+ */
+export function LangPart({
+  lang,
+  children,
+  className,
+}: {
+  lang: Language;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <span lang={lang} className={className}>
+      {children}
+    </span>
+  );
+}

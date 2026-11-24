@@ -202,11 +202,13 @@ export function LoginPage() {
           onClick={() => setLanguage(language === "en" ? "ta" : "en")}
           aria-label={
             language === "en"
-              ? "தமிழ் (Switch language to Tamil)"
-              : "English (ஆங்கிலத்திற்கு மாற்று)"
+              ? "Switch language to Tamil"
+              : "Switch language to English"
           }
         >
-          {language === "en" ? "தமிழ்" : "English"}
+          <span lang={language === "en" ? "ta" : "en"}>
+            {language === "en" ? "தமிழ்" : "English"}
+          </span>
         </Button>
       </div>
 
@@ -375,9 +377,13 @@ export function LoginPage() {
         {/* Demo Fast-Switch Cards */}
         <div className="rounded-control border border-border bg-card p-4 text-xs">
           <p className="font-semibold text-foreground">
-            {language === "ta"
-              ? "சோதனை கணக்குகள் (Demo Roles):"
-              : "Benchmark Demo Roles:"}
+            {language === "ta" ? (
+              <>
+                சோதனை கணக்குகள் (<span lang="en">Demo Roles</span>):
+              </>
+            ) : (
+              "Benchmark Demo Roles:"
+            )}
           </p>
           <div className="mt-2 grid grid-cols-2 gap-2">
             {SEED_ACCOUNTS.map((acc) => (
@@ -391,8 +397,8 @@ export function LoginPage() {
                     : "border-border bg-background hover:bg-muted text-foreground"
                 }`}
               >
-                <div className="font-medium">{acc.label}</div>
-                <div className="truncate text-muted-foreground text-[11px]">
+                <div className="font-medium" lang="en">{acc.label}</div>
+                <div className="truncate text-muted-foreground text-[11px]" lang="en">
                   {acc.email}
                 </div>
               </button>
@@ -402,7 +408,7 @@ export function LoginPage() {
 
         {/* Semantic Footer Landmark with Navigational Links */}
         <footer className="pt-2 text-center text-xs text-muted-foreground">
-          <p>© {CURRENT_YEAR} MillLedger ERP. All rights reserved.</p>
+          <p lang="en">© {CURRENT_YEAR} MillLedger ERP. All rights reserved.</p>
           <div className="mt-2 flex justify-center gap-4">
             <a
               href="/auth/login"

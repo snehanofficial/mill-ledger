@@ -965,19 +965,21 @@ function StickyHeader({
 
       {/* Right-side tools: language, sync, search, notifications, account menu */}
       <div className="flex shrink-0 items-center gap-2">
-        {/* Language switch toggle */}
+        {/* Language switch toggle (WCAG 2.2 SC 3.1.2 Level AA / F-060) */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setLanguage(language === "en" ? "ta" : "en")}
           aria-label={
             language === "en"
-              ? "தமிழ் - Switch language to Tamil"
-              : "EN - Switch language to English"
+              ? "Switch language to Tamil"
+              : "Switch language to English"
           }
           className="h-8 px-2 text-xs font-semibold cursor-pointer text-muted-foreground hover:text-foreground"
         >
-          {language === "en" ? "தமிழ்" : "EN"}
+          <span lang={language === "en" ? "ta" : "en"}>
+            {language === "en" ? "தமிழ்" : "EN"}
+          </span>
         </Button>
 
         {/* Theme switch toggle (F-050) */}
