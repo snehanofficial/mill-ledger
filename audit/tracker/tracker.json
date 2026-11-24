@@ -5907,7 +5907,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -5915,12 +5915,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-064.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "80d261f",
+        "evidenceLink": "audit/evidence/verify/F-064/10-summary.txt",
+        "note": "Removed disabled:pointer-events-none from buttonVariants and new-order-page stepper buttons, ensuring cursor: not-allowed displays properly and tooltip inspection is preserved per WCAG 4.1.2 & Anti-Slop R-39."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-064-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-064-regression.test.ts",
+    "fixCommit": "80d261f",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-064/01-git-status.txt",
+      "audit/evidence/verify/F-064/02-regression-test.txt",
+      "audit/evidence/verify/F-064/03-typecheck.txt",
+      "audit/evidence/verify/F-064/04-lint.txt",
+      "audit/evidence/verify/F-064/05-build.txt",
+      "audit/evidence/verify/F-064/06-invariants.txt",
+      "audit/evidence/verify/F-064/07-benchmark.txt",
+      "audit/evidence/verify/F-064/08-test-suite.txt",
+      "audit/evidence/verify/F-064/09-diff.txt",
+      "audit/evidence/verify/F-064/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'transition-\\|animate-' client/src/ | grep -v 'motion-reduce' | head -n 25",

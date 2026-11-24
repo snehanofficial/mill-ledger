@@ -393,7 +393,7 @@ client/src/components/shell/authenticated-shell.tsx:354:            aria-label={
 |---|---|---|---|
 | **F-062** | P2 | `VERIFIED` | Continuous Pulsing Sync Badges and Skeletons Lack Pause/Stop/Hide Mechanism |
 | **F-063** | P2 | `VERIFIED` | Width and Height Animated in Sidebar Transition and Radix Collapsible Triggering Layout Reflow |
-| **F-064** | P2 | `OPEN` | Disabled Buttons Set `pointer-events: none`, Suppressing `cursor: not-allowed` and Tooltip Inspection |
+| **F-064** | P2 | `VERIFIED` | Disabled Buttons Set `pointer-events: none`, Suppressing `cursor: not-allowed` and Tooltip Inspection |
 | **F-065** | P1 | `VERIFIED` | Sonner Toasts Missing `role="status"`, Pause on Focus, and Persistent Notification Store |
 | **F-066** | P2 | `OPEN` | Outbox Sync Status Badges Display Text Without Status Icons |
 | **F-067** | P2 | `OPEN` | Missing Optimistic Mutations with Rollback Handlers Across Server Workflows |
