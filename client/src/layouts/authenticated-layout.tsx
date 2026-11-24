@@ -20,6 +20,7 @@ import { authClient } from "@/lib/auth-client";
 import { offlineDb } from "@/offline/db";
 import { saveActiveFormDraft } from "@/lib/form-draft";
 import { useSessionTimeout } from "@/hooks/use-session-timeout";
+import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { SessionTimeoutModal } from "@/components/shell/session-timeout-modal";
 import type { RouteHandle } from "@/components/shell/use-breadcrumbs";
 
@@ -59,17 +60,18 @@ export function AuthenticatedLayout() {
 
   const routeAnnouncement = `${label} view loaded`;
 
+  // Master Rulebook Phase 9 & F-069: Manage scroll restoration and container reset
+  useScrollRestoration("main-content");
+
   // WCAG 2.2 SC 2.4.2, SC 4.1.3 & SC 2.4.3: Dynamically update title and manage focus
   useEffect(() => {
     document.title = `${label} | MillLedger`;
 
-    // Reset keyboard focus to primary main landmark and reset scroll upon client-side SPA navigation
+    // Reset keyboard focus to primary main landmark upon client-side SPA navigation
     const main = document.getElementById("main-content");
     if (main) {
       main.focus({ preventScroll: true });
-      main.scrollTo({ top: 0, behavior: "instant" });
     }
-    window.scrollTo({ top: 0, behavior: "instant" });
   }, [label, location.pathname]);
 
   // WCAG 2.2 SC 2.2.1 & SC 3.3.7: Proactive idle session warning and draft preservation
