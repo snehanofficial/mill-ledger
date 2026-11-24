@@ -1,0 +1,253 @@
+commit 7c270f445386cf4aedbe8ae5b0938f14b4314046
+Author: Snehan S <snehankgs@gmail.com>
+Date:   Tue Nov 24 13:24:39 2026 +0530
+
+    fix(i18n): add pre-hydration HTML lang sync and user-scoped language persistence (F-086)
+
+diff --git a/client/index.html b/client/index.html
+index f8fb373..785e5c6 100644
+--- a/client/index.html
++++ b/client/index.html
+@@ -2,6 +2,19 @@
+ <html lang="en">
+   <head>
+     <meta charset="UTF-8" />
++    <!-- Pre-hydration language synchronization to prevent FOUC and TTS pronunciation distortion (WCAG 3.1.1 / F-086) -->
++    <script>
++      (function() {
++        try {
++          var activeUser = localStorage.getItem("mill_ledger_active_user");
++          var userKey = activeUser ? "mill_ledger_lang_" + activeUser : null;
++          var lang = (userKey && localStorage.getItem(userKey)) || localStorage.getItem("mill_ledger_lang");
++          if (lang === "ta" || lang === "en") {
++            document.documentElement.lang = lang;
++          }
++        } catch (_) {}
++      })();
++    </script>
+     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+     <link rel="alternate icon" href="/favicon.ico" />
+     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+diff --git a/client/src/layouts/authenticated-layout.tsx b/client/src/layouts/authenticated-layout.tsx
+index e3995d6..975e141 100644
+--- a/client/src/layouts/authenticated-layout.tsx
++++ b/client/src/layouts/authenticated-layout.tsx
+@@ -125,6 +125,15 @@ export function AuthenticatedLayout() {
+     };
+   }, []);
+ 
++  // Sync active user ID for user-scoped storage (F-086)
++  useEffect(() => {
++    if (user?.id) {
++      try {
++        localStorage.setItem("mill_ledger_active_user", user.id);
++      } catch {}
++    }
++  }, [user?.id]);
++
+   // Show loading shell to prevent layout shift during initial session verification
+   if (isLoading) {
+     return <AuthenticatedShellSkeleton />;
+@@ -143,6 +152,7 @@ export function AuthenticatedLayout() {
+     } finally {
+       // OWASP ASVS 8.3.1 & 3.5.3: Purge all cached sensitive enterprise data, customer PII, and offline outbox
+       try {
++        localStorage.removeItem("mill_ledger_active_user");
+         await offlineDb.purgeOnSignOut();
+       } catch (dbErr) {
+         console.warn("Failed to purge offline database on logout:", dbErr);
+diff --git a/client/src/lib/auth-client.ts b/client/src/lib/auth-client.ts
+index 32f1533..3edc396 100644
+--- a/client/src/lib/auth-client.ts
++++ b/client/src/lib/auth-client.ts
+@@ -62,16 +62,23 @@ export const authClient = {
+     const data = await response.json();
+ 
+     // Verify session context against /api/v1/me to ensure user role and active state are hydrated
++    let resolvedUser = data.user;
+     try {
+       const res = await apiClient.get<SessionResponse>("/me");
+       if (res.data?.user) {
+-        return res.data.user;
++        resolvedUser = res.data.user;
+       }
+     } catch {
+       // Fallback to response user data if /api/v1/me is delayed
+     }
+ 
+-    return data.user;
++    if (typeof window !== "undefined" && resolvedUser?.id) {
++      try {
++        localStorage.setItem("mill_ledger_active_user", resolvedUser.id);
++      } catch {}
++    }
++
++    return resolvedUser;
+   },
+ 
+   /**
+@@ -88,6 +95,11 @@ export const authClient = {
+         credentials: "include",
+       }).catch(() => {});
+     } finally {
++      if (typeof window !== "undefined") {
++        try {
++          localStorage.removeItem("mill_ledger_active_user");
++        } catch {}
++      }
+       // OWASP ASVS 8.3.1 / 3.5.3: Purge client persistent storage upon sign-out
+       try {
+         await offlineDb.purgeOnSignOut();
+diff --git a/client/src/lib/i18n.test.ts b/client/src/lib/i18n.test.ts
+index 1bafb84..3f265d3 100644
+--- a/client/src/lib/i18n.test.ts
++++ b/client/src/lib/i18n.test.ts
+@@ -1,5 +1,11 @@
+-import { describe, it, expect } from "vitest";
+-import { dictionary, translate } from "./i18n";
++import { describe, it, expect, beforeEach, afterEach } from "vitest";
++import {
++  dictionary,
++  translate,
++  getUserScopedLanguageKey,
++  getSavedLanguage,
++  saveUserLanguage,
++} from "./i18n";
+ 
+ describe("i18n Translation Dictionary", () => {
+   it("provides valid English and Tamil translations for key navigation routes", () => {
+@@ -89,4 +95,61 @@ describe("i18n Translation Dictionary", () => {
+     expect(translate("Sign out", "Sign out", "ta")).toBe("வெளியேறு");
+     expect(translate("Refresh", "Refresh", "ta")).toBe("புதுப்பி");
+   });
++
++  describe("F-086: User-Scoped Language Preference and Storage Keying", () => {
++    const store = new Map<string, string>();
++    const mockStorage = {
++      getItem: (key: string) => store.get(key) ?? null,
++      setItem: (key: string, val: string) => store.set(key, val),
++      removeItem: (key: string) => store.delete(key),
++      clear: () => store.clear(),
++    };
++    const mockDocument = {
++      documentElement: { lang: "en" },
++    };
++
++    beforeEach(() => {
++      store.clear();
++      mockDocument.documentElement.lang = "en";
++      (globalThis as any).window = globalThis;
++      (globalThis as any).localStorage = mockStorage;
++      (globalThis as any).document = mockDocument;
++    });
++
++    afterEach(() => {
++      delete (globalThis as any).window;
++      delete (globalThis as any).localStorage;
++      delete (globalThis as any).document;
++    });
++
++    it("scopes storage key to user ID when provided", () => {
++      expect(getUserScopedLanguageKey("user-123")).toBe("mill_ledger_lang_user-123");
++    });
++
++    it("falls back to active user from localStorage if userId param omitted", () => {
++      localStorage.setItem("mill_ledger_active_user", "session-user-999");
++      expect(getUserScopedLanguageKey()).toBe("mill_ledger_lang_session-user-999");
++    });
++
++    it("falls back to global key if no active user exists", () => {
++      expect(getUserScopedLanguageKey()).toBe("mill_ledger_lang");
++    });
++
++    it("saves and retrieves user-scoped language preferences independently", () => {
++      saveUserLanguage("ta", "user-tamil");
++      saveUserLanguage("en", "user-english");
++
++      expect(getSavedLanguage("user-tamil")).toBe("ta");
++      expect(getSavedLanguage("user-english")).toBe("en");
++      expect(localStorage.getItem("mill_ledger_lang_user-tamil")).toBe("ta");
++      expect(localStorage.getItem("mill_ledger_lang_user-english")).toBe("en");
++    });
++
++    it("updates document.documentElement.lang when saving user language", () => {
++      saveUserLanguage("ta", "user-tamil");
++      expect(document.documentElement.lang).toBe("ta");
++      saveUserLanguage("en", "user-english");
++      expect(document.documentElement.lang).toBe("en");
++    });
++  });
+ });
+diff --git a/client/src/lib/i18n.tsx b/client/src/lib/i18n.tsx
+index 7abbcad..b3d3509 100644
+--- a/client/src/lib/i18n.tsx
++++ b/client/src/lib/i18n.tsx
+@@ -463,21 +463,56 @@ const LanguageContext = createContext<LanguageContextType>({
+   t: (key, fallback) => fallback || key,
+ });
+ 
+-export function LanguageProvider({ children }: { children: ReactNode }) {
+-  const [language, setLanguageState] = useState<Language>(() => {
+-    if (typeof window !== "undefined") {
+-      const saved = localStorage.getItem("mill_ledger_lang") as Language;
+-      if (saved === "en" || saved === "ta") return saved;
+-    }
+-    return "en";
+-  });
++export function getUserScopedLanguageKey(userId?: string | null): string {
++  if (userId) return `mill_ledger_lang_${userId}`;
++  if (typeof window !== "undefined") {
++    const activeUser = localStorage.getItem("mill_ledger_active_user");
++    if (activeUser) return `mill_ledger_lang_${activeUser}`;
++  }
++  return "mill_ledger_lang";
++}
++
++export function getSavedLanguage(userId?: string | null): Language {
++  if (typeof window === "undefined") return "en";
++  try {
++    const key = getUserScopedLanguageKey(userId);
++    const saved = localStorage.getItem(key) as Language | null;
++    if (saved === "en" || saved === "ta") return saved;
++    const fallback = localStorage.getItem("mill_ledger_lang") as Language | null;
++    if (fallback === "en" || fallback === "ta") return fallback;
++  } catch {}
++  return "en";
++}
++
++export function saveUserLanguage(lang: Language, userId?: string | null): void {
++  if (typeof window === "undefined") return;
++  try {
++    const key = getUserScopedLanguageKey(userId);
++    localStorage.setItem(key, lang);
++    localStorage.setItem("mill_ledger_lang", lang);
++    document.documentElement.lang = lang;
++  } catch {}
++}
++
++export function LanguageProvider({
++  children,
++  userId,
++}: {
++  children: ReactNode;
++  userId?: string | null;
++}) {
++  const [prevUserId, setPrevUserId] = useState(userId);
++  const [language, setLanguageState] = useState<Language>(() => getSavedLanguage(userId));
++
++  if (userId !== prevUserId) {
++    setPrevUserId(userId);
++    const activeLang = getSavedLanguage(userId);
++    setLanguageState(activeLang);
++  }
+ 
+   const setLanguage = (lang: Language) => {
+     setLanguageState(lang);
+-    if (typeof window !== "undefined") {
+-      localStorage.setItem("mill_ledger_lang", lang);
+-      document.documentElement.lang = lang;
+-    }
++    saveUserLanguage(lang, userId);
+   };
+ 
+   useEffect(() => {

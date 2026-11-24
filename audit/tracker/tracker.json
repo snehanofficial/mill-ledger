@@ -7562,7 +7562,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -7570,12 +7570,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-086.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "7c270f4",
+        "evidenceLink": "audit/evidence/verify/F-086/10-summary.txt",
+        "note": "Added pre-hydration HTML lang synchronization script in client/index.html and implemented user-scoped language preference storage."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-086-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-086-regression.test.ts",
+    "fixCommit": "7c270f4",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-086/01-git-status.txt",
+      "audit/evidence/verify/F-086/02-regression-test.txt",
+      "audit/evidence/verify/F-086/03-typecheck.txt",
+      "audit/evidence/verify/F-086/04-lint.txt",
+      "audit/evidence/verify/F-086/05-build.txt",
+      "audit/evidence/verify/F-086/06-invariants.txt",
+      "audit/evidence/verify/F-086/07-benchmark.txt",
+      "audit/evidence/verify/F-086/08-test-suite.txt",
+      "audit/evidence/verify/F-086/09-diff.txt",
+      "audit/evidence/verify/F-086/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'useLanguage' client/src/ | head -n 25",
