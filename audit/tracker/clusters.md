@@ -355,7 +355,7 @@ client/src/pages/payments-page.tsx:897:                    placeholder="e.g. 400
 | **F-054** | P2 | `OPEN` | Label in Name Mismatch on Multilingual Language Switcher |
 | **F-055** | P2 | `OPEN` | Interactive Touch Targets Below WCAG 2.5.8 Minimum (24x24px) and Apple HIG (44x44px) |
 | **F-056** | P2 | `OPEN` | Inadequate Color Contrast on Muted Text and Subtle Status Indicators |
-| **F-057** | P1 | `OPEN` | Unwarned Session Expiry and Form Data Destruction Under Better Auth Timeout |
+| **F-057** | P1 | `VERIFIED` | Unwarned Session Expiry and Form Data Destruction Under Better Auth Timeout |
 | **F-058** | P1 | `OPEN` | Absence of Confirmation and Review Steps on Irreversible Financial Transactions |
 | **F-059** | P2 | `OPEN` | Dynamic Shortage Banners and Form Errors Lack ARIA Live Region / Status Role |
 | **F-060** | P3 | `OPEN` | Missing Language of Parts (`lang="ta"` / `lang="en"`) on Multilingual Text Fragments |

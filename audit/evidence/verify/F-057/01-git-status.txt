@@ -1,0 +1,5 @@
+ M client/src/layouts/authenticated-layout.tsx
+ M client/src/pages/login-page.tsx
+?? client/src/components/shell/session-timeout-modal.tsx
+?? client/src/hooks/use-session-timeout.ts
+?? client/src/lib/form-draft.ts
