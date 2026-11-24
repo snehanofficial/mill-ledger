@@ -41,6 +41,7 @@ import {
   WifiOffIcon,
   RotateCcwIcon,
   Trash2Icon,
+  ClockIcon,
 } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSyncManager } from "@/offline/use-offline";
@@ -643,12 +644,36 @@ export function OrdersPage() {
                         <DatabaseIcon className="size-3.5 text-amber-600 shrink-0" />
                         <span>Local: {ord.id.slice(-6).toUpperCase()}</span>
                       </div>
-                      <Badge
-                        variant="outline"
-                        className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-xs"
-                      >
-                        {ord.status === "queued" ? "Waiting to sync" : ord.status}
-                      </Badge>
+                      {ord.status === "queued" && (
+                        <Badge
+                          variant="outline"
+                          className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-xs flex items-center gap-1"
+                        >
+                          <ClockIcon className="size-3 shrink-0" aria-hidden="true" />
+                          <span>Waiting to sync</span>
+                        </Badge>
+                      )}
+                      {ord.status === "syncing" && (
+                        <Badge
+                          variant="outline"
+                          className="animate-pulse-finite bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 text-xs flex items-center gap-1"
+                        >
+                          <RefreshCwIcon className="size-3 shrink-0 animate-spin" aria-hidden="true" />
+                          <span>Syncing...</span>
+                        </Badge>
+                      )}
+                      {ord.status === "conflict" && (
+                        <Badge variant="danger" className="text-xs flex items-center gap-1">
+                          <AlertTriangleIcon className="size-3 shrink-0" aria-hidden="true" />
+                          <span>Conflict: {ord.lastErrorCode ?? "Error"}</span>
+                        </Badge>
+                      )}
+                      {ord.status === "synced" && (
+                        <Badge variant="success" className="text-xs flex items-center gap-1">
+                          <CheckCircle2Icon className="size-3 shrink-0" aria-hidden="true" />
+                          <span>Synced: {ord.serverOrderNumber ?? "OK"}</span>
+                        </Badge>
+                      )}
                     </div>
 
                     <div className="flex justify-between items-baseline text-xs text-muted-foreground">
@@ -879,27 +904,31 @@ export function OrdersPage() {
                         {ord.status === "queued" && (
                           <Badge
                             variant="outline"
-                            className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                            className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 flex items-center gap-1 w-fit"
                           >
-                            Waiting to sync
+                            <ClockIcon className="size-3 shrink-0" aria-hidden="true" />
+                            <span>Waiting to sync</span>
                           </Badge>
                         )}
                         {ord.status === "syncing" && (
                           <Badge
                             variant="outline"
-                            className="animate-pulse-finite bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
+                            className="animate-pulse-finite bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 flex items-center gap-1 w-fit"
                           >
-                            Syncing...
+                            <RefreshCwIcon className="size-3 shrink-0 animate-spin" aria-hidden="true" />
+                            <span>Syncing...</span>
                           </Badge>
                         )}
                         {ord.status === "conflict" && (
-                          <Badge variant="danger">
-                            Conflict: {ord.lastErrorCode ?? "Error"}
+                          <Badge variant="danger" className="flex items-center gap-1 w-fit">
+                            <AlertTriangleIcon className="size-3 shrink-0" aria-hidden="true" />
+                            <span>Conflict: {ord.lastErrorCode ?? "Error"}</span>
                           </Badge>
                         )}
                         {ord.status === "synced" && (
-                          <Badge variant="success">
-                            Synced: {ord.serverOrderNumber ?? "OK"}
+                          <Badge variant="success" className="flex items-center gap-1 w-fit">
+                            <CheckCircle2Icon className="size-3 shrink-0" aria-hidden="true" />
+                            <span>Synced: {ord.serverOrderNumber ?? "OK"}</span>
                           </Badge>
                         )}
                       </TableCell>

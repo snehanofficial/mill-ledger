@@ -16,6 +16,7 @@ import {
   RotateCcwIcon,
   DatabaseIcon,
   LayersIcon,
+  ClockIcon,
 } from "lucide-react";
 import { useSyncManager } from "@/offline/use-offline";
 import type { OfflineOrder } from "@/offline/db";
@@ -194,27 +195,31 @@ export function DeviceOutboxSheet({
                     {ord.status === "queued" && (
                       <Badge
                         variant="outline"
-                        className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                        className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 flex items-center gap-1"
                       >
-                        {t("Waiting to sync")}
+                        <ClockIcon className="size-3 shrink-0" aria-hidden="true" />
+                        <span>{t("Waiting to sync")}</span>
                       </Badge>
                     )}
                     {ord.status === "syncing" && (
                       <Badge
                         variant="outline"
-                        className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 animate-pulse-finite"
+                        className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 animate-pulse-finite flex items-center gap-1"
                       >
-                        {t("Syncing...")}
+                        <RefreshCwIcon className="size-3 shrink-0 animate-spin" aria-hidden="true" />
+                        <span>{t("Syncing...")}</span>
                       </Badge>
                     )}
                     {ord.status === "synced" && (
-                      <Badge variant="success">
-                        {t("Synced")}: {ord.serverOrderNumber ?? t("Accepted")}
+                      <Badge variant="success" className="flex items-center gap-1">
+                        <CheckCircle2Icon className="size-3 shrink-0" aria-hidden="true" />
+                        <span>{t("Synced")}: {ord.serverOrderNumber ?? t("Accepted")}</span>
                       </Badge>
                     )}
                     {ord.status === "conflict" && (
-                      <Badge variant="danger">
-                        {t("Conflict")}: {ord.lastErrorCode ?? t("Rejected")}
+                      <Badge variant="danger" className="flex items-center gap-1">
+                        <AlertTriangleIcon className="size-3 shrink-0" aria-hidden="true" />
+                        <span>{t("Conflict")}: {ord.lastErrorCode ?? t("Rejected")}</span>
                       </Badge>
                     )}
                   </div>
