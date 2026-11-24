@@ -549,7 +549,7 @@ client/src/pages/reports-page.tsx:643:                request metadata
 | **F-095** | P1 | `OPEN` | Domain Layer Type Safety Breach: 14 Explicit `any` Types, 4 Double Casts (`as unknown as`), and Missing `--strict` in Frontend tsconfig |
 | **F-096** | P1 | `OPEN` | Test Assertion Blindspots: Surviving Mutants in GST and Payment Allocation Logic (Stryker 59.32% Mutation Score, Zero Inter-State & Error Boundary Tests) |
 | **F-098** | P3 | `OPEN` | Documentation Drift and False Claims: "Modular Monolog" Typo, False API Port, and Overstated Deliverables in README |
-| **F-099** | P1 | `OPEN` | Broken Production Dockerfile: Missing `tsconfig.json` Causes Build Failure, Unpruned DevDependencies, and Static Client Files Never Served by API Server |
+| **F-099** | P1 | `VERIFIED` | Broken Production Dockerfile: Missing `tsconfig.json` Causes Build Failure, Unpruned DevDependencies, and Static Client Files Never Served by API Server |
 | **F-102** | P1 | `VERIFIED` | Missing Readiness Endpoint, Health Check Omits Database Connectivity, and Express Missing Request Timeout & Trust Proxy Settings |
 | **F-103** | P2 | `OPEN` | Total Absence of Observability: Unstructured Console Logging, Zero Source Maps, No Error Tracking, No Metrics, and Missing Alert Rules |
 | **F-104** | P1 | `OPEN` | CI/CD Pipeline Gaps: E2E, Lighthouse, Audit, Bundle Gate, and Secret Scan Missing; Main Branch Lacks Merge Protection |

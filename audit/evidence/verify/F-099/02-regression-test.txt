@@ -1,0 +1,13 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | audit/tests/f-099-regression.test.ts > F-099 Regression Suite: Production Dockerfile and SPA Asset Serving > verifies live SPA serving vs API 404 separation
+{"level":"INFO","timestamp":"2026-11-24T09:36:54.866Z","requestId":"ae4e4924-c2bb-4c4d-99d1-b087721a8a7a","method":"GET","path":"/catalog","statusCode":200,"durationMs":3,"ip":"127.0.0.1","userAgent":"node"}
+
+ ✓ audit/tests/f-099-regression.test.ts (3 tests) 41ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  15:06:53
+   Duration  1.12s (transform 289ms, setup 0ms, collect 688ms, tests 41ms, environment 0ms, prepare 72ms)
+

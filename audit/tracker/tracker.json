@@ -8742,9 +8742,7 @@
     "category": "Operations & Container Packaging",
     "tier": "T11",
     "cluster": "CLUSTER-15",
-    "dependsOn": [
-      "F-070"
-    ],
+    "dependsOn": [],
     "blocks": [],
     "relatedFindings": [],
     "standardsRefs": [
@@ -8761,7 +8759,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -8769,12 +8767,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-099.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "e899427",
+        "evidenceLink": "audit/evidence/verify/F-099/10-summary.txt",
+        "note": "Decoupled from F-070; removed missing tsconfig.json copy from Dockerfile, configured pnpm prune --prod in builder stage, and implemented static client asset serving and SPA fallback in Express server."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-099-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-099-regression.test.ts",
+    "fixCommit": "e899427",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-099/01-git-status.txt",
+      "audit/evidence/verify/F-099/02-regression-test.txt",
+      "audit/evidence/verify/F-099/03-typecheck.txt",
+      "audit/evidence/verify/F-099/04-lint.txt",
+      "audit/evidence/verify/F-099/05-build.txt",
+      "audit/evidence/verify/F-099/06-invariants.txt",
+      "audit/evidence/verify/F-099/07-benchmark.txt",
+      "audit/evidence/verify/F-099/08-test-suite.txt",
+      "audit/evidence/verify/F-099/09-diff.txt",
+      "audit/evidence/verify/F-099/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
@@ -8807,7 +8823,7 @@
       ]
     },
     "needsApproval": "none",
-    "notes": ""
+    "notes": "Decoupled from F-070 per Option 2 directive; removed missing tsconfig.json copy from Dockerfile, added pnpm prune --prod, and configured Express static file serving for client/dist with SPA fallback."
   },
   {
     "id": "F-102",
