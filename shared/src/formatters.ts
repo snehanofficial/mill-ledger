@@ -1,6 +1,6 @@
 /**
  * Canonical Currency and Date/Time Formatters for MillLedger.
- * Adheres to Indian Accounting ERP standards (en-IN locale, Section 170 CGST Act).
+ * Adheres to Indian Accounting ERP standards (en-IN and ta-IN locale, Section 170 CGST Act, UTS #10 UCA).
  */
 
 export interface FormatINROptions {
@@ -8,6 +8,8 @@ export interface FormatINROptions {
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
   fallback?: string;
+  locale?: string;
+  lang?: "en" | "ta";
 }
 
 export interface FormatQuantityOptions {
@@ -15,7 +17,35 @@ export interface FormatQuantityOptions {
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
   fallback?: string;
+  locale?: string;
+  lang?: "en" | "ta";
 }
+
+export interface FormatDateOptions extends Intl.DateTimeFormatOptions {
+  locale?: string;
+  lang?: "en" | "ta";
+}
+
+const DEFAULT_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+};
+
+const DEFAULT_DATETIME_OPTIONS: Intl.DateTimeFormatOptions = {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: true,
+};
+
+const DEFAULT_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: true,
+};
 
 /**
  * Format a number, string, or Decimal-like value into Indian Rupees (INR)
@@ -31,6 +61,8 @@ export function formatINR(
     minimumFractionDigits = 2,
     maximumFractionDigits = 2,
     fallback = "₹0.00",
+    locale,
+    lang,
   } = options;
 
   if (amount === null || amount === undefined) {
@@ -52,8 +84,13 @@ export function formatINR(
     return symbol ? fallback : "0.00";
   }
 
+  const resolvedLocale =
+    lang === "ta" || locale === "ta" || locale === "ta-IN"
+      ? "ta-IN"
+      : (locale || "en-IN");
+
   if (symbol) {
-    return new Intl.NumberFormat("en-IN", {
+    return new Intl.NumberFormat(resolvedLocale, {
       style: "currency",
       currency: "INR",
       minimumFractionDigits,
@@ -61,7 +98,7 @@ export function formatINR(
     }).format(num);
   }
 
-  return new Intl.NumberFormat("en-IN", {
+  return new Intl.NumberFormat(resolvedLocale, {
     minimumFractionDigits,
     maximumFractionDigits,
   }).format(num);
@@ -80,6 +117,8 @@ export function formatQuantity(
     minimumFractionDigits = 0,
     maximumFractionDigits = 2,
     fallback = "0",
+    locale,
+    lang,
   } = options;
 
   if (amount === null || amount === undefined) {
@@ -101,7 +140,12 @@ export function formatQuantity(
     return unit ? `${fallback} ${unit}` : fallback;
   }
 
-  const formatted = new Intl.NumberFormat("en-IN", {
+  const resolvedLocale =
+    lang === "ta" || locale === "ta" || locale === "ta-IN"
+      ? "ta-IN"
+      : (locale || "en-IN");
+
+  const formatted = new Intl.NumberFormat(resolvedLocale, {
     minimumFractionDigits,
     maximumFractionDigits,
   }).format(num);
@@ -110,34 +154,40 @@ export function formatQuantity(
 }
 
 /**
- * Format a date into Indian standard format (DD MMM YYYY, e.g. 01 Apr 2026).
+ * Format a date into Indian standard format (DD MMM YYYY, e.g. 01 Apr 2026 or 01 ஏப்., 2026).
  */
 export function formatDate(
   date: string | Date | number | null | undefined,
-  options: Intl.DateTimeFormatOptions = {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }
+  options: FormatDateOptions = DEFAULT_DATE_OPTIONS,
+  localeParam: string = "en-IN"
 ): string {
   if (!date) return "—";
   const d = date instanceof Date ? date : new Date(date);
   if (Number.isNaN(d.getTime())) return "—";
 
-  return new Intl.DateTimeFormat("en-IN", options).format(d);
+  const rawLocale = options.locale || (options.lang === "ta" ? "ta-IN" : undefined) || localeParam;
+  const resolvedLocale = rawLocale === "ta" || rawLocale === "ta-IN" ? "ta-IN" : (rawLocale || "en-IN");
+
+  const { locale: _l, lang: _lg, ...dtOptions } = { ...DEFAULT_DATE_OPTIONS, ...options };
+  return new Intl.DateTimeFormat(resolvedLocale, dtOptions).format(d);
 }
 
 /**
  * Format a date into short Indian standard format (DD/MM/YYYY, e.g. 01/04/2026).
  */
 export function formatDateShort(
-  date: string | Date | number | null | undefined
+  date: string | Date | number | null | undefined,
+  localeParam: string = "en-IN"
 ): string {
-  return formatDate(date, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  return formatDate(
+    date,
+    {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    },
+    localeParam
+  );
 }
 
 /**
@@ -145,16 +195,11 @@ export function formatDateShort(
  */
 export function formatDateTime(
   date: string | Date | number | null | undefined,
-  options: Intl.DateTimeFormatOptions = {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  }
+  options: FormatDateOptions = DEFAULT_DATETIME_OPTIONS,
+  localeParam: string = "en-IN"
 ): string {
-  return formatDate(date, options);
+  const mergedOptions = { ...DEFAULT_DATETIME_OPTIONS, ...options };
+  return formatDate(date, mergedOptions, localeParam);
 }
 
 /**
@@ -162,11 +207,25 @@ export function formatDateTime(
  */
 export function formatTime(
   date: string | Date | number | null | undefined,
-  options: Intl.DateTimeFormatOptions = {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  }
+  options: FormatDateOptions = DEFAULT_TIME_OPTIONS,
+  localeParam: string = "en-IN"
 ): string {
-  return formatDate(date, options);
+  const mergedOptions = { ...DEFAULT_TIME_OPTIONS, ...options };
+  return formatDate(date, mergedOptions, localeParam);
+}
+
+/**
+ * Collate (compare) two strings using language-aware Unicode Collation (UCA - UTS #10).
+ * Handles Tamil ('ta' / 'ta-IN') and English ('en' / 'en-IN') linguistic collation.
+ */
+export function compareStrings(
+  a: string | null | undefined,
+  b: string | null | undefined,
+  locale: string = "en-IN",
+  options: Intl.CollatorOptions = { sensitivity: "base", numeric: true }
+): number {
+  const strA = a ?? "";
+  const strB = b ?? "";
+  const resolvedLocale = locale === "ta" || locale === "ta-IN" ? "ta-IN" : (locale || "en-IN");
+  return strA.localeCompare(strB, resolvedLocale, options);
 }

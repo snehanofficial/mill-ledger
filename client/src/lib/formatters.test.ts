@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  compareStrings,
   formatDate,
   formatDateShort,
   formatDateTime,
@@ -112,6 +113,36 @@ describe("F-097: Centralized Currency & Date Formatters", () => {
       expect(formatDateShort(null)).toBe("—");
       expect(formatDateTime(null)).toBe("—");
       expect(formatTime(null)).toBe("—");
+    });
+
+    it("supports Tamil date localization via ta-IN locale or lang option (F-085)", () => {
+      const formatted = formatDate(testDate, { lang: "ta" });
+      expect(formatted).toMatch(/01|1/);
+      expect(formatted).toContain("2026");
+      // Tamil month for April is ஏப். or ஏப்ரல்
+      expect(formatted).toMatch(/ஏப்/);
+    });
+  });
+
+  describe("F-085: Indic/Tamil Localization & Unicode Collation", () => {
+    it("formats INR with Tamil and Indian numbering system", () => {
+      expect(formatINR(100000, { lang: "ta" })).toBe("₹1,00,000.00");
+      expect(formatINR(1250000, { locale: "ta-IN" })).toBe("₹12,50,000.00");
+    });
+
+    it("formats discrete quantities with Tamil/Indian locale grouping", () => {
+      expect(formatQuantity(100000, { lang: "ta", unit: "pkts" })).toBe("1,00,000 pkts");
+    });
+
+    it("collates Tamil and English strings using Unicode Collation Algorithm (UTS #10)", () => {
+      const list = ["கோதுமை", "அரிசி", "உளுந்து"];
+      const sorted = [...list].sort((a, b) => compareStrings(a, b, "ta-IN"));
+      // In Tamil alphabet: அ comes before உ, which comes before க
+      expect(sorted).toEqual(["அரிசி", "உளுந்து", "கோதுமை"]);
+
+      const englishList = ["Zebra", "Apple", "Mango"];
+      const sortedEnglish = [...englishList].sort((a, b) => compareStrings(a, b, "en-IN"));
+      expect(sortedEnglish).toEqual(["Apple", "Mango", "Zebra"]);
     });
   });
 });
