@@ -8472,7 +8472,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -8480,12 +8480,27 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-094.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "de4ac79",
+        "evidenceLink": "audit/evidence/verify/F-094/verification.md",
+        "note": "Pruned 7 client phantom dependencies, 2 server devDependencies, deleted orphaned i18n-dictionary.ts, cleaned 22 dead placeholder exports, removed dead requireTenant, unified useConnectionStatus. 6/6 regression tests pass."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-094-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm exec vitest run audit/tests/f-094-regression.test.ts --config /dev/null",
+    "regressionTest": "audit/tests/f-094-regression.test.ts",
+    "fixCommit": "de4ac79",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-094/verification.md",
+      "audit/evidence/verify/F-094/regression-test.txt",
+      "audit/evidence/verify/F-094/typecheck.txt",
+      "audit/evidence/verify/F-094/lint.txt",
+      "audit/evidence/verify/F-094/benchmark.txt",
+      "audit/evidence/verify/F-094/invariants.txt",
+      "audit/evidence/verify/F-094/suite-tests.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
@@ -8518,7 +8533,7 @@
       ]
     },
     "needsApproval": "none",
-    "notes": ""
+    "notes": "Decoupled from F-070 per Option 2 directive; pruned 7 client deps, 2 server devDeps, deleted orphaned i18n dictionary, purged 22 placeholder exports, removed dead requireTenant, unified useConnectionStatus."
   },
   {
     "id": "F-095",
