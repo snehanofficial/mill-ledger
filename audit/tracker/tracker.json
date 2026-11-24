@@ -7041,15 +7041,11 @@
       "- `Problem_Statement_Winter_Internship_Application_2026.md` (Section 5 Steps to demonstrate - Salesman offline order capture)"
     ],
     "files": [
-      "client/src/components/shell/device-outbox-sheet.ts",
-      "///home/snehan/projects/web/mill-ledger/client/src/components/shell/device-outbox-sheet.ts",
-      "client/src/offline/sync-engine.ts",
-      "///home/snehan/projects/web/mill-ledger/client/src/offline/sync-engine.ts",
-      "///home/snehan/projects/web/mill-ledger/audit/tests/phase-11-offline-sync.spec.ts"
+      "client/src/components/shell/device-outbox-sheet.tsx"
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -7057,12 +7053,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-081.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "036e4bb",
+        "evidenceLink": "audit/evidence/verify/F-081/10-summary.txt",
+        "note": "VERIFIED: Wrapped DeviceOutboxSheet discard action in ConfirmationDialog summarizing customer, lines, and total order amount with permanent data loss warning. 10-point verification passed with 0 errors."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-081-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-081-regression.test.ts",
+    "fixCommit": "036e4bb",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-081/01-git-status.txt",
+      "audit/evidence/verify/F-081/02-typecheck.txt",
+      "audit/evidence/verify/F-081/03-lint.txt",
+      "audit/evidence/verify/F-081/04-build.txt",
+      "audit/evidence/verify/F-081/05-invariants.txt",
+      "audit/evidence/verify/F-081/06-benchmark.txt",
+      "audit/evidence/verify/F-081/07-regression-test.txt",
+      "audit/evidence/verify/F-081/08-test-suite.txt",
+      "audit/evidence/verify/F-081/09-diff.txt",
+      "audit/evidence/verify/F-081/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'useLanguage' client/src/ | head -n 25",
