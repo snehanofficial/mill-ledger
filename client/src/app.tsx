@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RoleGuard } from "@/components/auth/role-guard";
+import { RouteErrorFallback } from "@/components/ui/route-error-fallback";
 import { ROUTE_PERMISSIONS, getDefaultRouteForRole } from "@/lib/role-routing";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
@@ -159,6 +160,7 @@ const router = createBrowserRouter([
   // ── Public routes (outside authenticated shell) ─────────────────
   {
     path: "/",
+    errorElement: <RouteErrorFallback homePath="/" />,
     element: (
       <Suspense fallback={<PageFallback />}>
         <RootEntry />
@@ -167,6 +169,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/catalog",
+    errorElement: <RouteErrorFallback homePath="/" />,
     element: (
       <Suspense fallback={<PageFallback />}>
         <CatalogPage />
@@ -175,6 +178,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/products",
+    errorElement: <RouteErrorFallback homePath="/" />,
     element: (
       <Suspense fallback={<PageFallback />}>
         <CatalogPage />
@@ -183,6 +187,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/contact",
+    errorElement: <RouteErrorFallback homePath="/" />,
     element: (
       <Suspense fallback={<PageFallback />}>
         <ContactPage />
@@ -191,6 +196,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/auth/login",
+    errorElement: <RouteErrorFallback homePath="/" />,
     element: (
       <Suspense fallback={<PageFallback />}>
         <LoginPage />
@@ -200,6 +206,7 @@ const router = createBrowserRouter([
 
   // ── Authenticated shell ─────────────────────────────────────────
   {
+    errorElement: <RouteErrorFallback />,
     element: (
       <Suspense fallback={<PageFallback />}>
         <AuthenticatedLayout />
@@ -458,6 +465,7 @@ const router = createBrowserRouter([
   // ── Root catch-all for unknown routes (prevents unauthenticated redirect hijacking) ──
   {
     path: "*",
+    errorElement: <RouteErrorFallback homePath="/" />,
     element: (
       <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
         <NotFoundPage />

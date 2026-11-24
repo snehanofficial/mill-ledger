@@ -196,33 +196,37 @@ export function OrdersPage() {
     },
   });
 
-  const customersList = customersData || [
-    {
-      id: "CUST-RET-A",
-      code: "CUST-RET-A",
-      name: "Retailer A",
-      state: "Tamil Nadu",
-    },
-    {
-      id: "CUST-DIST-B",
-      code: "CUST-DIST-B",
-      name: "Distributor B",
-      state: "Karnataka",
-    },
-  ];
+  const customersList = customersData?.length
+    ? customersData
+    : [
+        {
+          id: "CUST-RET-A",
+          code: "CUST-RET-A",
+          name: "Retailer A",
+          state: "Tamil Nadu",
+        },
+        {
+          id: "CUST-DIST-B",
+          code: "CUST-DIST-B",
+          name: "Distributor B",
+          state: "Karnataka",
+        },
+      ];
 
-  const productsList = productsData || [
-    {
-      id: "VAR-MURUKKU-200G",
-      sku: "VAR-MURUKKU-200G",
-      name: "Murukku 200 g",
-      defaultPrice: 50.0,
-      taxRate: 5.0,
-      imageUrl: "/products/murukku.svg",
-      thumbnailUrl: "/products/murukku.svg",
-      thumbHash: "1QcSHQRnh493V4dIh4eXh1h4h4h4",
-    },
-  ];
+  const productsList = productsData?.length
+    ? productsData
+    : [
+        {
+          id: "VAR-MURUKKU-200G",
+          sku: "VAR-MURUKKU-200G",
+          name: "Murukku 200 g",
+          defaultPrice: 50.0,
+          taxRate: 5.0,
+          imageUrl: "/products/murukku.svg",
+          thumbnailUrl: "/products/murukku.svg",
+          thumbHash: "1QcSHQRnh493V4dIh4eXh1h4h4h4",
+        },
+      ];
 
   const activeCustomer =
     customersList.find(
@@ -273,7 +277,7 @@ export function OrdersPage() {
   const calculatedTax = calculatedTaxable * taxPct;
   const calculatedTotal = calculatedTaxable + calculatedTax;
 
-  // Create order mutation
+  // Create order mutation (optimistic cache insert with rollback)
   const createOrderMutation = useMutation({
     mutationFn: async () => {
       if (!activeCustomer || !activeProduct) {
@@ -294,10 +298,78 @@ export function OrdersPage() {
       });
       return res.data;
     },
-    onSuccess: () => {
+    onMutate: async () => {
+      if (!activeCustomer || !activeProduct) return {};
+      await queryClient.cancelQueries({ queryKey: ["sales-orders"] });
+      const previousQueries = queryClient.getQueriesData<{ orders: SalesOrder[] }>({
+        queryKey: ["sales-orders"],
+      });
+
+      const optimisticOrder: SalesOrder = {
+        id: `optimistic-${Date.now()}`,
+        orderNumber: `SO-2026-${Date.now().toString().slice(-4)}`,
+        status: "SUBMITTED",
+        fulfilmentStatus: "UNFULFILLED",
+        deliveryState: customerState,
+        notes: orderNotes || null,
+        rejectionReason: null,
+        taxableAmount: calculatedTaxable,
+        cgstAmount: isIntraState ? calculatedTax / 2 : 0,
+        sgstAmount: isIntraState ? calculatedTax / 2 : 0,
+        igstAmount: isIntraState ? 0 : calculatedTax,
+        totalTaxAmount: calculatedTax,
+        totalAmount: calculatedTotal,
+        customer: {
+          code: activeCustomer.code,
+          name: activeCustomer.name,
+          state: customerState,
+        },
+        salesman: {
+          name: user?.name || "Salesman",
+          email: user?.email || "",
+        },
+        lines: [
+          {
+            id: `optimistic-line-${Date.now()}`,
+            productVariantId: activeProduct.id,
+            quotedQuantity: orderQuantity,
+            approvedQuantity: 0,
+            quotedUnitPrice: unitPrice,
+            approvedUnitPrice: 0,
+            taxRate: Number(activeProduct.taxRate || 5),
+            taxableAmount: calculatedTaxable,
+            taxAmount: calculatedTax,
+            lineTotal: calculatedTotal,
+            productVariant: {
+              sku: activeProduct.sku,
+              name: activeProduct.name,
+            },
+          },
+        ],
+        reservations: [],
+      };
+
+      queryClient.setQueriesData<{ orders: SalesOrder[] }>(
+        { queryKey: ["sales-orders"] },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            orders: [optimisticOrder, ...old.orders],
+          };
+        },
+      );
+      setShowNewOrderModal(false);
+      return { previousQueries };
+    },
+    onError: (_err, _vars, context) => {
+      context?.previousQueries?.forEach(([queryKey, oldData]) => {
+        queryClient.setQueryData(queryKey, oldData);
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
       queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
-      setShowNewOrderModal(false);
     },
   });
 
@@ -376,11 +448,11 @@ export function OrdersPage() {
     },
     onMutate: async (orderId: string) => {
       await queryClient.cancelQueries({ queryKey: ["sales-orders"] });
-      const previousData = queryClient.getQueryData<{ orders: SalesOrder[] }>([
-        "sales-orders",
-      ]);
-      queryClient.setQueryData<{ orders: SalesOrder[] }>(
-        ["sales-orders"],
+      const previousQueries = queryClient.getQueriesData<{ orders: SalesOrder[] }>({
+        queryKey: ["sales-orders"],
+      });
+      queryClient.setQueriesData<{ orders: SalesOrder[] }>(
+        { queryKey: ["sales-orders"] },
         (old) => {
           if (!old) return old;
           return {
@@ -393,12 +465,12 @@ export function OrdersPage() {
       );
       setSelectedOrderForAction(null);
       setActionType(null);
-      return { previousData };
+      return { previousQueries };
     },
     onError: (err: any, _orderId, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(["sales-orders"], context.previousData);
-      }
+      context?.previousQueries?.forEach(([queryKey, oldData]) => {
+        queryClient.setQueryData(queryKey, oldData);
+      });
       toast.error(
         err.response?.data?.message ||
           err.message ||
@@ -452,11 +524,11 @@ export function OrdersPage() {
     },
     onMutate: async ({ orderId, reason }) => {
       await queryClient.cancelQueries({ queryKey: ["sales-orders"] });
-      const previousData = queryClient.getQueryData<{ orders: SalesOrder[] }>([
-        "sales-orders",
-      ]);
-      queryClient.setQueryData<{ orders: SalesOrder[] }>(
-        ["sales-orders"],
+      const previousQueries = queryClient.getQueriesData<{ orders: SalesOrder[] }>({
+        queryKey: ["sales-orders"],
+      });
+      queryClient.setQueriesData<{ orders: SalesOrder[] }>(
+        { queryKey: ["sales-orders"] },
         (old) => {
           if (!old) return old;
           return {
@@ -471,12 +543,12 @@ export function OrdersPage() {
       );
       setSelectedOrderForAction(null);
       setActionType(null);
-      return { previousData };
+      return { previousQueries };
     },
     onError: (err: any, _vars, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(["sales-orders"], context.previousData);
-      }
+      context?.previousQueries?.forEach(([queryKey, oldData]) => {
+        queryClient.setQueryData(queryKey, oldData);
+      });
       toast.error(
         err.response?.data?.message ||
           err.message ||
@@ -500,8 +572,8 @@ export function OrdersPage() {
       const q = searchQuery.toLowerCase().trim();
       const matchNum = o.orderNumber.toLowerCase().includes(q);
       const matchCust =
-        o.customer.name.toLowerCase().includes(q) ||
-        o.customer.code.toLowerCase().includes(q);
+        (o.customer?.name || "").toLowerCase().includes(q) ||
+        (o.customer?.code || "").toLowerCase().includes(q);
       const matchNotes = (o.notes || "").toLowerCase().includes(q);
       if (!matchNum && !matchCust && !matchNotes) return false;
     }
@@ -1372,8 +1444,8 @@ export function OrdersPage() {
               >
                 {customersList.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} ({c.state},{" "}
-                    {c.state?.trim().toLowerCase() === "tamil nadu"
+                    {c.name} ({c?.state || "Tamil Nadu"},{" "}
+                    {c?.state?.trim().toLowerCase() === "tamil nadu"
                       ? "Intra-state"
                       : "Inter-state"}
                     )
