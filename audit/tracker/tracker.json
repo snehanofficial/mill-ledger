@@ -9036,7 +9036,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -9044,12 +9044,27 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-104.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "05909e3",
+        "evidenceLink": "audit/evidence/verify/F-104/verification.md",
+        "note": "Added audit, build, and E2E test gates to .github/workflows/ci.yml, enabled branch protection on main branch via GitHub API, and verified 26/26 Playwright E2E tests."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-104-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-104-regression.test.ts",
+    "fixCommit": "05909e3",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-104/verification.md",
+      "audit/evidence/verify/F-104/regression-test.txt",
+      "audit/evidence/verify/F-104/branch-protection-api.json",
+      "audit/evidence/verify/F-104/typecheck.txt",
+      "audit/evidence/verify/F-104/lint.txt",
+      "audit/evidence/verify/F-104/benchmark.txt",
+      "audit/evidence/verify/F-104/invariants.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
