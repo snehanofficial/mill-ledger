@@ -5482,7 +5482,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -5490,12 +5490,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-059.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "3a0b913",
+        "evidenceLink": "audit/evidence/verify/F-059/10-summary.txt",
+        "note": "Added programmatic ARIA live regions (aria-live=\"polite\" / role=\"status\" on shortages and aria-live=\"assertive\" / role=\"alert\" on form errors) per WCAG 2.2 SC 4.1.3 & SC 3.3.1."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-059-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-059-regression.test.ts",
+    "fixCommit": "3a0b913",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-059/01-git-status.txt",
+      "audit/evidence/verify/F-059/02-regression-test.txt",
+      "audit/evidence/verify/F-059/03-typecheck.txt",
+      "audit/evidence/verify/F-059/04-lint.txt",
+      "audit/evidence/verify/F-059/05-build.txt",
+      "audit/evidence/verify/F-059/06-invariants.txt",
+      "audit/evidence/verify/F-059/07-benchmark.txt",
+      "audit/evidence/verify/F-059/08-test-suite.txt",
+      "audit/evidence/verify/F-059/09-diff.txt",
+      "audit/evidence/verify/F-059/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",

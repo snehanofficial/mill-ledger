@@ -357,7 +357,7 @@ client/src/pages/payments-page.tsx:897:                    placeholder="e.g. 400
 | **F-056** | P2 | `VERIFIED` | Inadequate Color Contrast on Muted Text and Subtle Status Indicators |
 | **F-057** | P1 | `VERIFIED` | Unwarned Session Expiry and Form Data Destruction Under Better Auth Timeout |
 | **F-058** | P1 | `VERIFIED` | Absence of Confirmation and Review Steps on Irreversible Financial Transactions |
-| **F-059** | P2 | `OPEN` | Dynamic Shortage Banners and Form Errors Lack ARIA Live Region / Status Role |
+| **F-059** | P2 | `VERIFIED` | Dynamic Shortage Banners and Form Errors Lack ARIA Live Region / Status Role |
 | **F-060** | P3 | `OPEN` | Missing Language of Parts (`lang="ta"` / `lang="en"`) on Multilingual Text Fragments |
 | **F-061** | P3 | `WONT-FIX` | Redundant Duplicate Skip Links in App Shell Header and Layout |
 
