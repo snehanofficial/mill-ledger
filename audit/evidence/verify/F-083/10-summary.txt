@@ -1,0 +1,40 @@
+================================================================================
+VERIFICATION SUMMARY: F-083
+Title: Silent Server Acceptance of Insufficient Stock Offline Orders Violating Explicit Conflict Queue Requirement (REQ-052)
+Severity: P1 | Tier: T9 | Cluster: CLUSTER-13
+================================================================================
+
+1. Root Cause:
+   When synchronizing queued offline orders, `client/src/offline/sync-engine.ts` made a
+   POST request to `/sales/orders`. Although the backend accurately reported stock shortages
+   in `response.data.shortages`, `sync-engine.ts` ignored this field and blindly marked the
+   outbox entry with `status: "synced"` and `succeeded += 1`. This led salesmen to believe
+   orders with substantial inventory shortages were completely fulfilled and confirmed,
+   violating REQ-052 and Owner Decision #9 ("Put conflicting offline orders into a CONFLICT
+   queue when stock is insufficient at synchronization time").
+
+2. Remediation Applied:
+   - Updated `client/src/offline/sync-engine.ts` in `executeSyncLoop`:
+     - Inspects `response.data.shortages` returned from the sales order API.
+     - If any shortage exists (`activeShortages.length > 0`), the outbox order is
+       quarantined into `status: "conflict"` with `lastErrorCode: "STOCK_INSUFFICIENT"`,
+       the total shortage units are formatted into `lastErrorMessage`, `conflicts` is
+       incremented, and the sync loop continues (`continue`).
+     - Preserves `serverOrderId` and `serverOrderNumber` on the conflicting outbox record
+       so administrators or salesmen can inspect and adjust the order line items.
+     - Added HTTP 409 to conflict catch block ensuring non-idempotent server conflict
+       responses are also routed into the explicit Conflict Queue.
+
+3. Verification Evidence:
+   - 01-git-status.txt: Modified client/src/offline/sync-engine.ts
+   - 02-git-diff.txt: Minimal, targeted diff inspecting shortages and routing to conflict
+   - 03-typecheck.txt: 0 TypeScript errors across all 3 workspaces
+   - 04-lint.txt: 0 linter errors across all 195 workspace files
+   - 05-build.txt: Clean build across client, server, and shared
+   - 06-invariants.txt: 10/10 SQL database invariants pass (0 violations)
+   - 07-benchmark.txt: 18/18 CDI benchmark acceptance assertions match 100%
+   - 08-regression-test.txt: 2/2 tests pass in audit/tests/f-083-regression.test.ts
+   - 09-full-test-suite.txt: 39 test files passed, 241 tests passed (100%)
+
+STATUS: VERIFIED
+================================================================================

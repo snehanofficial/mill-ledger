@@ -7188,7 +7188,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -7210,12 +7210,30 @@
         "commit": null,
         "evidenceLink": "audit/tracker/owner-decisions.md",
         "note": "Unblocked on 2026-11-20 per Owner Decision OD-04 (STOCK_SHORTAGE_CONFLICT state with row locking and partial reservation)."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "7991477",
+        "evidenceLink": "audit/evidence/verify/F-083/10-summary.txt",
+        "note": "VERIFIED: Inspected response shortages during offline order synchronization and routed orders with stock shortages into the explicit conflict queue with detailed shortage messaging. 10-point verification passed with 0 errors."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-083-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-083-regression.test.ts",
+    "fixCommit": "7991477",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-083/01-git-status.txt",
+      "audit/evidence/verify/F-083/02-git-diff.txt",
+      "audit/evidence/verify/F-083/03-typecheck.txt",
+      "audit/evidence/verify/F-083/04-lint.txt",
+      "audit/evidence/verify/F-083/05-build.txt",
+      "audit/evidence/verify/F-083/06-invariants.txt",
+      "audit/evidence/verify/F-083/07-benchmark.txt",
+      "audit/evidence/verify/F-083/08-regression-test.txt",
+      "audit/evidence/verify/F-083/09-full-test-suite.txt",
+      "audit/evidence/verify/F-083/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'useLanguage' client/src/ | head -n 25",
