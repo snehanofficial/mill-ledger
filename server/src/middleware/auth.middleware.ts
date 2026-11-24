@@ -45,36 +45,6 @@ export async function requireAuth(
   }
 }
 
-export function requireTenant(
-  req: AuthenticatedRequest,
-  _res: Response,
-  next: NextFunction,
-): void {
-  if (!req.user) {
-    return next(new AppError("Unauthorized", 401));
-  }
-
-  const requestedOrg =
-    (req.query?.organizationId as string) ||
-    (req.body?.organizationId as string);
-
-  if (
-    requestedOrg &&
-    req.user.organizationId &&
-    requestedOrg !== req.user.organizationId &&
-    requestedOrg !== "MILL"
-  ) {
-    return next(
-      new AppError(
-        `Forbidden: Access denied to organization ${requestedOrg}`,
-        403,
-      ),
-    );
-  }
-
-  next();
-}
-
 export function authorize(resource: Resource, action: Action) {
   return (
     req: AuthenticatedRequest,
