@@ -5331,15 +5331,13 @@
       "Data) - Level AA)"
     ],
     "files": [
-      "client/src/pages/invoices-page.ts",
-      "client/src/pages/payments-page.ts",
-      "server/src/modules/billing/invoices.service.ts",
-      "invoices-page.ts",
-      "payments-page.ts"
+      "client/src/pages/invoices-page.tsx",
+      "client/src/pages/payments-page.tsx",
+      "client/src/pages/purchases-page.tsx"
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -5347,12 +5345,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-058.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "0efc838",
+        "evidenceLink": "audit/evidence/verify/F-058/10-summary.txt",
+        "note": "VERIFIED: Integrated ConfirmationDialog review checkpoints before executing irreversible financial/legal transactions across Credit Notes, Invoices, Payments, and Purchase Receipts. WCAG 2.2 SC 3.3.4 satisfied."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-058-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-058-regression.test.ts",
+    "fixCommit": "0efc838",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-058/01-git-status.txt",
+      "audit/evidence/verify/F-058/02-typecheck.txt",
+      "audit/evidence/verify/F-058/03-lint.txt",
+      "audit/evidence/verify/F-058/04-build.txt",
+      "audit/evidence/verify/F-058/05-invariants.txt",
+      "audit/evidence/verify/F-058/06-benchmark.txt",
+      "audit/evidence/verify/F-058/07-regression-test.txt",
+      "audit/evidence/verify/F-058/08-test-suite.txt",
+      "audit/evidence/verify/F-058/09-diff.txt",
+      "audit/evidence/verify/F-058/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",
