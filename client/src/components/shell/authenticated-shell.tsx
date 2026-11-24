@@ -50,9 +50,12 @@ import {
   HelpCircleIcon,
   SunIcon,
   MoonIcon,
+  InfoIcon,
+  Trash2Icon,
 } from "lucide-react";
 
 import { useLanguage } from "@/lib/i18n";
+import { useNotifications } from "@/lib/notifications-store";
 import { useTheme } from "@/hooks/use-theme";
 
 import { cn } from "@/lib/utils";
@@ -1204,6 +1207,13 @@ export function AuthenticatedShell({
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const { language } = useLanguage();
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    clearNotifications,
+  } = useNotifications();
 
   const syncManager = useSyncManager(user.id);
   const { syncState, isOnline, pendingCount, conflictCount } = syncManager;
@@ -1264,7 +1274,7 @@ export function AuthenticatedShell({
         <SidebarInset className="min-w-0">
           <StickyHeader
             user={user}
-            notificationCount={notificationCount}
+            notificationCount={unreadCount || notificationCount}
             onSearchOpen={() => setSearchOpen(true)}
             onNotificationsClick={() => setNotificationsOpen(true)}
             onSignOut={handleSafeSignOut}
@@ -1389,25 +1399,120 @@ export function AuthenticatedShell({
           </DialogContent>
         </Dialog>
 
-        {/* Notifications sheet */}
+        {/* Notifications sheet (F-065) */}
         <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-          <SheetContent side="right" className="w-80 p-0">
-            <div className="flex h-14 items-center border-b border-border px-5">
-              <h2 className="text-sm font-semibold">Notifications</h2>
-            </div>
-            <div className="flex flex-1 items-center justify-center p-8 text-center">
-              <div>
-                <BellIcon
-                  className="mx-auto mb-3 size-8 text-muted-foreground"
-                  aria-hidden
-                />
-                <p className="text-sm font-medium text-foreground">
-                  No notifications
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Activity and system events will appear here.
-                </p>
+          <SheetContent side="right" className="flex w-84 max-w-full flex-col p-0">
+            <div className="flex h-14 items-center justify-between border-b border-border px-5">
+              <div className="flex items-center gap-2">
+                <BellIcon className="size-4 text-foreground" aria-hidden="true" />
+                <h2 className="text-sm font-semibold">Notifications</h2>
+                {unreadCount > 0 && (
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-2xs font-bold text-primary">
+                    {unreadCount}
+                  </span>
+                )}
               </div>
+              <div className="flex items-center gap-1">
+                {unreadCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={markAllAsRead}
+                    className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Mark all read
+                  </Button>
+                )}
+                {notifications.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={clearNotifications}
+                    aria-label="Clear all notifications"
+                    title="Clear all notifications"
+                    className="size-7 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2Icon className="size-3.5" aria-hidden="true" />
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {notifications.length === 0 ? (
+                <div className="flex h-64 flex-col items-center justify-center text-center">
+                  <BellIcon
+                    className="mb-3 size-8 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                  <p className="text-sm font-medium text-foreground">
+                    No notifications
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Activity and system events will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => markAsRead(n.id)}
+                      className={cn(
+                        "group relative flex flex-col gap-1 rounded-lg border p-3 text-left transition-colors cursor-pointer",
+                        n.read
+                          ? "border-border/60 bg-card/60 opacity-80"
+                          : "border-primary/30 bg-card shadow-xs",
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {n.type === "success" && (
+                            <CheckCircleIcon className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                          )}
+                          {n.type === "error" && (
+                            <AlertCircleIcon className="size-4 shrink-0 text-destructive" />
+                          )}
+                          {n.type === "warning" && (
+                            <AlertCircleIcon className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                          )}
+                          {n.type === "info" && (
+                            <InfoIcon className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                          )}
+                          <span
+                            className={cn(
+                              "text-xs font-semibold leading-tight",
+                              n.read ? "text-foreground/80" : "text-foreground",
+                            )}
+                          >
+                            {n.title}
+                          </span>
+                        </div>
+                        {!n.read && (
+                          <span
+                            className="size-2 shrink-0 rounded-full bg-primary"
+                            title="Unread"
+                          />
+                        )}
+                      </div>
+                      {n.description && (
+                        <p className="text-2xs text-muted-foreground pl-6">
+                          {n.description}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between pl-6 pt-1 text-3xs text-muted-foreground">
+                        <span>
+                          {new Date(n.timestamp).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                        <span className="capitalize">{n.type}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </SheetContent>
         </Sheet>
