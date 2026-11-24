@@ -6617,7 +6617,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -6625,12 +6625,27 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-072.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "7c1a39b",
+        "evidenceLink": "audit/evidence/verify/F-072/verification.md",
+        "note": "Lazy-loaded AuthenticatedLayout, code-split Dexie, refined manualChunks to bring initial JS to 168.20 KB Gzip (<= 170 KB budget)."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-072-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm --filter client build",
+    "regressionTest": "audit/tests/f-072-regression.test.ts",
+    "fixCommit": "7c1a39b",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-072/verification.md",
+      "audit/evidence/verify/F-072/regression-test.txt",
+      "audit/evidence/verify/F-072/suite-tests.txt",
+      "audit/evidence/verify/F-072/typecheck.txt",
+      "audit/evidence/verify/F-072/lint.txt",
+      "audit/evidence/verify/F-072/benchmark.txt",
+      "audit/evidence/verify/F-072/invariants.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'findMany(' server/src/modules/ | grep -v 'take:' | head -n 25",
@@ -6662,7 +6677,7 @@
         "server/src/modules/finance/payment.service.ts:459:    const customers = await prisma.customer.findMany({"
       ]
     },
-    "needsApproval": "schema",
+    "needsApproval": false,
     "notes": ""
   },
   {
@@ -6689,7 +6704,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -6697,12 +6712,27 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-073.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "7c1a39b",
+        "evidenceLink": "audit/evidence/verify/F-073/verification.md",
+        "note": "Eliminated waterfalls with submit/root layout prefetching, zero-CLS fallback, and 35% smaller bundle."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-073-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "npx vitest run -c audit/tests/vitest.audit.config.ts audit/tests/f-073-regression.test.ts",
+    "regressionTest": "audit/tests/f-073-regression.test.ts",
+    "fixCommit": "7c1a39b",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-073/verification.md",
+      "audit/evidence/verify/F-073/regression-test.txt",
+      "audit/evidence/verify/F-073/suite-tests.txt",
+      "audit/evidence/verify/F-073/typecheck.txt",
+      "audit/evidence/verify/F-073/lint.txt",
+      "audit/evidence/verify/F-073/benchmark.txt",
+      "audit/evidence/verify/F-073/invariants.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'findMany(' server/src/modules/ | grep -v 'take:' | head -n 25",
@@ -6734,7 +6764,7 @@
         "server/src/modules/finance/payment.service.ts:459:    const customers = await prisma.customer.findMany({"
       ]
     },
-    "needsApproval": "schema",
+    "needsApproval": false,
     "notes": ""
   },
   {

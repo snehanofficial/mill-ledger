@@ -1,0 +1,13 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | audit/tests/f-072-regression.test.ts > F-072 Regression: Initial JavaScript Bundle Budget (<= 170 KB Gzip) > keeps total initial JavaScript bundle <= 170 KB gzipped on page load
+[F-072 Budget Verification] Total Initial JS: 168.20 KB Gzip (Raw: 529.97 KB)
+
+ ✓ audit/tests/f-072-regression.test.ts (2 tests) 20ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  17:13:10
+   Duration  458ms (transform 47ms, setup 0ms, collect 26ms, tests 20ms, environment 0ms, prepare 80ms)
+
