@@ -27,7 +27,7 @@ pnpm install
 
 # 2. Configure environment
 # Copy server environment template and verify DATABASE_URL
-cp server/.env.example server/.env
+cp .env.example server/.env
 
 # 3. Run database migrations and seed benchmark data
 pnpm --filter @mill-ledger/server prisma migrate deploy
@@ -37,7 +37,7 @@ pnpm --filter @mill-ledger/server prisma db seed
 pnpm dev
 ```
 
-The frontend runs at `http://localhost:5173` and the backend API runs at `http://localhost:3000`.
+The frontend runs at `http://localhost:5173` and the backend API runs at `http://localhost:4000`.
 
 ### Benchmark Acceptance Runner
 
