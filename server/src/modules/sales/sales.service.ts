@@ -979,12 +979,14 @@ export class SalesService {
   }
 
   /**
-   * List orders with role-specific visibility & live shortage analysis
+   * List orders with role-specific visibility & live shortage analysis (F-070 / F-074)
+   * Enforces bounded pagination (default 50, max 100) and replaces N+1 queries with batched resolution.
    */
   async getSalesOrders(
     organizationId: string,
     user: UserContext,
     status?: OrderStatus,
+    options?: { limit?: number; offset?: number },
   ) {
     const orgId = await this.resolveOrgId(organizationId);
     const where: Prisma.SalesOrderWhereInput = {
@@ -1000,6 +1002,15 @@ export class SalesService {
       where.salesmanId = user.id;
     }
 
+    const limit =
+      options?.limit !== undefined
+        ? Math.min(Math.max(Number(options.limit) || 50, 1), 100)
+        : 50;
+    const offset =
+      options?.offset !== undefined
+        ? Math.max(Number(options.offset) || 0, 0)
+        : undefined;
+
     const orders = await prisma.salesOrder.findMany({
       where,
       include: {
@@ -1014,9 +1025,63 @@ export class SalesService {
         invoices: true,
       },
       orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
     });
 
-    // Compute live shortage for each order
+    const refTime = new Date();
+    await this.expireStaleReservations(refTime);
+
+    // Collect all unique inventory item IDs across all orders and lines
+    const allItemIds = Array.from(
+      new Set(
+        orders.flatMap((o) =>
+          o.lines
+            .map((l) => l.inventoryItemId)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      ),
+    );
+
+    const onHandMap = new Map<string, number>();
+    const reservedMap = new Map<string, number>();
+
+    if (allItemIds.length > 0) {
+      const items = await prisma.inventoryItem.findMany({
+        where: { id: { in: allItemIds } },
+        select: { id: true, currentStock: true },
+      });
+      for (const item of items) {
+        onHandMap.set(item.id, Number(item.currentStock));
+      }
+
+      const activeReservations = await prisma.stockReservation.groupBy({
+        by: ["inventoryItemId", "warehouseId"],
+        where: {
+          inventoryItemId: { in: allItemIds },
+          status: ReservationStatus.ACTIVE,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: refTime } }],
+        },
+        _sum: {
+          reservedQuantity: true,
+          releasedQuantity: true,
+        },
+      });
+
+      for (const res of activeReservations) {
+        const net = Math.max(
+          0,
+          Number(res._sum.reservedQuantity ?? 0) -
+            Number(res._sum.releasedQuantity ?? 0),
+        );
+        const keyWithWh = `${res.inventoryItemId}:${res.warehouseId}`;
+        reservedMap.set(keyWithWh, (reservedMap.get(keyWithWh) ?? 0) + net);
+        const keyAll = `${res.inventoryItemId}:ALL`;
+        reservedMap.set(keyAll, (reservedMap.get(keyAll) ?? 0) + net);
+      }
+    }
+
+    // Compute live shortage for each order in memory (O(1) lookup per line)
     const enrichedOrders = [];
     for (const order of orders) {
       let orderShortageTotal = 0;
@@ -1025,19 +1090,19 @@ export class SalesService {
       for (const line of order.lines) {
         let shortage = 0;
         if (line.inventoryItemId) {
-          const avail = await this.getAvailableStock(
-            line.inventoryItemId,
-            order.warehouseId,
-          );
+          const onHand = onHandMap.get(line.inventoryItemId) ?? 0;
+          const reservedKey = order.warehouseId
+            ? `${line.inventoryItemId}:${order.warehouseId}`
+            : `${line.inventoryItemId}:ALL`;
+          const reserved = reservedMap.get(reservedKey) ?? 0;
+          const available = Math.max(0, onHand - reserved);
+
           // If approved, reservation already exists so available is post-reservation
           if (
             order.status === OrderStatus.SUBMITTED ||
             order.status === OrderStatus.UNDER_REVIEW
           ) {
-            shortage = Math.max(
-              0,
-              Number(line.quotedQuantity) - avail.available,
-            );
+            shortage = Math.max(0, Number(line.quotedQuantity) - available);
           }
         }
         orderShortageTotal += shortage;

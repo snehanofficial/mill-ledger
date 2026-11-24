@@ -1,5 +1,10 @@
 import { prisma } from "../../db/client.js";
-import { Prisma, InvoiceStatus, PaymentMode, PaymentStatus } from "@prisma/client";
+import {
+  Prisma,
+  InvoiceStatus,
+  PaymentMode,
+  PaymentStatus,
+} from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
 import type { UserContext } from "@mill-ledger/shared";
 import { auditService } from "../reporting/audit.service.js";
@@ -42,10 +47,192 @@ export class PaymentService {
 
     try {
       const payment = await prisma.$transaction(async (tx) => {
-      // 1. Idempotency check
-      if (input.idempotencyKey) {
-        const existing = await tx.payment.findUnique({
-          where: { idempotencyKey: input.idempotencyKey },
+        // 1. Idempotency check
+        if (input.idempotencyKey) {
+          const existing = await tx.payment.findUnique({
+            where: { idempotencyKey: input.idempotencyKey },
+            include: {
+              customer: true,
+              allocations: {
+                include: { salesInvoice: true },
+              },
+            },
+          });
+          if (existing) {
+            return existing;
+          }
+        }
+
+        // 2. Validate customer
+        const customer = await tx.customer.findUnique({
+          where: { id: input.customerId },
+        });
+        if (!customer) {
+          throw new AppError(`Customer ${input.customerId} not found`, 404);
+        }
+
+        const organizationId = customer.organizationId;
+
+        // 3. Generate receipt number: REC-YYYY-0001
+        const currentYear = new Date().getFullYear();
+        const count = await tx.payment.count({
+          where: { organizationId },
+        });
+        const paymentNumber = `REC-${currentYear}-${(count + 1).toString().padStart(4, "0")}`;
+
+        const allocationsToCreate: Array<{
+          salesInvoiceId: string;
+          amount: number;
+        }> = [];
+        let unallocated = input.amount;
+
+        // 4. Handle allocations
+        if (input.allocations && input.allocations.length > 0) {
+          const totalAllocated = input.allocations.reduce(
+            (sum, a) => sum + Number(a.amount),
+            0,
+          );
+          if (totalAllocated > input.amount) {
+            throw new AppError(
+              `Total allocated amount (₹${totalAllocated}) cannot exceed total payment amount (₹${input.amount})`,
+              400,
+            );
+          }
+
+          for (const alloc of input.allocations) {
+            const allocAmount = Number(alloc.amount);
+            if (allocAmount <= 0) {
+              throw new AppError(
+                "Allocation amount must be greater than zero",
+                400,
+              );
+            }
+
+            const invoice = await tx.salesInvoice.findUnique({
+              where: { id: alloc.salesInvoiceId },
+            });
+
+            if (!invoice) {
+              throw new AppError(
+                `Invoice ${alloc.salesInvoiceId} not found`,
+                404,
+              );
+            }
+            if (invoice.customerId !== input.customerId) {
+              throw new AppError(
+                `Invoice ${invoice.invoiceNumber} does not belong to customer ${customer.name}`,
+                400,
+              );
+            }
+            if (
+              invoice.status !== InvoiceStatus.POSTED &&
+              invoice.status !== InvoiceStatus.PARTIALLY_PAID
+            ) {
+              throw new AppError(
+                `Cannot allocate payment to invoice ${invoice.invoiceNumber} in status ${invoice.status}`,
+                400,
+              );
+            }
+
+            const outstanding = Number(invoice.outstandingAmount);
+            if (allocAmount > outstanding) {
+              throw new AppError(
+                `Allocation of ₹${allocAmount} exceeds invoice ${invoice.invoiceNumber} outstanding balance of ₹${outstanding}`,
+                400,
+              );
+            }
+
+            const newPaid = Number(invoice.paidAmount) + allocAmount;
+            const newOutstanding = outstanding - allocAmount;
+            const newStatus =
+              newOutstanding <= 0.001
+                ? InvoiceStatus.PAID
+                : InvoiceStatus.PARTIALLY_PAID;
+
+            await tx.salesInvoice.update({
+              where: { id: invoice.id },
+              data: {
+                paidAmount: newPaid,
+                outstandingAmount: Math.max(0, newOutstanding),
+                status: newStatus,
+              },
+            });
+
+            allocationsToCreate.push({
+              salesInvoiceId: invoice.id,
+              amount: allocAmount,
+            });
+          }
+
+          unallocated = input.amount - totalAllocated;
+        } else {
+          // Auto allocate FIFO against customer open invoices
+          const openInvoices = await tx.salesInvoice.findMany({
+            where: {
+              organizationId,
+              customerId: input.customerId,
+              status: {
+                in: [InvoiceStatus.POSTED, InvoiceStatus.PARTIALLY_PAID],
+              },
+              outstandingAmount: { gt: 0 },
+            },
+            orderBy: { postedAt: "asc" },
+          });
+
+          let remaining = input.amount;
+          for (const inv of openInvoices) {
+            if (remaining <= 0) break;
+            const invOutstanding = Number(inv.outstandingAmount);
+            const allocAmt = Math.min(remaining, invOutstanding);
+
+            const newPaid = Number(inv.paidAmount) + allocAmt;
+            const newOutstanding = invOutstanding - allocAmt;
+            const newStatus =
+              newOutstanding <= 0.001
+                ? InvoiceStatus.PAID
+                : InvoiceStatus.PARTIALLY_PAID;
+
+            await tx.salesInvoice.update({
+              where: { id: inv.id },
+              data: {
+                paidAmount: newPaid,
+                outstandingAmount: Math.max(0, newOutstanding),
+                status: newStatus,
+              },
+            });
+
+            allocationsToCreate.push({
+              salesInvoiceId: inv.id,
+              amount: allocAmt,
+            });
+
+            remaining -= allocAmt;
+          }
+
+          unallocated = remaining;
+        }
+
+        // 5. Create Payment record
+        const payment = await tx.payment.create({
+          data: {
+            organizationId,
+            paymentNumber,
+            customerId: input.customerId,
+            amount: input.amount,
+            unallocatedAmount: Math.max(0, unallocated),
+            paymentMode: input.paymentMode || PaymentMode.BANK_TRANSFER,
+            referenceNumber: input.referenceNumber,
+            paymentDate: input.paymentDate || new Date(),
+            status: PaymentStatus.POSTED,
+            notes: input.notes,
+            idempotencyKey: input.idempotencyKey,
+            allocations: {
+              create: allocationsToCreate.map((a) => ({
+                salesInvoiceId: a.salesInvoiceId,
+                amount: a.amount,
+              })),
+            },
+          },
           include: {
             customer: true,
             allocations: {
@@ -53,211 +240,29 @@ export class PaymentService {
             },
           },
         });
-        if (existing) {
-          return existing;
-        }
-      }
 
-      // 2. Validate customer
-      const customer = await tx.customer.findUnique({
-        where: { id: input.customerId },
+        return payment;
       });
-      if (!customer) {
-        throw new AppError(`Customer ${input.customerId} not found`, 404);
-      }
 
-      const organizationId = customer.organizationId;
-
-      // 3. Generate receipt number: REC-YYYY-0001
-      const currentYear = new Date().getFullYear();
-      const count = await tx.payment.count({
-        where: { organizationId },
-      });
-      const paymentNumber = `REC-${currentYear}-${(count + 1).toString().padStart(4, "0")}`;
-
-      const allocationsToCreate: Array<{
-        salesInvoiceId: string;
-        amount: number;
-      }> = [];
-      let unallocated = input.amount;
-
-      // 4. Handle allocations
-      if (input.allocations && input.allocations.length > 0) {
-        const totalAllocated = input.allocations.reduce(
-          (sum, a) => sum + Number(a.amount),
-          0,
-        );
-        if (totalAllocated > input.amount) {
-          throw new AppError(
-            `Total allocated amount (₹${totalAllocated}) cannot exceed total payment amount (₹${input.amount})`,
-            400,
-          );
-        }
-
-        for (const alloc of input.allocations) {
-          const allocAmount = Number(alloc.amount);
-          if (allocAmount <= 0) {
-            throw new AppError(
-              "Allocation amount must be greater than zero",
-              400,
-            );
-          }
-
-          const invoice = await tx.salesInvoice.findUnique({
-            where: { id: alloc.salesInvoiceId },
-          });
-
-          if (!invoice) {
-            throw new AppError(
-              `Invoice ${alloc.salesInvoiceId} not found`,
-              404,
-            );
-          }
-          if (invoice.customerId !== input.customerId) {
-            throw new AppError(
-              `Invoice ${invoice.invoiceNumber} does not belong to customer ${customer.name}`,
-              400,
-            );
-          }
-          if (
-            invoice.status !== InvoiceStatus.POSTED &&
-            invoice.status !== InvoiceStatus.PARTIALLY_PAID
-          ) {
-            throw new AppError(
-              `Cannot allocate payment to invoice ${invoice.invoiceNumber} in status ${invoice.status}`,
-              400,
-            );
-          }
-
-          const outstanding = Number(invoice.outstandingAmount);
-          if (allocAmount > outstanding) {
-            throw new AppError(
-              `Allocation of ₹${allocAmount} exceeds invoice ${invoice.invoiceNumber} outstanding balance of ₹${outstanding}`,
-              400,
-            );
-          }
-
-          const newPaid = Number(invoice.paidAmount) + allocAmount;
-          const newOutstanding = outstanding - allocAmount;
-          const newStatus =
-            newOutstanding <= 0.001
-              ? InvoiceStatus.PAID
-              : InvoiceStatus.PARTIALLY_PAID;
-
-          await tx.salesInvoice.update({
-            where: { id: invoice.id },
-            data: {
-              paidAmount: newPaid,
-              outstandingAmount: Math.max(0, newOutstanding),
-              status: newStatus,
-            },
-          });
-
-          allocationsToCreate.push({
-            salesInvoiceId: invoice.id,
-            amount: allocAmount,
-          });
-        }
-
-        unallocated = input.amount - totalAllocated;
-      } else {
-        // Auto allocate FIFO against customer open invoices
-        const openInvoices = await tx.salesInvoice.findMany({
-          where: {
-            organizationId,
-            customerId: input.customerId,
-            status: {
-              in: [InvoiceStatus.POSTED, InvoiceStatus.PARTIALLY_PAID],
-            },
-            outstandingAmount: { gt: 0 },
+      if (payment) {
+        await auditService.log({
+          organizationId: payment.organizationId,
+          userId: user?.id,
+          userEmail: user?.email,
+          action: "CREATE",
+          entity: "Payment",
+          entityId: payment.id,
+          details: {
+            paymentNumber: payment.paymentNumber,
+            customerId: payment.customerId,
+            amount: payment.amount,
+            unallocatedAmount: payment.unallocatedAmount,
+            paymentMode: payment.paymentMode,
           },
-          orderBy: { postedAt: "asc" },
         });
-
-        let remaining = input.amount;
-        for (const inv of openInvoices) {
-          if (remaining <= 0) break;
-          const invOutstanding = Number(inv.outstandingAmount);
-          const allocAmt = Math.min(remaining, invOutstanding);
-
-          const newPaid = Number(inv.paidAmount) + allocAmt;
-          const newOutstanding = invOutstanding - allocAmt;
-          const newStatus =
-            newOutstanding <= 0.001
-              ? InvoiceStatus.PAID
-              : InvoiceStatus.PARTIALLY_PAID;
-
-          await tx.salesInvoice.update({
-            where: { id: inv.id },
-            data: {
-              paidAmount: newPaid,
-              outstandingAmount: Math.max(0, newOutstanding),
-              status: newStatus,
-            },
-          });
-
-          allocationsToCreate.push({
-            salesInvoiceId: inv.id,
-            amount: allocAmt,
-          });
-
-          remaining -= allocAmt;
-        }
-
-        unallocated = remaining;
       }
-
-      // 5. Create Payment record
-      const payment = await tx.payment.create({
-        data: {
-          organizationId,
-          paymentNumber,
-          customerId: input.customerId,
-          amount: input.amount,
-          unallocatedAmount: Math.max(0, unallocated),
-          paymentMode: input.paymentMode || PaymentMode.BANK_TRANSFER,
-          referenceNumber: input.referenceNumber,
-          paymentDate: input.paymentDate || new Date(),
-          status: PaymentStatus.POSTED,
-          notes: input.notes,
-          idempotencyKey: input.idempotencyKey,
-          allocations: {
-            create: allocationsToCreate.map((a) => ({
-              salesInvoiceId: a.salesInvoiceId,
-              amount: a.amount,
-            })),
-          },
-        },
-        include: {
-          customer: true,
-          allocations: {
-            include: { salesInvoice: true },
-          },
-        },
-      });
 
       return payment;
-    });
-
-    if (payment) {
-      await auditService.log({
-        organizationId: payment.organizationId,
-        userId: user?.id,
-        userEmail: user?.email,
-        action: "CREATE",
-        entity: "Payment",
-        entityId: payment.id,
-        details: {
-          paymentNumber: payment.paymentNumber,
-          customerId: payment.customerId,
-          amount: payment.amount,
-          unallocatedAmount: payment.unallocatedAmount,
-          paymentMode: payment.paymentMode,
-        },
-      });
-    }
-
-    return payment;
     } catch (err: unknown) {
       if (
         input.idempotencyKey &&
@@ -351,16 +356,17 @@ export class PaymentService {
         if (invoice) {
           const allocAmount = new Prisma.Decimal(alloc.amount);
           const currentPaid = new Prisma.Decimal(invoice.paidAmount);
-          const currentOutstanding = new Prisma.Decimal(invoice.outstandingAmount);
+          const currentOutstanding = new Prisma.Decimal(
+            invoice.outstandingAmount,
+          );
 
           const newPaid = Prisma.Decimal.max(0, currentPaid.minus(allocAmount));
           const newOutstanding = currentOutstanding.plus(allocAmount);
-          const newStatus =
-            newPaid.lessThanOrEqualTo(0.001)
-              ? InvoiceStatus.POSTED
-              : newOutstanding.greaterThan(0.001)
-                ? InvoiceStatus.PARTIALLY_PAID
-                : InvoiceStatus.PAID;
+          const newStatus = newPaid.lessThanOrEqualTo(0.001)
+            ? InvoiceStatus.POSTED
+            : newOutstanding.greaterThan(0.001)
+              ? InvoiceStatus.PARTIALLY_PAID
+              : InvoiceStatus.PAID;
 
           await tx.salesInvoice.update({
             where: { id: invoice.id },
@@ -467,10 +473,23 @@ export class PaymentService {
   }
 
   /**
-   * List payments with customer and allocations
+   * List payments with customer and allocations (paginated - F-074)
    */
-  async getPayments(organizationId: string, customerId?: string) {
+  async getPayments(
+    organizationId: string,
+    customerId?: string,
+    options?: { limit?: number; offset?: number },
+  ) {
     const orgId = await this.resolveOrgId(organizationId);
+    const limit =
+      options?.limit !== undefined
+        ? Math.min(Math.max(Number(options.limit) || 50, 1), 100)
+        : 50;
+    const offset =
+      options?.offset !== undefined
+        ? Math.max(Number(options.offset) || 0, 0)
+        : undefined;
+
     return await prisma.payment.findMany({
       where: {
         organizationId: orgId,
@@ -483,6 +502,8 @@ export class PaymentService {
         },
       },
       orderBy: { paymentDate: "desc" },
+      take: limit,
+      skip: offset,
     });
   }
 

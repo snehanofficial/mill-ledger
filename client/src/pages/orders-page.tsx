@@ -4,10 +4,7 @@ import { apiClient } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
-import {
-  SkeletonTable,
-  ErrorState,
-} from "@/components/ui/loading-error-empty";
+import { SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import {
   Table,
   TableBody,
@@ -118,7 +115,11 @@ export function OrdersPage() {
     removeOrder,
   } = syncManager;
 
-  const [activeTab, setActiveTab] = useUrlState<"stream" | "outbox">("tab", "stream", { replace: false });
+  const [activeTab, setActiveTab] = useUrlState<"stream" | "outbox">(
+    "tab",
+    "stream",
+    { replace: false },
+  );
   const [statusFilter, setStatusFilter] = useUrlState("status", "ALL");
   const [searchQuery, setSearchQuery] = useUrlState("q", "");
   const canCreateOrder = user?.role === "ADMIN" || user?.role === "SALESMAN";
@@ -135,17 +136,23 @@ export function OrdersPage() {
 
   // Form states
   const [selectedCustomerId, setSelectedCustomerId] = useState("CUST-RET-A");
-  const [selectedProductId, setSelectedProductId] = useState("VAR-MURUKKU-200G");
+  const [selectedProductId, setSelectedProductId] =
+    useState("VAR-MURUKKU-200G");
   const [orderQuantity, setOrderQuantity] = useState(150);
   const [orderNotes, setOrderNotes] = useState("Benchmark wholesale order");
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
 
-  // Fetch orders
+  // Fetch orders (paginated - F-074)
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     orders: SalesOrder[];
+    pagination?: { limit: number; offset: number; count: number };
   }>({
-    queryKey: ["sales-orders"],
+    queryKey: ["sales-orders", page],
     queryFn: async () => {
-      const res = await apiClient.get("/sales/orders?organizationId=MILL");
+      const res = await apiClient.get(
+        `/sales/orders?organizationId=MILL&limit=${pageSize}&offset=${(page - 1) * pageSize}`,
+      );
       return res.data;
     },
   });
@@ -240,8 +247,7 @@ export function OrdersPage() {
   const productStock = stockData?.balances.find(
     (b) =>
       b.sku === activeProduct.sku ||
-      (b.sku === "FG-MURUKKU-200G" &&
-        activeProduct.sku.includes("MURUKKU")),
+      (b.sku === "FG-MURUKKU-200G" && activeProduct.sku.includes("MURUKKU")),
   );
   const availablePackets = productStock?.available ?? 0;
   const currentShortage = Math.max(0, orderQuantity - availablePackets);
@@ -406,7 +412,9 @@ export function OrdersPage() {
     },
     onError: (err: any) => {
       toast.error(
-        err.response?.data?.message || err.message || "Failed to create invoice",
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to create invoice",
       );
     },
   });
@@ -502,7 +510,9 @@ export function OrdersPage() {
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            {t("Salesman mobile orders, admin approval, shortages, and atomic stock reservations")}
+            {t(
+              "Salesman mobile orders, admin approval, shortages, and atomic stock reservations",
+            )}
           </p>
         </div>
 
@@ -660,9 +670,14 @@ export function OrdersPage() {
         ) : isError ? (
           <div className="p-4">
             <ErrorState
-              title={t("Failed to load sales orders", "Failed to load sales orders")}
+              title={t(
+                "Failed to load sales orders",
+                "Failed to load sales orders",
+              )}
               description={
-                error instanceof Error ? error.message : "An unexpected server error occurred."
+                error instanceof Error
+                  ? error.message
+                  : "An unexpected server error occurred."
               }
               error={error}
               onRetry={() => refetch()}
@@ -715,7 +730,10 @@ export function OrdersPage() {
                           variant="outline"
                           className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-xs flex items-center gap-1"
                         >
-                          <ClockIcon className="size-3 shrink-0" aria-hidden="true" />
+                          <ClockIcon
+                            className="size-3 shrink-0"
+                            aria-hidden="true"
+                          />
                           <span>Waiting to sync</span>
                         </Badge>
                       )}
@@ -724,19 +742,34 @@ export function OrdersPage() {
                           variant="outline"
                           className="animate-pulse-finite bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 text-xs flex items-center gap-1"
                         >
-                          <RefreshCwIcon className="size-3 shrink-0 animate-spin" aria-hidden="true" />
+                          <RefreshCwIcon
+                            className="size-3 shrink-0 animate-spin"
+                            aria-hidden="true"
+                          />
                           <span>Syncing...</span>
                         </Badge>
                       )}
                       {ord.status === "conflict" && (
-                        <Badge variant="danger" className="text-xs flex items-center gap-1">
-                          <AlertTriangleIcon className="size-3 shrink-0" aria-hidden="true" />
+                        <Badge
+                          variant="danger"
+                          className="text-xs flex items-center gap-1"
+                        >
+                          <AlertTriangleIcon
+                            className="size-3 shrink-0"
+                            aria-hidden="true"
+                          />
                           <span>Conflict: {ord.lastErrorCode ?? "Error"}</span>
                         </Badge>
                       )}
                       {ord.status === "synced" && (
-                        <Badge variant="success" className="text-xs flex items-center gap-1">
-                          <CheckCircle2Icon className="size-3 shrink-0" aria-hidden="true" />
+                        <Badge
+                          variant="success"
+                          className="text-xs flex items-center gap-1"
+                        >
+                          <CheckCircle2Icon
+                            className="size-3 shrink-0"
+                            aria-hidden="true"
+                          />
                           <span>Synced: {ord.serverOrderNumber ?? "OK"}</span>
                         </Badge>
                       )}
@@ -930,307 +963,358 @@ export function OrdersPage() {
             {/* Desktop Table View (md+ viewports) */}
             <div className="hidden md:block overflow-x-auto">
               <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("Order number")}</TableHead>
-                  <TableHead>{t("Status")}</TableHead>
-                  <TableHead>{t("Customer")}</TableHead>
-                  <TableHead>{t("Salesman")}</TableHead>
-                  <TableHead className="text-right">{t("Ordered")}</TableHead>
-                  <TableHead className="text-right">{t("Taxable")}</TableHead>
-                  <TableHead className="text-right">{t("GST")}</TableHead>
-                  <TableHead className="text-right">{t("Total")}</TableHead>
-                  <TableHead>{t("Shortage status")}</TableHead>
-                  <TableHead className="text-right">{t("Actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {/* Local outbox items shown at the top of stream or in outbox tab */}
-                {(activeTab === "outbox"
-                  ? outboxOrders
-                  : outboxOrders.filter((o) => o.status !== "synced")
-                ).map((ord) => {
-                  const qty = ord.items.reduce((s, it) => s + it.quantity, 0);
-                  const taxable = ord.items.reduce(
-                    (s, it) => s + it.quantity * it.quotedUnitPrice,
-                    0,
-                  );
-                  const gst = taxable * 0.05;
-                  const total = taxable + gst;
-
-                  return (
-                    <TableRow key={ord.id} className="bg-amber-500/5">
-                      <TableCell className="font-mono font-medium">
-                        <div className="flex items-center gap-1.5">
-                          <DatabaseIcon className="size-3.5 text-amber-600 shrink-0" />
-                          <span>Local: {ord.id.slice(-6).toUpperCase()}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {ord.status === "queued" && (
-                          <Badge
-                            variant="outline"
-                            className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 flex items-center gap-1 w-fit"
-                          >
-                            <ClockIcon className="size-3 shrink-0" aria-hidden="true" />
-                            <span>Waiting to sync</span>
-                          </Badge>
-                        )}
-                        {ord.status === "syncing" && (
-                          <Badge
-                            variant="outline"
-                            className="animate-pulse-finite bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 flex items-center gap-1 w-fit"
-                          >
-                            <RefreshCwIcon className="size-3 shrink-0 animate-spin" aria-hidden="true" />
-                            <span>Syncing...</span>
-                          </Badge>
-                        )}
-                        {ord.status === "conflict" && (
-                          <Badge variant="danger" className="flex items-center gap-1 w-fit">
-                            <AlertTriangleIcon className="size-3 shrink-0" aria-hidden="true" />
-                            <span>Conflict: {ord.lastErrorCode ?? "Error"}</span>
-                          </Badge>
-                        )}
-                        {ord.status === "synced" && (
-                          <Badge variant="success" className="flex items-center gap-1 w-fit">
-                            <CheckCircle2Icon className="size-3 shrink-0" aria-hidden="true" />
-                            <span>Synced: {ord.serverOrderNumber ?? "OK"}</span>
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-foreground">
-                            {ord.customerName}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {ord.customerState}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        You (Device outbox)
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatQuantity(qty, { unit: "pkts" })}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {formatINR(taxable)}
-                      </TableCell>
-                      <TableCell className="text-right text-xs">
-                        {formatINR(gst)}
-                      </TableCell>
-                      <TableCell className="text-right font-bold">
-                        {formatINR(total)}
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-2xs text-amber-700 dark:text-amber-400 font-medium">
-                          Awaiting server acceptance
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {ord.status === "conflict" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => retryOrder(ord.id)}
-                              className="h-8 min-h-[32px] px-2.5 text-xs gap-1 sm:h-7 sm:min-h-[28px] sm:px-2 sm:text-2xs"
-                            >
-                              <RotateCcwIcon className="size-3.5 sm:size-3" />
-                              Retry
-                            </Button>
-                          )}
-                          {ord.status === "queued" && isOnline && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => retryOrder(ord.id)}
-                              className="h-8 min-h-[32px] px-2.5 text-xs gap-1 sm:h-7 sm:min-h-[28px] sm:px-2 sm:text-2xs"
-                            >
-                              <RefreshCwIcon className="size-3.5 sm:size-3" />
-                              Sync
-                            </Button>
-                          )}
-                          {ord.status !== "syncing" && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeOrder(ord.id)}
-                              className="h-8 min-h-[32px] min-w-[32px] px-2.5 text-xs text-muted-foreground hover:text-destructive sm:h-7 sm:min-h-[28px] sm:min-w-[28px] sm:px-2 sm:text-2xs"
-                            >
-                              <Trash2Icon className="size-3.5 sm:size-3" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-
-                {/* Server orders stream */}
-                {activeTab === "stream" &&
-                  filteredOrders.length === 0 &&
-                  orders.length > 0 && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={10}
-                        className="py-8 text-center text-sm text-muted-foreground"
-                      >
-                        {t("No orders match the selected filters.")}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                {activeTab === "stream" &&
-                  filteredOrders.map((o) => {
-                    const line = o.lines[0];
-                    const qty = Number(line?.quotedQuantity ?? 0);
-                    const shortage = o.totalShortage ?? 0;
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("Order number")}</TableHead>
+                    <TableHead>{t("Status")}</TableHead>
+                    <TableHead>{t("Customer")}</TableHead>
+                    <TableHead>{t("Salesman")}</TableHead>
+                    <TableHead className="text-right">{t("Ordered")}</TableHead>
+                    <TableHead className="text-right">{t("Taxable")}</TableHead>
+                    <TableHead className="text-right">{t("GST")}</TableHead>
+                    <TableHead className="text-right">{t("Total")}</TableHead>
+                    <TableHead>{t("Shortage status")}</TableHead>
+                    <TableHead className="text-right">{t("Actions")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {/* Local outbox items shown at the top of stream or in outbox tab */}
+                  {(activeTab === "outbox"
+                    ? outboxOrders
+                    : outboxOrders.filter((o) => o.status !== "synced")
+                  ).map((ord) => {
+                    const qty = ord.items.reduce((s, it) => s + it.quantity, 0);
+                    const taxable = ord.items.reduce(
+                      (s, it) => s + it.quantity * it.quotedUnitPrice,
+                      0,
+                    );
+                    const gst = taxable * 0.05;
+                    const total = taxable + gst;
 
                     return (
-                      <TableRow key={o.id}>
+                      <TableRow key={ord.id} className="bg-amber-500/5">
                         <TableCell className="font-mono font-medium">
-                          {o.orderNumber}
+                          <div className="flex items-center gap-1.5">
+                            <DatabaseIcon className="size-3.5 text-amber-600 shrink-0" />
+                            <span>Local: {ord.id.slice(-6).toUpperCase()}</span>
+                          </div>
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant={
-                              o.status === "APPROVED"
-                                ? "success"
-                                : o.status === "REJECTED"
-                                  ? "danger"
-                                  : o.status === "SUBMITTED"
-                                    ? "warning"
-                                    : "neutral"
-                            }
-                          >
-                            {o.status}
-                          </Badge>
+                          {ord.status === "queued" && (
+                            <Badge
+                              variant="outline"
+                              className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 flex items-center gap-1 w-fit"
+                            >
+                              <ClockIcon
+                                className="size-3 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span>Waiting to sync</span>
+                            </Badge>
+                          )}
+                          {ord.status === "syncing" && (
+                            <Badge
+                              variant="outline"
+                              className="animate-pulse-finite bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 flex items-center gap-1 w-fit"
+                            >
+                              <RefreshCwIcon
+                                className="size-3 shrink-0 animate-spin"
+                                aria-hidden="true"
+                              />
+                              <span>Syncing...</span>
+                            </Badge>
+                          )}
+                          {ord.status === "conflict" && (
+                            <Badge
+                              variant="danger"
+                              className="flex items-center gap-1 w-fit"
+                            >
+                              <AlertTriangleIcon
+                                className="size-3 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span>
+                                Conflict: {ord.lastErrorCode ?? "Error"}
+                              </span>
+                            </Badge>
+                          )}
+                          {ord.status === "synced" && (
+                            <Badge
+                              variant="success"
+                              className="flex items-center gap-1 w-fit"
+                            >
+                              <CheckCircle2Icon
+                                className="size-3 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span>
+                                Synced: {ord.serverOrderNumber ?? "OK"}
+                              </span>
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
                             <span className="font-medium text-foreground">
-                              {o.customer.name}
+                              {ord.customerName}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {o.deliveryState}
+                              {ord.customerState}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">
-                          {o.salesman.name}
+                          You (Device outbox)
                         </TableCell>
                         <TableCell className="text-right font-medium">
                           {formatQuantity(qty, { unit: "pkts" })}
                         </TableCell>
                         <TableCell className="text-right">
-                          {formatINR(o.taxableAmount)}
+                          {formatINR(taxable)}
                         </TableCell>
                         <TableCell className="text-right text-xs">
-                          {Number(o.igstAmount) > 0 ? (
-                            <span>
-                              IGST: {formatINR(o.igstAmount)}
-                            </span>
-                          ) : (
-                            <span>
-                              CGST/SGST:{" "}
-                              {formatINR(
-                                Number(o.cgstAmount) + Number(o.sgstAmount)
-                              )}
-                            </span>
-                          )}
+                          {formatINR(gst)}
                         </TableCell>
-                        <TableCell className="text-right font-bold text-foreground">
-                          {formatINR(o.totalAmount)}
+                        <TableCell className="text-right font-bold">
+                          {formatINR(total)}
                         </TableCell>
                         <TableCell>
-                          {shortage > 0 ? (
-                            <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
-                              <AlertTriangleIcon className="h-3.5 w-3.5" />
-                              <span>Shortage: {shortage} pkts</span>
-                            </div>
-                          ) : o.status === "APPROVED" ? (
-                            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-                              <CheckCircle2Icon className="h-3.5 w-3.5" />
-                              <span>Reserved ({qty})</span>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">
-                              Stock ready
-                            </span>
-                          )}
+                          <span className="text-2xs text-amber-700 dark:text-amber-400 font-medium">
+                            Awaiting server acceptance
+                          </span>
                         </TableCell>
                         <TableCell className="text-right">
-                          {o.status === "SUBMITTED" && canApproveOrder ? (
-                            <div className="flex items-center justify-end gap-1.5">
+                          <div className="flex items-center justify-end gap-1">
+                            {ord.status === "conflict" && (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => {
-                                  setSelectedOrderForAction(o);
-                                  setActionType("APPROVE");
-                                }}
-                                className="h-8 min-h-[32px] px-2.5 text-xs text-emerald-600 hover:text-emerald-700 sm:h-7 sm:min-h-[28px] sm:px-2"
+                                onClick={() => retryOrder(ord.id)}
+                                className="h-8 min-h-[32px] px-2.5 text-xs gap-1 sm:h-7 sm:min-h-[28px] sm:px-2 sm:text-2xs"
                               >
-                                Approve
+                                <RotateCcwIcon className="size-3.5 sm:size-3" />
+                                Retry
                               </Button>
+                            )}
+                            {ord.status === "queued" && isOnline && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => retryOrder(ord.id)}
+                                className="h-8 min-h-[32px] px-2.5 text-xs gap-1 sm:h-7 sm:min-h-[28px] sm:px-2 sm:text-2xs"
+                              >
+                                <RefreshCwIcon className="size-3.5 sm:size-3" />
+                                Sync
+                              </Button>
+                            )}
+                            {ord.status !== "syncing" && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => {
-                                  setSelectedOrderForAction(o);
-                                  setActionType("REJECT");
-                                }}
-                                className="h-8 min-h-[32px] px-2.5 text-xs text-destructive hover:bg-destructive/10 sm:h-7 sm:min-h-[28px] sm:px-2"
+                                onClick={() => removeOrder(ord.id)}
+                                className="h-8 min-h-[32px] min-w-[32px] px-2.5 text-xs text-muted-foreground hover:text-destructive sm:h-7 sm:min-h-[28px] sm:min-w-[28px] sm:px-2 sm:text-2xs"
                               >
-                                Reject
+                                <Trash2Icon className="size-3.5 sm:size-3" />
                               </Button>
-                            </div>
-                          ) : o.status === "APPROVED" ? (
-                            <div className="flex items-center justify-end gap-1.5">
-                              {o.invoices && o.invoices.length > 0 ? (
-                                <Badge variant="secondary" className="text-xs">
-                                  Invoiced ({o.invoices[0].invoiceNumber})
-                                </Badge>
-                              ) : canCreateInvoice ? (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    createInvoiceMutation.mutate(o.id)
-                                  }
-                                  disabled={createInvoiceMutation.isPending}
-                                  className="h-8 min-h-[32px] px-2.5 text-xs text-primary hover:bg-primary/10 border-primary/30 sm:h-7 sm:min-h-[28px] sm:px-2"
-                                >
-                                  {createInvoiceMutation.isPending
-                                    ? "Invoicing..."
-                                    : "Invoice Order"}
-                                </Button>
-                              ) : (
-                                <span className="text-xs text-muted-foreground italic">
-                                  Approved
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground italic">
-                              {o.status === "SUBMITTED"
-                                ? "Pending approval"
-                                : o.status === "REJECTED"
-                                  ? "Rejected"
-                                  : "Completed"}
-                            </span>
-                          )}
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
                   })}
-              </TableBody>
-            </Table>
-          </div>
-        </>
-      )}
-    </div>
+
+                  {/* Server orders stream */}
+                  {activeTab === "stream" &&
+                    filteredOrders.length === 0 &&
+                    orders.length > 0 && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={10}
+                          className="py-8 text-center text-sm text-muted-foreground"
+                        >
+                          {t("No orders match the selected filters.")}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  {activeTab === "stream" &&
+                    filteredOrders.map((o) => {
+                      const line = o.lines[0];
+                      const qty = Number(line?.quotedQuantity ?? 0);
+                      const shortage = o.totalShortage ?? 0;
+
+                      return (
+                        <TableRow key={o.id}>
+                          <TableCell className="font-mono font-medium">
+                            {o.orderNumber}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                o.status === "APPROVED"
+                                  ? "success"
+                                  : o.status === "REJECTED"
+                                    ? "danger"
+                                    : o.status === "SUBMITTED"
+                                      ? "warning"
+                                      : "neutral"
+                              }
+                            >
+                              {o.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-medium text-foreground">
+                                {o.customer.name}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {o.deliveryState}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {o.salesman.name}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {formatQuantity(qty, { unit: "pkts" })}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {formatINR(o.taxableAmount)}
+                          </TableCell>
+                          <TableCell className="text-right text-xs">
+                            {Number(o.igstAmount) > 0 ? (
+                              <span>IGST: {formatINR(o.igstAmount)}</span>
+                            ) : (
+                              <span>
+                                CGST/SGST:{" "}
+                                {formatINR(
+                                  Number(o.cgstAmount) + Number(o.sgstAmount),
+                                )}
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right font-bold text-foreground">
+                            {formatINR(o.totalAmount)}
+                          </TableCell>
+                          <TableCell>
+                            {shortage > 0 ? (
+                              <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                                <AlertTriangleIcon className="h-3.5 w-3.5" />
+                                <span>Shortage: {shortage} pkts</span>
+                              </div>
+                            ) : o.status === "APPROVED" ? (
+                              <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                                <CheckCircle2Icon className="h-3.5 w-3.5" />
+                                <span>Reserved ({qty})</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                Stock ready
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {o.status === "SUBMITTED" && canApproveOrder ? (
+                              <div className="flex items-center justify-end gap-1.5">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedOrderForAction(o);
+                                    setActionType("APPROVE");
+                                  }}
+                                  className="h-8 min-h-[32px] px-2.5 text-xs text-emerald-600 hover:text-emerald-700 sm:h-7 sm:min-h-[28px] sm:px-2"
+                                >
+                                  Approve
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedOrderForAction(o);
+                                    setActionType("REJECT");
+                                  }}
+                                  className="h-8 min-h-[32px] px-2.5 text-xs text-destructive hover:bg-destructive/10 sm:h-7 sm:min-h-[28px] sm:px-2"
+                                >
+                                  Reject
+                                </Button>
+                              </div>
+                            ) : o.status === "APPROVED" ? (
+                              <div className="flex items-center justify-end gap-1.5">
+                                {o.invoices && o.invoices.length > 0 ? (
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    Invoiced ({o.invoices[0].invoiceNumber})
+                                  </Badge>
+                                ) : canCreateInvoice ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      createInvoiceMutation.mutate(o.id)
+                                    }
+                                    disabled={createInvoiceMutation.isPending}
+                                    className="h-8 min-h-[32px] px-2.5 text-xs text-primary hover:bg-primary/10 border-primary/30 sm:h-7 sm:min-h-[28px] sm:px-2"
+                                  >
+                                    {createInvoiceMutation.isPending
+                                      ? "Invoicing..."
+                                      : "Invoice Order"}
+                                  </Button>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground italic">
+                                    Approved
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground italic">
+                                {o.status === "SUBMITTED"
+                                  ? "Pending approval"
+                                  : o.status === "REJECTED"
+                                    ? "Rejected"
+                                    : "Completed"}
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+              </Table>
+            </div>
+            {/* Pagination controls (F-074) */}
+            <div className="flex items-center justify-between border-t border-border px-4 py-3 sm:px-6">
+              <div className="text-sm text-muted-foreground">
+                {t("Page")}{" "}
+                <span className="font-medium text-foreground">{page}</span>
+                {data?.pagination ? ` (${data.orders.length} items)` : ""}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1 || isFetching}
+                >
+                  {t("Previous")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={
+                    !data?.orders || data.orders.length < pageSize || isFetching
+                  }
+                >
+                  {t("Next")}
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
 
       {/* New Order Modal */}
       <Dialog open={showNewOrderModal} onOpenChange={setShowNewOrderModal}>
@@ -1244,175 +1328,178 @@ export function OrdersPage() {
 
           <div className="mt-2 flex flex-col gap-4">
             {/* Offline mode banner */}
-              {!isOnline && (
-                <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300 border border-amber-500/20">
-                  <WifiOffIcon className="size-4 shrink-0 text-amber-600" />
-                  <span>
-                    Offline mode active: Order will be saved locally in device
-                    outbox. No stock reserved until synchronized.
-                  </span>
-                </div>
-              )}
+            {!isOnline && (
+              <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                <WifiOffIcon className="size-4 shrink-0 text-amber-600" />
+                <span>
+                  Offline mode active: Order will be saved locally in device
+                  outbox. No stock reserved until synchronized.
+                </span>
+              </div>
+            )}
 
-              {/* Customer selection */}
+            {/* Customer selection */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="order-customer-select"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Customer
+              </label>
+              <select
+                id="order-customer-select"
+                value={selectedCustomerId}
+                onChange={(e) => setSelectedCustomerId(e.target.value)}
+                className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+              >
+                {customersList.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.state},{" "}
+                    {c.state?.trim().toLowerCase() === "tamil nadu"
+                      ? "Intra-state"
+                      : "Inter-state"}
+                    )
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-muted-foreground">
+                Place of supply: {customerState} (
+                {isIntraState ? "CGST 2.5% + SGST 2.5%" : "IGST 5.0%"})
+              </span>
+            </div>
+
+            {/* Product and Quantity */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label
-                  htmlFor="order-customer-select"
+                  htmlFor="order-product-select"
                   className="text-xs font-semibold text-muted-foreground"
                 >
-                  Customer
+                  Product item
                 </label>
                 <select
-                  id="order-customer-select"
-                  value={selectedCustomerId}
-                  onChange={(e) => setSelectedCustomerId(e.target.value)}
+                  id="order-product-select"
+                  value={selectedProductId}
+                  onChange={(e) => setSelectedProductId(e.target.value)}
                   className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
                 >
-                  {customersList.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.state},{" "}
-                      {c.state?.trim().toLowerCase() === "tamil nadu"
-                        ? "Intra-state"
-                        : "Inter-state"}
-                      )
+                  {productsList.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({formatINR(p.defaultPrice)})
                     </option>
                   ))}
                 </select>
                 <span className="text-xs text-muted-foreground">
-                  Place of supply: {customerState} (
-                  {isIntraState ? "CGST 2.5% + SGST 2.5%" : "IGST 5.0%"})
+                  Standard price: {formatINR(unitPrice)} / pkt
                 </span>
               </div>
 
-              {/* Product and Quantity */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label
-                    htmlFor="order-product-select"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Product item
-                  </label>
-                  <select
-                    id="order-product-select"
-                    value={selectedProductId}
-                    onChange={(e) => setSelectedProductId(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
-                  >
-                    {productsList.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} ({formatINR(p.defaultPrice)})
-                      </option>
-                    ))}
-                  </select>
-                  <span className="text-xs text-muted-foreground">
-                    Standard price: {formatINR(unitPrice)} / pkt
-                  </span>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label
-                    htmlFor="order-quantity-input"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Order quantity (pkts)
-                  </label>
-                  <input
-                    id="order-quantity-input"
-                    type="number"
-                    value={orderQuantity}
-                    onChange={(e) => setOrderQuantity(Number(e.target.value))}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-semibold"
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    Available: {availablePackets} pkts
-                  </span>
-                </div>
-              </div>
-
-              {/* Shortage indicator */}
-              {currentShortage > 0 && (
-                <div
-                  role="status"
-                  aria-live="polite"
-                  className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                >
-                  <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span>
-                    Warning: Stock shortage of {currentShortage} packets
-                    detected. Order requires admin review or partial allocation.
-                  </span>
-                </div>
-              )}
-
               <div className="flex flex-col gap-1.5">
                 <label
-                  htmlFor="order-notes-input"
+                  htmlFor="order-quantity-input"
                   className="text-xs font-semibold text-muted-foreground"
                 >
-                  Order notes
+                  Order quantity (pkts)
                 </label>
                 <input
-                  id="order-notes-input"
-                  type="text"
-                  value={orderNotes}
-                  onChange={(e) => setOrderNotes(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm"
+                  id="order-quantity-input"
+                  type="number"
+                  value={orderQuantity}
+                  onChange={(e) => setOrderQuantity(Number(e.target.value))}
+                  className="rounded-md border bg-background px-3 py-2 text-sm font-semibold"
                 />
-              </div>
-
-              {/* Order total calculation */}
-              <div className="rounded-lg bg-muted/50 p-3 text-xs flex flex-col gap-1">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Taxable amount:</span>
-                  <span className="font-semibold">
-                    {formatINR(calculatedTaxable)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    GST (5% {isIntraState ? "CGST + SGST" : "IGST"}):
-                  </span>
-                  <span className="font-semibold">
-                    {formatINR(calculatedTax)}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t pt-1 font-bold text-sm">
-                  <span>Total order amount:</span>
-                  <span className="text-foreground">
-                    {formatINR(calculatedTotal)}
-                  </span>
-                </div>
+                <span className="text-xs text-muted-foreground">
+                  Available: {availablePackets} pkts
+                </span>
               </div>
             </div>
 
-            <DialogFooter className="mt-6 border-t pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowNewOrderModal(false)}
+            {/* Shortage indicator */}
+            {currentShortage > 0 && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20"
               >
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleCreateOrder}
-                disabled={isSubmittingOrder || createOrderMutation.isPending}
-                className="gap-2 cursor-pointer"
+                <AlertTriangleIcon
+                  className="h-4 w-4 shrink-0"
+                  aria-hidden="true"
+                />
+                <span>
+                  Warning: Stock shortage of {currentShortage} packets detected.
+                  Order requires admin review or partial allocation.
+                </span>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="order-notes-input"
+                className="text-xs font-semibold text-muted-foreground"
               >
-                {isSubmittingOrder || createOrderMutation.isPending ? (
-                  <>
-                    <RefreshCwIcon className="h-4 w-4 animate-spin" />
-                    {isOnline ? "Submitting order..." : "Saving locally..."}
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2Icon className="h-4 w-4" />
-                    {isOnline ? "Submit sales order" : "Save to device outbox"}
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
+                Order notes
+              </label>
+              <input
+                id="order-notes-input"
+                type="text"
+                value={orderNotes}
+                onChange={(e) => setOrderNotes(e.target.value)}
+                className="rounded-md border bg-background px-3 py-2 text-sm"
+              />
+            </div>
+
+            {/* Order total calculation */}
+            <div className="rounded-lg bg-muted/50 p-3 text-xs flex flex-col gap-1">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Taxable amount:</span>
+                <span className="font-semibold">
+                  {formatINR(calculatedTaxable)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  GST (5% {isIntraState ? "CGST + SGST" : "IGST"}):
+                </span>
+                <span className="font-semibold">
+                  {formatINR(calculatedTax)}
+                </span>
+              </div>
+              <div className="flex justify-between border-t pt-1 font-bold text-sm">
+                <span>Total order amount:</span>
+                <span className="text-foreground">
+                  {formatINR(calculatedTotal)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="mt-6 border-t pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowNewOrderModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleCreateOrder}
+              disabled={isSubmittingOrder || createOrderMutation.isPending}
+              className="gap-2 cursor-pointer"
+            >
+              {isSubmittingOrder || createOrderMutation.isPending ? (
+                <>
+                  <RefreshCwIcon className="h-4 w-4 animate-spin" />
+                  {isOnline ? "Submitting order..." : "Saving locally..."}
+                </>
+              ) : (
+                <>
+                  <CheckCircle2Icon className="h-4 w-4" />
+                  {isOnline ? "Submit sales order" : "Save to device outbox"}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1446,7 +1533,8 @@ export function OrdersPage() {
                 and release all stock reservations back to inventory.
               </p>
               <div className="rounded-lg bg-destructive/10 p-2.5 text-xs font-medium text-destructive border border-destructive/20">
-                Warning: This action is irreversible. The customer booking will be permanently cancelled.
+                Warning: This action is irreversible. The customer booking will
+                be permanently cancelled.
               </div>
             </div>
           }
@@ -1499,7 +1587,8 @@ export function OrdersPage() {
               <DialogDescription>
                 Order {selectedOrderForAction.orderNumber} for{" "}
                 {selectedOrderForAction.customer.name} (
-                {Number(selectedOrderForAction.lines[0]?.quotedQuantity)} packets)
+                {Number(selectedOrderForAction.lines[0]?.quotedQuantity)}{" "}
+                packets)
               </DialogDescription>
             </DialogHeader>
 
@@ -1519,10 +1608,13 @@ export function OrdersPage() {
                   aria-live="polite"
                   className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20"
                 >
-                  <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <AlertTriangleIcon
+                    className="h-4 w-4 shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>
-                    Notice: Full quantity cannot be reserved because shortage
-                    is {selectedOrderForAction.totalShortage} packets.
+                    Notice: Full quantity cannot be reserved because shortage is{" "}
+                    {selectedOrderForAction.totalShortage} packets.
                   </span>
                 </div>
               ) : null}

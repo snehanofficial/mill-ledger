@@ -71,242 +71,242 @@ export class FinanceService {
   async createInvoiceFromOrder(input: CreateInvoiceInput, user?: UserContext) {
     try {
       const result = await prisma.$transaction(async (tx) => {
-      // 1. Idempotency check
-      if (input.idempotencyKey) {
-        const existing = await tx.salesInvoice.findUnique({
-          where: { idempotencyKey: input.idempotencyKey },
+        // 1. Idempotency check
+        if (input.idempotencyKey) {
+          const existing = await tx.salesInvoice.findUnique({
+            where: { idempotencyKey: input.idempotencyKey },
+            include: {
+              lines: true,
+              customer: true,
+              salesOrder: true,
+            },
+          });
+          if (existing) {
+            return existing;
+          }
+        }
+
+        // 2. Fetch sales order
+        const order = await tx.salesOrder.findUnique({
+          where: { id: input.salesOrderId },
+          include: {
+            customer: true,
+            lines: {
+              include: {
+                productVariant: {
+                  include: { product: true },
+                },
+              },
+            },
+          },
+        });
+
+        if (!order) {
+          throw new AppError(`Order ${input.salesOrderId} not found`, 404);
+        }
+
+        if (order.status !== "APPROVED") {
+          throw new AppError(
+            `Cannot invoice order in status ${order.status}. Only APPROVED orders can be invoiced.`,
+            400,
+          );
+        }
+
+        if (!order.lines || order.lines.length === 0) {
+          throw new AppError(
+            `Cannot invoice order ${order.orderNumber} with zero line items`,
+            400,
+          );
+        }
+
+        const invoiceDate = input.invoiceDate ?? new Date();
+        const fy = this.getFinancialYear(invoiceDate);
+        const invoiceNumber = await sequenceService.getNextInvoiceNumber(
+          tx,
+          order.organizationId,
+          fy,
+        );
+
+        // Place of supply tax calculation
+        const isIntraState =
+          order.deliveryState.trim().toLowerCase() === "tamil nadu";
+
+        let taxableAmount = 0;
+        let totalTaxAmount = 0;
+        let cgstAmount = 0;
+        let sgstAmount = 0;
+        let igstAmount = 0;
+
+        const preparedLines: Array<{
+          salesOrderLineId: string;
+          productVariantId: string;
+          productNameSnapshot: string;
+          hsnCodeSnapshot: string;
+          quantity: number;
+          unitPrice: number;
+          taxRate: number;
+          taxableAmount: number;
+          cgstAmount: number;
+          sgstAmount: number;
+          igstAmount: number;
+          taxAmount: number;
+          lineTotal: number;
+        }> = [];
+
+        for (const line of order.lines) {
+          const hsnCode = line.productVariant.product.hsnCode;
+          if (!hsnCode) {
+            throw new AppError(
+              `TAX_CONFIGURATION_ERROR: Product ${line.productVariant.product.name} is missing an HSN code`,
+              422,
+            );
+          }
+
+          const taxRateRecord = await tx.taxRate.findFirst({
+            where: {
+              organizationId: order.organizationId,
+              hsnCode,
+              effectiveFrom: { lte: invoiceDate },
+              OR: [
+                { effectiveTo: null },
+                { effectiveTo: { gte: invoiceDate } },
+              ],
+            },
+            orderBy: {
+              effectiveFrom: "desc",
+            },
+          });
+
+          if (!taxRateRecord) {
+            throw new AppError(
+              `TAX_CONFIGURATION_ERROR: No active statutory GST rate found for HSN ${hsnCode}`,
+              422,
+            );
+          }
+
+          const lineTaxRate = Number(taxRateRecord.rate);
+
+          const taxRes = calculateLineTax(
+            {
+              quantity: line.approvedQuantity.toString(),
+              unitPrice: line.approvedUnitPrice.toString(),
+              taxRate: lineTaxRate,
+            },
+            isIntraState,
+          );
+
+          const lineQty = taxRes.quantity.toNumber();
+          const linePrice = taxRes.unitPrice.toNumber();
+          const lineTaxable = taxRes.taxableAmount.toNumber();
+          const lineCgst = taxRes.cgstAmount.toNumber();
+          const lineSgst = taxRes.sgstAmount.toNumber();
+          const lineIgst = taxRes.igstAmount.toNumber();
+          const lineTax = taxRes.taxAmount.toNumber();
+          const lineTotal = taxRes.lineTotal.toNumber();
+
+          cgstAmount = Number((cgstAmount + lineCgst).toFixed(2));
+          sgstAmount = Number((sgstAmount + lineSgst).toFixed(2));
+          igstAmount = Number((igstAmount + lineIgst).toFixed(2));
+          taxableAmount = Number((taxableAmount + lineTaxable).toFixed(2));
+          totalTaxAmount = Number((totalTaxAmount + lineTax).toFixed(2));
+
+          preparedLines.push({
+            salesOrderLineId: line.id,
+            productVariantId: line.productVariantId,
+            productNameSnapshot: line.productVariant.name,
+            hsnCodeSnapshot: hsnCode,
+            quantity: lineQty,
+            unitPrice: linePrice,
+            taxRate: lineTaxRate,
+            taxableAmount: lineTaxable,
+            cgstAmount: lineCgst,
+            sgstAmount: lineSgst,
+            igstAmount: lineIgst,
+            taxAmount: lineTax,
+            lineTotal: lineTotal,
+          });
+        }
+
+        const totalAmount = Number((taxableAmount + totalTaxAmount).toFixed(2));
+
+        // Create immutable posted invoice
+        const invoice = await tx.salesInvoice.create({
+          data: {
+            organizationId: order.organizationId,
+            invoiceNumber,
+            financialYear: fy,
+            salesOrderId: order.id,
+            customerId: order.customerId,
+            customerNameSnapshot: order.customer.name,
+            customerGstinSnapshot: order.customer.gstin,
+            customerAddressSnapshot: order.customer.state,
+            deliveryStateSnapshot: order.deliveryState,
+            companyGstinSnapshot: "33AAAAA0000A1Z5", // Factory GSTIN
+            status: InvoiceStatus.POSTED,
+            taxableAmount,
+            cgstAmount,
+            sgstAmount,
+            igstAmount,
+            totalTaxAmount,
+            totalAmount,
+            paidAmount: 0,
+            outstandingAmount: totalAmount,
+            notes: input.notes,
+            idempotencyKey: input.idempotencyKey,
+            postedAt: invoiceDate,
+            dueDate: input.dueDate,
+          },
+        });
+
+        for (const pl of preparedLines) {
+          await tx.salesInvoiceLine.create({
+            data: {
+              invoiceId: invoice.id,
+              salesOrderLineId: pl.salesOrderLineId,
+              productVariantId: pl.productVariantId,
+              productNameSnapshot: pl.productNameSnapshot,
+              hsnCodeSnapshot: pl.hsnCodeSnapshot,
+              quantity: pl.quantity,
+              unitPrice: pl.unitPrice,
+              taxRate: pl.taxRate,
+              taxableAmount: pl.taxableAmount,
+              cgstAmount: pl.cgstAmount,
+              sgstAmount: pl.sgstAmount,
+              igstAmount: pl.igstAmount,
+              taxAmount: pl.taxAmount,
+              lineTotal: pl.lineTotal,
+            },
+          });
+        }
+
+        return await tx.salesInvoice.findUnique({
+          where: { id: invoice.id },
           include: {
             lines: true,
             customer: true,
             salesOrder: true,
           },
         });
-        if (existing) {
-          return existing;
-        }
-      }
-
-      // 2. Fetch sales order
-      const order = await tx.salesOrder.findUnique({
-        where: { id: input.salesOrderId },
-        include: {
-          customer: true,
-          lines: {
-            include: {
-              productVariant: {
-                include: { product: true },
-              },
-            },
-          },
-        },
       });
 
-      if (!order) {
-        throw new AppError(`Order ${input.salesOrderId} not found`, 404);
-      }
-
-      if (order.status !== "APPROVED") {
-        throw new AppError(
-          `Cannot invoice order in status ${order.status}. Only APPROVED orders can be invoiced.`,
-          400,
-        );
-      }
-
-      if (!order.lines || order.lines.length === 0) {
-        throw new AppError(
-          `Cannot invoice order ${order.orderNumber} with zero line items`,
-          400,
-        );
-      }
-
-      const invoiceDate = input.invoiceDate ?? new Date();
-      const fy = this.getFinancialYear(invoiceDate);
-      const invoiceNumber = await sequenceService.getNextInvoiceNumber(
-        tx,
-        order.organizationId,
-        fy,
-      );
-
-      // Place of supply tax calculation
-      const isIntraState =
-        order.deliveryState.trim().toLowerCase() === "tamil nadu";
-
-      let taxableAmount = 0;
-      let totalTaxAmount = 0;
-      let cgstAmount = 0;
-      let sgstAmount = 0;
-      let igstAmount = 0;
-
-      const preparedLines: Array<{
-        salesOrderLineId: string;
-        productVariantId: string;
-        productNameSnapshot: string;
-        hsnCodeSnapshot: string;
-        quantity: number;
-        unitPrice: number;
-        taxRate: number;
-        taxableAmount: number;
-        cgstAmount: number;
-        sgstAmount: number;
-        igstAmount: number;
-        taxAmount: number;
-        lineTotal: number;
-      }> = [];
-
-      for (const line of order.lines) {
-        const hsnCode = line.productVariant.product.hsnCode;
-        if (!hsnCode) {
-          throw new AppError(
-            `TAX_CONFIGURATION_ERROR: Product ${line.productVariant.product.name} is missing an HSN code`,
-            422,
-          );
-        }
-
-        const taxRateRecord = await tx.taxRate.findFirst({
-          where: {
-            organizationId: order.organizationId,
-            hsnCode,
-            effectiveFrom: { lte: invoiceDate },
-            OR: [
-              { effectiveTo: null },
-              { effectiveTo: { gte: invoiceDate } },
-            ],
-          },
-          orderBy: {
-            effectiveFrom: "desc",
-          },
-        });
-
-        if (!taxRateRecord) {
-          throw new AppError(
-            `TAX_CONFIGURATION_ERROR: No active statutory GST rate found for HSN ${hsnCode}`,
-            422,
-          );
-        }
-
-        const lineTaxRate = Number(taxRateRecord.rate);
-
-        const taxRes = calculateLineTax(
-          {
-            quantity: line.approvedQuantity.toString(),
-            unitPrice: line.approvedUnitPrice.toString(),
-            taxRate: lineTaxRate,
-          },
-          isIntraState,
-        );
-
-        const lineQty = taxRes.quantity.toNumber();
-        const linePrice = taxRes.unitPrice.toNumber();
-        const lineTaxable = taxRes.taxableAmount.toNumber();
-        const lineCgst = taxRes.cgstAmount.toNumber();
-        const lineSgst = taxRes.sgstAmount.toNumber();
-        const lineIgst = taxRes.igstAmount.toNumber();
-        const lineTax = taxRes.taxAmount.toNumber();
-        const lineTotal = taxRes.lineTotal.toNumber();
-
-        cgstAmount = Number((cgstAmount + lineCgst).toFixed(2));
-        sgstAmount = Number((sgstAmount + lineSgst).toFixed(2));
-        igstAmount = Number((igstAmount + lineIgst).toFixed(2));
-        taxableAmount = Number((taxableAmount + lineTaxable).toFixed(2));
-        totalTaxAmount = Number((totalTaxAmount + lineTax).toFixed(2));
-
-        preparedLines.push({
-          salesOrderLineId: line.id,
-          productVariantId: line.productVariantId,
-          productNameSnapshot: line.productVariant.name,
-          hsnCodeSnapshot: hsnCode,
-          quantity: lineQty,
-          unitPrice: linePrice,
-          taxRate: lineTaxRate,
-          taxableAmount: lineTaxable,
-          cgstAmount: lineCgst,
-          sgstAmount: lineSgst,
-          igstAmount: lineIgst,
-          taxAmount: lineTax,
-          lineTotal: lineTotal,
-        });
-      }
-
-      const totalAmount = Number((taxableAmount + totalTaxAmount).toFixed(2));
-
-      // Create immutable posted invoice
-      const invoice = await tx.salesInvoice.create({
-        data: {
-          organizationId: order.organizationId,
-          invoiceNumber,
-          financialYear: fy,
-          salesOrderId: order.id,
-          customerId: order.customerId,
-          customerNameSnapshot: order.customer.name,
-          customerGstinSnapshot: order.customer.gstin,
-          customerAddressSnapshot: order.customer.state,
-          deliveryStateSnapshot: order.deliveryState,
-          companyGstinSnapshot: "33AAAAA0000A1Z5", // Factory GSTIN
-          status: InvoiceStatus.POSTED,
-          taxableAmount,
-          cgstAmount,
-          sgstAmount,
-          igstAmount,
-          totalTaxAmount,
-          totalAmount,
-          paidAmount: 0,
-          outstandingAmount: totalAmount,
-          notes: input.notes,
-          idempotencyKey: input.idempotencyKey,
-          postedAt: invoiceDate,
-          dueDate: input.dueDate,
-        },
-      });
-
-      for (const pl of preparedLines) {
-        await tx.salesInvoiceLine.create({
-          data: {
-            invoiceId: invoice.id,
-            salesOrderLineId: pl.salesOrderLineId,
-            productVariantId: pl.productVariantId,
-            productNameSnapshot: pl.productNameSnapshot,
-            hsnCodeSnapshot: pl.hsnCodeSnapshot,
-            quantity: pl.quantity,
-            unitPrice: pl.unitPrice,
-            taxRate: pl.taxRate,
-            taxableAmount: pl.taxableAmount,
-            cgstAmount: pl.cgstAmount,
-            sgstAmount: pl.sgstAmount,
-            igstAmount: pl.igstAmount,
-            taxAmount: pl.taxAmount,
-            lineTotal: pl.lineTotal,
+      if (result) {
+        await auditService.log({
+          organizationId: result.organizationId,
+          userId: user?.id,
+          userEmail: user?.email,
+          action: "POST",
+          entity: "SalesInvoice",
+          entityId: result.id,
+          details: {
+            invoiceNumber: result.invoiceNumber,
+            salesOrderId: result.salesOrderId,
+            customerId: result.customerId,
+            totalAmount: result.totalAmount,
           },
         });
       }
 
-      return await tx.salesInvoice.findUnique({
-        where: { id: invoice.id },
-        include: {
-          lines: true,
-          customer: true,
-          salesOrder: true,
-        },
-      });
-    });
-
-    if (result) {
-      await auditService.log({
-        organizationId: result.organizationId,
-        userId: user?.id,
-        userEmail: user?.email,
-        action: "POST",
-        entity: "SalesInvoice",
-        entityId: result.id,
-        details: {
-          invoiceNumber: result.invoiceNumber,
-          salesOrderId: result.salesOrderId,
-          customerId: result.customerId,
-          totalAmount: result.totalAmount,
-        },
-      });
-    }
-
-    return result;
+      return result;
     } catch (err: unknown) {
       if (
         input.idempotencyKey &&
@@ -421,15 +421,28 @@ export class FinanceService {
   }
 
   /**
-   * List invoices for an organization
+   * List invoices for an organization (paginated - F-074)
    */
-  async getInvoices(organizationId: string, customerId?: string) {
+  async getInvoices(
+    organizationId: string,
+    customerId?: string,
+    options?: { limit?: number; offset?: number },
+  ) {
     const where: Prisma.SalesInvoiceWhereInput = {
       organizationId,
     };
     if (customerId) {
       where.customerId = customerId;
     }
+
+    const limit =
+      options?.limit !== undefined
+        ? Math.min(Math.max(Number(options.limit) || 50, 1), 100)
+        : 50;
+    const offset =
+      options?.offset !== undefined
+        ? Math.max(Number(options.offset) || 0, 0)
+        : undefined;
 
     return await prisma.salesInvoice.findMany({
       where,
@@ -440,6 +453,8 @@ export class FinanceService {
         creditNotes: true,
       },
       orderBy: { postedAt: "desc" },
+      take: limit,
+      skip: offset,
     });
   }
 
@@ -657,7 +672,9 @@ export class FinanceService {
       const hsnCode = input.hsnCode.trim();
       const rate = input.rate;
       const effectiveFrom = new Date(input.effectiveFrom);
-      const effectiveTo = input.effectiveTo ? new Date(input.effectiveTo) : null;
+      const effectiveTo = input.effectiveTo
+        ? new Date(input.effectiveTo)
+        : null;
 
       if (effectiveTo && effectiveTo <= effectiveFrom) {
         throw new AppError(

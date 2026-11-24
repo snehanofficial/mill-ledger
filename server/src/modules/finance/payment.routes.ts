@@ -10,7 +10,7 @@ import { recordPaymentSchema, bouncePaymentSchema } from "@mill-ledger/shared";
 
 export const paymentRouter = Router();
 
-// GET /api/v1/payments - List payments
+// GET /api/v1/payments - List payments (paginated - F-074)
 paymentRouter.get(
   "/",
   requireAuth,
@@ -19,8 +19,28 @@ paymentRouter.get(
     try {
       const orgId = (req.query.organizationId as string) || "MILL";
       const customerId = req.query.customerId as string | undefined;
-      const payments = await paymentService.getPayments(orgId, customerId);
-      res.json({ payments });
+      const limit =
+        req.query.limit !== undefined ? Number(req.query.limit) : undefined;
+      const offset =
+        req.query.offset !== undefined
+          ? Number(req.query.offset)
+          : req.query.page && req.query.limit
+            ? (Math.max(Number(req.query.page), 1) - 1) *
+              Number(req.query.limit)
+            : undefined;
+
+      const payments = await paymentService.getPayments(orgId, customerId, {
+        limit,
+        offset,
+      });
+      res.json({
+        payments,
+        pagination: {
+          limit: limit ?? 50,
+          offset: offset ?? 0,
+          count: payments.length,
+        },
+      });
     } catch (err) {
       next(err);
     }

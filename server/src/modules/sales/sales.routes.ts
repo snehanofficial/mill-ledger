@@ -158,7 +158,7 @@ salesRouter.get(
   },
 );
 
-// GET /api/v1/sales/orders - List orders (ABAC enforced)
+// GET /api/v1/sales/orders - List orders (ABAC enforced, paginated, batched - F-070, F-074)
 salesRouter.get(
   "/orders",
   requireAuth,
@@ -167,12 +167,30 @@ salesRouter.get(
     try {
       const orgId = (req.query.organizationId as string) || "MILL";
       const status = req.query.status as OrderStatus | undefined;
+      const limit =
+        req.query.limit !== undefined ? Number(req.query.limit) : undefined;
+      const offset =
+        req.query.offset !== undefined
+          ? Number(req.query.offset)
+          : req.query.page && req.query.limit
+            ? (Math.max(Number(req.query.page), 1) - 1) *
+              Number(req.query.limit)
+            : undefined;
+
       const orders = await salesService.getSalesOrders(
         orgId,
         req.user!,
         status,
+        { limit, offset },
       );
-      res.json({ orders });
+      res.json({
+        orders,
+        pagination: {
+          limit: limit ?? 50,
+          offset: offset ?? 0,
+          count: orders.length,
+        },
+      });
     } catch (err) {
       next(err);
     }
@@ -352,7 +370,10 @@ salesRouter.post(
         throw parsed.error;
       }
 
-      const dispatch = await dispatchService.postDispatch(parsed.data, req.user);
+      const dispatch = await dispatchService.postDispatch(
+        parsed.data,
+        req.user,
+      );
       res.status(201).json(dispatch);
     } catch (err) {
       next(err);
@@ -367,7 +388,10 @@ salesRouter.get(
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = req.user?.organizationId || (req.query.organizationId as string) || "MILL";
+      const orgId =
+        req.user?.organizationId ||
+        (req.query.organizationId as string) ||
+        "MILL";
       const dispatches = await dispatchService.getDispatches(orgId, req.user);
       res.json({ dispatches });
     } catch (err) {
@@ -383,11 +407,16 @@ salesRouter.get(
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const dispatchId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const dispatchId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!dispatchId) {
         throw new AppError("Dispatch ID is required", 400);
       }
-      const dispatch = await dispatchService.getDispatchById(dispatchId, req.user);
+      const dispatch = await dispatchService.getDispatchById(
+        dispatchId,
+        req.user,
+      );
       res.json({ dispatch });
     } catch (err) {
       next(err);

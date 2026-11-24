@@ -15,7 +15,7 @@ import {
 
 export const financeRouter = Router();
 
-// GET /api/v1/finance/invoices
+// GET /api/v1/finance/invoices (paginated - F-074)
 financeRouter.get(
   "/invoices",
   requireAuth,
@@ -24,8 +24,28 @@ financeRouter.get(
     try {
       const orgId = (req.query.organizationId as string) || "MILL";
       const customerId = req.query.customerId as string | undefined;
-      const invoices = await financeService.getInvoices(orgId, customerId);
-      res.json({ invoices });
+      const limit =
+        req.query.limit !== undefined ? Number(req.query.limit) : undefined;
+      const offset =
+        req.query.offset !== undefined
+          ? Number(req.query.offset)
+          : req.query.page && req.query.limit
+            ? (Math.max(Number(req.query.page), 1) - 1) *
+              Number(req.query.limit)
+            : undefined;
+
+      const invoices = await financeService.getInvoices(orgId, customerId, {
+        limit,
+        offset,
+      });
+      res.json({
+        invoices,
+        pagination: {
+          limit: limit ?? 50,
+          offset: offset ?? 0,
+          count: invoices.length,
+        },
+      });
     } catch (err) {
       next(err);
     }

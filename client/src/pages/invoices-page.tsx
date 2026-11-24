@@ -5,10 +5,7 @@ import { apiClient } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
-import {
-  SkeletonTable,
-  ErrorState,
-} from "@/components/ui/loading-error-empty";
+import { SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import {
   Table,
   TableBody,
@@ -97,12 +94,15 @@ export function InvoicesPage() {
   const [creditNoteAmount, setCreditNoteAmount] = useState<number>(0);
   const [showCreateInvoiceModal, setShowCreateInvoiceModal] = useState(false);
   const [showConfirmCreditNote, setShowConfirmCreditNote] = useState(false);
-  const [showConfirmCreateInvoice, setShowConfirmCreateInvoice] = useState(false);
+  const [showConfirmCreateInvoice, setShowConfirmCreateInvoice] =
+    useState(false);
   const [selectedOrderIdForInvoice, setSelectedOrderIdForInvoice] =
     useState<string>("");
   const [invoiceNotes, setInvoiceNotes] = useState("");
   const [statusFilter, setStatusFilter] = useUrlState("status", "ALL");
   const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
 
   // Fetch approved orders eligible for invoicing (F-037)
   const { data: approvedOrdersData, isLoading: isLoadingApprovedOrders } =
@@ -160,18 +160,23 @@ export function InvoicesPage() {
     },
     onError: (err: any) => {
       toast.error(
-        err.response?.data?.message || err.message || "Failed to create invoice",
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to create invoice",
       );
     },
   });
 
-  // Fetch invoices
+  // Fetch invoices (paginated - F-074)
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     invoices: SalesInvoice[];
+    pagination?: { limit: number; offset: number; count: number };
   }>({
-    queryKey: ["sales-invoices"],
+    queryKey: ["sales-invoices", page],
     queryFn: async () => {
-      const res = await apiClient.get("/finance/invoices?organizationId=MILL");
+      const res = await apiClient.get(
+        `/finance/invoices?organizationId=MILL&limit=${pageSize}&offset=${(page - 1) * pageSize}`,
+      );
       return res.data;
     },
   });
@@ -205,7 +210,9 @@ export function InvoicesPage() {
     },
     onError: (err: any) => {
       toast.error(
-        err.response?.data?.message || err.message || "Failed to issue credit note",
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to issue credit note",
       );
     },
   });
@@ -220,11 +227,7 @@ export function InvoicesPage() {
       const matchCust =
         inv.customerNameSnapshot.toLowerCase().includes(q) ||
         (inv.customerGstinSnapshot || "").toLowerCase().includes(q);
-      const matchPos = (
-        inv.deliveryStateSnapshot ||
-        inv.customer?.state ||
-        ""
-      )
+      const matchPos = (inv.deliveryStateSnapshot || inv.customer?.state || "")
         .toLowerCase()
         .includes(q);
       if (!matchNum && !matchCust && !matchPos) return false;
@@ -254,7 +257,9 @@ export function InvoicesPage() {
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            {t("Tax calculation snapshots, FY series numbering, and immutable invoice ledger")}
+            {t(
+              "Tax calculation snapshots, FY series numbering, and immutable invoice ledger",
+            )}
           </p>
         </div>
 
@@ -306,9 +311,7 @@ export function InvoicesPage() {
             </span>
             <IndianRupeeIcon className="h-4 w-4" />
           </div>
-          <div className="text-2xl font-bold">
-            {formatINR(totalBilled)}
-          </div>
+          <div className="text-2xl font-bold">{formatINR(totalBilled)}</div>
           <div className="text-xs text-muted-foreground">
             Gross invoiced value inclusive of GST
           </div>
@@ -374,7 +377,9 @@ export function InvoicesPage() {
             <ErrorState
               title={t("Failed to load invoices", "Failed to load invoices")}
               description={
-                error instanceof Error ? error.message : "An unexpected server error occurred."
+                error instanceof Error
+                  ? error.message
+                  : "An unexpected server error occurred."
               }
               error={error}
               onRetry={() => refetch()}
@@ -488,118 +493,151 @@ export function InvoicesPage() {
             {/* Desktop Table View (md+ viewports) */}
             <div className="hidden md:block overflow-x-auto">
               <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("Invoice number")}</TableHead>
-                  <TableHead>{t("FY")}</TableHead>
-                  <TableHead>{t("Status")}</TableHead>
-                  <TableHead>{t("Customer")}</TableHead>
-                  <TableHead>{t("Place of supply")}</TableHead>
-                  <TableHead className="text-right">{t("Taxable")}</TableHead>
-                  <TableHead className="text-right">{t("GST")}</TableHead>
-                  <TableHead className="text-right">{t("Total")}</TableHead>
-                  <TableHead className="text-right">{t("Outstanding")}</TableHead>
-                  <TableHead className="text-right">{t("Actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredInvoices.length === 0 && invoices.length > 0 && (
+                <TableHeader>
                   <TableRow>
-                    <TableCell
-                      colSpan={10}
-                      className="py-8 text-center text-sm text-muted-foreground"
-                    >
-                      {t("No invoices match the selected filters.")}
-                    </TableCell>
+                    <TableHead>{t("Invoice number")}</TableHead>
+                    <TableHead>{t("FY")}</TableHead>
+                    <TableHead>{t("Status")}</TableHead>
+                    <TableHead>{t("Customer")}</TableHead>
+                    <TableHead>{t("Place of supply")}</TableHead>
+                    <TableHead className="text-right">{t("Taxable")}</TableHead>
+                    <TableHead className="text-right">{t("GST")}</TableHead>
+                    <TableHead className="text-right">{t("Total")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("Outstanding")}
+                    </TableHead>
+                    <TableHead className="text-right">{t("Actions")}</TableHead>
                   </TableRow>
-                )}
-                {filteredInvoices.map((inv) => (
-                  <TableRow key={inv.id}>
-                    <TableCell className="font-mono font-medium">
-                      {inv.invoiceNumber}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {inv.financialYear}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          inv.status === "PAID"
-                            ? "success"
-                            : inv.status === "POSTED"
-                              ? "info"
-                              : inv.status === "CANCELLED_BY_CREDIT_NOTE"
-                                ? "danger"
-                                : "warning"
-                        }
+                </TableHeader>
+                <TableBody>
+                  {filteredInvoices.length === 0 && invoices.length > 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={10}
+                        className="py-8 text-center text-sm text-muted-foreground"
                       >
-                        {inv.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-medium text-foreground">
-                      {inv.customerNameSnapshot}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {inv.deliveryStateSnapshot}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatINR(inv.taxableAmount)}
-                    </TableCell>
-                    <TableCell className="text-right text-xs">
-                      {Number(inv.igstAmount) > 0 ? (
-                        <span>IGST: {formatINR(inv.igstAmount)}</span>
-                      ) : (
-                        <span>
-                          CGST/SGST:{" "}
-                          {formatINR(
-                            Number(inv.cgstAmount) + Number(inv.sgstAmount)
-                          )}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-foreground">
-                      {formatINR(inv.totalAmount)}
-                    </TableCell>
-                    <TableCell className="text-right font-semibold text-amber-600 dark:text-amber-400">
-                      {formatINR(inv.outstandingAmount)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedInvoice(inv)}
-                          className="h-8 min-h-[32px] px-2.5 text-xs sm:h-7 sm:min-h-[28px] sm:px-2"
+                        {t("No invoices match the selected filters.")}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {filteredInvoices.map((inv) => (
+                    <TableRow key={inv.id}>
+                      <TableCell className="font-mono font-medium">
+                        {inv.invoiceNumber}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {inv.financialYear}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            inv.status === "PAID"
+                              ? "success"
+                              : inv.status === "POSTED"
+                                ? "info"
+                                : inv.status === "CANCELLED_BY_CREDIT_NOTE"
+                                  ? "danger"
+                                  : "warning"
+                          }
                         >
-                          <PrinterIcon className="h-3.5 w-3.5 mr-1" />
-                          View
-                        </Button>
-                        {canIssueCreditNote && Number(inv.outstandingAmount) > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedInvoice(inv);
-                              setCreditNoteAmount(
-                                Number(inv.outstandingAmount),
-                              );
-                              setShowCreditNoteModal(true);
-                            }}
-                            className="h-8 min-h-[32px] px-2.5 text-xs text-destructive hover:bg-destructive/10 sm:h-7 sm:min-h-[28px] sm:px-2"
-                          >
-                            Credit note
-                          </Button>
+                          {inv.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-medium text-foreground">
+                        {inv.customerNameSnapshot}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {inv.deliveryStateSnapshot}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatINR(inv.taxableAmount)}
+                      </TableCell>
+                      <TableCell className="text-right text-xs">
+                        {Number(inv.igstAmount) > 0 ? (
+                          <span>IGST: {formatINR(inv.igstAmount)}</span>
+                        ) : (
+                          <span>
+                            CGST/SGST:{" "}
+                            {formatINR(
+                              Number(inv.cgstAmount) + Number(inv.sgstAmount),
+                            )}
+                          </span>
                         )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </>
-      )}
-    </div>
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-foreground">
+                        {formatINR(inv.totalAmount)}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold text-amber-600 dark:text-amber-400">
+                        {formatINR(inv.outstandingAmount)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedInvoice(inv)}
+                            className="h-8 min-h-[32px] px-2.5 text-xs sm:h-7 sm:min-h-[28px] sm:px-2"
+                          >
+                            <PrinterIcon className="h-3.5 w-3.5 mr-1" />
+                            View
+                          </Button>
+                          {canIssueCreditNote &&
+                            Number(inv.outstandingAmount) > 0 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedInvoice(inv);
+                                  setCreditNoteAmount(
+                                    Number(inv.outstandingAmount),
+                                  );
+                                  setShowCreditNoteModal(true);
+                                }}
+                                className="h-8 min-h-[32px] px-2.5 text-xs text-destructive hover:bg-destructive/10 sm:h-7 sm:min-h-[28px] sm:px-2"
+                              >
+                                Credit note
+                              </Button>
+                            )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {/* Pagination controls (F-074) */}
+            <div className="flex items-center justify-between border-t border-border px-4 py-3 sm:px-6">
+              <div className="text-sm text-muted-foreground">
+                {t("Page")}{" "}
+                <span className="font-medium text-foreground">{page}</span>
+                {data?.pagination ? ` (${data.invoices.length} items)` : ""}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1 || isFetching}
+                >
+                  {t("Previous")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={
+                    !data?.invoices ||
+                    data.invoices.length < pageSize ||
+                    isFetching
+                  }
+                >
+                  {t("Next")}
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Invoice Snapshot Modal */}
       <Dialog
@@ -664,7 +702,9 @@ export function InvoicesPage() {
                       <TableHead>{t("HSN")}</TableHead>
                       <TableHead className="text-right">{t("Qty")}</TableHead>
                       <TableHead className="text-right">{t("Rate")}</TableHead>
-                      <TableHead className="text-right">{t("Taxable")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("Taxable")}
+                      </TableHead>
                       <TableHead className="text-right">{t("Tax")}</TableHead>
                       <TableHead className="text-right">{t("Total")}</TableHead>
                     </TableRow>
@@ -748,9 +788,7 @@ export function InvoicesPage() {
                   </div>
                   <div className="flex justify-between text-amber-600 font-semibold">
                     <span>Outstanding:</span>
-                    <span>
-                      {formatINR(selectedInvoice.outstandingAmount)}
-                    </span>
+                    <span>{formatINR(selectedInvoice.outstandingAmount)}</span>
                   </div>
                 </div>
               </div>
@@ -850,7 +888,9 @@ export function InvoicesPage() {
                 size="sm"
                 onClick={() => {
                   if (creditNoteAmount <= 0) {
-                    toast.error("Please enter a valid adjustment amount greater than zero");
+                    toast.error(
+                      "Please enter a valid adjustment amount greater than zero",
+                    );
                     return;
                   }
                   if (creditNoteAmount > selectedInvoice.outstandingAmount) {
@@ -893,84 +933,81 @@ export function InvoicesPage() {
           </DialogHeader>
 
           <div className="mt-2 flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="invoice-order-select"
-                  className="text-xs font-semibold text-muted-foreground"
-                >
-                  Approved Sales Order *
-                </label>
-                {isLoadingApprovedOrders ? (
-                  <div className="py-2 text-xs text-muted-foreground">
-                    Loading approved orders...
-                  </div>
-                ) : eligibleOrders.length === 0 ? (
-                  <div className="rounded-md border border-dashed p-3 text-center text-xs text-muted-foreground">
-                    No approved orders awaiting invoicing.
-                  </div>
-                ) : (
-                  <select
-                    id="invoice-order-select"
-                    value={selectedOrderIdForInvoice}
-                    onChange={(e) =>
-                      setSelectedOrderIdForInvoice(e.target.value)
-                    }
-                    className="rounded-md border bg-background px-3 py-2 text-sm text-foreground"
-                  >
-                    <option value="">Select an approved order...</option>
-                    {eligibleOrders.map((ord) => (
-                      <option key={ord.id} value={ord.id}>
-                        {ord.orderNumber} — {ord.customer.name} (
-                        {formatINR(ord.totalAmount)})
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="invoice-notes-input"
-                  className="text-xs font-semibold text-muted-foreground"
-                >
-                  Invoice Notes (Optional)
-                </label>
-                <input
-                  id="invoice-notes-input"
-                  type="text"
-                  placeholder="e.g. Standard 30 days payment term"
-                  value={invoiceNotes}
-                  onChange={(e) => setInvoiceNotes(e.target.value)}
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="invoice-order-select"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Approved Sales Order *
+              </label>
+              {isLoadingApprovedOrders ? (
+                <div className="py-2 text-xs text-muted-foreground">
+                  Loading approved orders...
+                </div>
+              ) : eligibleOrders.length === 0 ? (
+                <div className="rounded-md border border-dashed p-3 text-center text-xs text-muted-foreground">
+                  No approved orders awaiting invoicing.
+                </div>
+              ) : (
+                <select
+                  id="invoice-order-select"
+                  value={selectedOrderIdForInvoice}
+                  onChange={(e) => setSelectedOrderIdForInvoice(e.target.value)}
                   className="rounded-md border bg-background px-3 py-2 text-sm text-foreground"
-                />
-              </div>
+                >
+                  <option value="">Select an approved order...</option>
+                  {eligibleOrders.map((ord) => (
+                    <option key={ord.id} value={ord.id}>
+                      {ord.orderNumber} — {ord.customer.name} (
+                      {formatINR(ord.totalAmount)})
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
-            <DialogFooter className="mt-6 border-t pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setShowCreateInvoiceModal(false);
-                  setSelectedOrderIdForInvoice("");
-                  setInvoiceNotes("");
-                }}
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="invoice-notes-input"
+                className="text-xs font-semibold text-muted-foreground"
               >
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                disabled={
-                  !selectedOrderIdForInvoice ||
-                  createInvoiceMutation.isPending
-                }
-                onClick={() => setShowConfirmCreateInvoice(true)}
-                className="gap-2"
-              >
-                <FileCheck2Icon className="h-4 w-4" />
-                Review & confirm
-              </Button>
-            </DialogFooter>
+                Invoice Notes (Optional)
+              </label>
+              <input
+                id="invoice-notes-input"
+                type="text"
+                placeholder="e.g. Standard 30 days payment term"
+                value={invoiceNotes}
+                onChange={(e) => setInvoiceNotes(e.target.value)}
+                className="rounded-md border bg-background px-3 py-2 text-sm text-foreground"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="mt-6 border-t pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setShowCreateInvoiceModal(false);
+                setSelectedOrderIdForInvoice("");
+                setInvoiceNotes("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={
+                !selectedOrderIdForInvoice || createInvoiceMutation.isPending
+              }
+              onClick={() => setShowConfirmCreateInvoice(true)}
+              className="gap-2"
+            >
+              <FileCheck2Icon className="h-4 w-4" />
+              Review & confirm
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -989,7 +1026,10 @@ export function InvoicesPage() {
             <div className="flex flex-col gap-3 text-left">
               <p className="text-sm text-foreground">
                 You are about to issue an immutable Credit Note against invoice{" "}
-                <strong className="font-mono">{selectedInvoice.invoiceNumber}</strong>.
+                <strong className="font-mono">
+                  {selectedInvoice.invoiceNumber}
+                </strong>
+                .
               </p>
               <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
                 <div className="flex justify-between">
@@ -1000,15 +1040,23 @@ export function InvoicesPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Original Total:</span>
-                  <span className="font-mono">{formatINR(selectedInvoice.totalAmount)}</span>
+                  <span className="font-mono">
+                    {formatINR(selectedInvoice.totalAmount)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Outstanding Before:</span>
-                  <span className="font-mono">{formatINR(selectedInvoice.outstandingAmount)}</span>
+                  <span className="text-muted-foreground">
+                    Outstanding Before:
+                  </span>
+                  <span className="font-mono">
+                    {formatINR(selectedInvoice.outstandingAmount)}
+                  </span>
                 </div>
                 <div className="flex justify-between border-t border-border/50 pt-1 font-semibold">
                   <span className="text-destructive">Credit Adjustment:</span>
-                  <span className="font-mono text-destructive">-{formatINR(creditNoteAmount)}</span>
+                  <span className="font-mono text-destructive">
+                    -{formatINR(creditNoteAmount)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Reason:</span>
@@ -1016,11 +1064,18 @@ export function InvoicesPage() {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                Statutory warning: Issuing this credit note permanently reduces legal GST tax liabilities and accounts receivable in the general ledger. This sequential document cannot be altered or deleted once committed.
+                Statutory warning: Issuing this credit note permanently reduces
+                legal GST tax liabilities and accounts receivable in the general
+                ledger. This sequential document cannot be altered or deleted
+                once committed.
               </p>
             </div>
           }
-          confirmLabel={creditNoteMutation.isPending ? "Issuing..." : "Confirm & Post Credit Note"}
+          confirmLabel={
+            creditNoteMutation.isPending
+              ? "Issuing..."
+              : "Confirm & Post Credit Note"
+          }
           cancelLabel="Back to Edit"
           destructive
           disabled={creditNoteMutation.isPending}
@@ -1048,39 +1103,61 @@ export function InvoicesPage() {
           description={
             <div className="flex flex-col gap-3 text-left">
               <p className="text-sm text-foreground">
-                You are about to generate and post a legal GST Sales Invoice for order{" "}
+                You are about to generate and post a legal GST Sales Invoice for
+                order{" "}
                 <strong className="font-mono">
-                  {eligibleOrders.find((o) => o.id === selectedOrderIdForInvoice)?.orderNumber}
-                </strong>.
+                  {
+                    eligibleOrders.find(
+                      (o) => o.id === selectedOrderIdForInvoice,
+                    )?.orderNumber
+                  }
+                </strong>
+                .
               </p>
               <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Customer:</span>
                   <span className="font-medium text-foreground">
-                    {eligibleOrders.find((o) => o.id === selectedOrderIdForInvoice)?.customer?.name}
+                    {
+                      eligibleOrders.find(
+                        (o) => o.id === selectedOrderIdForInvoice,
+                      )?.customer?.name
+                    }
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total Taxable & Taxes:</span>
+                  <span className="text-muted-foreground">
+                    Total Taxable & Taxes:
+                  </span>
                   <span className="font-mono font-semibold text-foreground">
                     {formatINR(
-                      eligibleOrders.find((o) => o.id === selectedOrderIdForInvoice)?.totalAmount || 0,
+                      eligibleOrders.find(
+                        (o) => o.id === selectedOrderIdForInvoice,
+                      )?.totalAmount || 0,
                     )}
                   </span>
                 </div>
                 {invoiceNotes && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Invoice Notes:</span>
+                    <span className="text-muted-foreground">
+                      Invoice Notes:
+                    </span>
                     <span className="italic">{invoiceNotes}</span>
                   </div>
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Financial warning: This posts an immutable sequential tax invoice to the ledger and books accounts receivable. Stock allocations will be permanently committed.
+                Financial warning: This posts an immutable sequential tax
+                invoice to the ledger and books accounts receivable. Stock
+                allocations will be permanently committed.
               </p>
             </div>
           }
-          confirmLabel={createInvoiceMutation.isPending ? "Generating..." : "Confirm & Post Invoice"}
+          confirmLabel={
+            createInvoiceMutation.isPending
+              ? "Generating..."
+              : "Confirm & Post Invoice"
+          }
           cancelLabel="Back to Review"
           disabled={createInvoiceMutation.isPending}
           onConfirm={() =>
