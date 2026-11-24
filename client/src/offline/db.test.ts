@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { offlineDb } from "./db.js";
+import { offlineDb, requestPersistentStorage } from "./db.js";
 import { authClient } from "../lib/auth-client.js";
 
 describe("F-028: Dexie IndexedDB Purge on Sign-Out (OWASP ASVS 8.3.1 / 3.5.3)", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("calls clear() on customers, products, outbox, and meta within a read-write transaction", async () => {
@@ -43,5 +44,48 @@ describe("F-028: Dexie IndexedDB Purge on Sign-Out (OWASP ASVS 8.3.1 / 3.5.3)", 
     await authClient.signOut();
 
     expect(purgeSpy).toHaveBeenCalledTimes(1);
+  });
+
+  describe("F-087: Persistent Storage Request (W3C Storage Standard)", () => {
+    it("requests persistent storage via navigator.storage.persist when supported", async () => {
+      const persistMock = vi.fn().mockResolvedValue(true);
+      const persistedMock = vi.fn().mockResolvedValue(false);
+
+      vi.stubGlobal("navigator", {
+        storage: {
+          persist: persistMock,
+          persisted: persistedMock,
+        },
+      });
+
+      const result = await requestPersistentStorage();
+      expect(result).toBe(true);
+      expect(persistedMock).toHaveBeenCalledTimes(1);
+      expect(persistMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("returns true immediately if storage is already persisted", async () => {
+      const persistMock = vi.fn().mockResolvedValue(true);
+      const persistedMock = vi.fn().mockResolvedValue(true);
+
+      vi.stubGlobal("navigator", {
+        storage: {
+          persist: persistMock,
+          persisted: persistedMock,
+        },
+      });
+
+      const result = await requestPersistentStorage();
+      expect(result).toBe(true);
+      expect(persistedMock).toHaveBeenCalledTimes(1);
+      expect(persistMock).not.toHaveBeenCalled();
+    });
+
+    it("returns false gracefully when navigator.storage is unavailable", async () => {
+      vi.stubGlobal("navigator", {});
+
+      const result = await requestPersistentStorage();
+      expect(result).toBe(false);
+    });
   });
 });

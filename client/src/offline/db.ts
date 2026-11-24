@@ -61,6 +61,41 @@ export interface MetaRecord {
   updatedAt: string;
 }
 
+/**
+ * Request persistent storage permission from the browser (F-087 / W3C Storage Standard).
+ * Prevents mobile browser storage eviction of mission-critical offline orders and snapshots.
+ */
+export async function requestPersistentStorage(): Promise<boolean> {
+  if (
+    typeof navigator !== "undefined" &&
+    navigator.storage &&
+    typeof navigator.storage.persist === "function"
+  ) {
+    try {
+      const isAlreadyPersisted =
+        typeof navigator.storage.persisted === "function"
+          ? await navigator.storage.persisted()
+          : false;
+
+      if (isAlreadyPersisted) {
+        return true;
+      }
+
+      const granted = await navigator.storage.persist();
+      if (!granted) {
+        console.warn(
+          "Storage persistence not granted; offline outbox may be subject to browser eviction under disk pressure."
+        );
+      }
+      return granted;
+    } catch (err) {
+      console.warn("Error requesting persistent storage:", err);
+      return false;
+    }
+  }
+  return false;
+}
+
 export class MillLedgerDatabase extends Dexie {
   customers!: Table<CachedCustomer, string>;
   products!: Table<CachedProduct, string>;
@@ -97,3 +132,8 @@ export class MillLedgerDatabase extends Dexie {
 }
 
 export const offlineDb = new MillLedgerDatabase();
+
+// Automatically request persistent storage upon initialization in browser context (F-087)
+if (typeof window !== "undefined") {
+  void requestPersistentStorage();
+}

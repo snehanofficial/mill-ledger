@@ -2,6 +2,7 @@ import { useState, useEffect, useSyncExternalStore, useCallback } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   offlineDb,
+  requestPersistentStorage,
   type CachedCustomer,
   type CachedProduct,
   type OfflineOrder,
@@ -76,6 +77,11 @@ export function useOutboxOrders(userId?: string) {
 export function useSyncManager(userId?: string) {
   const isOnline = useIsOnline();
   const [, setTick] = useState(0);
+
+  // Request persistent storage on mount (F-087)
+  useEffect(() => {
+    void requestPersistentStorage();
+  }, []);
 
   // Subscribe to sync engine events
   useEffect(() => {

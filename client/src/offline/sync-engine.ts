@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/api-client";
 import {
   offlineDb,
+  requestPersistentStorage,
   type CachedCustomer,
   type CachedProduct,
   type OfflineOrder,
@@ -126,6 +127,9 @@ export async function queueOfflineOrder(
     updatedAt: now,
     attempts: 0,
   };
+
+  // Ensure browser storage persistence permission is requested (F-087)
+  void requestPersistentStorage();
 
   await offlineDb.outbox.put(order);
   notifyListeners();
@@ -410,3 +414,5 @@ export async function clearSyncedOrders(userId: string) {
 export function isOutboxSyncing(): boolean {
   return isSyncing;
 }
+
+export { requestPersistentStorage } from "./db";
