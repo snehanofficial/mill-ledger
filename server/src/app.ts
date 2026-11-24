@@ -3,6 +3,7 @@ import path from "node:path";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import compression from "compression";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
 import { healthRouter } from "./modules/health/health.routes.js";
@@ -32,6 +33,9 @@ export function createApp() {
 
   // Request timeout guard (F-102)
   app.use(requestTimeoutMiddleware(30000));
+
+  // Response compression (F-078)
+  app.use(compression({ threshold: 1024 }));
 
   // Request correlation ID and structured logger
   app.use(requestIdMiddleware);
