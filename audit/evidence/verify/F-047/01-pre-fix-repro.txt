@@ -1,0 +1,11 @@
+FINDING F-047 PRE-FIX REPRODUCTION
+===================================
+Finding ID: F-047
+Title: Absence of Sticky Table Headers and Card Transformation on Mobile Viewports
+Severity: P2
+Category: UX / Responsive Layout / Mobile Density
+Standard refs: Apple HIG adapted (Designing for Real Device Context), NN/g H8 (Aesthetic and Minimalist Design), Phase 7 Specification Check 4
+
+Observed Defect:
+1. `client/src/components/ui/table.tsx:23` defined `TableHeader` without `sticky top-0 z-10 bg-background/95 backdrop-blur-xs`. As a result, scrolling vertically through large sets of ledger rows caused the column headers (Rate, Taxable, GST, Total, Outstanding) to vanish off-screen.
+2. Tables on mobile viewports (<md, 320px-390px) rendered wide HTML tables (8-11 columns, ~950px wide) inside horizontal scroll wrappers (`<div className="overflow-x-auto">`). Users on mobile devices were forced to pan horizontally across 3 full screen-widths to view row statuses or tap action buttons.
