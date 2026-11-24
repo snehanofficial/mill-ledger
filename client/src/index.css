@@ -296,8 +296,10 @@ summary,
 }
 
 button:disabled,
-[aria-disabled="true"] {
-  cursor: not-allowed;
+[aria-disabled="true"],
+button:disabled:hover,
+[aria-disabled="true"]:hover {
+  cursor: not-allowed !important;
 }
 
 button,

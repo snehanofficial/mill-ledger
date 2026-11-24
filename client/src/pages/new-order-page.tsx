@@ -480,7 +480,7 @@ export function NewOrderPage() {
                           aria-label={`Decrease quantity of ${product.name}`}
                           onClick={() => handleStep(product.id, -10)}
                           disabled={qty === 0}
-                          className="min-w-[44px] min-h-[44px] size-11 flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted active:scale-95 text-foreground font-bold text-base transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="min-w-[44px] min-h-[44px] size-11 flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted active:scale-95 text-foreground font-bold text-base transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                           <MinusIcon className="size-4" />
                         </button>
