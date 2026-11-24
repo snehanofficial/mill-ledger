@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
   Dialog,
   DialogContent,
@@ -82,6 +83,7 @@ export function PurchasesPage() {
   const canRecordPurchase =
     user?.role === "ADMIN" || user?.role === "PRODUCTION";
   const [showModal, setShowModal] = useState(false);
+  const [showConfirmReceipt, setShowConfirmReceipt] = useState(false);
   const [searchQuery, setSearchQuery] = useUrlState("q", "");
 
   // Form states
@@ -176,8 +178,9 @@ export function PurchasesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchase-receipts"] });
       queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
-      toast.success("Purchase receipt posted successfully.");
+      setShowConfirmReceipt(false);
       setShowModal(false);
+      toast.success("Purchase receipt posted successfully.");
       setReceiptNumber(`PR-2026-${Date.now().toString().slice(-4)}`);
     },
     onError: (err: any) => {
@@ -547,14 +550,92 @@ export function PurchasesPage() {
               </Button>
               <Button
                 size="sm"
-                onClick={() => createReceiptMutation.mutate()}
+                onClick={() => {
+                  if (!activeSupplier) {
+                    toast.error("Please select a supplier");
+                    return;
+                  }
+                  if (!activeItem) {
+                    toast.error("Please select an inventory item");
+                    return;
+                  }
+                  if (!Number(quantity) || Number(quantity) <= 0) {
+                    toast.error("Please enter a valid quantity greater than zero");
+                    return;
+                  }
+                  if (Number(unitPrice) < 0) {
+                    toast.error("Unit price cannot be negative");
+                    return;
+                  }
+                  setShowConfirmReceipt(true);
+                }}
                 disabled={createReceiptMutation.isPending}
+                className="gap-2"
               >
-                {createReceiptMutation.isPending ? "Posting..." : "Post Purchase Receipt"}
+                <CheckCircle2Icon className="h-4 w-4" />
+                Review & confirm
               </Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Purchase Receipt Irreversible Financial/Inventory Confirmation (F-058) */}
+      {activeSupplier && activeItem && (
+        <ConfirmationDialog
+          open={showConfirmReceipt}
+          onOpenChange={setShowConfirmReceipt}
+          title={
+            <div className="flex items-center gap-2 font-semibold">
+              <TruckIcon className="h-5 w-5 text-primary" />
+              <span>Confirm Purchase Receipt Posting</span>
+            </div>
+          }
+          description={
+            <div className="flex flex-col gap-3 text-left">
+              <p className="text-sm text-foreground">
+                You are about to record an inward goods receipt and book supplier accounts payable.
+              </p>
+              <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Receipt Number:</span>
+                  <span className="font-mono font-medium text-foreground">{receiptNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Supplier:</span>
+                  <span className="font-semibold text-foreground">{activeSupplier.name}</span>
+                </div>
+                {supplierInvoiceNumber && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Supplier Inv #:</span>
+                    <span className="font-mono">{supplierInvoiceNumber}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Inward Item:</span>
+                  <span className="font-medium text-foreground">{activeItem.name} ({activeItem.sku})</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Quantity:</span>
+                  <span className="font-mono font-medium">
+                    {formatQuantity(Number(quantity))} {activeItem.baseUom?.code || "KG"}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t border-border/50 pt-1 font-semibold">
+                  <span className="text-foreground">Total Inward Value:</span>
+                  <span className="font-mono text-foreground">{formatINR(lineTotal)}</span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Legal & financial warning: This transaction increases physical inventory balances and generates an accounts payable liability in the general ledger. Posted receipts cannot be deleted.
+              </p>
+            </div>
+          }
+          confirmLabel={createReceiptMutation.isPending ? "Posting..." : "Confirm & Post Inward Goods"}
+          cancelLabel="Back to Edit"
+          disabled={createReceiptMutation.isPending}
+          onConfirm={() => createReceiptMutation.mutate()}
+        />
+      )}
     </div>
   );
 }

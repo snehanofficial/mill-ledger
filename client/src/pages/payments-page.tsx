@@ -20,7 +20,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { DomainTooltip } from "@/components/ui/domain-tooltip";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -152,6 +154,15 @@ export function PaymentsPage() {
   >({});
   const [useManualAllocation, setUseManualAllocation] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [showConfirmPayment, setShowConfirmPayment] = useState(false);
+  const [pendingPaymentPayload, setPendingPaymentPayload] = useState<{
+    customerId: string;
+    amount: number;
+    paymentMode: string;
+    referenceNumber?: string;
+    notes?: string;
+    allocations?: Array<{ salesInvoiceId: string; amount: number }>;
+  } | null>(null);
 
   // 1. Fetch payments
   const {
@@ -230,7 +241,9 @@ export function PaymentsPage() {
       queryClient.invalidateQueries({ queryKey: ["receivables-summary"] });
       queryClient.invalidateQueries({ queryKey: ["sales-invoices"] });
       queryClient.invalidateQueries({ queryKey: ["customer-ledger"] });
+      setShowConfirmPayment(false);
       setShowPaymentModal(false);
+      setPendingPaymentPayload(null);
       setSelectedCustomerId("");
       setPaymentAmount("");
       setReferenceNumber("");
@@ -238,6 +251,7 @@ export function PaymentsPage() {
       setManualAllocations({});
       setUseManualAllocation(false);
       setPaymentError(null);
+      toast.success("Customer payment posted and allocated successfully");
     },
     onError: (err: any) => {
       setPaymentError(
@@ -325,7 +339,7 @@ export function PaymentsPage() {
     }
 
     setPaymentError(null);
-    paymentMutation.mutate({
+    setPendingPaymentPayload({
       customerId: selectedCustomerId,
       amount: amountNum,
       paymentMode,
@@ -333,6 +347,7 @@ export function PaymentsPage() {
       notes: notes.trim() || undefined,
       allocations: allocationsToSend,
     });
+    setShowConfirmPayment(true);
   };
 
   return (
@@ -1303,17 +1318,77 @@ export function PaymentsPage() {
                   disabled={paymentMutation.isPending || !selectedCustomerId}
                   className="gap-2"
                 >
-                  {paymentMutation.isPending ? (
-                    <RefreshCwIcon className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <CheckCircle2Icon className="h-4 w-4" />
-                  )}
-                  Save payment
+                  <CheckCircle2Icon className="h-4 w-4" />
+                  Review & confirm
                 </Button>
               </DialogFooter>
             </form>
         </DialogContent>
       </Dialog>
+
+      {/* Payment Irreversible Financial Action Confirmation (F-058) */}
+      {pendingPaymentPayload && (
+        <ConfirmationDialog
+          open={showConfirmPayment}
+          onOpenChange={setShowConfirmPayment}
+          title={
+            <div className="flex items-center gap-2 font-semibold">
+              <CreditCardIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <span>Confirm Customer Payment Posting</span>
+            </div>
+          }
+          description={
+            <div className="flex flex-col gap-3 text-left">
+              <p className="text-sm text-foreground">
+                You are about to post a permanent payment receipt into the accounting ledger.
+              </p>
+              <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Customer:</span>
+                  <span className="font-semibold text-foreground">
+                    {receivables.find((r) => r.customerId === pendingPaymentPayload.customerId)?.customerName ?? "Customer"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Payment Amount:</span>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatINR(pendingPaymentPayload.amount)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Payment Mode:</span>
+                  <span className="font-medium text-foreground">{pendingPaymentPayload.paymentMode}</span>
+                </div>
+                {pendingPaymentPayload.referenceNumber && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Reference / Cheque #:</span>
+                    <span className="font-mono">{pendingPaymentPayload.referenceNumber}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Allocation Strategy:</span>
+                  <span className="font-medium text-foreground">
+                    {pendingPaymentPayload.allocations && pendingPaymentPayload.allocations.length > 0
+                      ? `Manual: ${pendingPaymentPayload.allocations.length} invoice(s) allocated`
+                      : "Automatic FIFO allocation across open invoices"}
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Financial notice: This entry will immediately settle outstanding customer receivables and update cash/bank ledgers. This transaction cannot be deleted.
+              </p>
+            </div>
+          }
+          confirmLabel={paymentMutation.isPending ? "Posting..." : "Confirm & Post Payment"}
+          cancelLabel="Back to Edit"
+          disabled={paymentMutation.isPending}
+          onConfirm={() => {
+            if (pendingPaymentPayload) {
+              paymentMutation.mutate(pendingPaymentPayload);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
