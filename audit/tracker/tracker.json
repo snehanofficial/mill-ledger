@@ -7116,7 +7116,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -7124,12 +7124,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-082.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "00cf4cf",
+        "evidenceLink": "audit/evidence/verify/F-082/10-summary.txt",
+        "note": "VERIFIED: Added structural pre-flight payload validation and client runtime exception isolation in executeSyncLoop. Corrupt entries are quarantined to status 'conflict' without head-of-line blocking subsequent queued orders. 10-point verification passed with 0 errors."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-082-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-082-regression.test.ts",
+    "fixCommit": "00cf4cf",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-082/01-git-status.txt",
+      "audit/evidence/verify/F-082/02-git-diff.txt",
+      "audit/evidence/verify/F-082/03-typecheck.txt",
+      "audit/evidence/verify/F-082/04-lint.txt",
+      "audit/evidence/verify/F-082/05-build.txt",
+      "audit/evidence/verify/F-082/06-invariants.txt",
+      "audit/evidence/verify/F-082/07-benchmark.txt",
+      "audit/evidence/verify/F-082/08-regression-test.txt",
+      "audit/evidence/verify/F-082/09-full-test-suite.txt",
+      "audit/evidence/verify/F-082/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'useLanguage' client/src/ | head -n 25",

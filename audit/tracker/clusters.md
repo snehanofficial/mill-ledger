@@ -473,7 +473,7 @@ server/src/modules/inventory/inventory.service.ts:356:    return await prisma.pu
 |---|---|---|---|
 | **F-080** | P1 | `OPEN` | Untranslated User Interface Across 100% of Application Routes (755 Hardcoded Strings vs 4 Translated Navigation Items) |
 | **F-081** | P1 | `VERIFIED` | Immediate Destructive Outbox Order Discard Without Confirmation Dialog and Irrevocable Data Loss |
-| **F-082** | P1 | `OPEN` | Corrupt Outbox Queue Entry Head-of-Line Blocking Halts All Subsequent Offline Order Synchronization |
+| **F-082** | P1 | `VERIFIED` | Corrupt Outbox Queue Entry Head-of-Line Blocking Halts All Subsequent Offline Order Synchronization |
 | **F-083** | P1 | `OPEN` | Silent Server Acceptance of Insufficient Stock Offline Orders Violating Explicit Conflict Queue Requirement (REQ-052) |
 | **F-085** | P2 | `OPEN` | Complete Absence of Indic/Tamil Number Formatting, Date Localization, and Collation (Sorting) |
 | **F-086** | P2 | `OPEN` | Missing Pre-Hydration HTML Lang Synchronization and Non-User-Scoped Language Preference Causing FOUC |
