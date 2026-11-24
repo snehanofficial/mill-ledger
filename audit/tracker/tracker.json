@@ -7637,7 +7637,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -7645,12 +7645,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-087.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "6ea8b8d",
+        "evidenceLink": "audit/evidence/verify/F-087/10-summary.txt",
+        "note": "Implemented requestPersistentStorage API with W3C storage.persist() check and integrated into offline db, sync engine, and useSyncManager hook."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-087-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-087-regression.test.ts",
+    "fixCommit": "6ea8b8d",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-087/01-git-status.txt",
+      "audit/evidence/verify/F-087/02-regression-test.txt",
+      "audit/evidence/verify/F-087/03-typecheck.txt",
+      "audit/evidence/verify/F-087/04-lint.txt",
+      "audit/evidence/verify/F-087/05-build.txt",
+      "audit/evidence/verify/F-087/06-invariants.txt",
+      "audit/evidence/verify/F-087/07-benchmark.txt",
+      "audit/evidence/verify/F-087/08-test-suite.txt",
+      "audit/evidence/verify/F-087/09-diff.txt",
+      "audit/evidence/verify/F-087/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'useLanguage' client/src/ | head -n 25",
