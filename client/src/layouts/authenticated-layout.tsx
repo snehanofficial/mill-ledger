@@ -5,7 +5,7 @@
  * Public auth routes (login) must NOT be nested under this.
  */
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useRef } from "react";
 import {
   Outlet,
   Navigate,
@@ -35,10 +35,35 @@ function RouteLoadingFallback() {
   );
 }
 
+function SessionTimeoutGuard({
+  onTimeout,
+  onSignOut,
+}: {
+  onTimeout: () => void;
+  onSignOut: () => Promise<void>;
+}) {
+  const { isWarningOpen, secondsRemaining, extendSession } = useSessionTimeout({
+    onTimeout,
+  });
+
+  return (
+    <SessionTimeoutModal
+      isOpen={isWarningOpen}
+      secondsRemaining={secondsRemaining}
+      onExtend={extendSession}
+      onSignOut={onSignOut}
+    />
+  );
+}
+
 export function AuthenticatedLayout() {
   const { user, isLoading } = useCurrentUser();
   const navigate = useNavigate();
   const location = useLocation();
+  const locationRef = useRef(location);
+  useEffect(() => {
+    locationRef.current = location;
+  }, [location]);
   const matches = useMatches();
   const queryClient = useQueryClient();
 
@@ -78,26 +103,26 @@ export function AuthenticatedLayout() {
   }, [label, location.pathname]);
 
   // WCAG 2.2 SC 2.2.1 & SC 3.3.7: Proactive idle session warning and draft preservation
-  const { isWarningOpen, secondsRemaining, extendSession } = useSessionTimeout({
-    onTimeout: () => {
-      saveActiveFormDraft(location.pathname);
-      queryClient.clear();
-      navigate("/auth/login", {
-        replace: true,
-        state: { from: location, sessionExpired: true },
-      });
-    },
-  });
+  const handleSessionTimeout = useCallback(() => {
+    const currentLocation = locationRef.current;
+    saveActiveFormDraft(currentLocation.pathname);
+    queryClient.clear();
+    navigate("/auth/login", {
+      replace: true,
+      state: { from: currentLocation, sessionExpired: true },
+    });
+  }, [navigate, queryClient]);
 
   // Listen for unauthorized session expiration across active API queries
   useEffect(() => {
     const handleUnauthorized = () => {
+      const currentLocation = locationRef.current;
       // WCAG 2.2 SC 3.3.7: Serialize in-progress form inputs before redirect
-      saveActiveFormDraft(location.pathname);
+      saveActiveFormDraft(currentLocation.pathname);
       queryClient.clear();
       navigate("/auth/login", {
         replace: true,
-        state: { from: location, sessionExpired: true },
+        state: { from: currentLocation, sessionExpired: true },
       });
     };
 
@@ -105,7 +130,7 @@ export function AuthenticatedLayout() {
     return () => {
       window.removeEventListener("millledger:unauthorized", handleUnauthorized);
     };
-  }, [navigate, queryClient, location]);
+  }, [navigate, queryClient]);
 
   // REQ-062 & Owner Decision 2: Keep authenticated ERP pages noindex, nofollow
   useEffect(() => {
@@ -176,10 +201,8 @@ export function AuthenticatedLayout() {
       >
         {routeAnnouncement}
       </div>
-      <SessionTimeoutModal
-        isOpen={isWarningOpen}
-        secondsRemaining={secondsRemaining}
-        onExtend={extendSession}
+      <SessionTimeoutGuard
+        onTimeout={handleSessionTimeout}
         onSignOut={handleSignOut}
       />
       <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>

@@ -22,10 +22,12 @@
 
 import {
   Fragment,
+  memo,
   type ReactNode,
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -451,7 +453,7 @@ function AppNavItem({ item, pathname }: NavItemProps) {
 
 // ─── AppNav ───────────────────────────────────────────────────────────────────
 
-function AppNav({
+const AppNav = memo(function AppNav({
   sections,
   pathname,
 }: {
@@ -477,7 +479,7 @@ function AppNav({
       ))}
     </>
   );
-}
+});
 
 // ─── SidebarCollapseToggle ───────────────────────────────────────────────────
 // Explicit option to collapse the sidebar to icons only or expand back
@@ -1353,7 +1355,11 @@ export function AuthenticatedShell({
     }
   };
 
-  const sections = getNavSections(user.role);
+  const sections = useMemo(() => getNavSections(user.role), [user.role]);
+  const handleOpenSearch = useCallback(() => setSearchOpen(true), []);
+  const handleOpenNotifications = useCallback(() => setNotificationsOpen(true), []);
+  const handleOpenOutbox = useCallback(() => setOutboxOpen(true), []);
+  const handleOpenHelp = useCallback(() => setShowHelpModal(true), []);
 
   // Intent-based and idle route prefetching (F-076)
   useEffect(() => {
@@ -1397,7 +1403,7 @@ export function AuthenticatedShell({
             <SidebarUserMenu
               user={user}
               onSignOut={handleSafeSignOut}
-              onOpenHelp={() => setShowHelpModal(true)}
+              onOpenHelp={handleOpenHelp}
             />
           </SidebarFooter>
           <SidebarRail />
@@ -1407,12 +1413,12 @@ export function AuthenticatedShell({
           <StickyHeader
             user={user}
             notificationCount={unreadCount || notificationCount}
-            onSearchOpen={() => setSearchOpen(true)}
-            onNotificationsClick={() => setNotificationsOpen(true)}
+            onSearchOpen={handleOpenSearch}
+            onNotificationsClick={handleOpenNotifications}
             onSignOut={handleSafeSignOut}
-            onOpenHelp={() => setShowHelpModal(true)}
+            onOpenHelp={handleOpenHelp}
             syncState={syncState}
-            onOpenOutbox={() => setOutboxOpen(true)}
+            onOpenOutbox={handleOpenOutbox}
             pendingCount={pendingCount}
           />
 
@@ -1487,21 +1493,26 @@ export function AuthenticatedShell({
         <Toaster />
 
         {/* Global search palette */}
-        <GlobalSearch
-          open={searchOpen}
-          onOpenChange={setSearchOpen}
-          sections={sections}
-        />
+        {searchOpen && (
+          <GlobalSearch
+            open={searchOpen}
+            onOpenChange={setSearchOpen}
+            sections={sections}
+          />
+        )}
 
         {/* Device Outbox Sheet */}
-        <DeviceOutboxSheet
-          open={outboxOpen}
-          onOpenChange={setOutboxOpen}
-          userId={user.id}
-        />
+        {outboxOpen && (
+          <DeviceOutboxSheet
+            open={outboxOpen}
+            onOpenChange={setOutboxOpen}
+            userId={user.id}
+          />
+        )}
 
         {/* Confirm Logout Dialog if unsynced orders exist */}
-        <Dialog open={confirmLogoutOpen} onOpenChange={setConfirmLogoutOpen}>
+        {confirmLogoutOpen && (
+          <Dialog open={confirmLogoutOpen} onOpenChange={setConfirmLogoutOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogTitle>Pending orders stored locally</DialogTitle>
             <p className="text-sm text-muted-foreground mt-2">
@@ -1530,8 +1541,10 @@ export function AuthenticatedShell({
             </div>
           </DialogContent>
         </Dialog>
+        )}
 
         {/* Notifications sheet (F-065) */}
+        {notificationsOpen && (
         <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
           <SheetContent
             side="right"
@@ -1656,9 +1669,12 @@ export function AuthenticatedShell({
             </div>
           </SheetContent>
         </Sheet>
+        )}
 
         {/* Operational Documentation & Guide Modal (F-049) */}
-        <HelpGuideModal open={showHelpModal} onOpenChange={setShowHelpModal} />
+        {showHelpModal && (
+          <HelpGuideModal open={showHelpModal} onOpenChange={setShowHelpModal} />
+        )}
       </SidebarProvider>
     </TooltipProvider>
   );

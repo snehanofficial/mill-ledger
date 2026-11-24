@@ -100,7 +100,9 @@ export function ProductionPage() {
     user?.role === "ADMIN" || user?.role === "PRODUCTION";
   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
   const [selectedRun, setSelectedRun] = useState<ProductionRun | null>(null);
-  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
 
   // Form states for benchmark Murukku batch
   const [selectedRecipeId, setSelectedRecipeId] = useState("");

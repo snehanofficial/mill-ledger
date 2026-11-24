@@ -135,7 +135,9 @@ export function PaymentsPage() {
     "ledger",
     { replace: false },
   );
-  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
   const [modeFilter, setModeFilter] = useUrlState("mode", "ALL");
 
   // Modals state

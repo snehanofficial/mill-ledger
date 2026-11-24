@@ -1,6 +1,11 @@
 import { useState, useId } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSyncManager } from "@/offline/use-offline";
 import { apiClient } from "@/lib/api-client";
@@ -18,6 +23,8 @@ import {
   PlusIcon,
   MinusIcon,
   PackageIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -30,6 +37,17 @@ interface ProductItem {
   taxRate: number;
   hsnCode?: string;
   uom?: string;
+  imageUrl?: string;
+}
+
+interface ProductsResponse {
+  products: ProductItem[];
+  pagination?: {
+    limit: number;
+    offset: number;
+    count: number;
+    total: number;
+  };
 }
 
 interface CustomerItem {
@@ -67,6 +85,20 @@ export function NewOrderPage() {
   });
   const [orderNotes, setOrderNotes] = useState("Wholesale store delivery");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 12;
+  const [productCache, setProductCache] = useState<Record<string, ProductItem>>({
+    "VAR-MURUKKU-200G": {
+      id: "VAR-MURUKKU-200G",
+      sku: "VAR-MURUKKU-200G",
+      name: "Murukku 200 g",
+      productName: "Murukku Standard Pack",
+      defaultPrice: 50.0,
+      taxRate: 5.0,
+      uom: "PKT",
+      imageUrl: "/products/murukku.svg",
+    },
+  });
 
   // Fetch customers
   const { data: customersData } = useQuery<{ customers: CustomerItem[] }>({
@@ -77,13 +109,24 @@ export function NewOrderPage() {
     },
   });
 
-  // Fetch products
-  const { data: productsData } = useQuery<{ products: ProductItem[] }>({
-    queryKey: ["sales-products"],
+  // Fetch paginated products
+  const {
+    data: productsData,
+    isLoading: isProductsLoading,
+    isError: isProductsError,
+    error: productsError,
+    isFetching: isProductsFetching,
+    refetch: refetchProducts,
+  } = useQuery<ProductsResponse>({
+    queryKey: ["sales-products", page, pageSize],
     queryFn: async () => {
-      const res = await apiClient.get("/sales/products");
+      const offset = (page - 1) * pageSize;
+      const res = await apiClient.get<ProductsResponse>(
+        `/sales/products?organizationId=MILL&limit=${pageSize}&offset=${offset}`,
+      );
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   // Fetch stock balances
@@ -112,17 +155,20 @@ export function NewOrderPage() {
     },
   ];
 
-  const productsList: ProductItem[] = productsData?.products || [
-    {
-      id: "VAR-MURUKKU-200G",
-      sku: "VAR-MURUKKU-200G",
-      name: "Murukku 200 g",
-      productName: "Murukku Standard Pack",
-      defaultPrice: 50.0,
-      taxRate: 5.0,
-      uom: "PKT",
-    },
-  ];
+  const productsList: ProductItem[] = productsData?.products ?? [];
+  const totalProducts = productsData?.pagination?.total ?? productsList.length;
+  const totalPages = Math.max(1, Math.ceil(totalProducts / pageSize));
+  const rangeStart = totalProducts === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd = Math.min(page * pageSize, totalProducts);
+
+  const visiblePageNumbers = (() => {
+    const maxButtons = 5;
+    if (totalPages <= maxButtons) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const start = Math.max(1, Math.min(page - 2, totalPages - maxButtons + 1));
+    return Array.from({ length: maxButtons }, (_, i) => start + i);
+  })();
 
   const balances = stockData?.balances || [];
 
@@ -138,23 +184,32 @@ export function NewOrderPage() {
     return balances.find((b) => b.sku === sku)?.available ?? 0;
   };
 
-  const updateQuantity = (variantId: string, qty: number) => {
+  const updateQuantity = (product: ProductItem, qty: number) => {
     const validQty = Math.max(0, Math.floor(qty || 0));
+    setProductCache((prev) => ({
+      ...prev,
+      [product.id]: product,
+      [product.sku]: product,
+    }));
     setQuantities((prev) => ({
       ...prev,
-      [variantId]: validQty,
+      [product.id]: validQty,
     }));
   };
 
-  const handleStep = (variantId: string, delta: number) => {
-    const current = quantities[variantId] || 0;
-    updateQuantity(variantId, current + delta);
+  const handleStep = (product: ProductItem, delta: number) => {
+    const current = quantities[product.id] ?? quantities[product.sku] ?? 0;
+    updateQuantity(product, current + delta);
   };
 
-  // Order summary calculations
-  const orderLines = productsList
-    .map((product) => {
-      const qty = quantities[product.id] ?? quantities[product.sku] ?? 0;
+  // Order summary calculations across all paginated selections
+  const orderLines = Object.entries(quantities)
+    .filter(([, qty]) => qty > 0)
+    .map(([key, qty]) => {
+      const product =
+        productsList.find((p) => p.id === key || p.sku === key) ??
+        productCache[key];
+      if (!product) return null;
       const unitPrice = Number(product.defaultPrice || 50.0);
       const taxable = qty * unitPrice;
       const taxRate = Number(product.taxRate || 5.0) / 100;
@@ -175,7 +230,7 @@ export function NewOrderPage() {
         shortage,
       };
     })
-    .filter((line) => line.quantity > 0);
+    .filter((line): line is NonNullable<typeof line> => line !== null);
 
   const totalItemCount = orderLines.reduce((acc, l) => acc + l.quantity, 0);
   const totalTaxable = orderLines.reduce((acc, l) => acc + l.taxable, 0);
@@ -186,6 +241,9 @@ export function NewOrderPage() {
   // Submit order mutation
   const createOrderMutation = useMutation({
     mutationFn: async () => {
+      if (!activeCustomer) {
+        throw new Error("Please select a customer before placing an order.");
+      }
       const payload = {
         organizationId: "MILL",
         customerId: activeCustomer.id,
@@ -213,6 +271,10 @@ export function NewOrderPage() {
   });
 
   const handleSubmit = async () => {
+    if (!activeCustomer) {
+      toast.error("Please select a customer before placing an order.");
+      return;
+    }
     if (totalItemCount === 0) {
       toast.error("Please add at least one product packet to your order.");
       return;
@@ -364,43 +426,106 @@ export function NewOrderPage() {
 
         {/* Product Catalog Grid */}
         <section aria-labelledby="catalog-heading" className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 id="catalog-heading" className="text-lg font-bold text-foreground flex items-center gap-2">
-                <PackageIcon className="size-5 text-primary" />
-                Product Catalog ({productsList.length} items)
+                <PackageIcon className="size-5 text-primary" aria-hidden="true" />
+                Product Catalog ({totalProducts} {totalProducts === 1 ? "item" : "items"})
               </h2>
               <p className="text-xs text-muted-foreground">
                 Touch <strong>+</strong> or <strong>−</strong> steppers (min 44px) to adjust batch packet quantity
               </p>
             </div>
+            {totalProducts > 0 && (
+              <div className="text-xs text-muted-foreground" aria-live="polite">
+                Showing {rangeStart}–{rangeEnd} of {totalProducts}
+                {isProductsFetching && !isProductsLoading ? " (Updating...)" : ""}
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
-            {productsList.map((product) => {
-              const qty = quantities[product.id] ?? quantities[product.sku] ?? 0;
-              const unitPrice = Number(product.defaultPrice || 50.0);
-              const availableStock = getProductStock(product.sku);
-              const isShort = qty > availableStock;
-              const hasOrder = qty > 0;
-
-              return (
-                <article
-                  key={product.id}
-                  className={`product-card group relative flex flex-col justify-between rounded-xl border bg-card p-4 sm:p-5 shadow-xs transition-all duration-200 hover:shadow-md ${
-                    hasOrder
-                      ? "border-primary/40 ring-1 ring-primary/20 bg-primary/[0.02]"
-                      : "border-border"
-                  }`}
+          {isProductsLoading ? (
+            <div
+              role="status"
+              aria-live="polite"
+              className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground"
+            >
+              Loading product catalog...
+            </div>
+          ) : isProductsError ? (
+            <div
+              role="alert"
+              className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            >
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Unable to load products
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {productsError instanceof Error
+                    ? productsError.message
+                    : "Check your connection and try again."}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => refetchProducts()}
+                className="min-h-[44px] cursor-pointer"
+              >
+                Retry
+              </Button>
+            </div>
+          ) : productsList.length === 0 ? (
+            <div className="rounded-xl border border-border bg-card p-8 text-center flex flex-col items-center gap-3">
+              <p className="text-sm font-semibold text-foreground">
+                No products found on this page
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {page > 1
+                  ? "Return to the first page to view available products."
+                  : "No active sellable product variants are configured for this organization."}
+              </p>
+              {page > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPage(1)}
+                  className="min-h-[44px] cursor-pointer"
                 >
-                  <div className="flex flex-col gap-3">
-                    {/* Visual Product Thumbnail with semantic img element */}
-                    <div className="relative aspect-video w-full rounded-lg bg-muted/40 border border-border/60 overflow-hidden flex items-center justify-center p-2">
-                      <img
-                        src="/products/murukku.svg"
-                        alt={`${product.name} packaging pouch`}
-                        className="h-28 w-28 object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-xs"
-                      />
+                  Go to Page 1
+                </Button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+                {productsList.map((product) => {
+                  const qty = quantities[product.id] ?? quantities[product.sku] ?? 0;
+                  const unitPrice = Number(product.defaultPrice || 50.0);
+                  const availableStock = getProductStock(product.sku);
+                  const isShort = qty > availableStock;
+                  const hasOrder = qty > 0;
+
+                  return (
+                    <article
+                      key={product.id}
+                      className={`product-card group relative flex flex-col justify-between rounded-xl border bg-card p-4 sm:p-5 shadow-xs transition-all duration-200 hover:shadow-md ${
+                        hasOrder
+                          ? "border-primary/40 ring-1 ring-primary/20 bg-primary/[0.02]"
+                          : "border-border"
+                      }`}
+                    >
+                      <div className="flex flex-col gap-3">
+                        {/* Visual Product Thumbnail with semantic img element */}
+                        <div className="relative aspect-video w-full rounded-lg bg-muted/40 border border-border/60 overflow-hidden flex items-center justify-center p-2">
+                          <img
+                            src={product.imageUrl || "/products/murukku.svg"}
+                            alt={`${product.name} packaging pouch`}
+                            width={112}
+                            height={112}
+                            className="h-28 w-28 object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-xs"
+                          />
                       <div className="absolute top-2 right-2">
                         {availableStock > 0 ? (
                           <Badge
@@ -478,7 +603,7 @@ export function NewOrderPage() {
                         <button
                           type="button"
                           aria-label={`Decrease quantity of ${product.name}`}
-                          onClick={() => handleStep(product.id, -10)}
+                          onClick={() => handleStep(product, -10)}
                           disabled={qty === 0}
                           className="min-w-[44px] min-h-[44px] size-11 flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted active:scale-95 text-foreground font-bold text-base transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
@@ -489,7 +614,7 @@ export function NewOrderPage() {
                           type="number"
                           min="0"
                           value={qty}
-                          onChange={(e) => updateQuantity(product.id, Number(e.target.value))}
+                          onChange={(e) => updateQuantity(product, Number(e.target.value))}
                           aria-label={`Quantity of ${product.name}`}
                           className="w-16 h-11 text-center font-mono font-bold text-base border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                         />
@@ -497,7 +622,7 @@ export function NewOrderPage() {
                         <button
                           type="button"
                           aria-label={`Increase quantity of ${product.name}`}
-                          onClick={() => handleStep(product.id, 10)}
+                          onClick={() => handleStep(product, 10)}
                           className="min-w-[44px] min-h-[44px] size-11 flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted active:scale-95 text-foreground font-bold text-base transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                           <PlusIcon className="size-4" />
@@ -517,7 +642,61 @@ export function NewOrderPage() {
                 </article>
               );
             })}
-          </div>
+              </div>
+
+              {totalPages > 1 && (
+                <nav
+                  aria-label="Product catalog pagination"
+                  className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3"
+                >
+                  <div className="text-xs text-muted-foreground">
+                    Page <span className="font-semibold text-foreground">{page}</span> of{" "}
+                    <span className="font-semibold text-foreground">{totalPages}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page <= 1 || isProductsFetching}
+                      aria-label="Go to previous page"
+                      className="min-h-[44px] px-3 gap-1 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeftIcon className="size-4" aria-hidden="true" />
+                      <span>Previous</span>
+                    </Button>
+
+                    {visiblePageNumbers.map((pageNum) => (
+                      <Button
+                        key={pageNum}
+                        type="button"
+                        variant={pageNum === page ? "primary" : "outline"}
+                        onClick={() => setPage(pageNum)}
+                        disabled={isProductsFetching}
+                        aria-label={`Go to page ${pageNum}`}
+                        aria-current={pageNum === page ? "page" : undefined}
+                        className="min-w-[44px] min-h-[44px] px-3 cursor-pointer disabled:cursor-not-allowed"
+                      >
+                        {pageNum}
+                      </Button>
+                    ))}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page >= totalPages || isProductsFetching}
+                      aria-label="Go to next page"
+                      className="min-h-[44px] px-3 gap-1 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      <span>Next</span>
+                      <ChevronRightIcon className="size-4" aria-hidden="true" />
+                    </Button>
+                  </div>
+                </nav>
+              )}
+            </>
+          )}
         </section>
       </div>
 

@@ -121,7 +121,9 @@ export function OrdersPage() {
     { replace: false },
   );
   const [statusFilter, setStatusFilter] = useUrlState("status", "ALL");
-  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
   const canCreateOrder = user?.role === "ADMIN" || user?.role === "SALESMAN";
   const canApproveOrder = user?.role === "ADMIN";
   const canCreateInvoice = user?.role === "ADMIN";
@@ -189,7 +191,7 @@ export function OrdersPage() {
           thumbnailUrl?: string;
           thumbHash?: string;
         }>;
-      }>("/sales/products");
+      }>("/sales/products?limit=100");
       return res.data.products;
     },
   });
@@ -250,20 +252,23 @@ export function OrdersPage() {
     },
   });
 
-  const productStock = stockData?.balances.find(
-    (b) =>
-      b.sku === activeProduct.sku ||
-      (b.sku === "FG-MURUKKU-200G" && activeProduct.sku.includes("MURUKKU")),
-  );
+  const productStock = activeProduct
+    ? stockData?.balances.find(
+        (b) =>
+          b.sku === activeProduct.sku ||
+          (b.sku === "FG-MURUKKU-200G" &&
+            activeProduct.sku.includes("MURUKKU")),
+      )
+    : undefined;
   const availablePackets = productStock?.available ?? 0;
   const currentShortage = Math.max(0, orderQuantity - availablePackets);
 
   // Dynamic tax calculation
-  const customerState = activeCustomer.state || "Tamil Nadu";
+  const customerState = activeCustomer?.state || "Tamil Nadu";
   const isIntraState = customerState.trim().toLowerCase() === "tamil nadu";
 
-  const unitPrice = Number(activeProduct.defaultPrice || 50.0);
-  const taxPct = Number(activeProduct.taxRate || 5.0) / 100;
+  const unitPrice = Number(activeProduct?.defaultPrice || 50.0);
+  const taxPct = Number(activeProduct?.taxRate || 5.0) / 100;
   const calculatedTaxable = orderQuantity * unitPrice;
   const calculatedTax = calculatedTaxable * taxPct;
   const calculatedTotal = calculatedTaxable + calculatedTax;
@@ -271,6 +276,9 @@ export function OrdersPage() {
   // Create order mutation
   const createOrderMutation = useMutation({
     mutationFn: async () => {
+      if (!activeCustomer || !activeProduct) {
+        throw new Error("Customer and product are required to create an order.");
+      }
       const res = await apiClient.post("/sales/orders", {
         organizationId: "MILL",
         customerId: activeCustomer.id,
@@ -294,6 +302,9 @@ export function OrdersPage() {
   });
 
   const handleCreateOrder = async () => {
+    if (!activeCustomer || !activeProduct) {
+      return;
+    }
     const customerId = activeCustomer.id;
     const customerName = activeCustomer.name;
     const items = [
@@ -1323,6 +1334,7 @@ export function OrdersPage() {
       </div>
 
       {/* New Order Modal */}
+      {showNewOrderModal && (
       <Dialog open={showNewOrderModal} onOpenChange={setShowNewOrderModal}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -1378,8 +1390,8 @@ export function OrdersPage() {
             <div className="flex items-center gap-3 rounded-lg border bg-muted/30 p-2.5">
               <div className="size-14 shrink-0 overflow-hidden rounded-md border bg-background flex items-center justify-center">
                 <img
-                  src={activeProduct.imageUrl || "/products/murukku.svg"}
-                  alt={activeProduct.name || "Product Packaging"}
+                  src={activeProduct?.imageUrl || "/products/murukku.svg"}
+                  alt={activeProduct?.name || "Product Packaging"}
                   width={56}
                   height={56}
                   loading="lazy"
@@ -1408,7 +1420,7 @@ export function OrdersPage() {
                 </select>
                 <span className="text-xs text-muted-foreground">
                   Standard price: {formatINR(unitPrice)} / pkt (SKU:{" "}
-                  {activeProduct.sku})
+                  {activeProduct?.sku || "—"})
                 </span>
               </div>
             </div>
@@ -1521,6 +1533,7 @@ export function OrdersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      )}
 
       {/* Rejection Confirmation Dialog for Irreversible Action (F-048) */}
       {selectedOrderForAction && actionType === "REJECT" && (

@@ -61,6 +61,8 @@ export interface MetaRecord {
   updatedAt: string;
 }
 
+let hasWarnedPersistence = false;
+
 /**
  * Request persistent storage permission from the browser (F-087 / W3C Storage Standard).
  * Prevents mobile browser storage eviction of mission-critical offline orders and snapshots.
@@ -82,14 +84,18 @@ export async function requestPersistentStorage(): Promise<boolean> {
       }
 
       const granted = await navigator.storage.persist();
-      if (!granted) {
-        console.warn(
+      if (!granted && !hasWarnedPersistence) {
+        hasWarnedPersistence = true;
+        console.info(
           "Storage persistence not granted; offline outbox may be subject to browser eviction under disk pressure."
         );
       }
       return granted;
     } catch (err) {
-      console.warn("Error requesting persistent storage:", err);
+      if (!hasWarnedPersistence) {
+        hasWarnedPersistence = true;
+        console.warn("Error requesting persistent storage:", err);
+      }
       return false;
     }
   }

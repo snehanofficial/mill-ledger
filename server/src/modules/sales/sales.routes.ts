@@ -142,7 +142,7 @@ salesRouter.post(
   },
 );
 
-// GET /api/v1/sales/products - Product snapshot and price list for offline cache
+// GET /api/v1/sales/products - Paginated product snapshot and price list
 salesRouter.get(
   "/products",
   requireAuth,
@@ -150,8 +150,29 @@ salesRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = (req.query.organizationId as string) || "MILL";
-      const products = await salesService.getProducts(orgId);
-      res.json({ products });
+      const limit =
+        req.query.limit !== undefined ? Number(req.query.limit) : undefined;
+      const effectiveLimit =
+        limit !== undefined && Number.isFinite(limit)
+          ? Math.min(Math.max(Math.floor(limit), 1), 100)
+          : 50;
+      const offset =
+        req.query.offset !== undefined
+          ? Number(req.query.offset)
+          : req.query.page !== undefined
+            ? (Math.max(Number(req.query.page) || 1, 1) - 1) * effectiveLimit
+            : undefined;
+
+      const result = await salesService.getProducts(orgId, { limit, offset });
+      res.json({
+        products: result.products,
+        pagination: {
+          limit: result.limit,
+          offset: result.offset,
+          count: result.products.length,
+          total: result.total,
+        },
+      });
     } catch (err) {
       next(err);
     }

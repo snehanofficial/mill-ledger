@@ -100,7 +100,9 @@ export function InvoicesPage() {
     useState<string>("");
   const [invoiceNotes, setInvoiceNotes] = useState("");
   const [statusFilter, setStatusFilter] = useUrlState("status", "ALL");
-  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
   const [page, setPage] = useState(1);
   const pageSize = 50;
 

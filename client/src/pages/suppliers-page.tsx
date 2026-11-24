@@ -59,7 +59,9 @@ export function SuppliersPage() {
   const canManageSuppliers =
     user?.role === "ADMIN" || user?.role === "PRODUCTION" || user?.role === "OWNER";
 
-  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
   const [statusFilter, setStatusFilter] = useUrlState<
     "ALL" | "ACTIVE" | "INACTIVE"
   >("status", "ALL");

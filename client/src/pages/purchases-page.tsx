@@ -84,7 +84,9 @@ export function PurchasesPage() {
     user?.role === "ADMIN" || user?.role === "PRODUCTION";
   const [showModal, setShowModal] = useState(false);
   const [showConfirmReceipt, setShowConfirmReceipt] = useState(false);
-  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
 
   // Form states
   const [selectedSupplierId, setSelectedSupplierId] = useState("");

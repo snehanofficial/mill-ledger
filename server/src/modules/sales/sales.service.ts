@@ -1376,32 +1376,58 @@ export class SalesService {
   }
 
   /**
-   * Get sellable products and default price list snapshot for offline cache
+   * Get sellable products and default price list snapshot (paginated, default 50, max 100)
    */
-  async getProducts(organizationId: string) {
+  async getProducts(
+    organizationId: string,
+    options?: { limit?: number; offset?: number },
+  ) {
     const org = await this.resolveOrgId(organizationId);
-    const variants = await prisma.productVariant.findMany({
-      where: {
-        product: {
-          organizationId: org,
-          isActive: true,
-        },
+    const parsedLimit =
+      options?.limit !== undefined && Number.isFinite(Number(options.limit))
+        ? Math.floor(Number(options.limit))
+        : 50;
+    const limit = Math.min(Math.max(parsedLimit, 1), 100);
+
+    const parsedOffset =
+      options?.offset !== undefined && Number.isFinite(Number(options.offset))
+        ? Math.floor(Number(options.offset))
+        : 0;
+    const offset = Math.max(parsedOffset, 0);
+
+    const where: Prisma.ProductVariantWhereInput = {
+      product: {
+        organizationId: org,
+        isActive: true,
       },
-      include: {
-        product: true,
-        uom: true,
-        priceLines: {
-          where: {
-            priceList: {
-              isDefault: true,
+    };
+
+    const [variants, total] = await Promise.all([
+      prisma.productVariant.findMany({
+        where,
+        include: {
+          product: true,
+          uom: true,
+          priceLines: {
+            where: {
+              priceList: {
+                isDefault: true,
+              },
             },
           },
         },
-      },
-      orderBy: {
-        sku: "asc",
-      },
-    });
+        orderBy: {
+          sku: "asc",
+        },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.productVariant.count({ where }),
+    ]);
+
+    if (variants.length === 0) {
+      return { products: [], total, limit, offset };
+    }
 
     const now = new Date();
     const hsnCodes = Array.from(
@@ -1411,17 +1437,20 @@ export class SalesService {
           .filter((h): h is string => Boolean(h)),
       ),
     );
-    const taxRates = await prisma.taxRate.findMany({
-      where: {
-        organizationId,
-        hsnCode: { in: hsnCodes },
-        effectiveFrom: { lte: now },
-        OR: [{ effectiveTo: null }, { effectiveTo: { gte: now } }],
-      },
-      orderBy: {
-        effectiveFrom: "desc",
-      },
-    });
+    const taxRates =
+      hsnCodes.length > 0
+        ? await prisma.taxRate.findMany({
+            where: {
+              organizationId,
+              hsnCode: { in: hsnCodes },
+              effectiveFrom: { lte: now },
+              OR: [{ effectiveTo: null }, { effectiveTo: { gte: now } }],
+            },
+            orderBy: {
+              effectiveFrom: "desc",
+            },
+          })
+        : [];
 
     const taxRateMap = new Map<string, number>();
     for (const tr of taxRates) {
@@ -1430,7 +1459,7 @@ export class SalesService {
       }
     }
 
-    return variants.map((v) => {
+    const products = variants.map((v) => {
       const defaultPrice = v.priceLines[0]?.price
         ? Number(v.priceLines[0].price)
         : 50.0;
@@ -1452,6 +1481,8 @@ export class SalesService {
         thumbHash: v.thumbHash,
       };
     });
+
+    return { products, total, limit, offset };
   }
 
   /**

@@ -85,7 +85,9 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     : allowedTabs[0]?.id || "sales";
 
   const [exporting, setExporting] = useState(false);
-  const [auditSearch, setAuditSearch] = useUrlState("q", "");
+  const [auditSearch, setAuditSearch] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
   const [auditActionFilter, setAuditActionFilter] = useUrlState("action", "ALL");
 
   // 1. Sales Report

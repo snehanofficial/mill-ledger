@@ -113,7 +113,9 @@ export function DispatchPage() {
   const [dispatchError, setDispatchError] = useState<string | null>(null);
   const [showConfirmDispatchDialog, setShowConfirmDispatchDialog] =
     useState(false);
-  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
 
   // 1. Fetch posted dispatches
   const {

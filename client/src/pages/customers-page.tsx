@@ -38,7 +38,9 @@ interface Customer {
 
 export function CustomersPage() {
   const { t } = useLanguage();
-  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     customers: Customer[];

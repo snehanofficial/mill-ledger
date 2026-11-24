@@ -52,6 +52,35 @@ const DEFAULT_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
  * following Indian grouping standards (Lakhs, Crores) with 2 decimal places.
  * Example: 100000 -> ₹1,00,000.00
  */
+const numberFormatCache = new Map<string, Intl.NumberFormat>();
+const dateFormatCache = new Map<string, Intl.DateTimeFormat>();
+
+function getNumberFormatter(
+  locale: string,
+  options: Intl.NumberFormatOptions,
+): Intl.NumberFormat {
+  const key = `${locale}|${options.style ?? ""}|${options.currency ?? ""}|${options.minimumFractionDigits ?? ""}|${options.maximumFractionDigits ?? ""}`;
+  let formatter = numberFormatCache.get(key);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, options);
+    numberFormatCache.set(key, formatter);
+  }
+  return formatter;
+}
+
+function getDateFormatter(
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+): Intl.DateTimeFormat {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  let formatter = dateFormatCache.get(key);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, options);
+    dateFormatCache.set(key, formatter);
+  }
+  return formatter;
+}
+
 export function formatINR(
   amount: number | string | { toString(): string } | null | undefined,
   options: FormatINROptions = {}
@@ -90,7 +119,7 @@ export function formatINR(
       : (locale || "en-IN");
 
   if (symbol) {
-    return new Intl.NumberFormat(resolvedLocale, {
+    return getNumberFormatter(resolvedLocale, {
       style: "currency",
       currency: "INR",
       minimumFractionDigits,
@@ -98,7 +127,7 @@ export function formatINR(
     }).format(num);
   }
 
-  return new Intl.NumberFormat(resolvedLocale, {
+  return getNumberFormatter(resolvedLocale, {
     minimumFractionDigits,
     maximumFractionDigits,
   }).format(num);
@@ -145,7 +174,7 @@ export function formatQuantity(
       ? "ta-IN"
       : (locale || "en-IN");
 
-  const formatted = new Intl.NumberFormat(resolvedLocale, {
+  const formatted = getNumberFormatter(resolvedLocale, {
     minimumFractionDigits,
     maximumFractionDigits,
   }).format(num);
@@ -169,7 +198,7 @@ export function formatDate(
   const resolvedLocale = rawLocale === "ta" || rawLocale === "ta-IN" ? "ta-IN" : (rawLocale || "en-IN");
 
   const { locale: _l, lang: _lg, ...dtOptions } = { ...DEFAULT_DATE_OPTIONS, ...options };
-  return new Intl.DateTimeFormat(resolvedLocale, dtOptions).format(d);
+  return getDateFormatter(resolvedLocale, dtOptions).format(d);
 }
 
 /**

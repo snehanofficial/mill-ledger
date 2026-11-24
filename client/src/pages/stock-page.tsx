@@ -53,7 +53,9 @@ const CATEGORY_LABELS: Record<
 
 export function StockPage() {
   const { t } = useLanguage();
-  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
   const [categoryFilter, setCategoryFilter] = useUrlState("category", "ALL");
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{

@@ -37,10 +37,23 @@ export async function refreshMasterDataSnapshot(
   userId: string,
 ): Promise<{ customersCount: number; productsCount: number }> {
   try {
-    const [custRes, prodRes] = await Promise.all([
+    const [custRes, firstProdRes] = await Promise.all([
       apiClient.get<{ customers: Array<CachedCustomer> }>("/sales/customers"),
-      apiClient.get<{ products: Array<CachedProduct> }>("/sales/products"),
+      apiClient.get<{
+        products: Array<CachedProduct>;
+        pagination?: { limit: number; offset: number; count: number; total?: number };
+      }>("/sales/products?limit=100&offset=0"),
     ]);
+
+    const allRawProducts = [...firstProdRes.data.products];
+    const totalProducts = firstProdRes.data.pagination?.total ?? allRawProducts.length;
+    for (let offset = allRawProducts.length; offset < totalProducts; offset += 100) {
+      const nextRes = await apiClient.get<{ products: Array<CachedProduct> }>(
+        `/sales/products?limit=100&offset=${offset}`,
+      );
+      if (nextRes.data.products.length === 0) break;
+      allRawProducts.push(...nextRes.data.products);
+    }
 
     const now = new Date().toISOString();
 
@@ -56,7 +69,7 @@ export async function refreshMasterDataSnapshot(
       updatedAt: now,
     }));
 
-    const products: CachedProduct[] = prodRes.data.products.map((p) => ({
+    const products: CachedProduct[] = allRawProducts.map((p) => ({
       id: p.id,
       sku: p.sku,
       name: p.name,
