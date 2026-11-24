@@ -97,18 +97,40 @@ export function SettingsPage() {
     },
   });
 
-  // Toggle User Active Status Mutation
+  // Toggle User Active Status Mutation (F-067: Optimistic update with cache rollback)
   const toggleUserMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
       const res = await apiClient.put(`/users/${id}`, { isActive });
       return res.data;
     },
+    onMutate: async ({ id, isActive }) => {
+      await queryClient.cancelQueries({ queryKey: ["admin-users"] });
+      const previousUsers = queryClient.getQueryData<{ users: UserRecord[] }>([
+        "admin-users",
+      ]);
+      queryClient.setQueryData<{ users: UserRecord[] }>(
+        ["admin-users"],
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            users: old.users.map((u) => (u.id === id ? { ...u, isActive } : u)),
+          };
+        },
+      );
+      return { previousUsers };
+    },
+    onError: (err: any, _vars, context) => {
+      if (context?.previousUsers) {
+        queryClient.setQueryData(["admin-users"], context.previousUsers);
+      }
+      toast.error(`Failed to update user: ${err.message}. Reverted changes.`);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       toast.success("User status updated successfully");
     },
-    onError: (err: any) => {
-      toast.error(`Failed to update user: ${err.message}`);
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     },
   });
 

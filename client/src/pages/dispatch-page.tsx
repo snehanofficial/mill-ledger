@@ -38,6 +38,7 @@ import {
   PackageCheckIcon,
   FileTextIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface DispatchLine {
   id: string;
@@ -144,7 +145,7 @@ export function DispatchPage() {
     (o) => o.status === "APPROVED" && o.fulfilmentStatus !== "FULFILLED",
   );
 
-  // 3. Create dispatch mutation
+  // 3. Create dispatch mutation (F-067: Optimistic update with cache rollback)
   const dispatchMutation = useMutation({
     mutationFn: async (payload: {
       salesOrderId: string;
@@ -156,12 +157,50 @@ export function DispatchPage() {
       const res = await apiClient.post("/sales/dispatches", payload);
       return res.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dispatches"] });
-      queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory-items"] });
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: ["sales-orders"] });
+      await queryClient.cancelQueries({ queryKey: ["dispatches"] });
+      const previousOrders = queryClient.getQueryData<{ orders: EligibleOrder[] }>([
+        "sales-orders",
+      ]);
+      const previousDispatches = queryClient.getQueryData<{
+        dispatches: Dispatch[];
+      }>(["dispatches"]);
+
+      queryClient.setQueryData<{ orders: EligibleOrder[] }>(
+        ["sales-orders"],
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            orders: old.orders.map((o) =>
+              o.id === payload.salesOrderId
+                ? { ...o, fulfilmentStatus: "FULFILLED" }
+                : o,
+            ),
+          };
+        },
+      );
       setShowConfirmDispatchDialog(false);
       setShowCreateModal(false);
+      return { previousOrders, previousDispatches };
+    },
+    onError: (err: any, _payload, context) => {
+      if (context?.previousOrders) {
+        queryClient.setQueryData(["sales-orders"], context.previousOrders);
+      }
+      if (context?.previousDispatches) {
+        queryClient.setQueryData(["dispatches"], context.previousDispatches);
+      }
+      const errorMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to record dispatch. Reverted to previous state.";
+      setDispatchError(errorMsg);
+      toast.error(errorMsg);
+    },
+    onSuccess: () => {
+      toast.success("Dispatch recorded successfully");
       setSelectedOrderId("");
       setVehicleNumber("");
       setDriverName("");
@@ -169,12 +208,10 @@ export function DispatchPage() {
       setNotes("");
       setDispatchError(null);
     },
-    onError: (err: any) => {
-      setDispatchError(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to record dispatch",
-      );
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["dispatches"] });
+      queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-items"] });
     },
   });
 

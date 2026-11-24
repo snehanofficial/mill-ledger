@@ -345,17 +345,49 @@ export function OrdersPage() {
     }
   };
 
-  // Approve order mutation
+  // Approve order mutation (F-067: Optimistic update with cache rollback)
   const approveMutation = useMutation({
     mutationFn: async (orderId: string) => {
       const res = await apiClient.post(`/sales/orders/${orderId}/approve`, {});
       return res.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
+    onMutate: async (orderId: string) => {
+      await queryClient.cancelQueries({ queryKey: ["sales-orders"] });
+      const previousData = queryClient.getQueryData<{ orders: SalesOrder[] }>([
+        "sales-orders",
+      ]);
+      queryClient.setQueryData<{ orders: SalesOrder[] }>(
+        ["sales-orders"],
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            orders: old.orders.map((o) =>
+              o.id === orderId ? { ...o, status: "APPROVED" } : o,
+            ),
+          };
+        },
+      );
       setSelectedOrderForAction(null);
       setActionType(null);
+      return { previousData };
+    },
+    onError: (err: any, _orderId, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(["sales-orders"], context.previousData);
+      }
+      toast.error(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to approve order. Reverted to previous state.",
+      );
+    },
+    onSuccess: () => {
+      toast.success("Order approved successfully");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
     },
   });
 
@@ -379,7 +411,7 @@ export function OrdersPage() {
     },
   });
 
-  // Reject order mutation
+  // Reject order mutation (F-067: Optimistic update with cache rollback)
   const rejectMutation = useMutation({
     mutationFn: async ({
       orderId,
@@ -393,11 +425,45 @@ export function OrdersPage() {
       });
       return res.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
+    onMutate: async ({ orderId, reason }) => {
+      await queryClient.cancelQueries({ queryKey: ["sales-orders"] });
+      const previousData = queryClient.getQueryData<{ orders: SalesOrder[] }>([
+        "sales-orders",
+      ]);
+      queryClient.setQueryData<{ orders: SalesOrder[] }>(
+        ["sales-orders"],
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            orders: old.orders.map((o) =>
+              o.id === orderId
+                ? { ...o, status: "REJECTED", rejectionReason: reason }
+                : o,
+            ),
+          };
+        },
+      );
       setSelectedOrderForAction(null);
       setActionType(null);
+      return { previousData };
+    },
+    onError: (err: any, _vars, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(["sales-orders"], context.previousData);
+      }
+      toast.error(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to reject order. Reverted to previous state.",
+      );
+    },
+    onSuccess: () => {
+      toast.success("Order rejected");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
     },
   });
 
