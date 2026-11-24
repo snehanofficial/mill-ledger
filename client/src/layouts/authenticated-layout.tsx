@@ -38,26 +38,34 @@ export function AuthenticatedLayout() {
   const matches = useMatches();
   const queryClient = useQueryClient();
 
-  // WCAG 2.2 SC 2.4.2 & REQ-062: Dynamically update document title based on active view
-  useEffect(() => {
-    const lastWithHandle = [...matches]
-      .reverse()
-      .find(
-        (m) =>
-          (m.handle as RouteHandle | undefined)?.breadcrumb !== undefined,
-      );
+  const lastWithHandle = [...matches]
+    .reverse()
+    .find(
+      (m) =>
+        (m.handle as RouteHandle | undefined)?.breadcrumb !== undefined,
+    );
 
-    if (lastWithHandle) {
-      const handle = lastWithHandle.handle as RouteHandle;
-      const label =
-        typeof handle.breadcrumb === "function"
-          ? handle.breadcrumb(lastWithHandle.data)
-          : handle.breadcrumb;
-      document.title = `${label} | MillLedger`;
-    } else {
-      document.title = "MillLedger";
+  let label = "Overview";
+  if (lastWithHandle) {
+    const handle = lastWithHandle.handle as RouteHandle;
+    label =
+      typeof handle.breadcrumb === "function"
+        ? handle.breadcrumb(lastWithHandle.data)
+        : handle.breadcrumb;
+  }
+
+  const routeAnnouncement = `${label} view loaded`;
+
+  // WCAG 2.2 SC 2.4.2, SC 4.1.3 & SC 2.4.3: Dynamically update title and manage focus
+  useEffect(() => {
+    document.title = `${label} | MillLedger`;
+
+    // Reset keyboard focus to primary main landmark upon client-side SPA navigation
+    const main = document.getElementById("main-content");
+    if (main) {
+      main.focus({ preventScroll: true });
     }
-  }, [matches]);
+  }, [label, location.pathname]);
 
   // Listen for unauthorized session expiration across active API queries
   useEffect(() => {
@@ -124,11 +132,22 @@ export function AuthenticatedLayout() {
   };
 
   return (
-    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>
-      <Suspense fallback={<RouteLoadingFallback />}>
-        <Outlet />
-      </Suspense>
-    </AuthenticatedShell>
+    <>
+      <div
+        id="route-announcer"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {routeAnnouncement}
+      </div>
+      <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>
+        <Suspense fallback={<RouteLoadingFallback />}>
+          <Outlet />
+        </Suspense>
+      </AuthenticatedShell>
+    </>
   );
 }
 
