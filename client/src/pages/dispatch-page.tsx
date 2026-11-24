@@ -351,7 +351,7 @@ export function DispatchPage() {
           </div>
         ) : dispatches.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center text-sm text-muted-foreground">
-            <TruckIcon className="mb-3 h-8 w-8 text-muted-foreground/50" />
+            <TruckIcon className="mb-3 h-8 w-8 text-muted-foreground" />
             <p className="font-medium text-foreground">No dispatches yet</p>
             <p className="mt-1 text-xs text-muted-foreground">
               Record a physical dispatch for an approved sales order to deduct

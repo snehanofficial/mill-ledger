@@ -268,7 +268,7 @@ export function NewOrderPage() {
               <ArrowLeftIcon className="size-3.5" />
               <span>{t("Back", "Back to Orders")}</span>
             </Link>
-            <span className="text-muted-foreground/40">/</span>
+            <span className="text-muted-foreground">/</span>
             <span className="text-xs font-semibold text-foreground">
               {t("New order", "New Wholesale Order")}
             </span>

@@ -382,7 +382,7 @@ export function InvoicesPage() {
           </div>
         ) : invoices.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 p-12 text-center text-sm text-muted-foreground">
-            <FileTextIcon className="h-8 w-8 stroke-1 text-muted-foreground/60" />
+            <FileTextIcon className="h-8 w-8 stroke-1 text-muted-foreground" />
             <p>No invoices posted yet.</p>
           </div>
         ) : (

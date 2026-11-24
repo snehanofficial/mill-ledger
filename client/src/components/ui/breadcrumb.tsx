@@ -78,7 +78,7 @@ function BreadcrumbSeparator({
       role="presentation"
       aria-hidden="true"
       className={cn(
-        "inline-flex items-center text-muted-foreground/60",
+        "inline-flex items-center text-muted-foreground",
         className,
       )}
       {...props}

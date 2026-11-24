@@ -417,7 +417,7 @@ export function ProductionPage() {
           </div>
         ) : runs.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 p-12 text-center text-sm text-muted-foreground">
-            <FactoryIcon className="h-8 w-8 stroke-1 text-muted-foreground/60" />
+            <FactoryIcon className="h-8 w-8 stroke-1 text-muted-foreground" />
             <p>No production batches recorded yet.</p>
             {canRecordProduction && (
               <Button

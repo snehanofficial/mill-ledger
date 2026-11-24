@@ -605,7 +605,7 @@ export function OrdersPage() {
           orders.length === 0 &&
           outboxOrders.filter((o) => o.status !== "synced").length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 p-12 text-center text-sm text-muted-foreground">
-            <ShoppingCartIcon className="h-8 w-8 stroke-1 text-muted-foreground/60" />
+            <ShoppingCartIcon className="h-8 w-8 stroke-1 text-muted-foreground" />
             <p>No sales orders created yet.</p>
             {canCreateOrder && (
               <Button

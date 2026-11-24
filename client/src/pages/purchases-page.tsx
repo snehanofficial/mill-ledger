@@ -292,7 +292,7 @@ export function PurchasesPage() {
           </div>
         ) : receipts.length === 0 ? (
           <div className="flex h-48 flex-col items-center justify-center p-6 text-center">
-            <TruckIcon className="size-8 text-muted-foreground/50 mb-2" />
+            <TruckIcon className="size-8 text-muted-foreground mb-2" />
             <p className="text-sm font-medium text-foreground">
               No purchase receipts recorded yet
             </p>

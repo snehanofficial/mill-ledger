@@ -525,7 +525,7 @@ export function PaymentsPage() {
             </div>
           ) : payments.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 text-center text-sm text-muted-foreground">
-              <CreditCardIcon className="mb-3 h-8 w-8 text-muted-foreground/50" />
+              <CreditCardIcon className="mb-3 h-8 w-8 text-muted-foreground" />
               <p className="font-medium text-foreground">
                 No payments recorded
               </p>

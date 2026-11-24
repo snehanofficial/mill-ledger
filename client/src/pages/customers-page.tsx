@@ -139,7 +139,7 @@ export function CustomersPage() {
           </div>
         ) : customers.length === 0 ? (
           <div className="flex h-48 flex-col items-center justify-center p-6 text-center">
-            <UsersIcon className="size-8 text-muted-foreground/50 mb-2" />
+            <UsersIcon className="size-8 text-muted-foreground mb-2" />
             <p className="text-sm font-medium text-foreground">
               No customer accounts found
             </p>
@@ -183,7 +183,7 @@ export function CustomersPage() {
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       <div className="flex items-center gap-1.5">
-                        <MapPinIcon className="size-3 text-muted-foreground/70" />
+                        <MapPinIcon className="size-3 text-muted-foreground" />
                         {c.state}
                       </div>
                     </TableCell>

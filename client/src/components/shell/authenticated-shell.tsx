@@ -1482,7 +1482,7 @@ export function AuthenticatedShell({
                           <span
                             className={cn(
                               "text-xs font-semibold leading-tight",
-                              n.read ? "text-foreground/80" : "text-foreground",
+                              n.read ? "text-muted-foreground" : "text-foreground",
                             )}
                           >
                             {n.title}
