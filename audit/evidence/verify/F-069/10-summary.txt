@@ -1,0 +1,33 @@
+======================================================================
+F-069 VERIFICATION SUMMARY: SCROLL RESTORATION ON MAIN CONTAINER
+======================================================================
+Date: 2026-11-24
+Severity: P2 | Tier: T7 | Cluster: CLUSTER-11
+Status: VERIFIED-PASS
+
+1. Root Cause:
+In `client/src/components/shell/authenticated-shell.tsx`, the primary scrollable
+container is internal (`<main id="main-content" className="... overflow-y-auto ...">`)
+rather than `window`. React Router DOM's default `<ScrollRestoration />` only monitors
+`window.scrollY`, causing navigation between routes to preserve stale vertical scroll offsets
+on `#main-content`, disorienting users (violating Master Rulebook Phase 9 & NN/g heuristics).
+
+2. Implementation Summary:
+- `client/src/hooks/use-scroll-restoration.ts`:
+  * Created dedicated `useScrollRestoration` hook for internal scroll containers.
+  * Continuously records container vertical scroll offsets keyed by `location.key`.
+  * On `PUSH` or `REPLACE` navigation: Resets `container.scrollTop = 0` (or scrolls to hash anchor target).
+  * On `POP` navigation (browser back/forward button): Restores the previous scroll position for that history entry immediately and on `requestAnimationFrame`.
+  * Resets `window.scrollTo({ top: 0, behavior: "instant" })`.
+- `client/src/layouts/authenticated-layout.tsx`:
+  * Integrated `useScrollRestoration("main-content")`.
+  * Preserved focus reset to `#main-content` with `{ preventScroll: true }` to avoid unexpected viewport jumps.
+
+3. Verification Results:
+- Regression Test: `audit/tests/f-069-regression.test.ts` passed (4/4 tests).
+- Typecheck: Passed with 0 errors across shared, client, and server workspaces.
+- Lint: Passed with 0 errors and 0 warnings (oxlint).
+- Build: Passed (`vite build` and `tsc`).
+- Benchmark: 18/18 numerical assertions passed (100% exact numerical match).
+- Database Invariants: 10/10 PostgreSQL invariants passed (0 violations).
+- Full Test Suite: All unit and integration test suites passing.
