@@ -242,6 +242,8 @@ export const dictionary: Translations = {
     ta: "பக்கங்கள் மற்றும் செயல்களைத் தேடு...",
   },
   "shell.search_records": { en: "Search records", ta: "பதிவுகளைத் தேடு" },
+  "shell.pause_motion": { en: "Pause animations", ta: "அசைவூட்டங்களை இடைநிறுத்து" },
+  "shell.resume_motion": { en: "Resume animations", ta: "அசைவூட்டங்களைத் தொடங்கு" },
 
   // Operational Surface Phrases (F-080 Bilingual UI)
   "prod.execution": { en: "Production execution", ta: "உற்பத்தி செயல்முறை" },

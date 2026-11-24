@@ -202,7 +202,7 @@ export function DeviceOutboxSheet({
                     {ord.status === "syncing" && (
                       <Badge
                         variant="outline"
-                        className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 animate-pulse"
+                        className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 animate-pulse-finite"
                       >
                         {t("Syncing...")}
                       </Badge>

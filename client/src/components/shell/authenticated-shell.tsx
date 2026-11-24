@@ -50,6 +50,8 @@ import {
   HelpCircleIcon,
   SunIcon,
   MoonIcon,
+  PauseIcon,
+  PlayIcon,
   InfoIcon,
   Trash2Icon,
 } from "lucide-react";
@@ -57,6 +59,7 @@ import {
 import { useLanguage } from "@/lib/i18n";
 import { useNotifications } from "@/lib/notifications-store";
 import { useTheme } from "@/hooks/use-theme";
+import { useMotion } from "@/hooks/use-motion";
 
 import { cn } from "@/lib/utils";
 import {
@@ -527,6 +530,7 @@ function SidebarUserMenu({
   const { isMobile, setOpenMobile, state } = useSidebar();
   const { t } = useLanguage();
   const { resolvedTheme, toggleTheme } = useTheme();
+  const { isMotionPaused, toggleMotion } = useMotion();
   const isCollapsed = state === "collapsed" && !isMobile;
 
   return (
@@ -631,6 +635,28 @@ function SidebarUserMenu({
                     aria-hidden
                   />
                   {t("Dark mode", "Dark mode")}
+                </>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={toggleMotion}
+              className="cursor-pointer"
+            >
+              {isMotionPaused ? (
+                <>
+                  <PlayIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Resume animations", "Resume animations")}
+                </>
+              ) : (
+                <>
+                  <PauseIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Pause animations", "Pause animations")}
                 </>
               )}
             </DropdownMenuItem>
@@ -904,6 +930,7 @@ function StickyHeader({
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
   const { language, setLanguage, t } = useLanguage();
   const { resolvedTheme, toggleTheme } = useTheme();
+  const { isMotionPaused, toggleMotion } = useMotion();
 
   return (
     <header
@@ -974,6 +1001,31 @@ function StickyHeader({
             <SunIcon className="size-4" aria-hidden="true" />
           ) : (
             <MoonIcon className="size-4" aria-hidden="true" />
+          )}
+        </Button>
+
+        {/* Motion pause/resume toggle (F-062: WCAG 2.2 SC 2.2.2 Pause, Stop, Hide) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          data-pause-motion
+          onClick={toggleMotion}
+          aria-label={
+            isMotionPaused
+              ? t("Resume animations", "Resume animations")
+              : t("Pause animations", "Pause animations")
+          }
+          title={
+            isMotionPaused
+              ? t("Resume animations", "Resume animations")
+              : t("Pause animations (WCAG 2.2.2)", "Pause animations (WCAG 2.2.2)")
+          }
+          className="size-8 text-muted-foreground hover:text-foreground cursor-pointer"
+        >
+          {isMotionPaused ? (
+            <PlayIcon className="size-4" aria-hidden="true" />
+          ) : (
+            <PauseIcon className="size-4" aria-hidden="true" />
           )}
         </Button>
 
@@ -1080,6 +1132,28 @@ function StickyHeader({
                     aria-hidden
                   />
                   {t("Dark mode", "Dark mode")}
+                </>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={toggleMotion}
+              className="cursor-pointer"
+            >
+              {isMotionPaused ? (
+                <>
+                  <PlayIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Resume animations", "Resume animations")}
+                </>
+              ) : (
+                <>
+                  <PauseIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Pause animations", "Pause animations")}
                 </>
               )}
             </DropdownMenuItem>

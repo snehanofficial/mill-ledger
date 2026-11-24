@@ -29,7 +29,10 @@ import {
   RefreshCwIcon,
   LockIcon,
   FileTextIcon,
+  PauseIcon,
+  PlayIcon,
 } from "lucide-react";
+import { useMotion } from "@/hooks/use-motion";
 import { toast } from "sonner";
 import type { Role } from "@mill-ledger/shared";
 
@@ -45,6 +48,7 @@ interface UserRecord {
 export function SettingsPage() {
   const queryClient = useQueryClient();
   const { user: currentUser } = useCurrentUser();
+  const { isMotionPaused, toggleMotion } = useMotion();
   const [activeTab, setActiveTab] = useState<"mill" | "users" | "dpdp">("mill");
   const [showAddUserModal, setShowAddUserModal] = useState(false);
 
@@ -263,6 +267,55 @@ export function SettingsPage() {
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-xs text-muted-foreground font-semibold">Purchase Receipt Series</span>
                 <span className="text-sm font-mono font-bold text-foreground">PR/YYYY/XXXX</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Accessibility & Motion Control (F-062: WCAG 2.2 SC 2.2.2 Pause, Stop, Hide) */}
+          <div className="rounded-xl border bg-card p-5 sm:p-6 shadow-xs flex flex-col gap-5">
+            <div className="border-b pb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                  <PlayIcon className="size-4 text-primary" />
+                  Interface Motion & Accessibility
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  User preference controls for WCAG 2.2 Success Criterion 2.2.2 (Pause, Stop, Hide)
+                </p>
+              </div>
+              <Button
+                variant={isMotionPaused ? "primary" : "outline"}
+                size="sm"
+                data-pause-motion
+                onClick={toggleMotion}
+                className="gap-1.5 cursor-pointer"
+              >
+                {isMotionPaused ? (
+                  <>
+                    <PlayIcon className="size-3.5" />
+                    Resume Animations
+                  </>
+                ) : (
+                  <>
+                    <PauseIcon className="size-3.5" />
+                    Pause Animations
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
+                <span className="text-xs text-muted-foreground font-semibold">Continuous Animation State</span>
+                <span className="text-sm font-bold text-foreground">
+                  {isMotionPaused ? "Paused (Animations Suppressed)" : "Active (Continuous Animations Allowed)"}
+                </span>
+              </div>
+              <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
+                <span className="text-xs text-muted-foreground font-semibold">Pulsing Badges & Indicators</span>
+                <span className="text-sm font-bold text-foreground">
+                  Finite Pulse (Auto-stops within 4.0 seconds)
+                </span>
               </div>
             </div>
           </div>

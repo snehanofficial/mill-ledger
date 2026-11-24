@@ -887,7 +887,7 @@ export function OrdersPage() {
                         {ord.status === "syncing" && (
                           <Badge
                             variant="outline"
-                            className="animate-pulse bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
+                            className="animate-pulse-finite bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
                           >
                             Syncing...
                           </Badge>

@@ -351,6 +351,31 @@ select {
   }
 }
 
+/* F-062: In-app motion pause controls (WCAG 2.2 SC 2.2.2 Pause, Stop, Hide) */
+html[data-reduce-motion="true"],
+html.motion-paused {
+  & *,
+  & *::before,
+  & *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  & [data-radix-collapsible-content] {
+    animation: none !important;
+  }
+  & .animate-pulse,
+  & .animate-spin {
+    animation: none !important;
+  }
+}
+
+/* F-062: Finite pulse utility that auto-stops after <= 5 seconds (2 iterations * 2s = 4s) */
+.animate-pulse-finite {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) 2 forwards;
+}
+
 /* F-055: Touch target sizing utility (WCAG 2.2 SC 2.5.8 & Apple HIG) */
 .touch-target {
   min-height: 44px;
