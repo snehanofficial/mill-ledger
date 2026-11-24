@@ -2,13 +2,24 @@ import { lazy, Suspense } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
+  Navigate,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthenticatedLayout } from "@/layouts/authenticated-layout";
-import { RoleGuard, RoleDefaultRedirect } from "@/components/auth/role-guard";
-import { ROUTE_PERMISSIONS } from "@/lib/role-routing";
+import { RoleGuard } from "@/components/auth/role-guard";
+import { ROUTE_PERMISSIONS, getDefaultRouteForRole } from "@/lib/role-routing";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 // Lazy-loaded routes for code splitting (MLD-014)
+const LandingPage = lazy(() =>
+  import("@/pages/public/landing-page").then((m) => ({ default: m.LandingPage })),
+);
+const CatalogPage = lazy(() =>
+  import("@/pages/public/catalog-page").then((m) => ({ default: m.CatalogPage })),
+);
+const ContactPage = lazy(() =>
+  import("@/pages/public/contact-page").then((m) => ({ default: m.ContactPage })),
+);
 const LoginPage = lazy(() =>
   import("@/pages/login-page").then((m) => ({ default: m.LoginPage })),
 );
@@ -97,18 +108,71 @@ import {
   suppliersHandle,
 } from "@/routes/route-handles";
 
+function PageFallback() {
+  return (
+    <div className="flex min-h-svh items-center justify-center bg-background">
+      <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    </div>
+  );
+}
+
+/**
+ * RootEntry: Dual-purpose root entry point (F-092 / OD-02).
+ * - For unauthenticated visitors: renders the public B2B marketing & milling landing surface.
+ * - For authenticated staff: redirects seamlessly to their dedicated role workspace.
+ */
+function RootEntry() {
+  const { user, isLoading } = useCurrentUser();
+
+  if (isLoading) {
+    return <PageFallback />;
+  }
+
+  if (user) {
+    return <Navigate to={getDefaultRouteForRole(user.role)} replace />;
+  }
+
+  return <LandingPage />;
+}
+
 const router = createBrowserRouter([
   // ── Public routes (outside authenticated shell) ─────────────────
   {
+    path: "/",
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <RootEntry />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/catalog",
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <CatalogPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/products",
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <CatalogPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/contact",
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <ContactPage />
+      </Suspense>
+    ),
+  },
+  {
     path: "/auth/login",
     element: (
-      <Suspense
-        fallback={
-          <div className="flex min-h-svh items-center justify-center bg-background">
-            <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        }
-      >
+      <Suspense fallback={<PageFallback />}>
         <LoginPage />
       </Suspense>
     ),
@@ -116,13 +180,8 @@ const router = createBrowserRouter([
 
   // ── Authenticated shell ─────────────────────────────────────────
   {
-    path: "/",
     element: <AuthenticatedLayout />,
     children: [
-      {
-        index: true,
-        element: <RoleDefaultRedirect />,
-      },
       {
         path: "dashboard",
         element: (
