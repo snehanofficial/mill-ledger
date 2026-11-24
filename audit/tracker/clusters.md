@@ -431,11 +431,11 @@ client/src/pages/showcase-page.tsx:192:            className="rounded-md px-3 py
 | ID | Sev | Status | Title |
 |---|---|---|---|
 | **F-070** | P0 | `VERIFIED` | Backend Process Crash (V8 Heap OOM) and 20,000+ Prisma N+1 Queries on Unpaginated Sales Orders Under Load |
-| **F-071** | P1 | `OPEN` | Missing Foreign Key and Composite Indexes Causing Sequential Scans on 11 of Top 20 Production Queries |
+| **F-071** | P1 | `VERIFIED` | Missing Foreign Key and Composite Indexes Causing Sequential Scans on 11 of Top 20 Production Queries |
 | **F-072** | P1 | `VERIFIED` | Initial JavaScript Bundle Budget Exceeded by 51.5% (257.54 KB Gzip vs 170 KB Budget) |
 | **F-073** | P1 | `VERIFIED` | Mobile 4G Largest Contentful Paint (LCP) Budget Violation on Authenticated Routes (3.4s - 4.0s vs 2.5s Target) |
 | **F-074** | P1 | `VERIFIED` | Absence of Server Pagination and List Virtualization Across All Enterprise Entity Grids |
-| **F-075** | P2 | `OPEN` | Complete Absence of Product Image Pipeline, Modern Formats (AVIF/WebP), and Image Hash Placeholders |
+| **F-075** | P2 | `VERIFIED` | Complete Absence of Product Image Pipeline, Modern Formats (AVIF/WebP), and Image Hash Placeholders |
 | **F-076** | P2 | `VERIFIED` | Missing Intent-Based Route Prefetching on Hover or Idle for Lazy-Loaded Routes |
 | **F-077** | P2 | `VERIFIED` | Offline Stale Price Acceptance Without Server-Side Price List Revalidation |
 | **F-078** | P2 | `VERIFIED` | Missing Express Response Compression Middleware and Unconfigured PostgreSQL Connection Pool |
