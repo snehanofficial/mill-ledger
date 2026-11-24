@@ -6097,15 +6097,12 @@
       "- W3C WCAG 2.2 Success Criterion 2.4.3 Focus Order (Level A)"
     ],
     "files": [
-      "client/src/components/shell/authenticated-shell.ts",
-      "authenticated-shell.ts",
-      "///home/snehan/projects/web/mill-ledger/client/src/components/shell/authenticated-shell.ts",
-      "authenticated-layout.ts",
-      "///home/snehan/projects/web/mill-ledger/client/src/layouts/authenticated-layout.ts"
+      "client/src/layouts/authenticated-layout.tsx",
+      "client/src/components/shell/authenticated-shell.tsx"
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -6113,12 +6110,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-068.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "8cb5e84",
+        "evidenceLink": "audit/evidence/verify/F-068/10-summary.txt",
+        "note": "VERIFIED: Added route transition focus management shifting keyboard focus to primary #main-content landmark and resetting scroll position to top on client-side navigation. WCAG 2.2 SC 2.4.3 satisfied."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-068-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-068-regression.test.ts",
+    "fixCommit": "8cb5e84",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-068/01-git-status.txt",
+      "audit/evidence/verify/F-068/02-typecheck.txt",
+      "audit/evidence/verify/F-068/03-lint.txt",
+      "audit/evidence/verify/F-068/04-build.txt",
+      "audit/evidence/verify/F-068/05-invariants.txt",
+      "audit/evidence/verify/F-068/06-benchmark.txt",
+      "audit/evidence/verify/F-068/07-regression-test.txt",
+      "audit/evidence/verify/F-068/08-test-suite.txt",
+      "audit/evidence/verify/F-068/09-diff.txt",
+      "audit/evidence/verify/F-068/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'transition-\\|animate-' client/src/ | grep -v 'motion-reduce' | head -n 25",

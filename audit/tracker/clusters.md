@@ -397,7 +397,7 @@ client/src/components/shell/authenticated-shell.tsx:354:            aria-label={
 | **F-065** | P1 | `VERIFIED` | Sonner Toasts Missing `role="status"`, Pause on Focus, and Persistent Notification Store |
 | **F-066** | P2 | `OPEN` | Outbox Sync Status Badges Display Text Without Status Icons |
 | **F-067** | P2 | `OPEN` | Missing Optimistic Mutations with Rollback Handlers Across Server Workflows |
-| **F-068** | P1 | `OPEN` | Route Transitions Fail to Reset Focus to `<main>` or `<h1>` |
+| **F-068** | P1 | `VERIFIED` | Route Transitions Fail to Reset Focus to `<main>` or `<h1>` |
 | **F-069** | P2 | `OPEN` | Missing Scroll Restoration on Route Navigation in `<main>` Container |
 
 #### Sibling Sweep Record
