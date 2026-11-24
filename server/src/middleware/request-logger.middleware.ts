@@ -1,4 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
+import {
+  httpRequestDurationSeconds,
+  httpRequestsTotal,
+} from "../modules/metrics/metrics.service.js";
 
 /**
  * Redacts sensitive fields such as passwords, tokens, and secrets from logged data.
@@ -57,6 +61,28 @@ export function requestLogger(
       console.warn(JSON.stringify({ level: "WARN", ...logEntry }));
     } else {
       console.log(JSON.stringify({ level: "INFO", ...logEntry }));
+    }
+
+    // Record Prometheus metrics
+    try {
+      const route = req.baseUrl
+        ? `${req.baseUrl}${req.route?.path || ""}`
+        : (req.route?.path || req.path || "unknown");
+      httpRequestsTotal.inc({
+        method: req.method,
+        route,
+        status_code: statusCode,
+      });
+      httpRequestDurationSeconds.observe(
+        {
+          method: req.method,
+          route,
+          status_code: statusCode,
+        },
+        durationMs / 1000,
+      );
+    } catch {
+      // Metrics collection should never fail the request pipeline
     }
   });
 

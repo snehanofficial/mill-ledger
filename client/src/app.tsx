@@ -446,14 +446,17 @@ const queryClient = new QueryClient({
 });
 
 import { LanguageProvider } from "@/lib/i18n";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 function App() {
   return (
-    <LanguageProvider>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </LanguageProvider>
+    <ErrorBoundary>
+      <LanguageProvider>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>
+      </LanguageProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -22,6 +22,7 @@ import { requestLogger } from "./middleware/request-logger.middleware.js";
 import { createRateLimiter } from "./middleware/rate-limit.middleware.js";
 import { requestTimeoutMiddleware } from "./middleware/timeout.middleware.js";
 import { getReadiness } from "./modules/health/health.controller.js";
+import { getMetrics } from "./modules/metrics/metrics.controller.js";
 
 export function createApp() {
   const app = express();
@@ -97,6 +98,7 @@ export function createApp() {
   app.use("/api/v1/admin/users", userRouter);
   app.use("/api/v1/health", healthRouter);
   app.get(["/ready", "/api/v1/ready"], getReadiness);
+  app.get(["/metrics", "/api/v1/metrics"], getMetrics);
   app.use("/api/v1/sales", salesRouter);
   app.use("/api/v1/orders", salesRouter);
   app.use("/api/v1/dispatches", salesRouter);
