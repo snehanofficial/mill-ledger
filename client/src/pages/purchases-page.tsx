@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
+import { useUrlState } from "@/hooks/use-url-state";
 import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   PlusIcon,
   RefreshCwIcon,
@@ -72,6 +74,7 @@ export function PurchasesPage() {
   const canRecordPurchase =
     user?.role === "ADMIN" || user?.role === "PRODUCTION";
   const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useUrlState("q", "");
 
   // Form states
   const [selectedSupplierId, setSelectedSupplierId] = useState("");
@@ -177,6 +180,21 @@ export function PurchasesPage() {
 
   const receipts = data?.receipts ?? [];
 
+  const filteredReceipts = receipts.filter((r) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    return (
+      r.receiptNumber.toLowerCase().includes(q) ||
+      r.supplier.name.toLowerCase().includes(q) ||
+      r.lines.some(
+        (l) =>
+          l.inventoryItem?.name?.toLowerCase().includes(q) ||
+          l.inventoryItem?.sku?.toLowerCase().includes(q),
+      ) ||
+      (r.supplierInvoiceNumber && r.supplierInvoiceNumber.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8">
       {/* Header */}
@@ -224,16 +242,26 @@ export function PurchasesPage() {
 
       {/* Receipts Table Card */}
       <div className="rounded-xl border border-border bg-card shadow-xs">
-        <div className="flex items-center justify-between border-b border-border p-4">
+        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <TruckIcon className="size-4 text-muted-foreground" />
             <h2 className="text-sm font-semibold text-foreground">
-              Purchase Receipts Ledger
+              {t("Purchase Receipts Ledger")}
             </h2>
+            <span className="text-xs text-muted-foreground font-mono tabular-nums">
+              ({filteredReceipts.length} of {receipts.length})
+            </span>
           </div>
-          <span className="text-xs text-muted-foreground font-mono tabular-nums">
-            {receipts.length} total recorded
-          </span>
+
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder={t("Search receipts...")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 w-56 text-xs"
+              aria-label="Search purchase receipts"
+            />
+          </div>
         </div>
 
         {isLoading ? (
@@ -276,7 +304,17 @@ export function PurchasesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {receipts.map((rec) => {
+              {filteredReceipts.length === 0 && receipts.length > 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
+                    className="py-8 text-center text-sm text-muted-foreground"
+                  >
+                    {t("No purchase receipts match the search query.")}
+                  </TableCell>
+                </TableRow>
+              )}
+              {filteredReceipts.map((rec) => {
                 const firstLine = rec.lines[0];
                 const totalAmount = rec.lines.reduce(
                   (sum, l) => sum + Number(l.totalPrice),

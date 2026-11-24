@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
+import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
   FileTextIcon,
@@ -87,6 +89,8 @@ export function InvoicesPage() {
   const [selectedOrderIdForInvoice, setSelectedOrderIdForInvoice] =
     useState<string>("");
   const [invoiceNotes, setInvoiceNotes] = useState("");
+  const [statusFilter, setStatusFilter] = useUrlState("status", "ALL");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "");
 
   // Fetch approved orders eligible for invoicing (F-037)
   const { data: approvedOrdersData, isLoading: isLoadingApprovedOrders } =
@@ -187,6 +191,26 @@ export function InvoicesPage() {
   });
 
   const invoices = data?.invoices ?? [];
+
+  const filteredInvoices = invoices.filter((inv) => {
+    if (statusFilter !== "ALL" && inv.status !== statusFilter) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchNum = inv.invoiceNumber.toLowerCase().includes(q);
+      const matchCust =
+        inv.customerNameSnapshot.toLowerCase().includes(q) ||
+        (inv.customerGstinSnapshot || "").toLowerCase().includes(q);
+      const matchPos = (
+        inv.deliveryStateSnapshot ||
+        inv.customer?.state ||
+        ""
+      )
+        .toLowerCase()
+        .includes(q);
+      if (!matchNum && !matchCust && !matchPos) return false;
+    }
+    return true;
+  });
 
   // Summary counts
   const totalInvoices = invoices.length;
@@ -289,13 +313,37 @@ export function InvoicesPage() {
 
       {/* Invoices Table */}
       <div className="rounded-xl border bg-card shadow-xs">
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <h2 className="text-base font-semibold text-foreground">
-            Posted invoices ledger
-          </h2>
-          <span className="text-xs text-muted-foreground">
-            {invoices.length} invoices found
-          </span>
+        <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold text-foreground">
+              {t("Posted invoices ledger")}
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              ({filteredInvoices.length} of {invoices.length})
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              placeholder={t("Search invoices...")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 w-44 text-xs"
+              aria-label="Search invoices"
+            />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              aria-label="Filter invoices by status"
+            >
+              <option value="ALL">All statuses</option>
+              <option value="POSTED">Posted</option>
+              <option value="PAID">Paid</option>
+              <option value="PARTIAL">Partial</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
         </div>
 
         {isLoading ? (
@@ -336,7 +384,17 @@ export function InvoicesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {invoices.map((inv) => (
+                {filteredInvoices.length === 0 && invoices.length > 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={10}
+                      className="py-8 text-center text-sm text-muted-foreground"
+                    >
+                      {t("No invoices match the selected filters.")}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredInvoices.map((inv) => (
                   <TableRow key={inv.id}>
                     <TableCell className="font-mono font-medium">
                       {inv.invoiceNumber}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
+import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   FactoryIcon,
   RefreshCwIcon,
@@ -89,6 +91,7 @@ export function ProductionPage() {
     user?.role === "ADMIN" || user?.role === "PRODUCTION";
   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
   const [selectedRun, setSelectedRun] = useState<ProductionRun | null>(null);
+  const [searchQuery, setSearchQuery] = useUrlState("q", "");
 
   // Form states for benchmark Murukku batch
   const [selectedRecipeId, setSelectedRecipeId] = useState("");
@@ -233,6 +236,17 @@ export function ProductionPage() {
 
   const runs = data?.runs ?? [];
 
+  const filteredRuns = runs.filter((r) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    return (
+      r.runNumber.toLowerCase().includes(q) ||
+      (r.recipe?.name || "").toLowerCase().includes(q) ||
+      (r.recipe?.productVariant?.name || "").toLowerCase().includes(q) ||
+      (r.notes && r.notes.toLowerCase().includes(q))
+    );
+  });
+
   // Computed metrics
   const totalRuns = runs.length;
   const postedRuns = runs.filter((r) => r.status === "POSTED").length;
@@ -357,13 +371,25 @@ export function ProductionPage() {
 
       {/* Production Runs Table */}
       <div className="rounded-xl border bg-card shadow-xs">
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <h2 className="text-base font-semibold text-foreground">
-            Completed production runs
-          </h2>
-          <span className="text-xs text-muted-foreground">
-            {runs.length} records found
-          </span>
+        <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold text-foreground">
+              {t("Completed production runs")}
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              ({filteredRuns.length} of {runs.length})
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder={t("Search production batches...")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 w-56 text-xs"
+              aria-label="Search production batches"
+            />
+          </div>
         </div>
 
         {isLoading ? (
@@ -413,7 +439,17 @@ export function ProductionPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {runs.map((r) => {
+                {filteredRuns.length === 0 && runs.length > 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={9}
+                      className="py-8 text-center text-sm text-muted-foreground"
+                    >
+                      {t("No production batches match the search query.")}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredRuns.map((r) => {
                   const yieldPct = Number(r.yieldVariancePct);
                   const isYieldFlagged = r.isYieldFlagged;
 

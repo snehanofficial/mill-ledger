@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { useUrlState } from "@/hooks/use-url-state";
 import { useLanguage } from "@/lib/i18n";
 import {
   SkeletonTable,
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   UsersIcon,
   RefreshCwIcon,
@@ -36,6 +38,8 @@ interface Customer {
 
 export function CustomersPage() {
   const { t } = useLanguage();
+  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     customers: Customer[];
   }>({
@@ -47,6 +51,18 @@ export function CustomersPage() {
   });
 
   const customers = data?.customers ?? [];
+
+  const filteredCustomers = customers.filter((c) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    return (
+      c.name.toLowerCase().includes(q) ||
+      c.code.toLowerCase().includes(q) ||
+      c.state.toLowerCase().includes(q) ||
+      (c.phone && c.phone.toLowerCase().includes(q)) ||
+      (c.gstin && c.gstin.toLowerCase().includes(q))
+    );
+  });
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8">
@@ -84,16 +100,26 @@ export function CustomersPage() {
 
       {/* Customers Table Card */}
       <div className="rounded-xl border border-border bg-card shadow-xs">
-        <div className="flex items-center justify-between border-b border-border p-4">
+        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <UsersIcon className="size-4 text-muted-foreground" />
             <h2 className="text-sm font-semibold text-foreground">
-              Accounts Register
+              {t("Accounts Register")}
             </h2>
+            <span className="text-xs text-muted-foreground font-mono tabular-nums">
+              ({filteredCustomers.length} of {customers.length})
+            </span>
           </div>
-          <span className="text-xs text-muted-foreground font-mono tabular-nums">
-            {customers.length} total accounts
-          </span>
+
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder={t("Search customers...")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 w-56 text-xs"
+              aria-label="Search customers"
+            />
+          </div>
         </div>
 
         {isLoading ? (
@@ -134,7 +160,17 @@ export function CustomersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {customers.map((c) => {
+              {filteredCustomers.length === 0 && customers.length > 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="py-8 text-center text-sm text-muted-foreground"
+                  >
+                    {t("No customer accounts match the search query.")}
+                  </TableCell>
+                </TableRow>
+              )}
+              {filteredCustomers.map((c) => {
                 const isIntraState =
                   c.state?.trim().toLowerCase() === "tamil nadu";
                 return (

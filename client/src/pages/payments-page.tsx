@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
+import { useUrlState } from "@/hooks/use-url-state";
 import { formatDate, formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -119,9 +120,13 @@ export function PaymentsPage() {
   const { user } = useCurrentUser();
   const { t } = useLanguage();
   const canRecordPayment = user?.role === "ADMIN";
-  const [activeTab, setActiveTab] = useState<"ledger" | "receivables">(
+  const [activeTab, setActiveTab] = useUrlState<"ledger" | "receivables">(
+    "tab",
     "ledger",
+    { replace: false },
   );
+  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [modeFilter, setModeFilter] = useUrlState("mode", "ALL");
 
   // Modals state
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -237,6 +242,28 @@ export function PaymentsPage() {
 
   const payments = paymentsData?.payments ?? [];
   const receivables = receivablesData?.receivables ?? [];
+
+  const filteredPayments = payments.filter((p) => {
+    if (modeFilter !== "ALL" && p.paymentMode !== modeFilter) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchNum = p.paymentNumber.toLowerCase().includes(q);
+      const matchCust = (p.customer?.name || "").toLowerCase().includes(q);
+      const matchRef = (p.referenceNumber || "").toLowerCase().includes(q);
+      if (!matchNum && !matchCust && !matchRef) return false;
+    }
+    return true;
+  });
+
+  const filteredReceivables = receivables.filter((r) => {
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchName = (r.customerName || "").toLowerCase().includes(q);
+      const matchCode = (r.customerCode || "").toLowerCase().includes(q);
+      if (!matchName && !matchCode) return false;
+    }
+    return true;
+  });
 
   // Summary calculations
   const totalCollected = payments.reduce((sum, p) => sum + Number(p.amount), 0);
@@ -425,13 +452,38 @@ export function PaymentsPage() {
       {/* Tab 1: Payments Ledger */}
       {activeTab === "ledger" && (
         <div className="rounded-xl border bg-card shadow-xs">
-          <div className="flex items-center justify-between border-b px-4 py-3">
-            <h2 className="text-base font-semibold text-foreground">
-              Collections ledger
-            </h2>
-            <span className="text-xs text-muted-foreground">
-              {payments.length} transactions recorded
-            </span>
+          <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold text-foreground">
+                {t("Collections ledger")}
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                ({filteredPayments.length} of {payments.length})
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                placeholder={t("Search payments...")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 w-44 text-xs"
+                aria-label="Search payments"
+              />
+              <select
+                value={modeFilter}
+                onChange={(e) => setModeFilter(e.target.value)}
+                className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                aria-label="Filter payments by mode"
+              >
+                <option value="ALL">All modes</option>
+                <option value="BANK_TRANSFER">Bank transfer</option>
+                <option value="NEFT_RTGS">NEFT / RTGS</option>
+                <option value="CHEQUE">Cheque</option>
+                <option value="UPI">UPI</option>
+                <option value="CASH">Cash</option>
+              </select>
+            </div>
           </div>
 
           {loadingPayments ? (
@@ -476,7 +528,17 @@ export function PaymentsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payments.map((p) => (
+                  {filteredPayments.length === 0 && payments.length > 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={8}
+                        className="py-8 text-center text-sm text-muted-foreground"
+                      >
+                        {t("No payments match the selected filters.")}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {filteredPayments.map((p) => (
                     <TableRow key={p.id}>
                       <TableCell className="font-mono text-sm font-semibold text-foreground">
                         {p.paymentNumber}
@@ -560,19 +622,30 @@ export function PaymentsPage() {
       {/* Tab 2: Customer Receivables */}
       {activeTab === "receivables" && (
         <div className="rounded-xl border bg-card shadow-xs">
-          <div className="flex items-center justify-between border-b px-4 py-3">
-            <h2 className="text-base font-semibold text-foreground">
-              Customer receivables overview
-            </h2>
-            <span className="text-xs text-muted-foreground">
-              {receivables.length} accounts found
-            </span>
+          <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold text-foreground">
+                {t("Customer receivables overview")}
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                ({filteredReceivables.length} of {receivables.length})
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder={t("Search customer receivables...")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 w-56 text-xs"
+                aria-label="Search customer receivables"
+              />
+            </div>
           </div>
 
           {loadingReceivables ? (
-            <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-              <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
-              Loading receivables...
+            <div className="p-4">
+              <SkeletonTable rows={5} columns={8} />
             </div>
           ) : receivables.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 text-center text-sm text-muted-foreground">
@@ -598,7 +671,17 @@ export function PaymentsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {receivables.map((r) => (
+                  {filteredReceivables.length === 0 && receivables.length > 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={8}
+                        className="py-8 text-center text-sm text-muted-foreground"
+                      >
+                        {t("No customer receivables match the search query.")}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {filteredReceivables.map((r) => (
                     <TableRow key={r.customerId}>
                       <TableCell>
                         <div className="flex flex-col">

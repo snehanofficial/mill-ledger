@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   CheckCircleIcon,
   RefreshCwIcon,
@@ -51,6 +53,9 @@ const CATEGORY_LABELS: Record<
 
 export function StockPage() {
   const { t } = useLanguage();
+  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [categoryFilter, setCategoryFilter] = useUrlState("category", "ALL");
+
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     balances: InventoryBalance[];
   }>({
@@ -65,6 +70,17 @@ export function StockPage() {
   });
 
   const balances = data?.balances ?? [];
+
+  const filteredBalances = balances.filter((item) => {
+    if (categoryFilter !== "ALL" && item.category !== categoryFilter) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchSku = item.sku.toLowerCase().includes(q);
+      const matchName = item.name.toLowerCase().includes(q);
+      if (!matchSku && !matchName) return false;
+    }
+    return true;
+  });
 
   // Computed summary metrics
   const totalItems = balances.length;
@@ -164,20 +180,44 @@ export function StockPage() {
 
       {/* Main Stock Table */}
       <div className="flex flex-col rounded-xl border border-border bg-card shadow-xs">
-        <div className="flex items-center justify-between border-b border-border p-4">
+        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <PackageIcon
               className="size-4 text-muted-foreground"
               aria-hidden="true"
             />
             <h2 className="text-sm font-semibold text-foreground">
-              Current Stock on Hand
+              {t("Current Stock on Hand")}
             </h2>
+            <span className="text-xs text-muted-foreground font-mono tabular-nums">
+              ({filteredBalances.length} of {balances.length})
+            </span>
           </div>
-          <Badge variant="outline" className="gap-1.5 text-xs text-emerald-600">
-            <CheckCircleIcon className="size-3.5" aria-hidden="true" />
-            <span>Movements Reconciled</span>
-          </Badge>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              placeholder={t("Search items by SKU or name...")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 w-52 text-xs"
+              aria-label="Search stock"
+            />
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              aria-label="Filter items by category"
+            >
+              <option value="ALL">All categories</option>
+              <option value="RAW_MATERIAL">Raw Material</option>
+              <option value="FINISHED_GOODS">Finished Goods</option>
+              <option value="PACKAGING">Packaging</option>
+            </select>
+            <Badge variant="outline" className="gap-1.5 text-xs text-emerald-600">
+              <CheckCircleIcon className="size-3.5" aria-hidden="true" />
+              <span>Movements Reconciled</span>
+            </Badge>
+          </div>
         </div>
 
         {isLoading ? (
@@ -216,7 +256,17 @@ export function StockPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {balances.map((item) => {
+              {filteredBalances.length === 0 && balances.length > 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="py-8 text-center text-sm text-muted-foreground"
+                  >
+                    {t("No items match the selected filters.")}
+                  </TableCell>
+                </TableRow>
+              )}
+              {filteredBalances.map((item) => {
                 const totalValue = item.onHand * item.weightedAverageCost;
                 const categoryConfig = CATEGORY_LABELS[item.category] || {
                   label: item.category,

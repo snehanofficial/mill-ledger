@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
+import { useUrlState } from "@/hooks/use-url-state";
 import { formatDateTime, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -101,6 +102,7 @@ export function DispatchPage() {
   const [driverPhone, setDriverPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [dispatchError, setDispatchError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useUrlState("q", "");
 
   // 1. Fetch posted dispatches
   const {
@@ -166,6 +168,18 @@ export function DispatchPage() {
   });
 
   const dispatches = dispatchesData?.dispatches ?? [];
+
+  const filteredDispatches = dispatches.filter((d) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    return (
+      d.dispatchNumber.toLowerCase().includes(q) ||
+      d.salesOrder.orderNumber.toLowerCase().includes(q) ||
+      d.salesOrder.customer.name.toLowerCase().includes(q) ||
+      (d.vehicleNumber && d.vehicleNumber.toLowerCase().includes(q)) ||
+      (d.driverName && d.driverName.toLowerCase().includes(q))
+    );
+  });
 
   // Summary counts
   const totalDispatches = dispatches.length;
@@ -284,13 +298,25 @@ export function DispatchPage() {
 
       {/* Dispatches Table */}
       <div className="rounded-xl border bg-card shadow-xs">
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <h2 className="text-base font-semibold text-foreground">
-            Dispatches ledger
-          </h2>
-          <span className="text-xs text-muted-foreground">
-            {dispatches.length} dispatches recorded
-          </span>
+        <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold text-foreground">
+              {t("Dispatches ledger")}
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              ({filteredDispatches.length} of {dispatches.length})
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder={t("Search dispatches...")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 w-56 text-xs"
+              aria-label="Search dispatches"
+            />
+          </div>
         </div>
 
         {isLoading ? (
@@ -333,7 +359,17 @@ export function DispatchPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {dispatches.map((disp) => (
+                {filteredDispatches.length === 0 && dispatches.length > 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="py-8 text-center text-sm text-muted-foreground"
+                    >
+                      {t("No dispatches match the search query.")}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredDispatches.map((disp) => (
                   <TableRow key={disp.id}>
                     <TableCell className="font-mono text-sm font-semibold text-foreground">
                       {disp.dispatchNumber}

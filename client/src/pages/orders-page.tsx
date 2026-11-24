@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   ShoppingCartIcon,
   RefreshCwIcon,
@@ -106,7 +108,9 @@ export function OrdersPage() {
     removeOrder,
   } = syncManager;
 
-  const [activeTab, setActiveTab] = useState<"stream" | "outbox">("stream");
+  const [activeTab, setActiveTab] = useUrlState<"stream" | "outbox">("tab", "stream", { replace: false });
+  const [statusFilter, setStatusFilter] = useUrlState("status", "ALL");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "");
   const canCreateOrder = user?.role === "ADMIN" || user?.role === "SALESMAN";
   const canApproveOrder = user?.role === "ADMIN";
   const canCreateInvoice = user?.role === "ADMIN";
@@ -389,6 +393,20 @@ export function OrdersPage() {
 
   const orders = data?.orders ?? [];
 
+  const filteredOrders = orders.filter((o) => {
+    if (statusFilter !== "ALL" && o.status !== statusFilter) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchNum = o.orderNumber.toLowerCase().includes(q);
+      const matchCust =
+        o.customer.name.toLowerCase().includes(q) ||
+        o.customer.code.toLowerCase().includes(q);
+      const matchNotes = (o.notes || "").toLowerCase().includes(q);
+      if (!matchNum && !matchCust && !matchNotes) return false;
+    }
+    return true;
+  });
+
   // Summary counts
   const totalOrders = orders.length;
   const approvedOrders = orders.filter((o) => o.status === "APPROVED").length;
@@ -503,7 +521,7 @@ export function OrdersPage() {
 
       {/* Orders Table */}
       <div className="rounded-xl border bg-card shadow-xs">
-        <div className="flex items-center justify-between border-b px-4 py-3">
+        <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <Button
               variant={activeTab === "stream" ? "secondary" : "ghost"}
@@ -528,11 +546,34 @@ export function OrdersPage() {
               )}
             </Button>
           </div>
-          <span className="text-xs text-muted-foreground">
-            {activeTab === "stream"
-              ? `${orders.length} server orders`
-              : `${outboxOrders.length} local outbox orders`}
-          </span>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              placeholder={t("Search orders...")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 w-44 text-xs"
+              aria-label="Search orders"
+            />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              aria-label="Filter orders by status"
+            >
+              <option value="ALL">All statuses</option>
+              <option value="SUBMITTED">Submitted</option>
+              <option value="APPROVED">Approved</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="DISPATCHED">Dispatched</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+            <span className="text-xs text-muted-foreground ml-1">
+              {activeTab === "stream"
+                ? `${filteredOrders.length} of ${orders.length} orders`
+                : `${outboxOrders.length} local orders`}
+            </span>
+          </div>
         </div>
 
         {isLoading ? (
@@ -706,7 +747,19 @@ export function OrdersPage() {
 
                 {/* Server orders stream */}
                 {activeTab === "stream" &&
-                  orders.map((o) => {
+                  filteredOrders.length === 0 &&
+                  orders.length > 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={10}
+                        className="py-8 text-center text-sm text-muted-foreground"
+                      >
+                        {t("No orders match the selected filters.")}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                {activeTab === "stream" &&
+                  filteredOrders.map((o) => {
                     const line = o.lines[0];
                     const qty = Number(line?.quotedQuantity ?? 0);
                     const shortage = o.totalShortage ?? 0;

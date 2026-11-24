@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useUrlState } from "@/hooks/use-url-state";
 import { useLanguage } from "@/lib/i18n";
 import {
   SkeletonTable,
@@ -50,7 +51,10 @@ export function SuppliersPage() {
   const canManageSuppliers =
     user?.role === "ADMIN" || user?.role === "PRODUCTION" || user?.role === "OWNER";
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+  const [statusFilter, setStatusFilter] = useUrlState<
+    "ALL" | "ACTIVE" | "INACTIVE"
+  >("status", "ALL");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
 
@@ -152,6 +156,8 @@ export function SuppliersPage() {
   const suppliers = data?.suppliers ?? [];
 
   const filteredSuppliers = suppliers.filter((s) => {
+    if (statusFilter === "ACTIVE" && !s.isActive) return false;
+    if (statusFilter === "INACTIVE" && s.isActive) return false;
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
     return (
@@ -253,8 +259,8 @@ export function SuppliersPage() {
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="flex items-center gap-2">
+      {/* Search Bar & Filters */}
+      <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 max-w-sm">
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -265,6 +271,16 @@ export function SuppliersPage() {
             className="w-full rounded-md border bg-background pl-9 pr-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="h-9.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          aria-label="Filter suppliers by status"
+        >
+          <option value="ALL">All status</option>
+          <option value="ACTIVE">Active only</option>
+          <option value="INACTIVE">Inactive only</option>
+        </select>
       </div>
 
       {/* Table */}

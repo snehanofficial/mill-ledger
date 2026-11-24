@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useUrlState } from "@/hooks/use-url-state";
 import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import { SkeletonTable } from "@/components/ui/loading-error-empty";
@@ -75,14 +76,16 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     ? defaultTab
     : allowedTabs[0]?.id || "sales";
 
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeTab, setActiveTab] = useUrlState<string>("tab", initialTab, {
+    replace: false,
+  });
   const effectiveTab = allowedTabs.some((t) => t.id === activeTab)
     ? activeTab
     : allowedTabs[0]?.id || "sales";
 
   const [exporting, setExporting] = useState(false);
-  const [auditSearch, setAuditSearch] = useState("");
-  const [auditActionFilter, setAuditActionFilter] = useState("ALL");
+  const [auditSearch, setAuditSearch] = useUrlState("q", "");
+  const [auditActionFilter, setAuditActionFilter] = useUrlState("action", "ALL");
 
   // 1. Sales Report
   const {
