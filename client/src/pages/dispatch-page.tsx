@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
   TruckIcon,
   RefreshCwIcon,
@@ -102,6 +103,8 @@ export function DispatchPage() {
   const [driverPhone, setDriverPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [dispatchError, setDispatchError] = useState<string | null>(null);
+  const [showConfirmDispatchDialog, setShowConfirmDispatchDialog] =
+    useState(false);
   const [searchQuery, setSearchQuery] = useUrlState("q", "");
 
   // 1. Fetch posted dispatches
@@ -150,6 +153,7 @@ export function DispatchPage() {
       queryClient.invalidateQueries({ queryKey: ["dispatches"] });
       queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
       queryClient.invalidateQueries({ queryKey: ["inventory-items"] });
+      setShowConfirmDispatchDialog(false);
       setShowCreateModal(false);
       setSelectedOrderId("");
       setVehicleNumber("");
@@ -196,6 +200,11 @@ export function DispatchPage() {
       return;
     }
     setDispatchError(null);
+    setShowConfirmDispatchDialog(true);
+  };
+
+  const handleExecuteDispatch = () => {
+    setShowConfirmDispatchDialog(false);
     dispatchMutation.mutate({
       salesOrderId: selectedOrderId,
       vehicleNumber: vehicleNumber.trim() || undefined,
@@ -688,6 +697,87 @@ export function DispatchPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Confirmation Dialog for Irreversible Dispatch (F-048) */}
+      {showConfirmDispatchDialog && (
+        <ConfirmationDialog
+          open={showConfirmDispatchDialog}
+          onOpenChange={setShowConfirmDispatchDialog}
+          title={
+            <div className="flex items-center gap-2 text-foreground font-semibold">
+              <AlertTriangleIcon className="h-5 w-5 text-amber-500" />
+              Confirm Physical Dispatch?
+            </div>
+          }
+          description={
+            <div className="space-y-3 pt-1 text-sm text-foreground">
+              <p>
+                This action will permanently deduct finished goods from physical
+                inventory and generate an immutable dispatch record.
+              </p>
+              <div className="rounded-lg bg-muted/60 p-3 text-xs space-y-1">
+                {eligibleOrders.find((o) => o.id === selectedOrderId) && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Sales Order:</span>
+                      <span className="font-mono font-medium text-foreground">
+                        {
+                          eligibleOrders.find((o) => o.id === selectedOrderId)
+                            ?.orderNumber
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Customer:</span>
+                      <span className="font-medium text-foreground">
+                        {
+                          eligibleOrders.find((o) => o.id === selectedOrderId)
+                            ?.customer?.name
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        Quantity to Deduct:
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        {eligibleOrders
+                          .find((o) => o.id === selectedOrderId)
+                          ?.lines.reduce(
+                            (sum, l) =>
+                              sum + (l.approvedQuantity - l.dispatchedQuantity),
+                            0,
+                          )}{" "}
+                        packets
+                      </span>
+                    </div>
+                  </>
+                )}
+                {vehicleNumber.trim() && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Vehicle:</span>
+                    <span className="font-mono text-foreground">
+                      {vehicleNumber.trim()}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="rounded-md bg-destructive/10 p-2.5 text-xs font-medium text-destructive border border-destructive/20">
+                Warning: This operational action cannot be undone. Physical on-hand stock balances will be deducted immediately.
+              </div>
+            </div>
+          }
+          confirmLabel={
+            dispatchMutation.isPending
+              ? "Dispatching..."
+              : "Confirm & Deduct Stock"
+          }
+          cancelLabel="Review details"
+          onConfirm={handleExecuteDispatch}
+          disabled={dispatchMutation.isPending}
+          destructive
+        />
       )}
     </div>
   );

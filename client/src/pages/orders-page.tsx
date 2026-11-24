@@ -19,13 +19,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
   ShoppingCartIcon,
   RefreshCwIcon,
   AlertTriangleIcon,
   CheckCircle2Icon,
   PlusCircleIcon,
-  XCircleIcon,
   ShieldCheckIcon,
   IndianRupeeIcon,
   DatabaseIcon,
@@ -1304,14 +1304,86 @@ export function OrdersPage() {
         </div>
       )}
 
-      {/* Approve / Reject Dialog */}
-      {selectedOrderForAction && actionType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      {/* Rejection Confirmation Dialog for Irreversible Action (F-048) */}
+      {selectedOrderForAction && actionType === "REJECT" && (
+        <ConfirmationDialog
+          open={selectedOrderForAction !== null && actionType === "REJECT"}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedOrderForAction(null);
+              setActionType(null);
+            }
+          }}
+          title={
+            <div className="flex items-center gap-2 text-destructive font-semibold">
+              <AlertTriangleIcon className="h-5 w-5" />
+              Confirm Sales Order Rejection?
+            </div>
+          }
+          description={
+            <div className="space-y-3 pt-1 text-sm text-foreground">
+              <p>
+                Rejecting this order will permanently cancel order{" "}
+                <span className="font-mono font-semibold">
+                  {selectedOrderForAction.orderNumber}
+                </span>{" "}
+                for{" "}
+                <span className="font-semibold">
+                  {selectedOrderForAction.customer.name}
+                </span>{" "}
+                and release all stock reservations back to inventory.
+              </p>
+              <div className="rounded-lg bg-destructive/10 p-2.5 text-xs font-medium text-destructive border border-destructive/20">
+                Warning: This action is irreversible. The customer booking will be permanently cancelled.
+              </div>
+            </div>
+          }
+          confirmLabel={
+            rejectMutation.isPending ? "Rejecting..." : "Confirm Rejection"
+          }
+          cancelLabel="Cancel"
+          onConfirm={() =>
+            rejectMutation.mutate({
+              orderId: selectedOrderForAction.id,
+              reason: rejectionReason,
+            })
+          }
+          disabled={rejectMutation.isPending}
+          destructive
+        >
+          <div className="flex flex-col gap-1.5 pt-2">
+            <label
+              htmlFor="rejection-reason"
+              className="text-xs font-semibold text-muted-foreground"
+            >
+              Reason for rejection
+            </label>
+            <Input
+              id="rejection-reason"
+              type="text"
+              placeholder="e.g. Credit limit exceeded, invalid delivery location..."
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="text-sm"
+            />
+          </div>
+        </ConfirmationDialog>
+      )}
+
+      {/* Approve Dialog */}
+      {selectedOrderForAction && actionType === "APPROVE" && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="approve-order-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        >
           <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
-            <h3 className="text-lg font-bold text-foreground">
-              {actionType === "APPROVE"
-                ? "Approve sales order"
-                : "Reject sales order"}
+            <h3
+              id="approve-order-title"
+              className="text-lg font-bold text-foreground"
+            >
+              Approve sales order
             </h3>
             <p className="mt-1 text-xs text-muted-foreground">
               Order {selectedOrderForAction.orderNumber} for{" "}
@@ -1319,40 +1391,26 @@ export function OrdersPage() {
               {Number(selectedOrderForAction.lines[0]?.quotedQuantity)} packets)
             </p>
 
-            {actionType === "APPROVE" ? (
-              <div className="mt-4 flex flex-col gap-3">
-                <p className="text-xs text-foreground">
-                  Approving this order will atomically reserve{" "}
-                  <span className="font-semibold">
-                    {Number(selectedOrderForAction.lines[0]?.quotedQuantity)}{" "}
-                    packets
-                  </span>{" "}
-                  of finished goods Murukku 200g.
-                </p>
-                {selectedOrderForAction.totalShortage &&
-                selectedOrderForAction.totalShortage > 0 ? (
-                  <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                    <AlertTriangleIcon className="h-4 w-4 shrink-0" />
-                    <span>
-                      Notice: Full quantity cannot be reserved because shortage
-                      is {selectedOrderForAction.totalShortage} packets.
-                    </span>
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <div className="mt-4 flex flex-col gap-2">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Reason for rejection
-                </label>
-                <input
-                  type="text"
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm"
-                />
-              </div>
-            )}
+            <div className="mt-4 flex flex-col gap-3">
+              <p className="text-xs text-foreground">
+                Approving this order will atomically reserve{" "}
+                <span className="font-semibold">
+                  {Number(selectedOrderForAction.lines[0]?.quotedQuantity)}{" "}
+                  packets
+                </span>{" "}
+                of finished goods Murukku 200g.
+              </p>
+              {selectedOrderForAction.totalShortage &&
+              selectedOrderForAction.totalShortage > 0 ? (
+                <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                  <AlertTriangleIcon className="h-4 w-4 shrink-0" />
+                  <span>
+                    Notice: Full quantity cannot be reserved because shortage
+                    is {selectedOrderForAction.totalShortage} packets.
+                  </span>
+                </div>
+              ) : null}
+            </div>
 
             <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
               <Button
@@ -1365,36 +1423,17 @@ export function OrdersPage() {
               >
                 Cancel
               </Button>
-
-              {actionType === "APPROVE" ? (
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    approveMutation.mutate(selectedOrderForAction.id)
-                  }
-                  disabled={approveMutation.isPending}
-                  className="gap-2"
-                >
-                  <CheckCircle2Icon className="h-4 w-4" />
-                  Confirm approval
-                </Button>
-              ) : (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() =>
-                    rejectMutation.mutate({
-                      orderId: selectedOrderForAction.id,
-                      reason: rejectionReason,
-                    })
-                  }
-                  disabled={rejectMutation.isPending}
-                  className="gap-2"
-                >
-                  <XCircleIcon className="h-4 w-4" />
-                  Confirm rejection
-                </Button>
-              )}
+              <Button
+                size="sm"
+                onClick={() =>
+                  approveMutation.mutate(selectedOrderForAction.id)
+                }
+                disabled={approveMutation.isPending}
+                className="gap-2"
+              >
+                <CheckCircle2Icon className="h-4 w-4" />
+                Confirm approval
+              </Button>
             </div>
           </div>
         </div>

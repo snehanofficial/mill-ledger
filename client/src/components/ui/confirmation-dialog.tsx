@@ -1,3 +1,4 @@
+import type React from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,41 +12,72 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 
+export interface ConfirmationDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  trigger?: React.ReactNode;
+  triggerLabel?: string;
+  title: React.ReactNode;
+  description: React.ReactNode;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
+  onCancel?: () => void;
+  destructive?: boolean;
+  disabled?: boolean;
+  children?: React.ReactNode;
+}
+
 function ConfirmationDialog({
+  open,
+  onOpenChange,
+  trigger,
   triggerLabel,
   title,
   description,
   confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
   onConfirm,
+  onCancel,
   destructive = false,
-}: {
-  triggerLabel: string;
-  title: string;
-  description: string;
-  confirmLabel?: string;
-  onConfirm: () => void;
-  destructive?: boolean;
-}) {
+  disabled = false,
+  children,
+}: ConfirmationDialogProps) {
+  const rootProps =
+    open !== undefined
+      ? { open, onOpenChange }
+      : {};
+
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant={destructive ? "destructive" : "primary"}>
-          {triggerLabel}
-        </Button>
-      </AlertDialogTrigger>
+    <AlertDialog {...rootProps}>
+      {trigger ? (
+        <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+      ) : triggerLabel ? (
+        <AlertDialogTrigger asChild>
+          <Button variant={destructive ? "destructive" : "primary"}>
+            {triggerLabel}
+          </Button>
+        </AlertDialogTrigger>
+      ) : null}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogDescription asChild>
+            <div className="text-sm text-muted-foreground">{description}</div>
+          </AlertDialogDescription>
         </AlertDialogHeader>
+        {children && <div className="py-2">{children}</div>}
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
-            <Button variant="secondary">Cancel</Button>
+            <Button variant="secondary" onClick={onCancel}>
+              {cancelLabel}
+            </Button>
           </AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button
               variant={destructive ? "destructive" : "primary"}
               onClick={onConfirm}
+              disabled={disabled}
             >
               {confirmLabel}
             </Button>
