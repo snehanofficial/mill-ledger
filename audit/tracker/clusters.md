@@ -436,7 +436,7 @@ client/src/pages/showcase-page.tsx:192:            className="rounded-md px-3 py
 | **F-073** | P1 | `OPEN` | Mobile 4G Largest Contentful Paint (LCP) Budget Violation on Authenticated Routes (3.4s - 4.0s vs 2.5s Target) |
 | **F-074** | P1 | `OPEN` | Absence of Server Pagination and List Virtualization Across All Enterprise Entity Grids |
 | **F-075** | P2 | `OPEN` | Complete Absence of Product Image Pipeline, Modern Formats (AVIF/WebP), and Image Hash Placeholders |
-| **F-076** | P2 | `OPEN` | Missing Intent-Based Route Prefetching on Hover or Idle for Lazy-Loaded Routes |
+| **F-076** | P2 | `VERIFIED` | Missing Intent-Based Route Prefetching on Hover or Idle for Lazy-Loaded Routes |
 | **F-077** | P2 | `OPEN` | Offline Stale Price Acceptance Without Server-Side Price List Revalidation |
 | **F-078** | P2 | `VERIFIED` | Missing Express Response Compression Middleware and Unconfigured PostgreSQL Connection Pool |
 | **F-079** | P3 | `VERIFIED` | Unused Cyrillic/Vietnamese Font Subsets Bundled While Required Tamil Font Subset is Missing |
