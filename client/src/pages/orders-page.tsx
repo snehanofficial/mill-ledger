@@ -1162,10 +1162,14 @@ export function OrdersPage() {
 
               {/* Customer selection */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label
+                  htmlFor="order-customer-select"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Customer
                 </label>
                 <select
+                  id="order-customer-select"
                   value={selectedCustomerId}
                   onChange={(e) => setSelectedCustomerId(e.target.value)}
                   className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
@@ -1189,10 +1193,14 @@ export function OrdersPage() {
               {/* Product and Quantity */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="order-product-select"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Product item
                   </label>
                   <select
+                    id="order-product-select"
                     value={selectedProductId}
                     onChange={(e) => setSelectedProductId(e.target.value)}
                     className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
@@ -1209,10 +1217,14 @@ export function OrdersPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="order-quantity-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Order quantity (pkts)
                   </label>
                   <input
+                    id="order-quantity-input"
                     type="number"
                     value={orderQuantity}
                     onChange={(e) => setOrderQuantity(Number(e.target.value))}
@@ -1236,10 +1248,14 @@ export function OrdersPage() {
               )}
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label
+                  htmlFor="order-notes-input"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Order notes
                 </label>
                 <input
+                  id="order-notes-input"
                   type="text"
                   value={orderNotes}
                   onChange={(e) => setOrderNotes(e.target.value)}

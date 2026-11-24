@@ -1103,10 +1103,14 @@ export function PaymentsPage() {
 
               {/* Customer selection */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-foreground">
+                <label
+                  htmlFor="payment-customer-select"
+                  className="text-xs font-semibold text-foreground"
+                >
                   Select customer *
                 </label>
                 <select
+                  id="payment-customer-select"
                   value={selectedCustomerId}
                   onChange={(e) => {
                     setSelectedCustomerId(e.target.value);
@@ -1128,10 +1132,14 @@ export function PaymentsPage() {
               {/* Amount and Payment Mode */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-foreground">
+                  <label
+                    htmlFor="payment-amount-input"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Receipt amount (₹) *
                   </label>
                   <Input
+                    id="payment-amount-input"
                     type="number"
                     step="0.01"
                     min="0.01"
@@ -1144,10 +1152,14 @@ export function PaymentsPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-foreground">
+                  <label
+                    htmlFor="payment-mode-select"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Payment mode *
                   </label>
                   <select
+                    id="payment-mode-select"
                     value={paymentMode}
                     onChange={(e) => setPaymentMode(e.target.value)}
                     className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
@@ -1166,10 +1178,14 @@ export function PaymentsPage() {
               {/* Reference and Notes */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-foreground">
+                  <label
+                    htmlFor="payment-reference-input"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Reference number
                   </label>
                   <Input
+                    id="payment-reference-input"
                     placeholder="e.g. UTR or Cheque no"
                     value={referenceNumber}
                     onChange={(e) => setReferenceNumber(e.target.value)}
@@ -1178,10 +1194,14 @@ export function PaymentsPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-foreground">
+                  <label
+                    htmlFor="payment-notes-input"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Notes
                   </label>
                   <Input
+                    id="payment-notes-input"
                     placeholder="e.g. On account settlement"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
@@ -1198,8 +1218,12 @@ export function PaymentsPage() {
                       <span className="text-xs font-semibold text-foreground">
                         Invoice allocation strategy
                       </span>
-                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <label
+                        htmlFor="payment-custom-allocation-toggle"
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer"
+                      >
                         <input
+                          id="payment-custom-allocation-toggle"
                           type="checkbox"
                           checked={useManualAllocation}
                           onChange={(e) =>
@@ -1243,6 +1267,8 @@ export function PaymentsPage() {
                               </span>
                             </div>
                             <Input
+                              id={`allocation-${inv.id}`}
+                              aria-label={`Allocation amount for invoice ${inv.invoiceNumber}`}
                               type="number"
                               step="0.01"
                               placeholder="₹"

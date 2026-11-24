@@ -732,7 +732,10 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
       >
         <DialogTitle className="sr-only">Search pages</DialogTitle>
         <Command>
-          <CommandInput placeholder="Search pages and actions..." />
+          <CommandInput
+            placeholder="Search pages and actions..."
+            aria-label="Search pages and actions"
+          />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             {sections.map((section) => {

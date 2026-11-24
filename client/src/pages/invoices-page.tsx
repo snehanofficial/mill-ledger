@@ -788,10 +788,14 @@ export function InvoicesPage() {
 
             <div className="mt-2 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label
+                  htmlFor="credit-note-reason"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Reason for credit note
                 </label>
                 <input
+                  id="credit-note-reason"
                   type="text"
                   value={creditNoteReason}
                   onChange={(e) => setCreditNoteReason(e.target.value)}
@@ -800,10 +804,14 @@ export function InvoicesPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label
+                  htmlFor="credit-note-amount"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Adjustment amount (₹)
                 </label>
                 <input
+                  id="credit-note-amount"
                   type="number"
                   value={creditNoteAmount}
                   onChange={(e) => setCreditNoteAmount(Number(e.target.value))}
@@ -878,7 +886,10 @@ export function InvoicesPage() {
 
           <div className="mt-2 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label
+                  htmlFor="invoice-order-select"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Approved Sales Order *
                 </label>
                 {isLoadingApprovedOrders ? (
@@ -891,6 +902,7 @@ export function InvoicesPage() {
                   </div>
                 ) : (
                   <select
+                    id="invoice-order-select"
                     value={selectedOrderIdForInvoice}
                     onChange={(e) =>
                       setSelectedOrderIdForInvoice(e.target.value)
@@ -909,10 +921,14 @@ export function InvoicesPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label
+                  htmlFor="invoice-notes-input"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Invoice Notes (Optional)
                 </label>
                 <input
+                  id="invoice-notes-input"
                   type="text"
                   placeholder="e.g. Standard 30 days payment term"
                   value={invoiceNotes}

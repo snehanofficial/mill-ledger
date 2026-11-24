@@ -576,7 +576,10 @@ export function DispatchPage() {
               )}
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-foreground">
+                <label
+                  htmlFor="dispatch-order-select"
+                  className="text-xs font-semibold text-foreground"
+                >
                   Select approved sales order *
                 </label>
                 {eligibleOrders.length === 0 ? (
@@ -586,6 +589,7 @@ export function DispatchPage() {
                   </div>
                 ) : (
                   <select
+                    id="dispatch-order-select"
                     value={selectedOrderId}
                     onChange={(e) => setSelectedOrderId(e.target.value)}
                     className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
@@ -612,10 +616,14 @@ export function DispatchPage() {
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-foreground">
+                  <label
+                    htmlFor="dispatch-vehicle-input"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Vehicle number
                   </label>
                   <Input
+                    id="dispatch-vehicle-input"
                     placeholder="e.g. TN 38 AB 1234"
                     value={vehicleNumber}
                     onChange={(e) => setVehicleNumber(e.target.value)}
@@ -624,10 +632,14 @@ export function DispatchPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-foreground">
+                  <label
+                    htmlFor="dispatch-driver-name-input"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Driver name
                   </label>
                   <Input
+                    id="dispatch-driver-name-input"
                     placeholder="e.g. Ravi Kumar"
                     value={driverName}
                     onChange={(e) => setDriverName(e.target.value)}
@@ -637,10 +649,14 @@ export function DispatchPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-foreground">
+                <label
+                  htmlFor="dispatch-driver-phone-input"
+                  className="text-xs font-semibold text-foreground"
+                >
                   Driver phone number
                 </label>
                 <Input
+                  id="dispatch-driver-phone-input"
                   placeholder="e.g. 9876543210"
                   value={driverPhone}
                   onChange={(e) => setDriverPhone(e.target.value)}
@@ -649,10 +665,14 @@ export function DispatchPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-foreground">
+                <label
+                  htmlFor="dispatch-notes-input"
+                  className="text-xs font-semibold text-foreground"
+                >
                   Dispatch notes
                 </label>
                 <Input
+                  id="dispatch-notes-input"
                   placeholder="e.g. Dispatched via standard carrier"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}

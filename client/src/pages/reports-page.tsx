@@ -725,6 +725,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
             <div className="flex flex-wrap items-center gap-2">
               <Input
                 placeholder="Search actor, entity, details..."
+                aria-label="Search audit events by actor, entity, details"
                 value={auditSearch}
                 onChange={(e) => setAuditSearch(e.target.value)}
                 className="h-8 w-56 text-xs"
@@ -732,6 +733,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
               <select
                 value={auditActionFilter}
                 onChange={(e) => setAuditActionFilter(e.target.value)}
+                aria-label="Filter audit events by action"
                 className="h-8 rounded-control border border-input bg-background px-2 text-xs text-foreground shadow-xs outline-none"
               >
                 <option value="ALL">All Actions</option>

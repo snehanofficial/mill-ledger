@@ -274,6 +274,7 @@ export function SuppliersPage() {
           <input
             type="text"
             placeholder="Search suppliers by name, code, state, GSTIN..."
+            aria-label="Search suppliers by name, code, state, GSTIN"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-md border bg-background pl-9 pr-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -442,10 +443,14 @@ export function SuppliersPage() {
             className="mt-2 flex flex-col gap-3"
           >
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label
+                  htmlFor="supplier-new-code"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Vendor Code *
                 </label>
                 <input
+                  id="supplier-new-code"
                   type="text"
                   required
                   placeholder="e.g. SUP-MANDI-02"
@@ -456,10 +461,14 @@ export function SuppliersPage() {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label
+                  htmlFor="supplier-new-name"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Supplier / Vendor Name *
                 </label>
                 <input
+                  id="supplier-new-name"
                   type="text"
                   required
                   placeholder="e.g. Thanjavur Agro Mandi"
@@ -471,10 +480,14 @@ export function SuppliersPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="supplier-new-state"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     State *
                   </label>
                   <input
+                    id="supplier-new-state"
                     type="text"
                     required
                     value={state}
@@ -483,10 +496,14 @@ export function SuppliersPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="supplier-new-phone"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Phone (Optional)
                   </label>
                   <input
+                    id="supplier-new-phone"
                     type="text"
                     placeholder="9876543210"
                     value={phone}
@@ -498,10 +515,14 @@ export function SuppliersPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="supplier-new-email"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Email (Optional)
                   </label>
                   <input
+                    id="supplier-new-email"
                     type="email"
                     placeholder="mandi@agro.in"
                     value={email}
@@ -510,10 +531,14 @@ export function SuppliersPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="supplier-new-gstin"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     GSTIN (Optional)
                   </label>
                   <input
+                    id="supplier-new-gstin"
                     type="text"
                     placeholder="33AAAAA0000A1Z5"
                     value={gstin}
@@ -594,10 +619,14 @@ export function SuppliersPage() {
               className="mt-4 flex flex-col gap-3"
             >
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label
+                  htmlFor="supplier-edit-name"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Supplier Name *
                 </label>
                 <input
+                  id="supplier-edit-name"
                   type="text"
                   required
                   value={name}
@@ -608,10 +637,14 @@ export function SuppliersPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="supplier-edit-state"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     State *
                   </label>
                   <input
+                    id="supplier-edit-state"
                     type="text"
                     required
                     value={state}
@@ -620,10 +653,14 @@ export function SuppliersPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="supplier-edit-phone"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Phone
                   </label>
                   <input
+                    id="supplier-edit-phone"
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -634,10 +671,14 @@ export function SuppliersPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="supplier-edit-email"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Email
                   </label>
                   <input
+                    id="supplier-edit-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -645,10 +686,14 @@ export function SuppliersPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="supplier-edit-gstin"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     GSTIN
                   </label>
                   <input
+                    id="supplier-edit-gstin"
                     type="text"
                     value={gstin}
                     onChange={(e) => setGstin(e.target.value)}

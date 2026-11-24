@@ -450,10 +450,14 @@ export function SettingsPage() {
 
           <form onSubmit={handleCreateUser} className="mt-2 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
+              <label
+                htmlFor="settings-user-name"
+                className="text-xs font-semibold text-muted-foreground"
+              >
                 Full Name
               </label>
               <input
+                id="settings-user-name"
                 type="text"
                 required
                 value={newUserName}
@@ -464,10 +468,14 @@ export function SettingsPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
+              <label
+                htmlFor="settings-user-email"
+                className="text-xs font-semibold text-muted-foreground"
+              >
                 Email Address
               </label>
               <input
+                id="settings-user-email"
                 type="email"
                 required
                 value={newUserEmail}
@@ -478,10 +486,14 @@ export function SettingsPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
+              <label
+                htmlFor="settings-user-password"
+                className="text-xs font-semibold text-muted-foreground"
+              >
                 Password
               </label>
               <input
+                id="settings-user-password"
                 type="password"
                 required
                 value={newUserPassword}
@@ -492,10 +504,14 @@ export function SettingsPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">
+              <label
+                htmlFor="settings-user-role"
+                className="text-xs font-semibold text-muted-foreground"
+              >
                 Role Assignment
               </label>
               <select
+                id="settings-user-role"
                 value={newUserRole}
                 onChange={(e) => setNewUserRole(e.target.value as Role)}
                 className="rounded-md border bg-background px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"

@@ -380,7 +380,10 @@ export function PurchasesPage() {
               {/* Supplier Selection */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="purchase-supplier-select"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Supplier / Mandi Vendor
                   </label>
                   <Link
@@ -391,6 +394,7 @@ export function PurchasesPage() {
                   </Link>
                 </div>
                 <select
+                  id="purchase-supplier-select"
                   value={selectedSupplierId}
                   onChange={(e) => setSelectedSupplierId(e.target.value)}
                   className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
@@ -409,10 +413,14 @@ export function PurchasesPage() {
               {/* Receipt Number & Invoice */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="purchase-receipt-number-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Receipt #
                   </label>
                   <input
+                    id="purchase-receipt-number-input"
                     type="text"
                     value={receiptNumber}
                     onChange={(e) => setReceiptNumber(e.target.value)}
@@ -420,10 +428,14 @@ export function PurchasesPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="purchase-supplier-invoice-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Supplier Invoice #
                   </label>
                   <input
+                    id="purchase-supplier-invoice-input"
                     type="text"
                     value={supplierInvoiceNumber}
                     onChange={(e) => setSupplierInvoiceNumber(e.target.value)}
@@ -434,10 +446,14 @@ export function PurchasesPage() {
 
               {/* Item selection */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label
+                  htmlFor="purchase-item-select"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Raw Material Item
                 </label>
                 <select
+                  id="purchase-item-select"
                   value={selectedItemId}
                   onChange={(e) => setSelectedItemId(e.target.value)}
                   className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
@@ -456,10 +472,14 @@ export function PurchasesPage() {
               {/* Quantity and Rate */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="purchase-quantity-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Quantity received
                   </label>
                   <input
+                    id="purchase-quantity-input"
                     type="number"
                     step="0.01"
                     min="0.01"
@@ -469,10 +489,14 @@ export function PurchasesPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="purchase-unit-price-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Unit Purchase Rate (₹)
                   </label>
                   <input
+                    id="purchase-unit-price-input"
                     type="number"
                     step="0.01"
                     min="0"
@@ -495,10 +519,14 @@ export function PurchasesPage() {
 
               {/* Notes */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label
+                  htmlFor="purchase-notes-input"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Notes / Vehicle Details
                 </label>
                 <input
+                  id="purchase-notes-input"
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}

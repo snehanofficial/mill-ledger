@@ -571,11 +571,15 @@ export function ProductionPage() {
             {/* Recipe BOM selection (MLD-010) */}
               <div className="flex flex-col gap-1.5">
                 <DomainTooltip term="BOM">
-                  <label className="text-xs font-semibold text-muted-foreground cursor-help">
+                  <label
+                    htmlFor="production-recipe-select"
+                    className="text-xs font-semibold text-muted-foreground cursor-help"
+                  >
                     Bill of Materials (BOM) Recipe
                   </label>
                 </DomainTooltip>
                 <select
+                  id="production-recipe-select"
                   value={selectedRecipeId}
                   onChange={(e) => setSelectedRecipeId(e.target.value)}
                   className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
@@ -594,10 +598,14 @@ export function ProductionPage() {
               {/* Output inputs */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="production-good-qty-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Good packets produced
                   </label>
                   <input
+                    id="production-good-qty-input"
                     type="number"
                     value={actualGoodQty}
                     onChange={(e) => setActualGoodQty(Number(e.target.value))}
@@ -625,10 +633,14 @@ export function ProductionPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="production-damaged-pouches-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Damaged pouches
                   </label>
                   <input
+                    id="production-damaged-pouches-input"
                     type="number"
                     value={damagedPouches}
                     onChange={(e) => setDamagedPouches(Number(e.target.value))}
@@ -643,10 +655,14 @@ export function ProductionPage() {
               {/* Material consumption inputs */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="production-oil-consumed-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Cooking oil consumed (L)
                   </label>
                   <input
+                    id="production-oil-consumed-input"
                     type="number"
                     step="0.1"
                     value={oilConsumed}
@@ -675,10 +691,14 @@ export function ProductionPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="production-cartons-consumed-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Cartons used (pieces)
                   </label>
                   <input
+                    id="production-cartons-consumed-input"
                     type="number"
                     value={cartonsConsumed}
                     onChange={(e) => setCartonsConsumed(Number(e.target.value))}
@@ -704,10 +724,14 @@ export function ProductionPage() {
               {/* Additional Costs */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="production-labor-cost-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Direct labour cost (₹)
                   </label>
                   <input
+                    id="production-labor-cost-input"
                     type="number"
                     value={laborCost}
                     onChange={(e) => setLaborCost(Number(e.target.value))}
@@ -716,10 +740,14 @@ export function ProductionPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <label
+                    htmlFor="production-utility-cost-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Gas and power cost (₹)
                   </label>
                   <input
+                    id="production-utility-cost-input"
                     type="number"
                     value={utilityCost}
                     onChange={(e) => setUtilityCost(Number(e.target.value))}
@@ -729,10 +757,14 @@ export function ProductionPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label
+                  htmlFor="production-notes-input"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Notes
                 </label>
                 <input
+                  id="production-notes-input"
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -824,7 +856,10 @@ export function ProductionPage() {
             </DialogHeader>
 
             <div className="mt-2 flex flex-col gap-2">
-              <label className="text-xs font-semibold text-muted-foreground">
+              <label
+                htmlFor="reversal-reason-input"
+                className="text-xs font-semibold text-muted-foreground"
+              >
                 Reversal reason
               </label>
               <input
