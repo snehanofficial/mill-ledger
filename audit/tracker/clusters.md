@@ -553,7 +553,7 @@ client/src/pages/reports-page.tsx:643:                request metadata
 | **F-102** | P1 | `VERIFIED` | Missing Readiness Endpoint, Health Check Omits Database Connectivity, and Express Missing Request Timeout & Trust Proxy Settings |
 | **F-103** | P2 | `VERIFIED` | Total Absence of Observability: Unstructured Console Logging, Zero Source Maps, No Error Tracking, No Metrics, and Missing Alert Rules |
 | **F-104** | P1 | `VERIFIED` | CI/CD Pipeline Gaps: E2E, Lighthouse, Audit, Bundle Gate, and Secret Scan Missing; Main Branch Lacks Merge Protection |
-| **F-105** | P2 | `OPEN` | Missing Production Runbooks (Deploy, Rollback, Restore, Secret Rotation, Super Admin) and Absence of Comprehensive Data Dictionary |
+| **F-105** | P2 | `VERIFIED` | Missing Production Runbooks (Deploy, Rollback, Restore, Secret Rotation, Super Admin) and Absence of Comprehensive Data Dictionary |
 
 #### Sibling Sweep Record
 

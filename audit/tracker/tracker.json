@@ -9149,7 +9149,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -9157,12 +9157,27 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-105.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "1b631f1",
+        "evidenceLink": "audit/evidence/verify/F-105/verification.md",
+        "note": "Authored standard operating procedures (deploy, rollback, restore, secret rotation, super admin) in docs/runbooks/ and comprehensive data dictionary for all 40 models in docs/data-dictionary.md. 5/5 regression tests pass."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-105-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm exec vitest run audit/tests/f-105-regression.test.ts --config /dev/null",
+    "regressionTest": "audit/tests/f-105-regression.test.ts",
+    "fixCommit": "1b631f1",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-105/verification.md",
+      "audit/evidence/verify/F-105/regression-test.txt",
+      "audit/evidence/verify/F-105/typecheck.txt",
+      "audit/evidence/verify/F-105/lint.txt",
+      "audit/evidence/verify/F-105/benchmark.txt",
+      "audit/evidence/verify/F-105/invariants.txt",
+      "audit/evidence/verify/F-105/suite-tests.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
@@ -9195,6 +9210,6 @@
       ]
     },
     "needsApproval": "none",
-    "notes": ""
+    "notes": "Decoupled from F-070 per Option 2 directive; authored standard runbooks (deploy, rollback, restore, secret rotation, super admin) in docs/runbooks/ and comprehensive data dictionary for all 40 models and 12 enums in docs/data-dictionary.md."
   }
 ]
