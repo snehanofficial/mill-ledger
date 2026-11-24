@@ -5210,7 +5210,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -5218,12 +5218,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-056.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "d94396c",
+        "evidenceLink": "audit/evidence/verify/F-056/10-summary.txt",
+        "note": "Removed opacity modifiers (/60, /50, /40, /70) across all operational views and components, restoring full 7.72:1 contrast ratio per WCAG 2.2 SC 1.4.3 Level AA."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-056-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-056-regression.test.ts",
+    "fixCommit": "d94396c",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-056/01-git-status.txt",
+      "audit/evidence/verify/F-056/02-regression-test.txt",
+      "audit/evidence/verify/F-056/03-typecheck.txt",
+      "audit/evidence/verify/F-056/04-lint.txt",
+      "audit/evidence/verify/F-056/05-build.txt",
+      "audit/evidence/verify/F-056/06-invariants.txt",
+      "audit/evidence/verify/F-056/07-benchmark.txt",
+      "audit/evidence/verify/F-056/08-test-suite.txt",
+      "audit/evidence/verify/F-056/09-diff.txt",
+      "audit/evidence/verify/F-056/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",
