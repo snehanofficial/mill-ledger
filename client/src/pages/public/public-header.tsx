@@ -5,6 +5,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { getDefaultRouteForRole } from "@/lib/role-routing";
+import { getPrefetchProps } from "@/lib/route-prefetch";
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -14,8 +15,14 @@ export function PublicHeader() {
 
   const navLinks = [
     { href: "/", label: language === "ta" ? "முகப்பு" : "Home" },
-    { href: "/catalog", label: language === "ta" ? "தயாரிப்பு பட்டியல்" : "Catalog" },
-    { href: "/contact", label: language === "ta" ? "தொடர்பு & மண்டி" : "Mandi & Contact" },
+    {
+      href: "/catalog",
+      label: language === "ta" ? "தயாரிப்பு பட்டியல்" : "Catalog",
+    },
+    {
+      href: "/contact",
+      label: language === "ta" ? "தொடர்பு & மண்டி" : "Mandi & Contact",
+    },
   ];
 
   return (
@@ -25,7 +32,9 @@ export function PublicHeader() {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-md focus:outline-none"
       >
-        {language === "ta" ? "முதன்மை பகுதிக்குச் செல்லவும்" : "Skip to main content"}
+        {language === "ta"
+          ? "முதன்மை பகுதிக்குச் செல்லவும்"
+          : "Skip to main content"}
       </a>
 
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -45,7 +54,10 @@ export function PublicHeader() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6" aria-label="Main navigation">
+        <nav
+          className="hidden md:flex items-center gap-6"
+          aria-label="Main navigation"
+        >
           {navLinks.map((link) => {
             const isActive = location.pathname === link.href;
             return (
@@ -53,8 +65,11 @@ export function PublicHeader() {
                 key={link.href}
                 to={link.href}
                 className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive ? "text-primary border-b-2 border-primary py-1" : "text-muted-foreground"
+                  isActive
+                    ? "text-primary border-b-2 border-primary py-1"
+                    : "text-muted-foreground"
                 }`}
+                {...getPrefetchProps(link.href)}
               >
                 {link.label}
               </Link>
@@ -70,7 +85,9 @@ export function PublicHeader() {
             size="sm"
             onClick={() => setLanguage(language === "en" ? "ta" : "en")}
             aria-label={
-              language === "en" ? "Switch language to Tamil" : "Switch language to English"
+              language === "en"
+                ? "Switch language to Tamil"
+                : "Switch language to English"
             }
             className="h-8 px-2.5 text-xs font-semibold cursor-pointer"
           >
@@ -90,6 +107,7 @@ export function PublicHeader() {
             <Link
               to="/auth/login"
               className={buttonVariants({ variant: "primary", size: "sm" })}
+              {...getPrefetchProps("/auth/login")}
             >
               {language === "ta" ? "பணியாளர் உள்நுழைவு" : "Staff ERP Login"}
             </Link>
@@ -103,7 +121,9 @@ export function PublicHeader() {
             size="sm"
             onClick={() => setLanguage(language === "en" ? "ta" : "en")}
             aria-label={
-              language === "en" ? "Switch language to Tamil" : "Switch language to English"
+              language === "en"
+                ? "Switch language to Tamil"
+                : "Switch language to English"
             }
             className="h-8 px-2 text-xs font-semibold"
           >
@@ -120,7 +140,11 @@ export function PublicHeader() {
             aria-label="Toggle navigation menu"
             className="p-1.5"
           >
-            {mobileMenuOpen ? <XIcon className="size-5" /> : <MenuIcon className="size-5" />}
+            {mobileMenuOpen ? (
+              <XIcon className="size-5" />
+            ) : (
+              <MenuIcon className="size-5" />
+            )}
           </Button>
         </div>
       </div>
@@ -144,7 +168,10 @@ export function PublicHeader() {
                 <Link
                   to={getDefaultRouteForRole(user.role)}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={buttonVariants({ variant: "primary", className: "w-full" })}
+                  className={buttonVariants({
+                    variant: "primary",
+                    className: "w-full",
+                  })}
                 >
                   {language === "ta" ? "பணிமனைக்குச் செல்" : "Open Workspace"}
                 </Link>
@@ -152,7 +179,10 @@ export function PublicHeader() {
                 <Link
                   to="/auth/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={buttonVariants({ variant: "primary", className: "w-full" })}
+                  className={buttonVariants({
+                    variant: "primary",
+                    className: "w-full",
+                  })}
                 >
                   {language === "ta" ? "பணியாளர் உள்நுழைவு" : "Staff ERP Login"}
                 </Link>

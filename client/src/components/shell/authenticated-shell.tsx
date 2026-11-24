@@ -58,6 +58,7 @@ import {
 
 import { useLanguage } from "@/lib/i18n";
 import { useNotifications } from "@/lib/notifications-store";
+import { getPrefetchProps, prefetchIdleRoutes } from "@/lib/route-prefetch";
 import { useTheme } from "@/hooks/use-theme";
 import { useMotion } from "@/hooks/use-motion";
 
@@ -307,6 +308,7 @@ function AppBrand({
             to={href}
             onClick={closeMobile}
             aria-label={`${name} ${description ? description + " - " : ""}Home`}
+            {...getPrefetchProps(href)}
           >
             <BrandMark>{logo ?? "M"}</BrandMark>
             <div className="grid flex-1 min-w-0 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
@@ -371,6 +373,7 @@ function AppNavItem({ item, pathname }: NavItemProps) {
             aria-label={translatedLabel}
             aria-current={item.href === pathname ? "page" : undefined}
             onClick={closeOnMobile}
+            {...getPrefetchProps(item.href)}
           >
             {item.icon}
             <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate">
@@ -422,8 +425,11 @@ function AppNavItem({ item, pathname }: NavItemProps) {
                     <Link
                       to={child.href}
                       aria-label={childLabel}
-                      aria-current={child.href === pathname ? "page" : undefined}
+                      aria-current={
+                        child.href === pathname ? "page" : undefined
+                      }
                       onClick={closeOnMobile}
+                      {...getPrefetchProps(child.href)}
                     >
                       {child.icon && (
                         <span className="shrink-0">{child.icon}</span>
@@ -458,7 +464,9 @@ function AppNav({
       {sections.map((section, index) => (
         <SidebarGroup key={section.label ?? index}>
           {section.label && (
-            <SidebarGroupLabel>{t(section.label, section.label)}</SidebarGroupLabel>
+            <SidebarGroupLabel>
+              {t(section.label, section.label)}
+            </SidebarGroupLabel>
           )}
           <SidebarMenu>
             {section.items.map((item) => (
@@ -486,8 +494,16 @@ function SidebarCollapseToggle() {
         <SidebarMenuButton
           size="default"
           onClick={toggleSidebar}
-          tooltip={isCollapsed ? t("Expand sidebar (Ctrl+B)", "Expand sidebar (Ctrl+B)") : undefined}
-          aria-label={isCollapsed ? t("Expand sidebar", "Expand sidebar") : t("Collapse to icons ⌘B", "Collapse to icons ⌘B")}
+          tooltip={
+            isCollapsed
+              ? t("Expand sidebar (Ctrl+B)", "Expand sidebar (Ctrl+B)")
+              : undefined
+          }
+          aria-label={
+            isCollapsed
+              ? t("Expand sidebar", "Expand sidebar")
+              : t("Collapse to icons ⌘B", "Collapse to icons ⌘B")
+          }
           className="text-muted-foreground hover:text-foreground h-8 px-2"
         >
           {isCollapsed ? (
@@ -616,10 +632,7 @@ function SidebarUserMenu({
               />
               {t("Documentation & Guide", "Documentation & Guide")}
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={toggleTheme}
-              className="cursor-pointer"
-            >
+            <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer">
               {resolvedTheme === "dark" ? (
                 <>
                   <SunIcon
@@ -638,10 +651,7 @@ function SidebarUserMenu({
                 </>
               )}
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={toggleMotion}
-              className="cursor-pointer"
-            >
+            <DropdownMenuItem onClick={toggleMotion} className="cursor-pointer">
               {isMotionPaused ? (
                 <>
                   <PlayIcon
@@ -831,7 +841,9 @@ function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
         className="hidden sm:flex w-52 justify-start text-muted-foreground hover:text-foreground h-9 px-3"
       >
         <SearchIcon className="mr-2 size-4 shrink-0" aria-hidden />
-        <span className="flex-1 text-left truncate font-normal">{t("Search", "Search")}</span>
+        <span className="flex-1 text-left truncate font-normal">
+          {t("Search", "Search")}
+        </span>
         <Kbd className="ml-auto">⌘K</Kbd>
       </Button>
 
@@ -877,7 +889,11 @@ function ShellBreadcrumbs({ role }: { role: UserRole }) {
                   </BreadcrumbPage>
                 ) : crumb.href ? (
                   <BreadcrumbLink asChild className="truncate">
-                    <Link to={crumb.href} className="truncate">
+                    <Link
+                      to={crumb.href}
+                      className="truncate"
+                      {...getPrefetchProps(crumb.href)}
+                    >
                       {translatedCrumb}
                     </Link>
                   </BreadcrumbLink>
@@ -1020,7 +1036,10 @@ function StickyHeader({
           title={
             isMotionPaused
               ? t("Resume animations", "Resume animations")
-              : t("Pause animations (WCAG 2.2.2)", "Pause animations (WCAG 2.2.2)")
+              : t(
+                  "Pause animations (WCAG 2.2.2)",
+                  "Pause animations (WCAG 2.2.2)",
+                )
           }
           className="size-8 text-muted-foreground hover:text-foreground cursor-pointer"
         >
@@ -1105,20 +1124,14 @@ function StickyHeader({
               />
               Account settings
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={onOpenHelp}
-              className="cursor-pointer"
-            >
+            <DropdownMenuItem onClick={onOpenHelp} className="cursor-pointer">
               <BookOpenIcon
                 className="mr-2 size-4 text-muted-foreground"
                 aria-hidden
               />
               Documentation & Guide
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={toggleTheme}
-              className="cursor-pointer"
-            >
+            <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer">
               {resolvedTheme === "dark" ? (
                 <>
                   <SunIcon
@@ -1137,10 +1150,7 @@ function StickyHeader({
                 </>
               )}
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={toggleMotion}
-              className="cursor-pointer"
-            >
+            <DropdownMenuItem onClick={toggleMotion} className="cursor-pointer">
               {isMotionPaused ? (
                 <>
                   <PlayIcon
@@ -1194,31 +1204,71 @@ function MobileBottomNav({ role }: { role: UserRole }) {
   if (role === "SALESMAN") {
     navItems = [
       { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
-      { label: t("nav.orders", "Orders"), href: "/orders", icon: ShoppingCartIcon },
-      { label: t("nav.customers", "Customers"), href: "/customers", icon: UsersIcon },
-      { label: t("nav.more", "More"), action: () => setOpenMobile(true), icon: MenuIcon },
+      {
+        label: t("nav.orders", "Orders"),
+        href: "/orders",
+        icon: ShoppingCartIcon,
+      },
+      {
+        label: t("nav.customers", "Customers"),
+        href: "/customers",
+        icon: UsersIcon,
+      },
+      {
+        label: t("nav.more", "More"),
+        action: () => setOpenMobile(true),
+        icon: MenuIcon,
+      },
     ];
   } else if (role === "PRODUCTION") {
     navItems = [
       { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
       { label: t("nav.stock", "Stock"), href: "/stock", icon: PackageIcon },
-      { label: t("nav.production", "Production"), href: "/production/today", icon: PackageIcon },
-      { label: t("nav.more", "More"), action: () => setOpenMobile(true), icon: MenuIcon },
+      {
+        label: t("nav.production", "Production"),
+        href: "/production/today",
+        icon: PackageIcon,
+      },
+      {
+        label: t("nav.more", "More"),
+        action: () => setOpenMobile(true),
+        icon: MenuIcon,
+      },
     ];
   } else if (role === "ACCOUNTANT") {
     navItems = [
       { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
-      { label: t("nav.orders", "Orders"), href: "/orders", icon: ShoppingCartIcon },
-      { label: t("nav.payments", "Payments"), href: "/payments", icon: PackageIcon },
-      { label: t("nav.more", "More"), action: () => setOpenMobile(true), icon: MenuIcon },
+      {
+        label: t("nav.orders", "Orders"),
+        href: "/orders",
+        icon: ShoppingCartIcon,
+      },
+      {
+        label: t("nav.payments", "Payments"),
+        href: "/payments",
+        icon: PackageIcon,
+      },
+      {
+        label: t("nav.more", "More"),
+        action: () => setOpenMobile(true),
+        icon: MenuIcon,
+      },
     ];
   } else {
     // ADMIN / OWNER
     navItems = [
       { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
-      { label: t("nav.orders", "Orders"), href: "/orders", icon: ShoppingCartIcon },
+      {
+        label: t("nav.orders", "Orders"),
+        href: "/orders",
+        icon: ShoppingCartIcon,
+      },
       { label: t("nav.stock", "Stock"), href: "/stock", icon: PackageIcon },
-      { label: t("nav.more", "More"), action: () => setOpenMobile(true), icon: MenuIcon },
+      {
+        label: t("nav.more", "More"),
+        action: () => setOpenMobile(true),
+        icon: MenuIcon,
+      },
     ];
   }
 
@@ -1257,6 +1307,7 @@ function MobileBottomNav({ role }: { role: UserRole }) {
                 : "text-muted-foreground hover:text-foreground",
             )}
             aria-current={isActive ? "page" : undefined}
+            {...getPrefetchProps(item.href)}
           >
             <Icon className="size-5" aria-hidden />
             <span className="text-2xs">{item.label}</span>
@@ -1303,6 +1354,11 @@ export function AuthenticatedShell({
   };
 
   const sections = getNavSections(user.role);
+
+  // Intent-based and idle route prefetching (F-076)
+  useEffect(() => {
+    prefetchIdleRoutes();
+  }, []);
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -1477,10 +1533,16 @@ export function AuthenticatedShell({
 
         {/* Notifications sheet (F-065) */}
         <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-          <SheetContent side="right" className="flex w-84 max-w-full flex-col p-0">
+          <SheetContent
+            side="right"
+            className="flex w-84 max-w-full flex-col p-0"
+          >
             <div className="flex h-14 items-center justify-between border-b border-border px-5">
               <div className="flex items-center gap-2">
-                <BellIcon className="size-4 text-foreground" aria-hidden="true" />
+                <BellIcon
+                  className="size-4 text-foreground"
+                  aria-hidden="true"
+                />
                 <h2 className="text-sm font-semibold">Notifications</h2>
                 {unreadCount > 0 && (
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 text-2xs font-bold text-primary">
@@ -1558,7 +1620,9 @@ export function AuthenticatedShell({
                           <span
                             className={cn(
                               "text-xs font-semibold leading-tight",
-                              n.read ? "text-muted-foreground" : "text-foreground",
+                              n.read
+                                ? "text-muted-foreground"
+                                : "text-foreground",
                             )}
                           >
                             {n.title}
@@ -1594,10 +1658,7 @@ export function AuthenticatedShell({
         </Sheet>
 
         {/* Operational Documentation & Guide Modal (F-049) */}
-        <HelpGuideModal
-          open={showHelpModal}
-          onOpenChange={setShowHelpModal}
-        />
+        <HelpGuideModal open={showHelpModal} onOpenChange={setShowHelpModal} />
       </SidebarProvider>
     </TooltipProvider>
   );
