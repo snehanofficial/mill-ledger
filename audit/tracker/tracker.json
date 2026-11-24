@@ -5122,7 +5122,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -5130,12 +5130,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-055.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "8d9d807",
+        "evidenceLink": "audit/evidence/verify/F-055/10-summary.txt",
+        "note": "Expanded touch targets per WCAG 2.5.8 (SidebarRail 24px, breadcrumb links min-h-6) and Apple HIG (.touch-target utility, button size upgrades across sheets, tables, and toolbars)."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-055-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-055-regression.test.ts",
+    "fixCommit": "8d9d807",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-055/01-git-status.txt",
+      "audit/evidence/verify/F-055/02-regression-test.txt",
+      "audit/evidence/verify/F-055/03-typecheck.txt",
+      "audit/evidence/verify/F-055/04-lint.txt",
+      "audit/evidence/verify/F-055/05-build.txt",
+      "audit/evidence/verify/F-055/06-invariants.txt",
+      "audit/evidence/verify/F-055/07-benchmark.txt",
+      "audit/evidence/verify/F-055/08-test-suite.txt",
+      "audit/evidence/verify/F-055/09-diff.txt",
+      "audit/evidence/verify/F-055/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",
