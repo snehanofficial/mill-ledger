@@ -281,12 +281,11 @@ export function ProductionPage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Production execution
+              {t("Production execution")}
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            BOM execution, consumption variances, yield calculations, and run
-            costs
+            {t("BOM execution, consumption variances, yield calculations, and run costs")}
           </p>
         </div>
 
@@ -301,7 +300,7 @@ export function ProductionPage() {
             <RefreshCwIcon
               className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
             />
-            Refresh
+            {t("Refresh")}
           </Button>
 
           {canRecordProduction && (
@@ -311,7 +310,7 @@ export function ProductionPage() {
               className="gap-2"
             >
               <PlusCircleIcon className="h-4 w-4" />
-              Record production batch
+              {t("Record production batch")}
             </Button>
           )}
         </div>
@@ -322,7 +321,7 @@ export function ProductionPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Total batches
+              {t("Total batches")}
             </span>
             <FactoryIcon className="h-4 w-4" />
           </div>
@@ -335,7 +334,7 @@ export function ProductionPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Packets produced
+              {t("Packets produced")}
             </span>
             <BoxesIcon className="h-4 w-4" />
           </div>
@@ -350,7 +349,7 @@ export function ProductionPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Total run cost
+              {t("Total run cost")}
             </span>
             <IndianRupeeIcon className="h-4 w-4" />
           </div>
@@ -365,12 +364,12 @@ export function ProductionPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Ledger integrity
+              {t("Ledger integrity")}
             </span>
             <CheckCircle2Icon className="h-4 w-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            Verified
+            {t("Verified")}
           </div>
           <div className="text-xs text-muted-foreground">
             Stock ledger reconciles deterministically
@@ -561,9 +560,9 @@ export function ProductionPage() {
       <Dialog open={showNewBatchModal} onOpenChange={setShowNewBatchModal}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>Record production batch</DialogTitle>
+            <DialogTitle>{t("Record production batch")}</DialogTitle>
             <DialogDescription>
-              Murukku 200g standard batch (Benchmark: 200 expected packets)
+              {t("Murukku 200g standard batch (Benchmark: 200 expected packets)")}
             </DialogDescription>
           </DialogHeader>
 
@@ -575,7 +574,7 @@ export function ProductionPage() {
                     htmlFor="production-recipe-select"
                     className="text-xs font-semibold text-muted-foreground cursor-help"
                   >
-                    Bill of Materials (BOM) Recipe
+                    {t("Bill of Materials (BOM) Recipe")}
                   </label>
                 </DomainTooltip>
                 <select
@@ -602,7 +601,7 @@ export function ProductionPage() {
                     htmlFor="production-good-qty-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
-                    Good packets produced
+                    {t("Good packets produced")}
                   </label>
                   <input
                     id="production-good-qty-input"
@@ -612,7 +611,7 @@ export function ProductionPage() {
                     className="rounded-md border bg-background px-3 py-2 text-sm font-semibold"
                   />
                   <div className="flex items-center gap-1 text-xs">
-                    <span>Variance:</span>
+                    <span>{t("Variance")}:</span>
                     <span
                       className={`font-semibold ${
                         yieldVariancePct !== 0
@@ -626,7 +625,7 @@ export function ProductionPage() {
                     </span>
                     {yieldVariancePct !== 0 && (
                       <span className="text-xs text-amber-600 font-medium">
-                        (flagged)
+                        ({t("flagged")})
                       </span>
                     )}
                   </div>
@@ -637,7 +636,7 @@ export function ProductionPage() {
                     htmlFor="production-damaged-pouches-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
-                    Damaged pouches
+                    {t("Damaged pouches")}
                   </label>
                   <input
                     id="production-damaged-pouches-input"
@@ -659,7 +658,7 @@ export function ProductionPage() {
                     htmlFor="production-oil-consumed-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
-                    Cooking oil consumed (L)
+                    {t("Cooking oil consumed (L)")}
                   </label>
                   <input
                     id="production-oil-consumed-input"
@@ -670,7 +669,7 @@ export function ProductionPage() {
                     className="rounded-md border bg-background px-3 py-2 text-sm"
                   />
                   <div className="flex items-center gap-1 text-xs">
-                    <span>Variance:</span>
+                    <span>{t("Variance")}:</span>
                     <span
                       className={`font-semibold ${
                         oilVariancePct !== 0
@@ -684,7 +683,7 @@ export function ProductionPage() {
                     </span>
                     {oilVariancePct >= 5 && (
                       <span className="text-xs text-amber-600 font-medium">
-                        (flagged)
+                        ({t("flagged")})
                       </span>
                     )}
                   </div>
@@ -695,7 +694,7 @@ export function ProductionPage() {
                     htmlFor="production-cartons-consumed-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
-                    Cartons used (pieces)
+                    {t("Cartons used (pieces)")}
                   </label>
                   <input
                     id="production-cartons-consumed-input"
@@ -728,7 +727,7 @@ export function ProductionPage() {
                     htmlFor="production-labor-cost-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
-                    Direct labour cost (₹)
+                    {t("Direct labour cost (₹)")}
                   </label>
                   <input
                     id="production-labor-cost-input"
@@ -744,7 +743,7 @@ export function ProductionPage() {
                     htmlFor="production-utility-cost-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
-                    Gas and power cost (₹)
+                    {t("Gas and power cost (₹)")}
                   </label>
                   <input
                     id="production-utility-cost-input"
@@ -761,7 +760,7 @@ export function ProductionPage() {
                   htmlFor="production-notes-input"
                   className="text-xs font-semibold text-muted-foreground"
                 >
-                  Notes
+                  {t("Notes")}
                 </label>
                 <input
                   id="production-notes-input"
@@ -776,28 +775,28 @@ export function ProductionPage() {
               <div className="rounded-lg bg-muted/50 p-3 text-xs flex flex-col gap-1">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
-                    Direct materials:
+                    {t("Direct materials:")}
                   </span>
                   <span className="font-semibold">₹4,055.00</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Direct labour:</span>
+                  <span className="text-muted-foreground">{t("Direct labour:")}</span>
                   <span className="font-semibold">{formatINR(laborCost)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Gas and power:</span>
+                  <span className="text-muted-foreground">{t("Gas and power:")}</span>
                   <span className="font-semibold">
                     {formatINR(utilityCost)}
                   </span>
                 </div>
                 <div className="flex justify-between border-t pt-1 font-bold">
-                  <span>Total run cost:</span>
+                  <span>{t("Total run cost:")}</span>
                   <span className="text-foreground">
                     {formatINR(4055 + laborCost + utilityCost)}
                   </span>
                 </div>
                 <div className="flex justify-between text-emerald-600 font-bold">
-                  <span>Cost per good packet:</span>
+                  <span>{t("Cost per good packet:")}</span>
                   <span>
                     {formatINR(
                       (4055 + laborCost + utilityCost) / actualGoodQty
@@ -813,7 +812,7 @@ export function ProductionPage() {
                 size="sm"
                 onClick={() => setShowNewBatchModal(false)}
               >
-                Cancel
+                {t("Cancel")}
               </Button>
               <Button
                 size="sm"
@@ -824,12 +823,12 @@ export function ProductionPage() {
                 {postMutation.isPending ? (
                   <>
                     <RefreshCwIcon className="h-4 w-4 animate-spin" />
-                    Posting batch...
+                    {t("Posting batch...")}
                   </>
                 ) : (
                   <>
                     <CheckCircle2Icon className="h-4 w-4" />
-                    Post production batch
+                    {t("Post & Update Stock Ledger")}
                   </>
                 )}
               </Button>
@@ -847,11 +846,9 @@ export function ProductionPage() {
         {selectedRun && (
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Reverse production run</DialogTitle>
+              <DialogTitle>{t("Reverse Production Run")}</DialogTitle>
               <DialogDescription>
-                This will atomically restore raw materials and packaging back into
-                inventory and deduct {Number(selectedRun.actualGoodQty)} finished
-                packets.
+                {t("This will atomically restore raw materials and packaging back into inventory and deduct finished packets.")}
               </DialogDescription>
             </DialogHeader>
 
@@ -860,12 +857,12 @@ export function ProductionPage() {
                 htmlFor="reversal-reason-input"
                 className="text-xs font-semibold text-muted-foreground"
               >
-                Reversal reason
+                {t("Reason for reversal")}
               </label>
               <input
                 id="reversal-reason-input"
                 type="text"
-                placeholder="e.g. Quality inspection failed on batch"
+                placeholder={t("e.g. Quality inspection failed on batch")}
                 defaultValue="Batch quality inspection failed"
                 className="rounded-md border bg-background px-3 py-2 text-sm"
               />
@@ -877,7 +874,7 @@ export function ProductionPage() {
                 size="sm"
                 onClick={() => setSelectedRun(null)}
               >
-                Cancel
+                {t("Cancel")}
               </Button>
               <Button
                 variant="destructive"
@@ -895,7 +892,7 @@ export function ProductionPage() {
                 className="gap-2"
               >
                 <RotateCcwIcon className="h-4 w-4" />
-                Confirm reversal
+                {t("Confirm reversal")}
               </Button>
             </DialogFooter>
           </DialogContent>

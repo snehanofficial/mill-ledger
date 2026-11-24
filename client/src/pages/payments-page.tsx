@@ -357,12 +357,11 @@ export function PaymentsPage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Payments
+              {t("Payments")}
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Customer collections, invoice payment allocations, and receivables
-            ledger
+            {t("Customer collections, invoice payment allocations, and receivables ledger")}
           </p>
         </div>
 
@@ -380,7 +379,7 @@ export function PaymentsPage() {
             <RefreshCwIcon
               className={`h-4 w-4 ${fetchingPayments ? "animate-spin" : ""}`}
             />
-            Refresh
+            {t("Refresh")}
           </Button>
           {canRecordPayment && (
             <Button
@@ -392,7 +391,7 @@ export function PaymentsPage() {
               className="gap-2"
             >
               <PlusCircleIcon className="h-4 w-4" />
-              Record payment
+              {t("Record payment")}
             </Button>
           )}
         </div>
@@ -403,7 +402,7 @@ export function PaymentsPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Total collected
+              {t("Total collected")}
             </span>
             <IndianRupeeIcon className="h-4 w-4 text-emerald-600" />
           </div>
@@ -418,7 +417,7 @@ export function PaymentsPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Net outstanding
+              {t("Net outstanding")}
             </span>
             <IndianRupeeIcon className="h-4 w-4 text-amber-600" />
           </div>
@@ -433,7 +432,7 @@ export function PaymentsPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Unallocated credit
+              {t("Unallocated credit")}
             </span>
             <LayersIcon className="h-4 w-4 text-primary" />
           </div>
@@ -457,7 +456,7 @@ export function PaymentsPage() {
           }`}
         >
           <CreditCardIcon className="h-4 w-4" />
-          Payments ledger ({payments.length})
+          {t("Payments ledger")} ({payments.length})
         </button>
         <button
           onClick={() => setActiveTab("receivables")}
@@ -468,7 +467,7 @@ export function PaymentsPage() {
           }`}
         >
           <UserCheckIcon className="h-4 w-4" />
-          Customer receivables ({receivables.length})
+          {t("Customer receivables")} ({receivables.length})
         </button>
       </div>
 

@@ -101,12 +101,11 @@ export function DashboardPage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Overview
+              {t("Overview")}
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Executive operational overview and real time reconciled business
-            metrics
+            {t("Executive operational overview and real time reconciled business metrics")}
           </p>
         </div>
 
@@ -127,7 +126,7 @@ export function DashboardPage() {
             <RefreshCwIcon
               className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
             />
-            Refresh
+            {t("Refresh")}
           </Button>
         </div>
       </div>

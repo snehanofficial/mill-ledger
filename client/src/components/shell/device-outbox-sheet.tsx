@@ -22,6 +22,7 @@ import type { OfflineOrder } from "@/offline/db";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { toast } from "sonner";
 import { formatINR, formatTime } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
 
 interface DeviceOutboxSheetProps {
   open: boolean;
@@ -34,6 +35,7 @@ export function DeviceOutboxSheet({
   onOpenChange,
   userId,
 }: DeviceOutboxSheetProps) {
+  const { t } = useLanguage();
   const {
     isOnline,
     syncing,
@@ -86,25 +88,24 @@ export function DeviceOutboxSheet({
             <div className="flex items-center justify-between">
               <SheetTitle className="text-base font-bold flex items-center gap-2">
                 <DatabaseIcon className="size-4 text-primary" />
-                Device Outbox
+                {t("Device Outbox")}
               </SheetTitle>
               <div className="flex items-center gap-1.5">
                 {conflictCount > 0 && (
                   <Badge variant="danger" className="text-xs">
-                    {conflictCount} conflict{conflictCount > 1 ? "s" : ""}
+                    {conflictCount} {t("conflict")}{conflictCount > 1 ? "s" : ""}
                   </Badge>
                 )}
                 <Badge
                   variant={isOnline ? "outline" : "warning"}
                   className="text-xs"
                 >
-                  {isOnline ? "Connected" : "Offline"}
+                  {isOnline ? t("Connected") : t("Offline")}
                 </Badge>
               </div>
             </div>
             <SheetDescription className="text-xs text-muted-foreground">
-              Local IndexedDB command queue awaiting server acceptance. No stock
-              reserved until synced.
+              {t("Local IndexedDB command queue awaiting server acceptance. No stock reserved until synced.")}
             </SheetDescription>
           </SheetHeader>
 
@@ -120,7 +121,7 @@ export function DeviceOutboxSheet({
               <RefreshCwIcon
                 className={`size-3.5 ${syncing ? "animate-spin" : ""}`}
               />
-              {syncing ? "Syncing..." : "Sync now"}
+              {syncing ? t("Syncing...") : t("Sync now")}
             </Button>
 
             <Button
@@ -133,7 +134,7 @@ export function DeviceOutboxSheet({
               <LayersIcon
                 className={`size-3.5 ${isRefreshingCatalog ? "animate-spin" : ""}`}
               />
-              Refresh catalog
+              {t("Refresh catalog")}
             </Button>
 
             {syncedCount > 0 && (
@@ -143,7 +144,7 @@ export function DeviceOutboxSheet({
                 onClick={clearSynced}
                 className="h-8 text-xs text-muted-foreground hover:text-foreground"
               >
-                Clear synced
+                {t("Clear synced")}
               </Button>
             )}
           </div>
@@ -195,7 +196,7 @@ export function DeviceOutboxSheet({
                         variant="outline"
                         className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
                       >
-                        Waiting to sync
+                        {t("Waiting to sync")}
                       </Badge>
                     )}
                     {ord.status === "syncing" && (
@@ -203,17 +204,17 @@ export function DeviceOutboxSheet({
                         variant="outline"
                         className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 animate-pulse"
                       >
-                        Syncing...
+                        {t("Syncing...")}
                       </Badge>
                     )}
                     {ord.status === "synced" && (
                       <Badge variant="success">
-                        Synced: {ord.serverOrderNumber ?? "Accepted"}
+                        {t("Synced")}: {ord.serverOrderNumber ?? t("Accepted")}
                       </Badge>
                     )}
                     {ord.status === "conflict" && (
                       <Badge variant="danger">
-                        Conflict: {ord.lastErrorCode ?? "Rejected"}
+                        {t("Conflict")}: {ord.lastErrorCode ?? t("Rejected")}
                       </Badge>
                     )}
                   </div>
@@ -234,7 +235,7 @@ export function DeviceOutboxSheet({
                       </div>
                     ))}
                     <div className="border-t pt-1 flex justify-between font-semibold text-foreground">
-                      <span>Total ({totalItems} pkts)</span>
+                      <span>{t("Total")} ({totalItems} {t("term.packets", "pkts")})</span>
                       <span>{formatINR(totalQuoted)}</span>
                     </div>
                   </div>
@@ -259,7 +260,7 @@ export function DeviceOutboxSheet({
                         className="h-6 px-2 text-2xs gap-1"
                       >
                         <RotateCcwIcon className="size-3" />
-                        Retry
+                        {t("Retry")}
                       </Button>
                     )}
                     {ord.status === "queued" && isOnline && (
@@ -270,7 +271,7 @@ export function DeviceOutboxSheet({
                         className="h-6 px-2 text-2xs gap-1"
                       >
                         <RefreshCwIcon className="size-3" />
-                        Sync this
+                        {t("action.sync_now", "Sync this")}
                       </Button>
                     )}
                     {ord.status !== "syncing" && (

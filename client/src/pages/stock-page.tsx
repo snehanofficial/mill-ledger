@@ -124,7 +124,7 @@ export function StockPage() {
             className={`size-4 ${isFetching ? "animate-spin" : ""}`}
             aria-hidden="true"
           />
-          <span>Refresh Balances</span>
+          <span>{t("Refresh Balances")}</span>
         </Button>
       </div>
 
@@ -132,7 +132,7 @@ export function StockPage() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <div className="flex flex-col justify-between gap-2 rounded-xl border border-border bg-card p-4 shadow-xs">
           <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Total Items
+            {t("Total Items")}
           </span>
           <span className="text-2xl font-bold text-foreground">
             {isLoading ? "—" : totalItems}
@@ -141,7 +141,7 @@ export function StockPage() {
 
         <div className="flex flex-col justify-between gap-2 rounded-xl border border-border bg-card p-4 shadow-xs">
           <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Raw Materials
+            {t("Raw Materials")}
           </span>
           <span className="text-2xl font-bold text-foreground">
             {isLoading ? "—" : rawMaterialCount}
@@ -150,7 +150,7 @@ export function StockPage() {
 
         <div className="flex flex-col justify-between gap-2 rounded-xl border border-border bg-card p-4 shadow-xs">
           <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Packaging
+            {t("Packaging")}
           </span>
           <span className="text-2xl font-bold text-foreground">
             {isLoading ? "—" : packagingCount}
@@ -159,7 +159,7 @@ export function StockPage() {
 
         <div className="flex flex-col justify-between gap-2 rounded-xl border border-border bg-card p-4 shadow-xs">
           <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Finished Goods
+            {t("Finished Goods")}
           </span>
           <span className="text-2xl font-bold text-foreground">
             {isLoading ? "—" : finishedGoodsCount}
@@ -168,7 +168,7 @@ export function StockPage() {
 
         <div className="flex flex-col justify-between gap-2 rounded-xl border border-border bg-card p-4 shadow-xs">
           <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Valued Stock Total
+            {t("Valued Stock Total")}
           </span>
           <span className="text-2xl font-bold text-foreground">
             {isLoading

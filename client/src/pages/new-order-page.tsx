@@ -281,7 +281,7 @@ export function NewOrderPage() {
                 className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs flex items-center gap-1"
               >
                 <WifiOffIcon className="size-3" />
-                Offline Mode
+                {t("Offline Mode")}
               </Badge>
             ) : (
               <Badge
@@ -289,7 +289,7 @@ export function NewOrderPage() {
                 className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs flex items-center gap-1"
               >
                 <span className="size-1.5 rounded-full bg-emerald-500" />
-                Live Stock Available
+                {t("Live Stock Available")}
               </Badge>
             )}
           </div>
@@ -300,10 +300,10 @@ export function NewOrderPage() {
         {/* Page Header */}
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Order Catalog & Entry
+            {t("Order Catalog & Entry")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Select customer, browse packaged product tiles, and adjust quantities using touch-friendly steppers.
+            {t("Select customer, browse packaged product tiles, and adjust quantities using touch-friendly steppers.")}
           </p>
         </div>
 

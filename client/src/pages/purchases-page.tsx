@@ -213,14 +213,14 @@ export function PurchasesPage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Procurement & Mandi Intake
+              {t("Procurement & Mandi Intake")}
             </h1>
             <Badge variant="outline" className="text-xs">
-              Live Ledger
+              {t("Live Ledger")}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
-            Mandi raw material receipts, supplier invoicing, and automated weighted-average cost updating.
+            {t("Mandi raw material receipts, supplier invoicing, and automated weighted-average cost updating.")}
           </p>
         </div>
 
@@ -235,7 +235,7 @@ export function PurchasesPage() {
             <RefreshCwIcon
               className={`size-3.5 ${isFetching ? "animate-spin" : ""}`}
             />
-            Refresh
+            {t("Refresh")}
           </Button>
 
           {canRecordPurchase && (
@@ -245,7 +245,7 @@ export function PurchasesPage() {
               className="gap-1.5"
             >
               <PlusIcon className="size-4" />
-              Record Purchase Receipt
+              {t("Record Purchase Receipt")}
             </Button>
           )}
         </div>

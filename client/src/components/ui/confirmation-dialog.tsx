@@ -11,6 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/lib/i18n";
 
 export interface ConfirmationDialogProps {
   open?: boolean;
@@ -43,6 +44,7 @@ function ConfirmationDialog({
   disabled = false,
   children,
 }: ConfirmationDialogProps) {
+  const { t } = useLanguage();
   const rootProps =
     open !== undefined
       ? { open, onOpenChange }
@@ -55,13 +57,13 @@ function ConfirmationDialog({
       ) : triggerLabel ? (
         <AlertDialogTrigger asChild>
           <Button variant={destructive ? "destructive" : "primary"}>
-            {triggerLabel}
+            {t(triggerLabel)}
           </Button>
         </AlertDialogTrigger>
       ) : null}
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogTitle>{typeof title === "string" ? t(title) : title}</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="text-sm text-muted-foreground">{description}</div>
           </AlertDialogDescription>
@@ -70,7 +72,7 @@ function ConfirmationDialog({
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
             <Button variant="secondary" onClick={onCancel}>
-              {cancelLabel}
+              {t(cancelLabel)}
             </Button>
           </AlertDialogCancel>
           <AlertDialogAction asChild>
@@ -79,7 +81,7 @@ function ConfirmationDialog({
               onClick={onConfirm}
               disabled={disabled}
             >
-              {confirmLabel}
+              {t(confirmLabel)}
             </Button>
           </AlertDialogAction>
         </AlertDialogFooter>

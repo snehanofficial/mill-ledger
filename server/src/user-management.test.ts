@@ -3,12 +3,27 @@ import type { Server } from "node:http";
 import { createApp } from "./app.js";
 import { prisma } from "./db/client.js";
 import { bootstrapAdmin } from "./scripts/bootstrap-admin.js";
+import { seedUsers } from "./db/seed.js";
 
 describe("F-023: User and Role Management APIs and Admin Safeguards", () => {
   let server: Server;
   let baseUrl: string;
 
   beforeAll(async () => {
+    await seedUsers();
+    // Clean up any lingering test users from prior interrupted runs
+    await prisma.user.deleteMany({
+      where: {
+        email: {
+          in: [
+            "f023-newuser@millledger.local",
+            "f023-admin2@millledger.local",
+            "f023-deletable@millledger.local",
+          ],
+        },
+      },
+    });
+
     const app = createApp();
     await new Promise<void>((resolve) => {
       server = app.listen(0, () => {
@@ -25,7 +40,10 @@ describe("F-023: User and Role Management APIs and Admin Safeguards", () => {
     await new Promise<void>((resolve) => {
       server.close(() => resolve());
     });
-    // Cleanup temporary test accounts
+    // Cleanup temporary test accounts and test order
+    await prisma.salesOrder.deleteMany({
+      where: { orderNumber: "SO-TEST-F023" },
+    });
     await prisma.user.deleteMany({
       where: {
         email: {
@@ -260,10 +278,33 @@ describe("F-023: User and Role Management APIs and Admin Safeguards", () => {
       "AdminPassword123!",
     );
 
-    // salesman1 has existing sales orders
+    // salesman1 has existing sales orders (seed if missing)
     const salesman1 = await prisma.user.findUniqueOrThrow({
       where: { email: "salesman1@millledger.local" },
     });
+
+    const orderCount = await prisma.salesOrder.count({
+      where: { salesmanId: salesman1.id },
+    });
+    if (orderCount === 0) {
+      const customer = await prisma.customer.findFirstOrThrow();
+      const warehouse = await prisma.warehouse.findFirstOrThrow();
+      await prisma.salesOrder.create({
+        data: {
+          organization: { connect: { id: customer.organizationId } },
+          customer: { connect: { id: customer.id } },
+          salesman: { connect: { id: salesman1.id } },
+          warehouse: { connect: { id: warehouse.id } },
+          orderNumber: "SO-TEST-F023",
+          deliveryState: "Tamil Nadu",
+          status: "DRAFT",
+          taxableAmount: 100,
+          cgstAmount: 2.5,
+          sgstAmount: 2.5,
+          totalAmount: 105,
+        },
+      });
+    }
 
     const res = await fetch(`${baseUrl}/api/v1/users/${salesman1.id}`, {
       method: "DELETE",

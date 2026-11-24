@@ -250,12 +250,11 @@ export function InvoicesPage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Invoices
+              {t("Invoices")}
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Tax calculation snapshots, FY series numbering, and immutable
-            invoice ledger
+            {t("Tax calculation snapshots, FY series numbering, and immutable invoice ledger")}
           </p>
         </div>
 
@@ -267,7 +266,7 @@ export function InvoicesPage() {
               className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <PlusCircleIcon className="h-4 w-4" />
-              Generate Invoice
+              {t("Generate Invoice")}
             </Button>
           )}
           <Button
@@ -280,7 +279,7 @@ export function InvoicesPage() {
             <RefreshCwIcon
               className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
             />
-            Refresh
+            {t("Refresh")}
           </Button>
         </div>
       </div>
@@ -290,7 +289,7 @@ export function InvoicesPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Total invoices
+              {t("Total invoices")}
             </span>
             <FileTextIcon className="h-4 w-4" />
           </div>
@@ -303,7 +302,7 @@ export function InvoicesPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Total billed
+              {t("Total billed")}
             </span>
             <IndianRupeeIcon className="h-4 w-4" />
           </div>
@@ -318,7 +317,7 @@ export function InvoicesPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Total outstanding
+              {t("Total outstanding")}
             </span>
             <IndianRupeeIcon className="h-4 w-4 text-amber-600" />
           </div>

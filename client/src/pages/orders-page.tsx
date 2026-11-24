@@ -431,12 +431,11 @@ export function OrdersPage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Orders
+              {t("Orders")}
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Salesman mobile orders, admin approval, shortages, and atomic stock
-            reservations
+            {t("Salesman mobile orders, admin approval, shortages, and atomic stock reservations")}
           </p>
         </div>
 
@@ -451,7 +450,7 @@ export function OrdersPage() {
             <RefreshCwIcon
               className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
             />
-            Refresh
+            {t("Refresh")}
           </Button>
 
           {canCreateOrder && (
@@ -461,7 +460,7 @@ export function OrdersPage() {
               className="gap-2"
             >
               <PlusCircleIcon className="h-4 w-4" />
-              New sales order
+              {t("New sales order")}
             </Button>
           )}
         </div>
@@ -472,7 +471,7 @@ export function OrdersPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Total orders
+              {t("Total orders")}
             </span>
             <ShoppingCartIcon className="h-4 w-4" />
           </div>
@@ -485,7 +484,7 @@ export function OrdersPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Approved bookings
+              {t("Approved bookings")}
             </span>
             <ShieldCheckIcon className="h-4 w-4 text-emerald-600" />
           </div>
@@ -500,7 +499,7 @@ export function OrdersPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Booked value
+              {t("Booked value")}
             </span>
             <IndianRupeeIcon className="h-4 w-4" />
           </div>

@@ -228,12 +228,11 @@ export function DispatchPage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Dispatch
+              {t("Dispatch")}
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Physical stock movements, reservation release, and warehouse
-            fulfillment records
+            {t("Physical stock movements, reservation release, and warehouse fulfillment records")}
           </p>
         </div>
 
@@ -248,7 +247,7 @@ export function DispatchPage() {
             <RefreshCwIcon
               className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
             />
-            Refresh
+            {t("Refresh")}
           </Button>
           {canRecordDispatch && (
             <Button
@@ -260,7 +259,7 @@ export function DispatchPage() {
               className="gap-2"
             >
               <PlusCircleIcon className="h-4 w-4" />
-              Record dispatch
+              {t("Record dispatch")}
             </Button>
           )}
         </div>
@@ -271,7 +270,7 @@ export function DispatchPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Total dispatches
+              {t("Total dispatches")}
             </span>
             <TruckIcon className="h-4 w-4" />
           </div>
