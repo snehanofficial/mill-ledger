@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatDate } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
@@ -100,9 +100,8 @@ export function SettingsPage() {
       setNewUserEmail("");
       setNewUserPassword("");
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || err.message || "Failed to create user";
-      toast.error(`Error: ${msg}`);
+    onError: (err: unknown) => {
+      toast.error(`Error: ${extractErrorMessage(err, "Failed to create user")}`);
     },
   });
 

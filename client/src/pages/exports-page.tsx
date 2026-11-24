@@ -1,5 +1,5 @@
 import { useState, useId } from "react";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -181,9 +181,8 @@ export function ExportsPage() {
       toast.success(
         `${activeDataset.name} exported successfully (${selectedFormat.toUpperCase()})`,
       );
-    } catch (err: any) {
-      const msg = err.response?.data?.error?.message || err.message || "Export generation failed";
-      toast.error(`Export failed: ${msg}`);
+    } catch (err: unknown) {
+      toast.error(`Export failed: ${extractErrorMessage(err, "Export generation failed")}`);
     } finally {
       setIsExporting(false);
     }

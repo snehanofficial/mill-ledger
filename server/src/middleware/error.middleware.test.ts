@@ -50,7 +50,7 @@ describe("F-034 Error Envelope Middleware", () => {
     expect(data.code).toBe("VALIDATION_ERROR");
     expect(data.requestId).toBe("req-zod-456");
     expect(data.message).toBeDefined();
-    expect(data.error).toBeDefined();
+    expect(data.error).toBeUndefined();
     expect(data.fieldErrors).toBeDefined();
     expect(data.fieldErrors.name).toBeDefined();
     expect(data.fieldErrors.age).toBeDefined();
@@ -67,7 +67,7 @@ describe("F-034 Error Envelope Middleware", () => {
     const data = getData();
     expect(data.code).toBe("NOT_FOUND");
     expect(data.message).toBe("Order SO-123 not found");
-    expect(data.error).toBe("Order SO-123 not found");
+    expect(data.error).toBeUndefined();
     expect(data.requestId).toBe("req-app-789");
     expect(data.stack).toBeUndefined();
   });
@@ -84,7 +84,7 @@ describe("F-034 Error Envelope Middleware", () => {
     const data = getData();
     expect(data.code).toBe("PAYLOAD_TOO_LARGE");
     expect(data.message).toBe("Request entity too large");
-    expect(data.error).toBe("Payload Too Large");
+    expect(data.error).toBeUndefined();
     expect(data.requestId).toBe("req-413");
   });
 
@@ -159,7 +159,7 @@ describe("F-034 Error Envelope Middleware", () => {
     const data = getData();
     expect(data.code).toBe("INTERNAL_SERVER_ERROR");
     expect(data.message).toBe("Internal Server Error");
-    expect(data.error).toBe("Internal Server Error");
+    expect(data.error).toBeUndefined();
     expect(data.requestId).toBe("req-500");
     expect(data.stack).toBeUndefined();
     expect(JSON.stringify(data)).not.toContain("user_credentials");

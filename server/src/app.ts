@@ -16,7 +16,7 @@ import { purchaseRouter } from "./modules/inventory/purchase.routes.js";
 import { financeRouter } from "./modules/finance/finance.routes.js";
 import { paymentRouter } from "./modules/finance/payment.routes.js";
 import { reportingRouter } from "./modules/reporting/reporting.routes.js";
-import { errorHandler } from "./middleware/error.middleware.js";
+import { errorHandler, sendErrorResponse } from "./middleware/error.middleware.js";
 import { isAllowedOrigin } from "./lib/origins.js";
 import { requestIdMiddleware } from "./middleware/request-id.middleware.js";
 import { requestLogger } from "./middleware/request-logger.middleware.js";
@@ -68,7 +68,11 @@ export function createApp() {
       try {
         const { email, redirectTo } = req.body || {};
         if (!email || typeof email !== "string" || !email.includes("@")) {
-          return res.status(400).json({ error: "Valid email is required" });
+          sendErrorResponse(req, res, 400, {
+            code: "VALIDATION_ERROR",
+            message: "Valid email is required",
+          });
+          return;
         }
         const result = await auth.api.requestPasswordReset({
           body: {
@@ -146,16 +150,9 @@ export function createApp() {
 
   // 404 catch-all for unmatched routes
   app.use((req, res) => {
-    const requestId =
-      req.id ||
-      (typeof req.headers["x-request-id"] === "string"
-        ? req.headers["x-request-id"]
-        : (res.getHeader("X-Request-Id") as string) || undefined);
-    res.status(404).json({
+    sendErrorResponse(req, res, 404, {
       code: "NOT_FOUND",
       message: "Route not found",
-      error: "Not Found",
-      requestId,
     });
   });
 

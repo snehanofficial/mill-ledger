@@ -43,7 +43,7 @@ describe("Better Auth and permission integration", () => {
       expect(response.status).toBe(401);
 
       const body = await response.json();
-      expect(body.error).toContain("Session required");
+      expect(body.message).toContain("Session required");
     });
 
     it("rejects login with invalid password", async () => {
@@ -141,7 +141,7 @@ describe("Better Auth and permission integration", () => {
 
       expect(response.status).toBe(403);
       const data = await response.json();
-      expect(data.error).toContain(
+      expect(data.message).toContain(
         "Forbidden: Role ACCOUNTANT lacks permission create on order",
       );
     });
@@ -221,7 +221,7 @@ describe("Better Auth and permission integration", () => {
 
       expect(crossUpdateResponse.status).toBe(403);
       const crossData = await crossUpdateResponse.json();
-      expect(crossData.error).toContain("Forbidden");
+      expect(crossData.message).toContain("Forbidden");
 
       // Verify salesman 1 CAN update their own draft order
       const ownUpdateResponse = await fetch(
@@ -277,7 +277,7 @@ describe("Better Auth and permission integration", () => {
 
       expect(response.status).toBe(403);
       const data = await response.json();
-      expect(data.error).toContain("User account is inactive");
+      expect(data.message).toContain("User account is inactive");
     });
   });
 
@@ -301,7 +301,7 @@ describe("Better Auth and permission integration", () => {
 
       expect(foreignOrgRes.status).toBe(403);
       const data = await foreignOrgRes.json();
-      expect(data.error).toContain("Access denied to organization COMPETING_MILL_XYZ");
+      expect(data.message).toContain("Access denied to organization COMPETING_MILL_XYZ");
     });
   });
 });

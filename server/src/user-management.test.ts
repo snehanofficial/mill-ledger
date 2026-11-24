@@ -192,7 +192,7 @@ describe("F-023: User and Role Management APIs and Admin Safeguards", () => {
 
     expect(demoteRes.status).toBe(400);
     const demoteData = await demoteRes.json();
-    expect(demoteData.error).toContain("last remaining administrator");
+    expect(demoteData.message).toContain("last remaining administrator");
 
     // Attempt to deactivate sole admin
     const deactRes = await fetch(`${baseUrl}/api/v1/users/${adminUser.id}`, {
@@ -208,7 +208,7 @@ describe("F-023: User and Role Management APIs and Admin Safeguards", () => {
 
     expect(deactRes.status).toBe(400);
     const deactData = await deactRes.json();
-    expect(deactData.error).toContain("last remaining administrator");
+    expect(deactData.message).toContain("last remaining administrator");
 
     // Attempt to delete sole admin
     const delRes = await fetch(`${baseUrl}/api/v1/users/${adminUser.id}`, {
@@ -220,7 +220,7 @@ describe("F-023: User and Role Management APIs and Admin Safeguards", () => {
 
     expect(delRes.status).toBe(400);
     const delData = await delRes.json();
-    expect(delData.error).toContain("last remaining administrator");
+    expect(delData.message).toContain("last remaining administrator");
   });
 
   it("allows demoting or deleting an admin when multiple active admins exist", async () => {
@@ -315,7 +315,7 @@ describe("F-023: User and Role Management APIs and Admin Safeguards", () => {
 
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toContain("operational records");
+    expect(data.message).toContain("operational records");
   });
 
   it("verifies admin:bootstrap refuses execution if an active admin already exists (OD-02)", async () => {

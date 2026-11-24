@@ -84,9 +84,9 @@ describe("Express application HTTP integration", () => {
       const data = await response.json();
       expect(data).toMatchObject({
         code: "NOT_FOUND",
-        error: "Not Found",
         message: "Route not found",
       });
+      expect(data.error).toBeUndefined();
       expect(data.requestId).toBeTruthy();
     });
 
@@ -128,9 +128,9 @@ describe("Express application HTTP integration", () => {
       const data = await response.json();
       expect(data).toMatchObject({
         code: "PAYLOAD_TOO_LARGE",
-        error: "Payload Too Large",
         message: "Request entity too large",
       });
+      expect(data.error).toBeUndefined();
       expect(data.requestId).toBeTruthy();
     });
   });

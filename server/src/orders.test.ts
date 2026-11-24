@@ -268,9 +268,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       },
     );
     expect(overApproveRes.status).toBe(400);
-    const errBody = (await overApproveRes.json()) as { error: string };
-    expect(errBody.error).toContain("Insufficient stock");
-    expect(errBody.error).toContain("Shortage: 32");
+    const errBody = (await overApproveRes.json()) as { message: string };
+    expect(errBody.message).toContain("Insufficient stock");
+    expect(errBody.message).toContain("Shortage: 32");
   });
 
   it("enforces ABAC boundaries: salesman customer assignments and cross-salesman visibility", async () => {

@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import { sendErrorResponse } from "./error.middleware.js";
 
 interface RateLimitRecord {
   count: number;
@@ -69,8 +70,8 @@ export function createRateLimiter(options: RateLimitOptions = {}) {
 
     if (record.count > max) {
       res.setHeader("Retry-After", resetSeconds.toString());
-      res.status(429).json({
-        error: "Too Many Requests",
+      sendErrorResponse(req, res, 429, {
+        code: "RATE_LIMIT_EXCEEDED",
         message,
       });
       return;

@@ -1,17 +1,17 @@
 import type { Request, Response, NextFunction } from "express";
+import { sendErrorResponse } from "./error.middleware.js";
 
 /**
  * Request timeout middleware (F-102 & OWASP A05:2021).
  * Guards against hung sockets and client starvation by enforcing a maximum execution window.
  */
 export function requestTimeoutMiddleware(timeoutMs = 30000) {
-  return (_req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     const timer = setTimeout(() => {
       if (!res.headersSent) {
-        res.status(504).json({
+        sendErrorResponse(req, res, 504, {
           code: "GATEWAY_TIMEOUT",
           message: "Request timed out",
-          error: "Gateway Timeout",
         });
       }
     }, timeoutMs);

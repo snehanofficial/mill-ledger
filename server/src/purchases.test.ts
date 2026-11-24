@@ -279,7 +279,7 @@ describe("M3: Purchases and inventory ledger integration", () => {
 
     expect(response.status).toBe(403);
     const data = await response.json();
-    expect(data.error).toContain(
+    expect(data.message).toContain(
       "Forbidden: Role SALESMAN lacks permission create on purchase",
     );
   });
@@ -308,7 +308,7 @@ describe("M3: Purchases and inventory ledger integration", () => {
     );
     expect(salesmanLedgerRes.status).toBe(403);
     const salesmanLedgerErr = await salesmanLedgerRes.json();
-    expect(salesmanLedgerErr.error).toContain(
+    expect(salesmanLedgerErr.message).toContain(
       "Forbidden: Role SALESMAN lacks permission read on purchase",
     );
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
@@ -437,11 +437,7 @@ export function OrdersPage() {
         );
         setShowNewOrderModal(false);
       } else {
-        toast.error(
-          err.response?.data?.message ||
-            err.response?.data?.error ||
-            "Failed to create order",
-        );
+        toast.error(extractErrorMessage(err, "Failed to create order"));
       }
     } finally {
       setIsSubmittingOrder(false);

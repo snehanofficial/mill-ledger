@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSyncManager } from "@/offline/use-offline";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -273,9 +273,8 @@ export function NewOrderPage() {
       toast.success("Sales order placed successfully!");
       navigate("/orders");
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || err.message || "Failed to place order";
-      toast.error(`Order failed: ${msg}`);
+    onError: (err: unknown) => {
+      toast.error(`Order failed: ${extractErrorMessage(err, "Failed to place order")}`);
     },
   });
 

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import {
   offlineDb,
   requestPersistentStorage,
@@ -299,15 +299,7 @@ async function executeSyncLoop(
       } catch (err: unknown) {
         const isAxios = axios.isAxiosError(err);
         const status = isAxios ? err.response?.status : undefined;
-        const respData = isAxios
-          ? (err.response?.data as Record<string, unknown> | undefined)
-          : undefined;
-        const errorMessage =
-          (typeof respData?.error === "string" ? respData.error : undefined) ||
-          (typeof respData?.message === "string"
-            ? respData.message
-            : undefined) ||
-          (err instanceof Error ? err.message : "Failed to sync order");
+        const errorMessage = extractErrorMessage(err, "Failed to sync order");
 
         // If duplicate conflict error occurred (e.g. another concurrent tab landed the order),
         // resolve cleanly as synced

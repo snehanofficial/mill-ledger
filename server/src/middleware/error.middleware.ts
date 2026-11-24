@@ -1,5 +1,28 @@
 import type { NextFunction, Request, Response } from "express";
+import type { ApiErrorResponse } from "@mill-ledger/shared";
 import { ZodError } from "zod";
+
+export function getRequestId(req: Request, res: Response): string | undefined {
+  return (
+    req.id ||
+    (typeof req.headers["x-request-id"] === "string"
+      ? req.headers["x-request-id"]
+      : (res.getHeader("X-Request-Id") as string) || undefined)
+  );
+}
+
+export function sendErrorResponse(
+  req: Request,
+  res: Response,
+  statusCode: number,
+  payload: Omit<ApiErrorResponse, "requestId">,
+): void {
+  const body: ApiErrorResponse = {
+    ...payload,
+    requestId: getRequestId(req, res),
+  };
+  res.status(statusCode).json(body);
+}
 
 export class AppError extends Error {
   public readonly statusCode: number;
@@ -29,23 +52,15 @@ export function errorHandler(
   res: Response,
   _next: NextFunction,
 ): void {
-  const requestId =
-    req.id ||
-    (typeof req.headers["x-request-id"] === "string"
-      ? req.headers["x-request-id"]
-      : (res.getHeader("X-Request-Id") as string) || undefined);
-
   if (err instanceof ZodError) {
     const flattened = err.flatten();
     const message =
       err.issues.map((i) => i.message).join(", ") || "Validation Error";
-    res.status(400).json({
+    sendErrorResponse(req, res, 400, {
       code: "VALIDATION_ERROR",
       message,
-      error: message,
       fieldErrors: flattened.fieldErrors,
       details: flattened,
-      requestId,
     });
     return;
   }
@@ -84,12 +99,10 @@ export function errorHandler(
       }
     }
 
-    res.status(err.statusCode).json({
+    sendErrorResponse(req, res, err.statusCode, {
       code: defaultCode,
       message: err.message,
-      error: err.message,
       ...(err.fieldErrors ? { fieldErrors: err.fieldErrors } : {}),
-      requestId,
     });
     return;
   }
@@ -109,33 +122,27 @@ export function errorHandler(
     errObj.type === "entity.too.large" ||
     err.name === "PayloadTooLargeError"
   ) {
-    res.status(413).json({
+    sendErrorResponse(req, res, 413, {
       code: "PAYLOAD_TOO_LARGE",
       message: "Request entity too large",
-      error: "Payload Too Large",
-      requestId,
     });
     return;
   }
 
   // PostgreSQL 23503 / Prisma P2003: Foreign Key Constraint Violation
   if (errObj.code === "P2003" || errObj.code === "23503") {
-    res.status(400).json({
+    sendErrorResponse(req, res, 400, {
       code: "FOREIGN_KEY_VIOLATION",
       message: "Referenced record does not exist",
-      error: "Referenced record does not exist",
-      requestId,
     });
     return;
   }
 
   // PostgreSQL 23505 / Prisma P2002: Unique Constraint Violation
   if (errObj.code === "P2002" || errObj.code === "23505") {
-    res.status(409).json({
+    sendErrorResponse(req, res, 409, {
       code: "UNIQUE_CONSTRAINT_VIOLATION",
       message: "Conflict: unique constraint violation",
-      error: "Conflict: unique constraint violation",
-      requestId,
     });
     return;
   }
@@ -148,11 +155,9 @@ export function errorHandler(
       (err.message.includes("chk_current_stock_non_negative") ||
         err.message.includes("23514")))
   ) {
-    res.status(409).json({
+    sendErrorResponse(req, res, 409, {
       code: "CHECK_CONSTRAINT_VIOLATION",
       message: "Insufficient stock: cannot reduce stock balance below zero",
-      error: "Insufficient stock: cannot reduce stock balance below zero",
-      requestId,
     });
     return;
   }
@@ -163,21 +168,17 @@ export function errorHandler(
     errObj.code === "40001" ||
     errObj.code === "40P01"
   ) {
-    res.status(409).json({
+    sendErrorResponse(req, res, 409, {
       code: "TRANSACTION_CONFLICT",
       message: "Transaction conflict: please retry operation",
-      error: "Transaction conflict: please retry operation",
-      requestId,
     });
     return;
   }
 
   // Unhandled internal errors: NEVER leak stack trace or internal database details (CWE-209 / OWASP API8:2023)
   console.error("Unhandled Server Error:", err);
-  res.status(500).json({
+  sendErrorResponse(req, res, 500, {
     code: "INTERNAL_SERVER_ERROR",
     message: "Internal Server Error",
-    error: "Internal Server Error",
-    requestId,
   });
 }

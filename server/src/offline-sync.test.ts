@@ -231,11 +231,9 @@ describe("M9: Offline synchronization and idempotency verification", () => {
 
     expect(res.status).toBe(403);
     const errorData = (await res.json()) as {
-      error?: string;
       message?: string;
     };
-    const errText = errorData.error || errorData.message || "";
-    expect(errText).toContain("Salesman is not assigned");
+    expect(errorData.message ?? "").toContain("Salesman is not assigned");
   });
 
   it("verifies that offline orders do not create fake reservations before server acceptance and approval", async () => {

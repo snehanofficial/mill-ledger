@@ -4,7 +4,6 @@
 export interface ApiErrorResponse {
   code: string;
   message: string;
-  error?: string;
   fieldErrors?: Record<string, string[]>;
   details?: unknown;
   requestId?: string;

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
@@ -193,9 +193,8 @@ export function PurchasesPage() {
       toast.success("Purchase receipt posted successfully.");
       setReceiptNumber(`PR-2026-${Date.now().toString().slice(-4)}`);
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error || err.message || "Failed to post receipt";
-      toast.error(msg);
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to post receipt"));
     },
   });
 
