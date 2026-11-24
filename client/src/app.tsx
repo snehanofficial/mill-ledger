@@ -5,20 +5,31 @@ import {
   Navigate,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthenticatedLayout } from "@/layouts/authenticated-layout";
 import { RoleGuard } from "@/components/auth/role-guard";
 import { ROUTE_PERMISSIONS, getDefaultRouteForRole } from "@/lib/role-routing";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
+const AuthenticatedLayout = lazy(() =>
+  import("@/layouts/authenticated-layout").then((m) => ({
+    default: m.AuthenticatedLayout,
+  })),
+);
+
 // Lazy-loaded routes for code splitting (MLD-014)
 const LandingPage = lazy(() =>
-  import("@/pages/public/landing-page").then((m) => ({ default: m.LandingPage })),
+  import("@/pages/public/landing-page").then((m) => ({
+    default: m.LandingPage,
+  })),
 );
 const CatalogPage = lazy(() =>
-  import("@/pages/public/catalog-page").then((m) => ({ default: m.CatalogPage })),
+  import("@/pages/public/catalog-page").then((m) => ({
+    default: m.CatalogPage,
+  })),
 );
 const ContactPage = lazy(() =>
-  import("@/pages/public/contact-page").then((m) => ({ default: m.ContactPage })),
+  import("@/pages/public/contact-page").then((m) => ({
+    default: m.ContactPage,
+  })),
 );
 const LoginPage = lazy(() =>
   import("@/pages/login-page").then((m) => ({ default: m.LoginPage })),
@@ -30,7 +41,9 @@ const StockPage = lazy(() =>
   import("@/pages/stock-page").then((m) => ({ default: m.StockPage })),
 );
 const ProductionPage = lazy(() =>
-  import("@/pages/production-page").then((m) => ({ default: m.ProductionPage })),
+  import("@/pages/production-page").then((m) => ({
+    default: m.ProductionPage,
+  })),
 );
 const OrdersPage = lazy(() =>
   import("@/pages/orders-page").then((m) => ({ default: m.OrdersPage })),
@@ -51,10 +64,14 @@ const ReportsStockPage = lazy(() =>
   import("@/pages/reports-page").then((m) => ({ default: m.ReportsStockPage })),
 );
 const ReportsProductionPage = lazy(() =>
-  import("@/pages/reports-page").then((m) => ({ default: m.ReportsProductionPage })),
+  import("@/pages/reports-page").then((m) => ({
+    default: m.ReportsProductionPage,
+  })),
 );
 const ReportsReceivablesPage = lazy(() =>
-  import("@/pages/reports-page").then((m) => ({ default: m.ReportsReceivablesPage })),
+  import("@/pages/reports-page").then((m) => ({
+    default: m.ReportsReceivablesPage,
+  })),
 );
 const ReportsGSTPage = lazy(() =>
   import("@/pages/reports-page").then((m) => ({ default: m.ReportsGSTPage })),
@@ -81,7 +98,9 @@ const SettingsPage = lazy(() =>
   import("@/pages/settings-page").then((m) => ({ default: m.SettingsPage })),
 );
 const NotFoundPage = lazy(() =>
-  import("@/pages/placeholder-pages").then((m) => ({ default: m.NotFoundPage })),
+  import("@/pages/placeholder-pages").then((m) => ({
+    default: m.NotFoundPage,
+  })),
 );
 const ShowcasePage = lazy(() => import("@/pages/showcase-page"));
 import {
@@ -129,6 +148,7 @@ function RootEntry() {
   }
 
   if (user) {
+    import("@/layouts/authenticated-layout");
     return <Navigate to={getDefaultRouteForRole(user.role)} replace />;
   }
 
@@ -180,7 +200,11 @@ const router = createBrowserRouter([
 
   // ── Authenticated shell ─────────────────────────────────────────
   {
-    element: <AuthenticatedLayout />,
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <AuthenticatedLayout />
+      </Suspense>
+    ),
     children: [
       {
         path: "dashboard",
@@ -309,7 +333,9 @@ const router = createBrowserRouter([
           {
             path: "history",
             element: (
-              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/production/history"]}>
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/production/history"]}
+              >
                 <ProductionPage />
               </RoleGuard>
             ),
@@ -354,7 +380,9 @@ const router = createBrowserRouter([
           {
             path: "production",
             element: (
-              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/reports/production"]}>
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/reports/production"]}
+              >
                 <ReportsProductionPage />
               </RoleGuard>
             ),
@@ -363,7 +391,9 @@ const router = createBrowserRouter([
           {
             path: "receivables",
             element: (
-              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/reports/receivables"]}>
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/reports/receivables"]}
+              >
                 <ReportsReceivablesPage />
               </RoleGuard>
             ),

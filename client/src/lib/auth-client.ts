@@ -1,7 +1,6 @@
 import { createAuthClient } from "better-auth/react";
 import type { Role } from "@mill-ledger/shared";
 import { apiClient } from "./api-client";
-import { offlineDb } from "../offline/db";
 
 export interface SignInCredentials {
   email: string;
@@ -102,6 +101,7 @@ export const authClient = {
       }
       // OWASP ASVS 8.3.1 / 3.5.3: Purge client persistent storage upon sign-out
       try {
+        const { offlineDb } = await import("../offline/db");
         await offlineDb.purgeOnSignOut();
       } catch {
         // Ignore storage purge errors during unmount/offline

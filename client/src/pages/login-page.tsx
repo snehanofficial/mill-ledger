@@ -109,8 +109,12 @@ export function LoginPage() {
   const fromPath = rawFrom
     ? `${rawFrom.pathname}${rawFrom.search || ""}`
     : null;
-  const userDefaultRoute = user ? getDefaultRouteForRole(user.role) : "/dashboard";
-  const safeFrom = fromPath ? getSafeRedirectUrl(fromPath, userDefaultRoute) : userDefaultRoute;
+  const userDefaultRoute = user
+    ? getDefaultRouteForRole(user.role)
+    : "/dashboard";
+  const safeFrom = fromPath
+    ? getSafeRedirectUrl(fromPath, userDefaultRoute)
+    : userDefaultRoute;
 
   // If user is already authenticated, redirect to destination immediately ("vice versa if authenticated")
   if (user) {
@@ -151,14 +155,13 @@ export function LoginPage() {
 
       const shellUser = mapAuthUserToShellUser(authUser);
       // Update TanStack query cache with authenticated user
-      queryClient.setQueryData(
-        AUTH_SESSION_QUERY_KEY,
-        shellUser,
-      );
+      queryClient.setQueryData(AUTH_SESSION_QUERY_KEY, shellUser);
 
       // Navigate to safe destination (respecting user role workspace if no explicit from route)
       const targetDefault = getDefaultRouteForRole(shellUser.role);
-      const destination = fromPath ? getSafeRedirectUrl(fromPath, targetDefault) : targetDefault;
+      const destination = fromPath
+        ? getSafeRedirectUrl(fromPath, targetDefault)
+        : targetDefault;
       navigate(destination, { replace: true });
     } catch (err: unknown) {
       setIsSubmitting(false);
@@ -261,9 +264,7 @@ export function LoginPage() {
                   variant="warning"
                   role="status"
                   title={
-                    language === "ta"
-                      ? "அமர்வு காலாவதியானது"
-                      : "Session Expired"
+                    language === "ta" ? "அமர்வு காலாவதியானது" : "Session Expired"
                   }
                 >
                   {language === "ta"
@@ -358,6 +359,12 @@ export function LoginPage() {
                 disabled={isSubmitting}
                 className="w-full text-base font-semibold"
                 aria-busy={isSubmitting}
+                onPointerEnter={() => {
+                  import("@/layouts/authenticated-layout");
+                }}
+                onFocus={() => {
+                  import("@/layouts/authenticated-layout");
+                }}
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
@@ -397,8 +404,13 @@ export function LoginPage() {
                     : "border-border bg-background hover:bg-muted text-foreground"
                 }`}
               >
-                <div className="font-medium" lang="en">{acc.label}</div>
-                <div className="truncate text-muted-foreground text-[11px]" lang="en">
+                <div className="font-medium" lang="en">
+                  {acc.label}
+                </div>
+                <div
+                  className="truncate text-muted-foreground text-[11px]"
+                  lang="en"
+                >
                   {acc.email}
                 </div>
               </button>
