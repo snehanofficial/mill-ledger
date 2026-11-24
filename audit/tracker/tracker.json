@@ -5816,7 +5816,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -5824,12 +5824,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-063.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "819f12a",
+        "evidenceLink": "audit/evidence/verify/F-063/10-summary.txt",
+        "note": "Eliminated layout-thrashing transition-[width] from desktop sidebar, replaced transition-all on SidebarRail with transition-colors, and re-architected Radix collapsible accordion keyframes to use GPU-composited opacity and transform (translateY) instead of height."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-063-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-063-regression.test.ts",
+    "fixCommit": "819f12a",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-063/01-git-status.txt",
+      "audit/evidence/verify/F-063/02-regression-test.txt",
+      "audit/evidence/verify/F-063/03-typecheck.txt",
+      "audit/evidence/verify/F-063/04-lint.txt",
+      "audit/evidence/verify/F-063/05-build.txt",
+      "audit/evidence/verify/F-063/06-invariants.txt",
+      "audit/evidence/verify/F-063/07-benchmark.txt",
+      "audit/evidence/verify/F-063/08-test-suite.txt",
+      "audit/evidence/verify/F-063/09-diff.txt",
+      "audit/evidence/verify/F-063/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'transition-\\|animate-' client/src/ | grep -v 'motion-reduce' | head -n 25",
