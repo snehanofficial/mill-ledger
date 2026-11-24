@@ -6995,7 +6995,7 @@
     ],
     "effort": "L",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -7003,12 +7003,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-080.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "18bc815",
+        "evidenceLink": "audit/evidence/verify/F-080/10-summary.txt",
+        "note": "Expanded bilingual Tamil localization across all operational pages with useLanguage and t() dictionary mapping."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-080-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-080-regression.test.ts",
+    "fixCommit": "18bc815",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-080/01-git-status.txt",
+      "audit/evidence/verify/F-080/02-regression-test.txt",
+      "audit/evidence/verify/F-080/03-typecheck.txt",
+      "audit/evidence/verify/F-080/04-lint.txt",
+      "audit/evidence/verify/F-080/05-build.txt",
+      "audit/evidence/verify/F-080/06-invariants.txt",
+      "audit/evidence/verify/F-080/07-benchmark.txt",
+      "audit/evidence/verify/F-080/08-test-suite.txt",
+      "audit/evidence/verify/F-080/09-diff.txt",
+      "audit/evidence/verify/F-080/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'useLanguage' client/src/ | head -n 25",

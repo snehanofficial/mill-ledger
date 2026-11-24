@@ -1,0 +1,49 @@
+======================================================================
+F-080 VERIFICATION SUMMARY: BILINGUAL TAMIL LOCALIZATION
+======================================================================
+Date: 2026-11-24
+Severity: P1 | Tier: T9 | Cluster: CLUSTER-13
+Status: VERIFIED-PASS
+
+1. Root Cause:
+Only four navigation labels were localized in the application shell; all 11 core
+operational pages, table headers, KPI metrics, buttons, empty states, and modal
+dialogs contained hardcoded English strings (755 identified in audit inventory).
+
+2. Implementation Summary:
+- Expanded `client/src/lib/i18n.tsx` with authentic Tamil terminology covering:
+  * Production execution, batch scheduling, BOM recipes, scrap, and yield variances
+  * Device outbox, sync lifecycle, and offline order confirmation dialogs
+  * Inventory stock balances, categories, physical counts, and WAC valuations
+  * Sales order creation, product catalogs, and booking metrics
+  * Tax invoices, credit note issuance, and statutory GST breakdowns
+  * Mandi procurement, weighbridge receipts, and supplier ledgers
+  * Physical dispatch fulfillment and vehicle details
+  * Payment collections, FIFO allocations, and receivables ledgers
+  * Executive overview and dashboard analytics
+- Localized `ConfirmationDialog` (`client/src/components/ui/confirmation-dialog.tsx`)
+  to automatically translate confirmation titles and action button labels.
+- Connected `useLanguage` and `t()` across all 11 operational pages:
+  * `client/src/pages/production-page.tsx`
+  * `client/src/pages/stock-page.tsx`
+  * `client/src/pages/orders-page.tsx`
+  * `client/src/pages/invoices-page.tsx`
+  * `client/src/pages/purchases-page.tsx`
+  * `client/src/pages/dispatch-page.tsx`
+  * `client/src/pages/payments-page.tsx`
+  * `client/src/pages/dashboard-page.tsx`
+  * `client/src/pages/new-order-page.tsx`
+  * `client/src/components/shell/device-outbox-sheet.tsx`
+- Preserved string lookup fallback and bidirectional key/phrase index lookup.
+
+3. Verification Evidence:
+- 01-git-status.txt: Working tree clean, targeted files staged
+- 02-regression-test.txt: audit/tests/f-080-regression.test.ts (3/3 passed)
+- 03-typecheck.txt: TypeScript typecheck passed across client, server, and shared
+- 04-lint.txt: 0 errors, 0 warnings across 195 files
+- 05-build.txt: Vite production build passed (53 PWA precache entries)
+- 06-invariants.txt: 10/10 SQL database invariants passed (0 rows)
+- 07-benchmark.txt: 18/18 CDI benchmark oracle assertions passed (100% exact numerical match)
+- 08-test-suite.txt: 39/39 test files passed (241/241 tests)
+- 09-diff.txt: Clean diff verifying targeted changes
+======================================================================
