@@ -4356,15 +4356,14 @@
       "Phase 7 Specification Check 5"
     ],
     "files": [
-      "client/src/pages/dispatch-page.ts",
-      "client/src/pages/orders-page.ts",
-      "client/src/components/ui/confirmation-dialog.ts",
-      "showcase-page.ts",
-      "dispatch-page.ts"
+      "client/src/components/ui/confirmation-dialog.tsx",
+      "client/src/pages/dispatch-page.tsx",
+      "client/src/pages/orders-page.tsx",
+      "audit/tests/f-048-regression.test.ts"
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -4372,12 +4371,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-048.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "cd8446f",
+        "evidenceLink": "audit/evidence/verify/F-048/",
+        "note": "Added accessible ConfirmationDialog warnings detailing irreversible physical inventory deduction on dispatch and order rejection."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-048-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-048-regression.test.ts",
+    "fixCommit": "cd8446f",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-048/01-pre-fix-repro.txt",
+      "audit/evidence/verify/F-048/02-regression-test.txt",
+      "audit/evidence/verify/F-048/03-typecheck.txt",
+      "audit/evidence/verify/F-048/04-lint.txt",
+      "audit/evidence/verify/F-048/05-build.txt",
+      "audit/evidence/verify/F-048/06-unit-tests.txt",
+      "audit/evidence/verify/F-048/07-benchmark.txt",
+      "audit/evidence/verify/F-048/08-invariants.txt",
+      "audit/evidence/verify/F-048/09-git-diff.txt",
+      "audit/evidence/verify/F-048/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn '<table\\|useForm' client/src/pages/ | head -n 25",

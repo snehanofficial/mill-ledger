@@ -325,7 +325,7 @@ client/src/pages/payments-page.tsx:897:                    placeholder="e.g. 400
 | **F-045** | P2 | `VERIFIED` | Lack of Skeleton Loaders and Omission of Request IDs in UI Error States |
 | **F-046** | P2 | `VERIFIED` | Ephemeral Filter, Sort, and Tab State Not Preserved in URL |
 | **F-047** | P2 | `VERIFIED` | Absence of Sticky Table Headers and Card Transformation on Mobile Viewports |
-| **F-048** | P2 | `OPEN` | Missing Confirmation Dialogs for Irreversible Operations (Dispatch, Order Rejection) |
+| **F-048** | P2 | `VERIFIED` | Missing Confirmation Dialogs for Irreversible Operations (Dispatch, Order Rejection) |
 | **F-049** | P2 | `OPEN` | Complete Absence of In-App Documentation, Onboarding Guidance, and Domain Jargon Tooltips |
 | **F-050** | P3 | `OPEN` | Incomplete Dark Mode Infrastructure and Design Token Fragmentation in CSS Output |
 
