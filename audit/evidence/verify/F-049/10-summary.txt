@@ -1,0 +1,36 @@
+FINDING F-049 VERIFICATION SUMMARY
+===================================
+Finding ID: F-049
+Title: Complete Absence of In-App Documentation, Onboarding Guidance, and Domain Jargon Tooltips
+Severity: P2
+Category: UX / Help & Documentation / Learnability
+Standard refs: NN/g H10 (Help and Documentation), Phase 7 Specification Check 10
+Status: VERIFIED-PASS
+
+Remediation Details:
+1. `client/src/lib/domain-glossary.ts` & `client/src/components/ui/domain-tooltip.tsx`:
+   - Defined authoritative glossary for core manufacturing and accounting concepts: BOM (Bill of Materials), ATP (Available to Promise), FIFO (First-In, First-Out), Yield Variance, and WAC (Weighted Average Cost).
+   - Created accessible `DomainTooltip` component with dotted underlines and keyboard-accessible HelpCircleIcon indicators.
+2. In-App Documentation & Workflow Guide (`client/src/components/help/help-guide-modal.tsx`):
+   - Created comprehensive operational guide covering the sequential 7-phase ledger workflow (Suppliers & Purchasing -> BOM Production -> Sales Orders & ATP -> Fulfillment Dispatch -> Invoicing & GST -> Payments FIFO Settlement).
+   - Added interactive tabs for Operational Workflow, Domain Glossary & Jargon, and Field-Ready Offline Operation.
+3. Shell Integration (`client/src/components/shell/authenticated-shell.tsx`):
+   - Integrated direct Help button in the top header beside language and sync controls.
+   - Added "Documentation & Guide" menu items to both the sidebar user menu and the top-right user avatar dropdown.
+   - Wired `HelpGuideModal` to all help triggers.
+4. Operational Views Integration:
+   - `production-page.tsx`: Annotated "Yield variance" table header and "Bill of Materials (BOM) Recipe" form label with DomainTooltip.
+   - `reports-page.tsx`: Annotated "Yield variance", "Available" (ATP), and "Avg cost" (WAC) table headers with DomainTooltip.
+   - `payments-page.tsx`: Annotated "Automatic FIFO mode" with DomainTooltip.
+   - `orders-page.tsx`: Annotated "Available to promise (ATP)" KPI card with DomainTooltip.
+
+Verification Evidence:
+- 01-pre-fix-repro.txt: Verified pre-fix absence of in-app docs and unexplained domain acronyms.
+- 02-regression-test.txt: 6/6 tests passing in `audit/tests/f-049-regression.test.ts`.
+- 03-typecheck.txt: Typecheck passed cleanly across all workspaces.
+- 04-lint.txt: 0 warnings, 0 errors in oxlint.
+- 05-build.txt: Built client and server successfully.
+- 06-unit-tests.txt: 39 test files passed, 241/241 unit/integration tests passed.
+- 07-benchmark.txt: 18/18 CDI benchmark acceptance assertions passed (100% exact numerical match).
+- 08-invariants.txt: 10/10 SQL database invariants passed (0 rows violated).
+- 09-git-diff.txt: Recorded complete client changes.

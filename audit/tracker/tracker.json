@@ -4420,15 +4420,19 @@
       "Phase 7 Specification Check 10"
     ],
     "files": [
-      "client/src/components/shell/authenticated-shell.ts",
-      "client/src/pages/reports-page.ts",
-      "client/src/pages/production-page.ts",
-      "client/src/pages/payments-page.ts",
-      "reports-page.ts"
+      "client/src/lib/domain-glossary.ts",
+      "client/src/components/ui/domain-tooltip.tsx",
+      "client/src/components/help/help-guide-modal.tsx",
+      "client/src/components/shell/authenticated-shell.tsx",
+      "client/src/pages/production-page.tsx",
+      "client/src/pages/reports-page.tsx",
+      "client/src/pages/payments-page.tsx",
+      "client/src/pages/orders-page.tsx",
+      "audit/tests/f-049-regression.test.ts"
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -4436,12 +4440,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-049.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "3474852",
+        "evidenceLink": "audit/evidence/verify/F-049/",
+        "note": "Added HelpGuideModal operational documentation in shell header/avatar menu and DomainTooltip explanations for BOM, ATP, FIFO, Yield Variance, and WAC."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-049-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-049-regression.test.ts",
+    "fixCommit": "3474852",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-049/01-pre-fix-repro.txt",
+      "audit/evidence/verify/F-049/02-regression-test.txt",
+      "audit/evidence/verify/F-049/03-typecheck.txt",
+      "audit/evidence/verify/F-049/04-lint.txt",
+      "audit/evidence/verify/F-049/05-build.txt",
+      "audit/evidence/verify/F-049/06-unit-tests.txt",
+      "audit/evidence/verify/F-049/07-benchmark.txt",
+      "audit/evidence/verify/F-049/08-invariants.txt",
+      "audit/evidence/verify/F-049/09-git-diff.txt",
+      "audit/evidence/verify/F-049/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn '<table\\|useForm' client/src/pages/ | head -n 25",
