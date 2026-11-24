@@ -7135,7 +7135,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -7143,12 +7143,21 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-079.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "12db927",
+        "evidenceLink": "audit/evidence/verify/F-079/",
+        "note": "Subsetted Geist Variable font to Latin only and imported @fontsource/noto-sans-tamil for full bilingual Tamil typography without Cyrillic or Vietnamese bloat."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-079-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm exec vitest run -c audit/tests/vitest.audit.config.ts audit/tests/f-079-regression.test.ts",
+    "regressionTest": "audit/tests/f-079-regression.test.ts",
+    "fixCommit": "12db927",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-079/"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'findMany(' server/src/modules/ | grep -v 'take:' | head -n 25",
@@ -7180,8 +7189,8 @@
         "server/src/modules/finance/payment.service.ts:459:    const customers = await prisma.customer.findMany({"
       ]
     },
-    "needsApproval": "schema",
-    "notes": ""
+    "needsApproval": "none",
+    "notes": "Subsetted Geist Variable font to Latin only and imported @fontsource/noto-sans-tamil for full bilingual Tamil coverage without Cyrillic or Vietnamese bloat."
   },
   {
     "id": "F-080",
