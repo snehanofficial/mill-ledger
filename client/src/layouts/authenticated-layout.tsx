@@ -125,6 +125,15 @@ export function AuthenticatedLayout() {
     };
   }, []);
 
+  // Sync active user ID for user-scoped storage (F-086)
+  useEffect(() => {
+    if (user?.id) {
+      try {
+        localStorage.setItem("mill_ledger_active_user", user.id);
+      } catch {}
+    }
+  }, [user?.id]);
+
   // Show loading shell to prevent layout shift during initial session verification
   if (isLoading) {
     return <AuthenticatedShellSkeleton />;
@@ -143,6 +152,7 @@ export function AuthenticatedLayout() {
     } finally {
       // OWASP ASVS 8.3.1 & 3.5.3: Purge all cached sensitive enterprise data, customer PII, and offline outbox
       try {
+        localStorage.removeItem("mill_ledger_active_user");
         await offlineDb.purgeOnSignOut();
       } catch (dbErr) {
         console.warn("Failed to purge offline database on logout:", dbErr);

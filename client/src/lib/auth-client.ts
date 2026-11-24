@@ -62,16 +62,23 @@ export const authClient = {
     const data = await response.json();
 
     // Verify session context against /api/v1/me to ensure user role and active state are hydrated
+    let resolvedUser = data.user;
     try {
       const res = await apiClient.get<SessionResponse>("/me");
       if (res.data?.user) {
-        return res.data.user;
+        resolvedUser = res.data.user;
       }
     } catch {
       // Fallback to response user data if /api/v1/me is delayed
     }
 
-    return data.user;
+    if (typeof window !== "undefined" && resolvedUser?.id) {
+      try {
+        localStorage.setItem("mill_ledger_active_user", resolvedUser.id);
+      } catch {}
+    }
+
+    return resolvedUser;
   },
 
   /**
@@ -88,6 +95,11 @@ export const authClient = {
         credentials: "include",
       }).catch(() => {});
     } finally {
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem("mill_ledger_active_user");
+        } catch {}
+      }
       // OWASP ASVS 8.3.1 / 3.5.3: Purge client persistent storage upon sign-out
       try {
         await offlineDb.purgeOnSignOut();

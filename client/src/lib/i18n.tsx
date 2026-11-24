@@ -463,21 +463,56 @@ const LanguageContext = createContext<LanguageContextType>({
   t: (key, fallback) => fallback || key,
 });
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("mill_ledger_lang") as Language;
-      if (saved === "en" || saved === "ta") return saved;
-    }
-    return "en";
-  });
+export function getUserScopedLanguageKey(userId?: string | null): string {
+  if (userId) return `mill_ledger_lang_${userId}`;
+  if (typeof window !== "undefined") {
+    const activeUser = localStorage.getItem("mill_ledger_active_user");
+    if (activeUser) return `mill_ledger_lang_${activeUser}`;
+  }
+  return "mill_ledger_lang";
+}
+
+export function getSavedLanguage(userId?: string | null): Language {
+  if (typeof window === "undefined") return "en";
+  try {
+    const key = getUserScopedLanguageKey(userId);
+    const saved = localStorage.getItem(key) as Language | null;
+    if (saved === "en" || saved === "ta") return saved;
+    const fallback = localStorage.getItem("mill_ledger_lang") as Language | null;
+    if (fallback === "en" || fallback === "ta") return fallback;
+  } catch {}
+  return "en";
+}
+
+export function saveUserLanguage(lang: Language, userId?: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    const key = getUserScopedLanguageKey(userId);
+    localStorage.setItem(key, lang);
+    localStorage.setItem("mill_ledger_lang", lang);
+    document.documentElement.lang = lang;
+  } catch {}
+}
+
+export function LanguageProvider({
+  children,
+  userId,
+}: {
+  children: ReactNode;
+  userId?: string | null;
+}) {
+  const [prevUserId, setPrevUserId] = useState(userId);
+  const [language, setLanguageState] = useState<Language>(() => getSavedLanguage(userId));
+
+  if (userId !== prevUserId) {
+    setPrevUserId(userId);
+    const activeLang = getSavedLanguage(userId);
+    setLanguageState(activeLang);
+  }
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("mill_ledger_lang", lang);
-      document.documentElement.lang = lang;
-    }
+    saveUserLanguage(lang, userId);
   };
 
   useEffect(() => {
