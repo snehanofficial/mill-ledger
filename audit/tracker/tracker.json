@@ -6988,7 +6988,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -6996,12 +6996,21 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-077.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "4505d38",
+        "evidenceLink": "audit/evidence/verify/F-077/",
+        "note": "Revalidated quoted price against active price list timestamps on sync, routing stale price orders to UNDER_REVIEW with audit trail in overrideReason, and registered 5-minute background refresh in client."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-077-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm exec vitest run -c audit/tests/vitest.audit.config.ts audit/tests/f-077-regression.test.ts",
+    "regressionTest": "audit/tests/f-077-regression.test.ts",
+    "fixCommit": "4505d38",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-077/"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'findMany(' server/src/modules/ | grep -v 'take:' | head -n 25",
@@ -7033,8 +7042,8 @@
         "server/src/modules/finance/payment.service.ts:459:    const customers = await prisma.customer.findMany({"
       ]
     },
-    "needsApproval": "schema",
-    "notes": ""
+    "needsApproval": "none",
+    "notes": "Revalidated quoted price against active price list timestamps on sync, routing stale price orders to UNDER_REVIEW with audit trail in overrideReason, and registered 5-minute background refresh in client."
   },
   {
     "id": "F-078",

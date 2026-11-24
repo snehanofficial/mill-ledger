@@ -1,0 +1,27 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | audit/tests/f-077-regression.test.ts > F-077 Regression: Offline Stale Price Revalidation & Administrative Review
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | audit/tests/f-077-regression.test.ts > F-077 Regression: Offline Stale Price Revalidation & Administrative Review
+M2 benchmark master data seed successfully completed.
+
+stdout | audit/tests/f-077-regression.test.ts > F-077 Regression: Offline Stale Price Revalidation & Administrative Review
+{"level":"INFO","timestamp":"2026-11-24T11:23:08.952Z","requestId":"4ac8c5d7-4456-41f0-b7ca-22a41879f1c9","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":110,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+(node:723939) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | audit/tests/f-077-regression.test.ts > F-077 Regression: Offline Stale Price Revalidation & Administrative Review > blocks auto-approval and flags UNDER_REVIEW when an order quotes a stale price after a price list revision
+{"level":"INFO","timestamp":"2026-11-24T11:23:09.019Z","requestId":"0326e5ec-34f6-4925-a4a4-e542dc30cf80","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":51,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"umPInL1XHqA6CnxGE2K8HXfaWkz6Fvyf","userRole":"SALESMAN"}
+
+stdout | audit/tests/f-077-regression.test.ts > F-077 Regression: Offline Stale Price Revalidation & Administrative Review > allows normal salesman discretion (SUBMITTED) when price list has not been revised since quotation
+{"level":"INFO","timestamp":"2026-11-24T11:23:09.045Z","requestId":"e33c9812-fde4-4ec5-9bb7-d7ecebd4769d","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":23,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"umPInL1XHqA6CnxGE2K8HXfaWkz6Fvyf","userRole":"SALESMAN"}
+
+ ✓ audit/tests/f-077-regression.test.ts (3 tests) 424ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  16:53:07
+   Duration  1.56s (transform 300ms, setup 0ms, collect 734ms, tests 424ms, environment 0ms, prepare 46ms)
+
