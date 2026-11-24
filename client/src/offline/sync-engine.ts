@@ -131,7 +131,7 @@ export async function queueOfflineOrder(
   notifyListeners();
 
   // If online, immediately try to sync outbox
-  if (typeof navigator !== "undefined" && navigator.onLine) {
+  if (typeof navigator !== "undefined" && navigator.onLine !== false) {
     void processOutbox(userId);
   }
 
@@ -141,7 +141,7 @@ export async function queueOfflineOrder(
 export async function processOutbox(
   userId: string,
 ): Promise<{ processed: number; succeeded: number; conflicts: number }> {
-  if (typeof navigator !== "undefined" && !navigator.onLine) {
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
     return { processed: 0, succeeded: 0, conflicts: 0 };
   }
 
@@ -191,6 +191,35 @@ async function executeSyncLoop(
 
     for (const order of pendingOrders) {
       processed += 1;
+
+      // 1. Client-side structural pre-flight validation (F-082)
+      // If order payload is malformed or corrupt, quarantine immediately to prevent head-of-line blocking
+      if (
+        !order ||
+        !order.customerId ||
+        !order.idempotencyKey ||
+        !Array.isArray(order.items) ||
+        order.items.length === 0 ||
+        order.items.some(
+          (it) =>
+            !it ||
+            !it.productVariantId ||
+            typeof it.quantity !== "number" ||
+            isNaN(it.quantity) ||
+            it.quantity <= 0,
+        )
+      ) {
+        conflicts += 1;
+        await offlineDb.outbox.update(order.id, {
+          status: "conflict",
+          lastErrorCode: "CLIENT_VALIDATION_ERROR",
+          lastErrorMessage:
+            "Corrupt or malformed outbox payload: missing customer or valid item lines",
+          updatedAt: new Date().toISOString(),
+        });
+        notifyListeners();
+        continue;
+      }
 
       // Mark status as syncing
       await offlineDb.outbox.update(order.id, {
@@ -253,6 +282,26 @@ async function executeSyncLoop(
           continue;
         }
 
+        // Check if error is an uncaught client runtime exception rather than a network/HTTP response (F-082)
+        const isClientException =
+          !err.response &&
+          (err instanceof TypeError ||
+            err instanceof ReferenceError ||
+            err instanceof SyntaxError ||
+            err.name === "TypeError");
+
+        if (isClientException) {
+          conflicts += 1;
+          await offlineDb.outbox.update(order.id, {
+            status: "conflict",
+            lastErrorCode: "CLIENT_CORRUPTION_ERROR",
+            lastErrorMessage: errorMessage,
+            updatedAt: new Date().toISOString(),
+          });
+          notifyListeners();
+          continue;
+        }
+
         if (
           status === 400 ||
           status === 403 ||
@@ -268,6 +317,7 @@ async function executeSyncLoop(
             updatedAt: new Date().toISOString(),
           });
           notifyListeners();
+          continue;
         } else {
           // Network error or 5xx server transient issue
           await offlineDb.outbox.update(order.id, {
