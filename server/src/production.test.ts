@@ -425,4 +425,62 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     expect(flourBal?.onHand).toBe(120);
     expect(flourBal?.reconciled).toBe(true);
   });
+
+  it("resolves organization code MILL and warehouse code WH-1 when listing balances, recipes, and posting a run", async () => {
+    const productionCookie = await loginAndGetCookie(
+      "production@millledger.local",
+      "ProductionPassword123!",
+    );
+
+    const balRes = await fetch(
+      `${baseUrl}/api/v1/inventory/balances?organizationId=MILL`,
+      { headers: { Cookie: productionCookie } },
+    );
+    expect(balRes.status).toBe(200);
+    const balData = (await balRes.json()) as {
+      balances: Array<{ id: string; sku: string }>;
+    };
+    const flour = balData.balances.find((b) => b.sku === "RM-FLOUR");
+    expect(flour).toBeDefined();
+
+    const recipesRes = await fetch(
+      `${baseUrl}/api/v1/production-runs/recipes?organizationId=MILL`,
+      { headers: { Cookie: productionCookie } },
+    );
+    expect(recipesRes.status).toBe(200);
+    const recipesData = (await recipesRes.json()) as {
+      recipes: Array<{ id: string }>;
+    };
+    expect(recipesData.recipes.length).toBeGreaterThan(0);
+
+    const postRes = await fetch(`${baseUrl}/api/v1/production-runs`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: productionCookie,
+      },
+      body: JSON.stringify({
+        organizationId: "MILL",
+        warehouseId: "WH-1",
+        recipeId: recipesData.recipes[0].id,
+        runNumber: "RUN-CODE-RES-001",
+        batchCount: 1,
+        actualGoodQty: 180,
+        consumedMaterials: [{ inventoryItemId: flour!.id, actualQty: 40 }],
+      }),
+    });
+    expect(postRes.status).toBe(201);
+
+    const listRes = await fetch(
+      `${baseUrl}/api/v1/production-runs?organizationId=MILL`,
+      { headers: { Cookie: productionCookie } },
+    );
+    expect(listRes.status).toBe(200);
+    const listData = (await listRes.json()) as {
+      runs: Array<{ runNumber: string }>;
+    };
+    expect(
+      listData.runs.some((r) => r.runNumber === "RUN-CODE-RES-001"),
+    ).toBe(true);
+  });
 });

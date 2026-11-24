@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { toast } from "sonner";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
@@ -229,6 +230,10 @@ export function ProductionPage() {
       queryClient.invalidateQueries({ queryKey: ["production-runs"] });
       queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
       setShowNewBatchModal(false);
+      toast.success("Production batch posted and stock ledger updated.");
+    },
+    onError: (err) => {
+      toast.error(extractErrorMessage(err, "Failed to post production batch"));
     },
   });
 
@@ -567,7 +572,13 @@ export function ProductionPage() {
       </div>
 
       {/* New Batch Modal */}
-      <Dialog open={showNewBatchModal} onOpenChange={setShowNewBatchModal}>
+      <Dialog
+        open={showNewBatchModal}
+        onOpenChange={(open) => {
+          if (!open) postMutation.reset();
+          setShowNewBatchModal(open);
+        }}
+      >
         <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>{t("Record production batch")}</DialogTitle>
@@ -815,6 +826,21 @@ export function ProductionPage() {
                 </div>
               </div>
             </div>
+
+            {postMutation.isError && (
+              <div
+                role="alert"
+                className="mt-4 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive"
+              >
+                <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>
+                  {extractErrorMessage(
+                    postMutation.error,
+                    "Failed to post production batch",
+                  )}
+                </span>
+              </div>
+            )}
 
             <DialogFooter className="mt-6 border-t pt-4">
               <Button

@@ -277,9 +277,10 @@ export class InventoryService {
     organizationId: string,
     warehouseId?: string,
   ): Promise<InventoryBalanceRow[]> {
+    const resolvedOrgId = await this.resolveOrgId(organizationId);
     const items = await prisma.inventoryItem.findMany({
       where: {
-        organizationId,
+        organizationId: resolvedOrgId,
         isActive: true,
       },
       include: {

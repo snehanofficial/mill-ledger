@@ -2,6 +2,7 @@ import { prisma } from "../../db/client.js";
 import {
   ItemCategory,
   MovementType,
+  Prisma,
   ProductionRunStatus,
   RecipeItemType,
 } from "@prisma/client";
@@ -46,13 +47,43 @@ export interface ReverseProductionRunInput {
 }
 
 export class ProductionService {
+  private async resolveOrgId(
+    orgIdOrCode?: string,
+    client: Prisma.TransactionClient | typeof prisma = prisma,
+  ): Promise<string> {
+    const target = orgIdOrCode || "MILL";
+    const org = await client.organization.findFirst({
+      where: {
+        OR: [{ id: target }, { code: target }],
+      },
+    });
+    return org ? org.id : target;
+  }
+
+  private async resolveWarehouseId(
+    warehouseIdOrCode: string,
+    organizationId: string,
+    client: Prisma.TransactionClient | typeof prisma = prisma,
+  ): Promise<string> {
+    const warehouse = await client.warehouse.findFirst({
+      where: {
+        OR: [
+          { id: warehouseIdOrCode },
+          { code: warehouseIdOrCode, facility: { organizationId } },
+        ],
+      },
+    });
+    return warehouse ? warehouse.id : warehouseIdOrCode;
+  }
+
   /**
    * List active BOM recipes for an organization
    */
   async getRecipes(organizationId: string) {
+    const resolvedOrgId = await this.resolveOrgId(organizationId);
     return await prisma.recipe.findMany({
       where: {
-        organizationId,
+        organizationId: resolvedOrgId,
         isActive: true,
       },
       include: {
@@ -88,8 +119,13 @@ export class ProductionService {
       throw new AppError(`Recipe ${input.recipeId} not found`, 404);
     }
 
+    const resolvedOrgId = await this.resolveOrgId(input.organizationId);
+    const resolvedWarehouseId = await this.resolveWarehouseId(
+      input.warehouseId,
+      resolvedOrgId,
+    );
     const warehouse = await prisma.warehouse.findUnique({
-      where: { id: input.warehouseId },
+      where: { id: resolvedWarehouseId },
     });
     if (!warehouse) {
       throw new AppError(`Warehouse ${input.warehouseId} not found`, 404);
@@ -118,8 +154,8 @@ export class ProductionService {
 
       const run = await tx.productionRun.create({
         data: {
-          organizationId: input.organizationId,
-          warehouseId: input.warehouseId,
+          organizationId: resolvedOrgId,
+          warehouseId: resolvedWarehouseId,
           recipeId: recipe.id,
           recipeVersion: recipe.version,
           runNumber: input.runNumber,
@@ -294,10 +330,16 @@ export class ProductionService {
         );
       }
 
-      const warehouseId = runRecord ? runRecord.warehouseId : input.warehouseId;
-      if (!warehouseId) {
+      const resolvedOrgId = await this.resolveOrgId(input.organizationId, tx);
+      const rawWarehouseId = runRecord
+        ? runRecord.warehouseId
+        : input.warehouseId;
+      if (!rawWarehouseId) {
         throw new AppError("Warehouse ID is required", 400);
       }
+      const warehouseId = runRecord
+        ? rawWarehouseId
+        : await this.resolveWarehouseId(rawWarehouseId, resolvedOrgId, tx);
 
       const batchCount = runRecord
         ? Number(runRecord.batchCount)
@@ -498,7 +540,7 @@ export class ProductionService {
       if (!runId) {
         const createdRun = await tx.productionRun.create({
           data: {
-            organizationId: input.organizationId,
+            organizationId: resolvedOrgId,
             warehouseId: warehouseId,
             recipeId: recipe.id,
             recipeVersion: recipe.version,
@@ -851,8 +893,9 @@ export class ProductionService {
    * List production runs for an organization
    */
   async getProductionRuns(organizationId: string) {
+    const resolvedOrgId = await this.resolveOrgId(organizationId);
     return await prisma.productionRun.findMany({
-      where: { organizationId },
+      where: { organizationId: resolvedOrgId },
       include: {
         recipe: {
           include: { productVariant: true },
