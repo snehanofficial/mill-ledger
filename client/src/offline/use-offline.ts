@@ -91,10 +91,20 @@ export function useSyncManager(userId?: string) {
   }, []);
 
   // When connection comes back online, automatically trigger sync and snapshot refresh
+  // Also periodically refresh master data snapshot (every 5 minutes while online) to prevent stale prices (F-077)
   useEffect(() => {
     if (isOnline && userId) {
       void processOutbox(userId);
       void refreshMasterDataSnapshot(userId);
+
+      const intervalId = setInterval(
+        () => {
+          void refreshMasterDataSnapshot(userId);
+        },
+        5 * 60 * 1000,
+      );
+
+      return () => clearInterval(intervalId);
     }
   }, [isOnline, userId]);
 

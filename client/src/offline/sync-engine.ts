@@ -239,6 +239,7 @@ async function executeSyncLoop(
           customerId: order.customerId,
           notes: order.notes,
           idempotencyKey: order.idempotencyKey,
+          pricedAt: order.pricedAt,
           lines: order.items.map((it) => ({
             productVariantId: it.productVariantId,
             quantity: it.quantity,
@@ -285,10 +286,14 @@ async function executeSyncLoop(
       } catch (err: unknown) {
         const isAxios = axios.isAxiosError(err);
         const status = isAxios ? err.response?.status : undefined;
-        const respData = isAxios ? (err.response?.data as Record<string, unknown> | undefined) : undefined;
+        const respData = isAxios
+          ? (err.response?.data as Record<string, unknown> | undefined)
+          : undefined;
         const errorMessage =
           (typeof respData?.error === "string" ? respData.error : undefined) ||
-          (typeof respData?.message === "string" ? respData.message : undefined) ||
+          (typeof respData?.message === "string"
+            ? respData.message
+            : undefined) ||
           (err instanceof Error ? err.message : "Failed to sync order");
 
         // If duplicate conflict error occurred (e.g. another concurrent tab landed the order),

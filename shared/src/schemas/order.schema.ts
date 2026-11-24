@@ -28,6 +28,7 @@ export const createOrderSchema = z
     idempotencyKey: z.string().optional(),
     status: z.enum(["DRAFT", "SUBMITTED"]).optional(),
     orderDate: z.coerce.date().optional(),
+    pricedAt: z.coerce.date().optional(),
     lines: z
       .array(createOrderLineSchema)
       .min(1, "Order must contain at least one line"),
@@ -52,7 +53,8 @@ export const updateOrderSchema = z
       .optional(),
     status: z
       .enum(["DRAFT", "SUBMITTED"], {
-        message: "Draft orders can only be updated to DRAFT or SUBMITTED status",
+        message:
+          "Draft orders can only be updated to DRAFT or SUBMITTED status",
       })
       .optional(),
     lines: z.array(updateOrderLineSchema).min(1).optional(),

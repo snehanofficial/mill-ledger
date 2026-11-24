@@ -20,6 +20,7 @@ export interface CreateOrderInput {
   idempotencyKey?: string;
   status?: "DRAFT" | "SUBMITTED";
   orderDate?: Date;
+  pricedAt?: Date;
   lines: CreateOrderLineInput[];
 }
 
@@ -87,7 +88,9 @@ export class SalesService {
       });
 
       // Update notes on orders where all reservations have expired
-      const orderIds = [...new Set(staleReservations.map((r) => r.salesOrderId))];
+      const orderIds = [
+        ...new Set(staleReservations.map((r) => r.salesOrderId)),
+      ];
       for (const orderId of orderIds) {
         const remainingActive = await tx.stockReservation.count({
           where: {
@@ -113,7 +116,11 @@ export class SalesService {
    * Helper to compute available stock for an inventory item in a warehouse
    * available = onHand - activeReservations
    */
-  async getAvailableStock(inventoryItemId: string, warehouseId?: string, referenceTime: Date = new Date()) {
+  async getAvailableStock(
+    inventoryItemId: string,
+    warehouseId?: string,
+    referenceTime: Date = new Date(),
+  ) {
     // Automatically sweep expired reservations
     await this.expireStaleReservations(referenceTime);
 
@@ -159,10 +166,405 @@ export class SalesService {
 
     try {
       const txResult = await prisma.$transaction(async (tx) => {
-      // 1. Idempotency check
-      if (input.idempotencyKey) {
-        const existing = await tx.salesOrder.findUnique({
-          where: { idempotencyKey: input.idempotencyKey },
+        // 1. Idempotency check
+        if (input.idempotencyKey) {
+          const existing = await tx.salesOrder.findUnique({
+            where: { idempotencyKey: input.idempotencyKey },
+            include: {
+              lines: {
+                include: {
+                  productVariant: true,
+                },
+              },
+              customer: true,
+              salesman: true,
+              reservations: true,
+            },
+          });
+          if (existing) {
+            return { order: existing, shortages: [] };
+          }
+        }
+
+        // 2. Validate customer and assignment
+        const customer = await tx.customer.findFirst({
+          where: {
+            OR: [{ id: input.customerId }, { code: input.customerId }],
+          },
+        });
+        if (!customer) {
+          throw new AppError(`Customer ${input.customerId} not found`, 404);
+        }
+
+        // If actor is SALESMAN, verify assignment
+        if (user.role === "SALESMAN") {
+          const assignment = await tx.salesmanCustomerAssignment.findUnique({
+            where: {
+              salesmanId_customerId: {
+                salesmanId: user.id,
+                customerId: customer.id,
+              },
+            },
+          });
+          if (!assignment) {
+            throw new AppError(
+              `Salesman is not assigned to customer ${customer.name}`,
+              403,
+            );
+          }
+        }
+
+        // Resolve organization ID (foreign key reference to Organization.id)
+        const targetOrg =
+          input.organizationId ||
+          user.organizationId ||
+          customer.organizationId ||
+          "MILL";
+        const organizationId = await this.resolveOrgId(targetOrg, tx);
+
+        // 3. Resolve warehouse (default to first facility warehouse if not supplied)
+        let warehouseId = input.warehouseId;
+        if (!warehouseId) {
+          const wh = await tx.warehouse.findFirst({
+            where: { code: "WH-1" },
+          });
+          warehouseId = wh?.id;
+        }
+        if (!warehouseId) {
+          const anyWh = await tx.warehouse.findFirst();
+          warehouseId = anyWh?.id;
+        }
+        if (!warehouseId) {
+          throw new AppError("No warehouse available for order", 400);
+        }
+
+        const orderNumber =
+          input.orderNumber ??
+          `SO-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
+
+        // 4. Place of supply tax calculation
+        // Factory state: Tamil Nadu
+        const isIntraState =
+          customer.state.trim().toLowerCase() === "tamil nadu";
+
+        let taxableAmount = 0;
+        let totalTaxAmount = 0;
+        let cgstAmount = 0;
+        let sgstAmount = 0;
+        let igstAmount = 0;
+
+        const preparedLines: Array<{
+          productVariantId: string;
+          inventoryItemId: string | null;
+          quotedQuantity: number;
+          approvedQuantity: number;
+          quotedUnitPrice: number;
+          approvedUnitPrice: number;
+          taxRate: number;
+          taxableAmount: number;
+          taxAmount: number;
+          lineTotal: number;
+          shortage: number;
+        }> = [];
+
+        let hasLineRequiringApproval = false;
+        const priceMismatchReasons: string[] = [];
+
+        for (const line of input.lines) {
+          if (line.quantity <= 0) {
+            throw new AppError("Line quantity must be greater than zero", 400);
+          }
+
+          const variant = await tx.productVariant.findFirst({
+            where: {
+              OR: [
+                { id: line.productVariantId },
+                { sku: line.productVariantId },
+              ],
+            },
+            include: {
+              product: true,
+              priceLines: {
+                where: {
+                  priceList: { isDefault: true },
+                },
+                include: {
+                  priceList: true,
+                },
+              },
+            },
+          });
+
+          if (!variant) {
+            throw new AppError(
+              `Product variant ${line.productVariantId} not found`,
+              404,
+            );
+          }
+
+          // Determine baseline price list rate for product variant
+          const activePriceLine = variant.priceLines[0];
+          let basePrice = activePriceLine?.price
+            ? Number(activePriceLine.price)
+            : null;
+          if (basePrice === null) {
+            const fallbackPriceLine = await tx.priceListLine.findFirst({
+              where: {
+                productVariantId: variant.id,
+                priceList: { organizationId },
+              },
+              include: {
+                priceList: true,
+              },
+              orderBy: { createdAt: "desc" },
+            });
+            basePrice = fallbackPriceLine
+              ? Number(fallbackPriceLine.price)
+              : 50.0;
+          }
+
+          // Revalidate price freshness if order was created offline or priced earlier (F-077)
+          if (input.pricedAt) {
+            const pricedAtDate = new Date(input.pricedAt);
+            const lineUpdated = activePriceLine?.updatedAt
+              ? new Date(activePriceLine.updatedAt)
+              : null;
+            const listUpdated = activePriceLine?.priceList?.updatedAt
+              ? new Date(activePriceLine.priceList.updatedAt)
+              : null;
+
+            const isStale =
+              (lineUpdated && lineUpdated > pricedAtDate) ||
+              (listUpdated && listUpdated > pricedAtDate);
+
+            if (
+              isStale &&
+              line.unitPrice !== undefined &&
+              line.unitPrice !== null &&
+              Math.abs(Number(line.unitPrice) - basePrice) > 0.01
+            ) {
+              hasLineRequiringApproval = true;
+              priceMismatchReasons.push(
+                `Stale offline price on SKU ${variant.sku}: quoted ₹${Number(line.unitPrice).toFixed(2)} vs updated list price ₹${basePrice.toFixed(2)}`,
+              );
+            }
+          }
+
+          // Enforce OD-07 & REQ-024 discount threshold guard
+          let unitPrice: number;
+          if (line.unitPrice === undefined || line.unitPrice === null) {
+            unitPrice = basePrice;
+          } else {
+            const baseDec = new Prisma.Decimal(basePrice);
+            const requestedDec = new Prisma.Decimal(line.unitPrice);
+
+            if (requestedDec.isNegative()) {
+              throw new AppError("Unit price cannot be negative", 400);
+            }
+
+            if (requestedDec.lt(baseDec)) {
+              const discountAmount = baseDec.minus(requestedDec);
+              const discountPct = discountAmount.dividedBy(baseDec).times(100);
+
+              // Discounts above 15% are rejected outright with HTTP 422
+              if (discountPct.gt(15.0001)) {
+                throw new AppError(
+                  `DISCOUNT_EXCEEDS_MAX_THRESHOLD: Unit price ${line.unitPrice} reflects a ${discountPct.toFixed(2)}% discount, which exceeds the maximum allowable 15% threshold against list price ${basePrice}`,
+                  422,
+                );
+              }
+
+              // Discounts above 5% and up to 15% require Manager approval
+              if (discountPct.gt(5.0001)) {
+                hasLineRequiringApproval = true;
+              }
+            }
+            unitPrice = Number(line.unitPrice);
+          }
+
+          const hsnCode = variant.product.hsnCode;
+          if (!hsnCode) {
+            throw new AppError(
+              `TAX_CONFIGURATION_ERROR: Product ${variant.product.name} is missing an HSN code`,
+              422,
+            );
+          }
+
+          const effectiveDate = input.orderDate ?? new Date();
+          const taxRateRecord = await tx.taxRate.findFirst({
+            where: {
+              organizationId,
+              hsnCode,
+              effectiveFrom: { lte: effectiveDate },
+              OR: [
+                { effectiveTo: null },
+                { effectiveTo: { gte: effectiveDate } },
+              ],
+            },
+            orderBy: {
+              effectiveFrom: "desc",
+            },
+          });
+
+          if (!taxRateRecord) {
+            throw new AppError(
+              `TAX_CONFIGURATION_ERROR: No active statutory GST rate found for HSN ${hsnCode}`,
+              422,
+            );
+          }
+
+          const taxRate = Number(taxRateRecord.rate);
+          const taxRes = calculateLineTax(
+            {
+              quantity: line.quantity,
+              unitPrice,
+              taxRate,
+            },
+            isIntraState,
+          );
+
+          const lineTaxable = taxRes.taxableAmount.toNumber();
+          const lineTax = taxRes.taxAmount.toNumber();
+          const lineTotal = taxRes.lineTotal.toNumber();
+
+          taxableAmount = Number((taxableAmount + lineTaxable).toFixed(2));
+          totalTaxAmount = Number((totalTaxAmount + lineTax).toFixed(2));
+
+          if (isIntraState) {
+            cgstAmount = Number(
+              (cgstAmount + taxRes.cgstAmount.toNumber()).toFixed(2),
+            );
+            sgstAmount = Number(
+              (sgstAmount + taxRes.sgstAmount.toNumber()).toFixed(2),
+            );
+          } else {
+            igstAmount = Number(
+              (igstAmount + taxRes.igstAmount.toNumber()).toFixed(2),
+            );
+          }
+
+          // Real-time stock shortage check
+          let shortage = 0;
+          if (variant.inventoryItemId) {
+            const invItem = await tx.inventoryItem.findUnique({
+              where: { id: variant.inventoryItemId },
+            });
+            const onHand = Number(invItem?.currentStock ?? 0);
+
+            const resAgg = await tx.stockReservation.aggregate({
+              where: {
+                inventoryItemId: variant.inventoryItemId,
+                warehouseId,
+                status: ReservationStatus.ACTIVE,
+                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+              },
+              _sum: {
+                reservedQuantity: true,
+                releasedQuantity: true,
+              },
+            });
+            const reserved = Math.max(
+              0,
+              Number(resAgg._sum.reservedQuantity ?? 0) -
+                Number(resAgg._sum.releasedQuantity ?? 0),
+            );
+            const available = Math.max(0, onHand - reserved);
+            shortage = Math.max(0, line.quantity - available);
+          }
+
+          preparedLines.push({
+            productVariantId: variant.id,
+            inventoryItemId: variant.inventoryItemId,
+            quotedQuantity: line.quantity,
+            approvedQuantity: line.quantity,
+            quotedUnitPrice: unitPrice,
+            approvedUnitPrice: unitPrice,
+            taxRate,
+            taxableAmount: lineTaxable,
+            taxAmount: lineTax,
+            lineTotal,
+            shortage,
+          });
+        }
+
+        const totalAmount = Number((taxableAmount + totalTaxAmount).toFixed(2));
+
+        if (
+          input.status &&
+          input.status !== OrderStatus.DRAFT &&
+          input.status !== OrderStatus.SUBMITTED
+        ) {
+          throw new AppError(
+            "New sales orders can only be created with DRAFT or SUBMITTED status",
+            400,
+          );
+        }
+        let initialStatus: OrderStatus =
+          input.status === OrderStatus.DRAFT
+            ? OrderStatus.DRAFT
+            : OrderStatus.SUBMITTED;
+
+        // If any line has a discount between 5% and 15% or stale offline price, place order UNDER_REVIEW pending manager approval
+        if (
+          initialStatus === OrderStatus.SUBMITTED &&
+          (hasLineRequiringApproval || priceMismatchReasons.length > 0)
+        ) {
+          initialStatus = OrderStatus.UNDER_REVIEW;
+        }
+
+        const overrideReason =
+          priceMismatchReasons.length > 0
+            ? priceMismatchReasons.join("; ")
+            : undefined;
+
+        // Create Sales Order header
+        const order = await tx.salesOrder.create({
+          data: {
+            organizationId,
+            orderNumber,
+            customerId: customer.id,
+            salesmanId: user.id,
+            warehouseId,
+            status: initialStatus,
+            deliveryState: customer.state,
+            notes: input.notes,
+            overrideReason: overrideReason ?? null,
+            taxableAmount,
+            cgstAmount,
+            sgstAmount,
+            igstAmount,
+            totalTaxAmount,
+            totalAmount,
+            idempotencyKey: input.idempotencyKey,
+            submittedAt:
+              initialStatus === OrderStatus.SUBMITTED ||
+              initialStatus === OrderStatus.UNDER_REVIEW
+                ? new Date()
+                : null,
+          },
+        });
+
+        // Create order lines
+        for (const pl of preparedLines) {
+          await tx.salesOrderLine.create({
+            data: {
+              salesOrderId: order.id,
+              productVariantId: pl.productVariantId,
+              inventoryItemId: pl.inventoryItemId,
+              quotedQuantity: pl.quotedQuantity,
+              approvedQuantity: pl.approvedQuantity,
+              quotedUnitPrice: pl.quotedUnitPrice,
+              approvedUnitPrice: pl.approvedUnitPrice,
+              taxRate: pl.taxRate,
+              taxableAmount: pl.taxableAmount,
+              taxAmount: pl.taxAmount,
+              lineTotal: pl.lineTotal,
+            },
+          });
+        }
+
+        const fullOrder = await tx.salesOrder.findUnique({
+          where: { id: order.id },
           include: {
             lines: {
               include: {
@@ -171,375 +573,36 @@ export class SalesService {
             },
             customer: true,
             salesman: true,
-            reservations: true,
           },
         });
-        if (existing) {
-          return { order: existing, shortages: [] };
-        }
-      }
 
-      // 2. Validate customer and assignment
-      const customer = await tx.customer.findFirst({
-        where: {
-          OR: [{ id: input.customerId }, { code: input.customerId }],
-        },
+        const result = {
+          order: fullOrder!,
+          shortages: preparedLines.map((l) => ({
+            productVariantId: l.productVariantId,
+            shortage: l.shortage,
+          })),
+        };
+
+        return result;
       });
-      if (!customer) {
-        throw new AppError(`Customer ${input.customerId} not found`, 404);
-      }
 
-      // If actor is SALESMAN, verify assignment
-      if (user.role === "SALESMAN") {
-        const assignment = await tx.salesmanCustomerAssignment.findUnique({
-          where: {
-            salesmanId_customerId: {
-              salesmanId: user.id,
-              customerId: customer.id,
-            },
-          },
-        });
-        if (!assignment) {
-          throw new AppError(
-            `Salesman is not assigned to customer ${customer.name}`,
-            403,
-          );
-        }
-      }
-
-      // Resolve organization ID (foreign key reference to Organization.id)
-      const targetOrg =
-        input.organizationId ||
-        user.organizationId ||
-        customer.organizationId ||
-        "MILL";
-      const organizationId = await this.resolveOrgId(targetOrg, tx);
-
-      // 3. Resolve warehouse (default to first facility warehouse if not supplied)
-      let warehouseId = input.warehouseId;
-      if (!warehouseId) {
-        const wh = await tx.warehouse.findFirst({
-          where: { code: "WH-1" },
-        });
-        warehouseId = wh?.id;
-      }
-      if (!warehouseId) {
-        const anyWh = await tx.warehouse.findFirst();
-        warehouseId = anyWh?.id;
-      }
-      if (!warehouseId) {
-        throw new AppError("No warehouse available for order", 400);
-      }
-
-      const orderNumber =
-        input.orderNumber ??
-        `SO-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
-
-      // 4. Place of supply tax calculation
-      // Factory state: Tamil Nadu
-      const isIntraState = customer.state.trim().toLowerCase() === "tamil nadu";
-
-      let taxableAmount = 0;
-      let totalTaxAmount = 0;
-      let cgstAmount = 0;
-      let sgstAmount = 0;
-      let igstAmount = 0;
-
-      const preparedLines: Array<{
-        productVariantId: string;
-        inventoryItemId: string | null;
-        quotedQuantity: number;
-        approvedQuantity: number;
-        quotedUnitPrice: number;
-        approvedUnitPrice: number;
-        taxRate: number;
-        taxableAmount: number;
-        taxAmount: number;
-        lineTotal: number;
-        shortage: number;
-      }> = [];
-
-      let hasLineRequiringApproval = false;
-
-      for (const line of input.lines) {
-        if (line.quantity <= 0) {
-          throw new AppError("Line quantity must be greater than zero", 400);
-        }
-
-        const variant = await tx.productVariant.findFirst({
-          where: {
-            OR: [{ id: line.productVariantId }, { sku: line.productVariantId }],
-          },
-          include: {
-            product: true,
-            priceLines: {
-              where: {
-                priceList: { isDefault: true },
-              },
-            },
-          },
-        });
-
-        if (!variant) {
-          throw new AppError(
-            `Product variant ${line.productVariantId} not found`,
-            404,
-          );
-        }
-
-        // Determine baseline price list rate for product variant
-        let basePrice = variant.priceLines[0]?.price
-          ? Number(variant.priceLines[0].price)
-          : null;
-        if (basePrice === null) {
-          const fallbackPriceLine = await tx.priceListLine.findFirst({
-            where: {
-              productVariantId: variant.id,
-              priceList: { organizationId },
-            },
-            orderBy: { createdAt: "desc" },
-          });
-          basePrice = fallbackPriceLine ? Number(fallbackPriceLine.price) : 50.0;
-        }
-
-        // Enforce OD-07 & REQ-024 discount threshold guard
-        let unitPrice: number;
-        if (line.unitPrice === undefined || line.unitPrice === null) {
-          unitPrice = basePrice;
-        } else {
-          const baseDec = new Prisma.Decimal(basePrice);
-          const requestedDec = new Prisma.Decimal(line.unitPrice);
-
-          if (requestedDec.isNegative()) {
-            throw new AppError("Unit price cannot be negative", 400);
-          }
-
-          if (requestedDec.lt(baseDec)) {
-            const discountAmount = baseDec.minus(requestedDec);
-            const discountPct = discountAmount.dividedBy(baseDec).times(100);
-
-            // Discounts above 15% are rejected outright with HTTP 422
-            if (discountPct.gt(15.0001)) {
-              throw new AppError(
-                `DISCOUNT_EXCEEDS_MAX_THRESHOLD: Unit price ${line.unitPrice} reflects a ${discountPct.toFixed(2)}% discount, which exceeds the maximum allowable 15% threshold against list price ${basePrice}`,
-                422,
-              );
-            }
-
-            // Discounts above 5% and up to 15% require Manager approval
-            if (discountPct.gt(5.0001)) {
-              hasLineRequiringApproval = true;
-            }
-          }
-          unitPrice = Number(line.unitPrice);
-        }
-
-        const hsnCode = variant.product.hsnCode;
-        if (!hsnCode) {
-          throw new AppError(
-            `TAX_CONFIGURATION_ERROR: Product ${variant.product.name} is missing an HSN code`,
-            422,
-          );
-        }
-
-        const effectiveDate = input.orderDate ?? new Date();
-        const taxRateRecord = await tx.taxRate.findFirst({
-          where: {
-            organizationId,
-            hsnCode,
-            effectiveFrom: { lte: effectiveDate },
-            OR: [
-              { effectiveTo: null },
-              { effectiveTo: { gte: effectiveDate } },
-            ],
-          },
-          orderBy: {
-            effectiveFrom: "desc",
-          },
-        });
-
-        if (!taxRateRecord) {
-          throw new AppError(
-            `TAX_CONFIGURATION_ERROR: No active statutory GST rate found for HSN ${hsnCode}`,
-            422,
-          );
-        }
-
-        const taxRate = Number(taxRateRecord.rate);
-        const taxRes = calculateLineTax(
-          {
-            quantity: line.quantity,
-            unitPrice,
-            taxRate,
-          },
-          isIntraState,
-        );
-
-        const lineTaxable = taxRes.taxableAmount.toNumber();
-        const lineTax = taxRes.taxAmount.toNumber();
-        const lineTotal = taxRes.lineTotal.toNumber();
-
-        taxableAmount = Number((taxableAmount + lineTaxable).toFixed(2));
-        totalTaxAmount = Number((totalTaxAmount + lineTax).toFixed(2));
-
-        if (isIntraState) {
-          cgstAmount = Number((cgstAmount + taxRes.cgstAmount.toNumber()).toFixed(2));
-          sgstAmount = Number((sgstAmount + taxRes.sgstAmount.toNumber()).toFixed(2));
-        } else {
-          igstAmount = Number((igstAmount + taxRes.igstAmount.toNumber()).toFixed(2));
-        }
-
-        // Real-time stock shortage check
-        let shortage = 0;
-        if (variant.inventoryItemId) {
-          const invItem = await tx.inventoryItem.findUnique({
-            where: { id: variant.inventoryItemId },
-          });
-          const onHand = Number(invItem?.currentStock ?? 0);
-
-          const resAgg = await tx.stockReservation.aggregate({
-            where: {
-              inventoryItemId: variant.inventoryItemId,
-              warehouseId,
-              status: ReservationStatus.ACTIVE,
-              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-            },
-            _sum: {
-              reservedQuantity: true,
-              releasedQuantity: true,
-            },
-          });
-          const reserved = Math.max(
-            0,
-            Number(resAgg._sum.reservedQuantity ?? 0) -
-              Number(resAgg._sum.releasedQuantity ?? 0),
-          );
-          const available = Math.max(0, onHand - reserved);
-          shortage = Math.max(0, line.quantity - available);
-        }
-
-        preparedLines.push({
-          productVariantId: variant.id,
-          inventoryItemId: variant.inventoryItemId,
-          quotedQuantity: line.quantity,
-          approvedQuantity: line.quantity,
-          quotedUnitPrice: unitPrice,
-          approvedUnitPrice: unitPrice,
-          taxRate,
-          taxableAmount: lineTaxable,
-          taxAmount: lineTax,
-          lineTotal,
-          shortage,
-        });
-      }
-
-      const totalAmount = Number((taxableAmount + totalTaxAmount).toFixed(2));
-
-      if (
-        input.status &&
-        input.status !== OrderStatus.DRAFT &&
-        input.status !== OrderStatus.SUBMITTED
-      ) {
-        throw new AppError(
-          "New sales orders can only be created with DRAFT or SUBMITTED status",
-          400,
-        );
-      }
-      let initialStatus: OrderStatus =
-        input.status === OrderStatus.DRAFT
-          ? OrderStatus.DRAFT
-          : OrderStatus.SUBMITTED;
-
-      // If any line has a discount between 5% and 15%, place order UNDER_REVIEW pending manager approval
-      if (initialStatus === OrderStatus.SUBMITTED && hasLineRequiringApproval) {
-        initialStatus = OrderStatus.UNDER_REVIEW;
-      }
-
-      // Create Sales Order header
-      const order = await tx.salesOrder.create({
-        data: {
-          organizationId,
-          orderNumber,
-          customerId: customer.id,
-          salesmanId: user.id,
-          warehouseId,
-          status: initialStatus,
-          deliveryState: customer.state,
-          notes: input.notes,
-          taxableAmount,
-          cgstAmount,
-          sgstAmount,
-          igstAmount,
-          totalTaxAmount,
-          totalAmount,
-          idempotencyKey: input.idempotencyKey,
-          submittedAt:
-            initialStatus === OrderStatus.SUBMITTED ||
-            initialStatus === OrderStatus.UNDER_REVIEW
-              ? new Date()
-              : null,
+      await auditService.log({
+        organizationId: user.organizationId ?? undefined,
+        userId: user.id,
+        userEmail: user.email,
+        action: "CREATE",
+        entity: "SalesOrder",
+        entityId: txResult.order.id,
+        details: {
+          orderNumber: txResult.order.orderNumber,
+          status: txResult.order.status,
+          customerId: txResult.order.customerId,
+          totalAmount: txResult.order.totalAmount,
         },
       });
 
-      // Create order lines
-      for (const pl of preparedLines) {
-        await tx.salesOrderLine.create({
-          data: {
-            salesOrderId: order.id,
-            productVariantId: pl.productVariantId,
-            inventoryItemId: pl.inventoryItemId,
-            quotedQuantity: pl.quotedQuantity,
-            approvedQuantity: pl.approvedQuantity,
-            quotedUnitPrice: pl.quotedUnitPrice,
-            approvedUnitPrice: pl.approvedUnitPrice,
-            taxRate: pl.taxRate,
-            taxableAmount: pl.taxableAmount,
-            taxAmount: pl.taxAmount,
-            lineTotal: pl.lineTotal,
-          },
-        });
-      }
-
-      const fullOrder = await tx.salesOrder.findUnique({
-        where: { id: order.id },
-        include: {
-          lines: {
-            include: {
-              productVariant: true,
-            },
-          },
-          customer: true,
-          salesman: true,
-        },
-      });
-
-      const result = {
-        order: fullOrder!,
-        shortages: preparedLines.map((l) => ({
-          productVariantId: l.productVariantId,
-          shortage: l.shortage,
-        })),
-      };
-
-      return result;
-    });
-
-    await auditService.log({
-      organizationId: user.organizationId ?? undefined,
-      userId: user.id,
-      userEmail: user.email,
-      action: "CREATE",
-      entity: "SalesOrder",
-      entityId: txResult.order.id,
-      details: {
-        orderNumber: txResult.order.orderNumber,
-        status: txResult.order.status,
-        customerId: txResult.order.customerId,
-        totalAmount: txResult.order.totalAmount,
-      },
-    });
-
-    return txResult;
+      return txResult;
     } catch (err: unknown) {
       if (
         input.idempotencyKey &&
@@ -650,7 +713,9 @@ export class SalesService {
             : Number(line.quotedUnitPrice);
 
         if (override?.approvedUnitPrice !== undefined) {
-          const overridePriceDec = new Prisma.Decimal(override.approvedUnitPrice);
+          const overridePriceDec = new Prisma.Decimal(
+            override.approvedUnitPrice,
+          );
           if (overridePriceDec.isNegative()) {
             throw new AppError("Approved unit price cannot be negative", 400);
           }
@@ -658,7 +723,10 @@ export class SalesService {
           const basePrice = defaultPrice ? Number(defaultPrice) : 50.0;
           const baseDec = new Prisma.Decimal(basePrice);
           if (overridePriceDec.lt(baseDec)) {
-            const discountPct = baseDec.minus(overridePriceDec).dividedBy(baseDec).times(100);
+            const discountPct = baseDec
+              .minus(overridePriceDec)
+              .dividedBy(baseDec)
+              .times(100);
             if (discountPct.gt(15.0001)) {
               throw new AppError(
                 `DISCOUNT_EXCEEDS_MAX_THRESHOLD: Approved unit price ${override.approvedUnitPrice} reflects a ${discountPct.toFixed(2)}% discount, which exceeds the maximum allowable 15% threshold against list price ${basePrice}`,
@@ -718,7 +786,8 @@ export class SalesService {
               ? input.reservationExpiresAt
               : new Date(
                   Date.now() +
-                    (input.reservationTtlHours ?? DEFAULT_RESERVATION_TTL_HOURS) *
+                    (input.reservationTtlHours ??
+                      DEFAULT_RESERVATION_TTL_HOURS) *
                       60 *
                       60 *
                       1000,
@@ -756,10 +825,16 @@ export class SalesService {
         totalTax = Number((totalTax + lineTax).toFixed(2));
 
         if (isIntraState) {
-          cgstAmount = Number((cgstAmount + taxRes.cgstAmount.toNumber()).toFixed(2));
-          sgstAmount = Number((sgstAmount + taxRes.sgstAmount.toNumber()).toFixed(2));
+          cgstAmount = Number(
+            (cgstAmount + taxRes.cgstAmount.toNumber()).toFixed(2),
+          );
+          sgstAmount = Number(
+            (sgstAmount + taxRes.sgstAmount.toNumber()).toFixed(2),
+          );
         } else {
-          igstAmount = Number((igstAmount + taxRes.igstAmount.toNumber()).toFixed(2));
+          igstAmount = Number(
+            (igstAmount + taxRes.igstAmount.toNumber()).toFixed(2),
+          );
         }
 
         // Update line with approved values
@@ -1365,7 +1440,10 @@ export class SalesService {
         },
       });
       if (!isAssigned) {
-        throw new AppError("Access denied: Customer is not assigned to you", 403);
+        throw new AppError(
+          "Access denied: Customer is not assigned to you",
+          403,
+        );
       }
     }
 
@@ -1456,7 +1534,8 @@ export class SalesService {
       entityId: customer.id,
       details: {
         previousCode,
-        reason: reason || "Data Subject Erasure Request (DPDP Act 2023 Section 12)",
+        reason:
+          reason || "Data Subject Erasure Request (DPDP Act 2023 Section 12)",
       },
     });
 
