@@ -327,7 +327,7 @@ client/src/pages/payments-page.tsx:897:                    placeholder="e.g. 400
 | **F-047** | P2 | `VERIFIED` | Absence of Sticky Table Headers and Card Transformation on Mobile Viewports |
 | **F-048** | P2 | `VERIFIED` | Missing Confirmation Dialogs for Irreversible Operations (Dispatch, Order Rejection) |
 | **F-049** | P2 | `VERIFIED` | Complete Absence of In-App Documentation, Onboarding Guidance, and Domain Jargon Tooltips |
-| **F-050** | P3 | `OPEN` | Incomplete Dark Mode Infrastructure and Design Token Fragmentation in CSS Output |
+| **F-050** | P3 | `VERIFIED` | Incomplete Dark Mode Infrastructure and Design Token Fragmentation in CSS Output |
 
 #### Sibling Sweep Record
 

@@ -4495,7 +4495,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -4503,12 +4503,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-050.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "b864575",
+        "evidenceLink": "audit/evidence/verify/F-050/01-regression-test.txt",
+        "note": "VERIFIED: Implemented complete dark mode infrastructure in client/src/index.css with @variant dark and .dark token map. Created reactive useTheme hook supporting light/dark/system with system media listener and localStorage persistence. Integrated accessible theme switcher buttons and dropdown menu items across StickyHeader, SidebarUserMenu, and user avatar dropdown in client/src/components/shell/authenticated-shell.tsx. Verified via audit/tests/f-050-regression.test.ts, zero lint/typecheck errors, clean client/server builds, 18/18 benchmark assertions, and 10/10 SQL database invariants."
       }
     ],
-    "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-050-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "reproCommand": "pnpm vitest run --config audit/tests/vitest.audit.config.ts audit/tests/f-050-regression.test.ts",
+    "regressionTest": "audit/tests/f-050-regression.test.ts",
+    "fixCommit": "b864575",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-050/01-pre-fix-repro.txt",
+      "audit/evidence/verify/F-050/02-regression-test.txt",
+      "audit/evidence/verify/F-050/03-typecheck.txt",
+      "audit/evidence/verify/F-050/04-lint.txt",
+      "audit/evidence/verify/F-050/05-build.txt",
+      "audit/evidence/verify/F-050/06-unit-tests.txt",
+      "audit/evidence/verify/F-050/07-benchmark.txt",
+      "audit/evidence/verify/F-050/08-invariants.txt",
+      "audit/evidence/verify/F-050/09-git-diff.txt",
+      "audit/evidence/verify/F-050/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn '<table\\|useForm' client/src/pages/ | head -n 25",
