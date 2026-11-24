@@ -456,8 +456,12 @@ export function NewOrderPage() {
                   {/* Quantity Stepper & Shortage Notice */}
                   <div className="mt-4 pt-3 border-t border-border flex flex-col gap-2">
                     {isShort && (
-                      <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md p-2">
-                        <AlertTriangleIcon className="size-3.5 shrink-0" />
+                      <div
+                        role="status"
+                        aria-live="polite"
+                        className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md p-2"
+                      >
+                        <AlertTriangleIcon className="size-3.5 shrink-0" aria-hidden="true" />
                         <span>
                           Shortage: {qty - availableStock} pkts exceeds stock
                         </span>

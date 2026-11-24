@@ -1237,8 +1237,12 @@ export function OrdersPage() {
 
               {/* Shortage indicator */}
               {currentShortage > 0 && (
-                <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                  <AlertTriangleIcon className="h-4 w-4 shrink-0" />
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                >
+                  <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>
                     Warning: Stock shortage of {currentShortage} packets
                     detected. Order requires admin review or partial allocation.
@@ -1415,8 +1419,12 @@ export function OrdersPage() {
               </p>
               {selectedOrderForAction.totalShortage &&
               selectedOrderForAction.totalShortage > 0 ? (
-                <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                  <AlertTriangleIcon className="h-4 w-4 shrink-0" />
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                >
+                  <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>
                     Notice: Full quantity cannot be reserved because shortage
                     is {selectedOrderForAction.totalShortage} packets.

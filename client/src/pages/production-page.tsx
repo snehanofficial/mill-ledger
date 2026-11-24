@@ -711,8 +711,12 @@ export function ProductionPage() {
 
               {/* Non-blocking carton warning pill */}
               {hasCartonShortage && (
-                <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                  <AlertTriangleIcon className="h-4 w-4 shrink-0" />
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                >
+                  <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>
                     Warning: {cartonsConsumed} cartons represent {cartonsHold}{" "}
                     of {actualGoodQty} packets.
