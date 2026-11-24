@@ -1447,6 +1447,9 @@ export class SalesService {
         hsnCode: v.product.hsnCode,
         uom: v.uom.code,
         defaultPrice,
+        imageUrl: v.imageUrl || "/products/default.svg",
+        thumbnailUrl: v.thumbnailUrl || "/products/default.svg",
+        thumbHash: v.thumbHash,
       };
     });
   }

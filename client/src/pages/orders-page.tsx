@@ -185,6 +185,9 @@ export function OrdersPage() {
           name: string;
           defaultPrice: number;
           taxRate: number;
+          imageUrl?: string;
+          thumbnailUrl?: string;
+          thumbHash?: string;
         }>;
       }>("/sales/products");
       return res.data.products;
@@ -213,6 +216,9 @@ export function OrdersPage() {
       name: "Murukku 200 g",
       defaultPrice: 50.0,
       taxRate: 5.0,
+      imageUrl: "/products/murukku.svg",
+      thumbnailUrl: "/products/murukku.svg",
+      thumbHash: "1QcSHQRnh493V4dIh4eXh1h4h4h4",
     },
   ];
 
@@ -1368,9 +1374,20 @@ export function OrdersPage() {
               </span>
             </div>
 
-            {/* Product and Quantity */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
+            {/* Product selection with image preview (F-075) */}
+            <div className="flex items-center gap-3 rounded-lg border bg-muted/30 p-2.5">
+              <div className="size-14 shrink-0 overflow-hidden rounded-md border bg-background flex items-center justify-center">
+                <img
+                  src={activeProduct.imageUrl || "/products/murukku.svg"}
+                  alt={activeProduct.name || "Product Packaging"}
+                  width={56}
+                  height={56}
+                  loading="lazy"
+                  decoding="async"
+                  className="size-full object-contain"
+                />
+              </div>
+              <div className="flex flex-1 flex-col gap-1">
                 <label
                   htmlFor="order-product-select"
                   className="text-xs font-semibold text-muted-foreground"
@@ -1381,7 +1398,7 @@ export function OrdersPage() {
                   id="order-product-select"
                   value={selectedProductId}
                   onChange={(e) => setSelectedProductId(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+                  className="rounded-md border bg-background px-3 py-1.5 text-sm font-medium"
                 >
                   {productsList.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -1390,28 +1407,30 @@ export function OrdersPage() {
                   ))}
                 </select>
                 <span className="text-xs text-muted-foreground">
-                  Standard price: {formatINR(unitPrice)} / pkt
+                  Standard price: {formatINR(unitPrice)} / pkt (SKU:{" "}
+                  {activeProduct.sku})
                 </span>
               </div>
+            </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="order-quantity-input"
-                  className="text-xs font-semibold text-muted-foreground"
-                >
-                  Order quantity (pkts)
-                </label>
-                <input
-                  id="order-quantity-input"
-                  type="number"
-                  value={orderQuantity}
-                  onChange={(e) => setOrderQuantity(Number(e.target.value))}
-                  className="rounded-md border bg-background px-3 py-2 text-sm font-semibold"
-                />
-                <span className="text-xs text-muted-foreground">
-                  Available: {availablePackets} pkts
-                </span>
-              </div>
+            {/* Quantity */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="order-quantity-input"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Order quantity (pkts)
+              </label>
+              <input
+                id="order-quantity-input"
+                type="number"
+                value={orderQuantity}
+                onChange={(e) => setOrderQuantity(Number(e.target.value))}
+                className="rounded-md border bg-background px-3 py-2 text-sm font-semibold"
+              />
+              <span className="text-xs text-muted-foreground">
+                Available: {availablePackets} pkts
+              </span>
             </div>
 
             {/* Shortage indicator */}
