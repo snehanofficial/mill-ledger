@@ -1,0 +1,1202 @@
+diff --git a/client/src/components/ui/dialog.tsx b/client/src/components/ui/dialog.tsx
+index c942fc9..70d868a 100644
+--- a/client/src/components/ui/dialog.tsx
++++ b/client/src/components/ui/dialog.tsx
+@@ -29,7 +29,7 @@ function DialogContent({
+       <DialogPrimitive.Content
+         data-slot="dialog-content"
+         className={cn(
+-          "fixed inset-0 m-auto z-50 h-fit max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg origin-center gap-4 rounded-xl border border-border bg-card p-6 shadow-2xl overscroll-contain duration-200",
++          "fixed inset-0 m-auto z-50 h-fit max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg origin-center gap-4 rounded-xl border border-border bg-card p-6 shadow-2xl overscroll-contain overflow-y-auto duration-200",
+           "data-[state=open]:animate-in data-[state=closed]:animate-out",
+           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+diff --git a/client/src/pages/dispatch-page.tsx b/client/src/pages/dispatch-page.tsx
+index 51d7b33..7a58fa8 100644
+--- a/client/src/pages/dispatch-page.tsx
++++ b/client/src/pages/dispatch-page.tsx
+@@ -21,6 +21,14 @@ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
+ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
++import {
++  Dialog,
++  DialogContent,
++  DialogDescription,
++  DialogFooter,
++  DialogHeader,
++  DialogTitle,
++} from "@/components/ui/dialog";
+ import {
+   TruckIcon,
+   RefreshCwIcon,
+@@ -29,7 +37,6 @@ import {
+   PlusCircleIcon,
+   PackageCheckIcon,
+   FileTextIcon,
+-  XIcon,
+ } from "lucide-react";
+ 
+ interface DispatchLine {
+@@ -545,30 +552,22 @@ export function DispatchPage() {
+       </div>
+ 
+       {/* Record Dispatch Modal */}
+-      {showCreateModal && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="w-full max-w-lg rounded-xl border bg-card p-6 shadow-xl">
+-            <div className="flex items-center justify-between border-b pb-4">
+-              <div className="flex items-center gap-2">
+-                <TruckIcon className="h-5 w-5 text-foreground" />
+-                <h3 className="text-lg font-semibold text-foreground">
+-                  Record physical dispatch
+-                </h3>
+-              </div>
+-              <Button
+-                variant="ghost"
+-                size="sm"
+-                onClick={() => setShowCreateModal(false)}
+-                className="h-8 w-8 p-0"
+-              >
+-                <XIcon className="h-4 w-4" />
+-              </Button>
++      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
++        <DialogContent className="max-w-lg">
++          <DialogHeader>
++            <div className="flex items-center gap-2">
++              <TruckIcon className="h-5 w-5 text-foreground" />
++              <DialogTitle>Record physical dispatch</DialogTitle>
+             </div>
+-
+-            <form
+-              onSubmit={handleSubmitDispatch}
+-              className="mt-4 flex flex-col gap-4"
+-            >
++            <DialogDescription className="sr-only">
++              Record physical dispatch and warehouse inventory deduction
++            </DialogDescription>
++          </DialogHeader>
++
++          <form
++            onSubmit={handleSubmitDispatch}
++            className="mt-2 flex flex-col gap-4"
++          >
+               {dispatchError && (
+                 <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
+                   <AlertTriangleIcon className="h-4 w-4 shrink-0" />
+@@ -669,7 +668,7 @@ export function DispatchPage() {
+                 hand and release active stock reservations atomically.
+               </div>
+ 
+-              <div className="flex items-center justify-end gap-2 border-t pt-4">
++              <DialogFooter className="border-t pt-4">
+                 <Button
+                   type="button"
+                   variant="outline"
+@@ -693,11 +692,10 @@ export function DispatchPage() {
+                   )}
+                   Confirm dispatch
+                 </Button>
+-              </div>
++              </DialogFooter>
+             </form>
+-          </div>
+-        </div>
+-      )}
++        </DialogContent>
++      </Dialog>
+ 
+       {/* Confirmation Dialog for Irreversible Dispatch (F-048) */}
+       {showConfirmDispatchDialog && (
+diff --git a/client/src/pages/invoices-page.tsx b/client/src/pages/invoices-page.tsx
+index f24579a..dfac825 100644
+--- a/client/src/pages/invoices-page.tsx
++++ b/client/src/pages/invoices-page.tsx
+@@ -20,6 +20,14 @@ import {
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
++import {
++  Dialog,
++  DialogContent,
++  DialogDescription,
++  DialogFooter,
++  DialogHeader,
++  DialogTitle,
++} from "@/components/ui/dialog";
+ import { toast } from "sonner";
+ import {
+   FileTextIcon,
+@@ -583,28 +591,27 @@ export function InvoicesPage() {
+     </div>
+ 
+       {/* Invoice Snapshot Modal */}
+-      {selectedInvoice && !showCreditNoteModal && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-card p-6 shadow-xl border">
+-            <div className="flex items-center justify-between border-b pb-4">
+-              <div>
+-                <span className="text-xs font-mono uppercase text-muted-foreground">
+-                  Tax Invoice
+-                </span>
+-                <h3 className="text-xl font-bold text-foreground">
+-                  {selectedInvoice.invoiceNumber}
+-                </h3>
+-              </div>
+-              <Button
+-                variant="ghost"
+-                size="sm"
+-                onClick={() => setSelectedInvoice(null)}
+-              >
+-                ✕
+-              </Button>
+-            </div>
+-
+-            <div className="mt-4 flex flex-col gap-6 text-sm">
++      <Dialog
++        open={selectedInvoice !== null && !showCreditNoteModal}
++        onOpenChange={(open) => {
++          if (!open) setSelectedInvoice(null);
++        }}
++      >
++        {selectedInvoice && !showCreditNoteModal && (
++          <DialogContent className="max-w-2xl">
++            <DialogHeader>
++              <span className="text-xs font-mono uppercase text-muted-foreground">
++                Tax Invoice
++              </span>
++              <DialogTitle className="text-xl font-bold text-foreground">
++                {selectedInvoice.invoiceNumber}
++              </DialogTitle>
++              <DialogDescription className="sr-only">
++                Tax invoice details for {selectedInvoice.invoiceNumber}
++              </DialogDescription>
++            </DialogHeader>
++
++            <div className="mt-2 flex flex-col gap-6 text-sm">
+               {/* Header Parties */}
+               <div className="grid grid-cols-2 gap-4 border-b pb-4">
+                 <div>
+@@ -738,7 +745,7 @@ export function InvoicesPage() {
+               </div>
+             </div>
+ 
+-            <div className="mt-6 flex justify-end gap-3 border-t pt-4">
++            <DialogFooter className="mt-6 border-t pt-4">
+               <Button
+                 variant="outline"
+                 size="sm"
+@@ -754,24 +761,32 @@ export function InvoicesPage() {
+                 <PrinterIcon className="h-4 w-4" />
+                 Print / Save PDF
+               </Button>
+-            </div>
+-          </div>
+-        </div>
+-      )}
++            </DialogFooter>
++          </DialogContent>
++        )}
++      </Dialog>
+ 
+       {/* Credit Note Modal */}
+-      {showCreditNoteModal && selectedInvoice && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
+-            <h3 className="text-lg font-bold text-foreground">
+-              Issue credit note
+-            </h3>
+-            <p className="mt-1 text-xs text-muted-foreground">
+-              Adjust invoice {selectedInvoice.invoiceNumber} without deleting
+-              the immutable record.
+-            </p>
+-
+-            <div className="mt-4 flex flex-col gap-4">
++      <Dialog
++        open={showCreditNoteModal && selectedInvoice !== null}
++        onOpenChange={(open) => {
++          if (!open) {
++            setShowCreditNoteModal(false);
++            setCreditNoteReason("");
++          }
++        }}
++      >
++        {showCreditNoteModal && selectedInvoice && (
++          <DialogContent className="max-w-md">
++            <DialogHeader>
++              <DialogTitle>Issue credit note</DialogTitle>
++              <DialogDescription>
++                Adjust invoice {selectedInvoice.invoiceNumber} without deleting
++                the immutable record.
++              </DialogDescription>
++            </DialogHeader>
++
++            <div className="mt-2 flex flex-col gap-4">
+               <div className="flex flex-col gap-1.5">
+                 <label className="text-xs font-semibold text-muted-foreground">
+                   Reason for credit note
+@@ -801,7 +816,7 @@ export function InvoicesPage() {
+               </div>
+             </div>
+ 
+-            <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
++            <DialogFooter className="mt-6 border-t pt-4">
+               <Button
+                 variant="outline"
+                 size="sm"
+@@ -836,24 +851,32 @@ export function InvoicesPage() {
+                   </>
+                 )}
+               </Button>
+-            </div>
+-          </div>
+-        </div>
+-      )}
++            </DialogFooter>
++          </DialogContent>
++        )}
++      </Dialog>
+ 
+       {/* Generate Invoice Modal (F-037) */}
+-      {showCreateInvoiceModal && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
+-            <h3 className="text-lg font-bold text-foreground">
+-              Generate GST Sales Invoice
+-            </h3>
+-            <p className="mt-1 text-xs text-muted-foreground">
++      <Dialog
++        open={showCreateInvoiceModal}
++        onOpenChange={(open) => {
++          if (!open) {
++            setShowCreateInvoiceModal(false);
++            setSelectedOrderIdForInvoice("");
++            setInvoiceNotes("");
++          }
++        }}
++      >
++        <DialogContent className="max-w-md">
++          <DialogHeader>
++            <DialogTitle>Generate GST Sales Invoice</DialogTitle>
++            <DialogDescription>
+               Select an approved order to calculate statutory taxes and post an
+               immutable sales invoice.
+-            </p>
++            </DialogDescription>
++          </DialogHeader>
+ 
+-            <div className="mt-4 flex flex-col gap-4">
++          <div className="mt-2 flex flex-col gap-4">
+               <div className="flex flex-col gap-1.5">
+                 <label className="text-xs font-semibold text-muted-foreground">
+                   Approved Sales Order *
+@@ -899,7 +922,7 @@ export function InvoicesPage() {
+               </div>
+             </div>
+ 
+-            <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
++            <DialogFooter className="mt-6 border-t pt-4">
+               <Button
+                 variant="outline"
+                 size="sm"
+@@ -928,10 +951,9 @@ export function InvoicesPage() {
+                   ? "Posting..."
+                   : "Post Invoice"}
+               </Button>
+-            </div>
+-          </div>
+-        </div>
+-      )}
++            </DialogFooter>
++        </DialogContent>
++      </Dialog>
+     </div>
+   );
+ }
+diff --git a/client/src/pages/orders-page.tsx b/client/src/pages/orders-page.tsx
+index d1bc481..00b1c70 100644
+--- a/client/src/pages/orders-page.tsx
++++ b/client/src/pages/orders-page.tsx
+@@ -21,6 +21,14 @@ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
+ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+ import { DomainTooltip } from "@/components/ui/domain-tooltip";
++import {
++  Dialog,
++  DialogContent,
++  DialogDescription,
++  DialogFooter,
++  DialogHeader,
++  DialogTitle,
++} from "@/components/ui/dialog";
+ import {
+   ShoppingCartIcon,
+   RefreshCwIcon,
+@@ -1131,29 +1139,17 @@ export function OrdersPage() {
+     </div>
+ 
+       {/* New Order Modal */}
+-      {showNewOrderModal && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-card p-6 shadow-xl border">
+-            <div className="flex items-center justify-between border-b pb-3">
+-              <div>
+-                <h3 className="text-lg font-bold text-foreground">
+-                  Create sales order
+-                </h3>
+-                <p className="text-xs text-muted-foreground">
+-                  Select customer and enter order quantities
+-                </p>
+-              </div>
+-              <Button
+-                variant="ghost"
+-                size="sm"
+-                onClick={() => setShowNewOrderModal(false)}
+-              >
+-                ✕
+-              </Button>
+-            </div>
++      <Dialog open={showNewOrderModal} onOpenChange={setShowNewOrderModal}>
++        <DialogContent className="max-w-lg">
++          <DialogHeader>
++            <DialogTitle>Create sales order</DialogTitle>
++            <DialogDescription>
++              Select customer and enter order quantities
++            </DialogDescription>
++          </DialogHeader>
+ 
+-            <div className="mt-4 flex flex-col gap-4">
+-              {/* Offline mode banner */}
++          <div className="mt-2 flex flex-col gap-4">
++            {/* Offline mode banner */}
+               {!isOnline && (
+                 <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                   <WifiOffIcon className="size-4 shrink-0 text-amber-600" />
+@@ -1276,7 +1272,7 @@ export function OrdersPage() {
+               </div>
+             </div>
+ 
+-            <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
++            <DialogFooter className="mt-6 border-t pt-4">
+               <Button
+                 variant="outline"
+                 size="sm"
+@@ -1302,10 +1298,9 @@ export function OrdersPage() {
+                   </>
+                 )}
+               </Button>
+-            </div>
+-          </div>
+-        </div>
+-      )}
++            </DialogFooter>
++        </DialogContent>
++      </Dialog>
+ 
+       {/* Rejection Confirmation Dialog for Irreversible Action (F-048) */}
+       {selectedOrderForAction && actionType === "REJECT" && (
+@@ -1374,27 +1369,27 @@ export function OrdersPage() {
+       )}
+ 
+       {/* Approve Dialog */}
+-      {selectedOrderForAction && actionType === "APPROVE" && (
+-        <div
+-          role="dialog"
+-          aria-modal="true"
+-          aria-labelledby="approve-order-title"
+-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+-        >
+-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
+-            <h3
+-              id="approve-order-title"
+-              className="text-lg font-bold text-foreground"
+-            >
+-              Approve sales order
+-            </h3>
+-            <p className="mt-1 text-xs text-muted-foreground">
+-              Order {selectedOrderForAction.orderNumber} for{" "}
+-              {selectedOrderForAction.customer.name} (
+-              {Number(selectedOrderForAction.lines[0]?.quotedQuantity)} packets)
+-            </p>
++      <Dialog
++        open={selectedOrderForAction !== null && actionType === "APPROVE"}
++        onOpenChange={(open) => {
++          if (!open) {
++            setSelectedOrderForAction(null);
++            setActionType(null);
++          }
++        }}
++      >
++        {selectedOrderForAction && actionType === "APPROVE" && (
++          <DialogContent className="max-w-md">
++            <DialogHeader>
++              <DialogTitle>Approve sales order</DialogTitle>
++              <DialogDescription>
++                Order {selectedOrderForAction.orderNumber} for{" "}
++                {selectedOrderForAction.customer.name} (
++                {Number(selectedOrderForAction.lines[0]?.quotedQuantity)} packets)
++              </DialogDescription>
++            </DialogHeader>
+ 
+-            <div className="mt-4 flex flex-col gap-3">
++            <div className="flex flex-col gap-3">
+               <p className="text-xs text-foreground">
+                 Approving this order will atomically reserve{" "}
+                 <span className="font-semibold">
+@@ -1415,7 +1410,7 @@ export function OrdersPage() {
+               ) : null}
+             </div>
+ 
+-            <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
++            <DialogFooter className="mt-6 border-t pt-4">
+               <Button
+                 variant="outline"
+                 size="sm"
+@@ -1437,10 +1432,10 @@ export function OrdersPage() {
+                 <CheckCircle2Icon className="h-4 w-4" />
+                 Confirm approval
+               </Button>
+-            </div>
+-          </div>
+-        </div>
+-      )}
++            </DialogFooter>
++          </DialogContent>
++        )}
++      </Dialog>
+     </div>
+   );
+ }
+diff --git a/client/src/pages/payments-page.tsx b/client/src/pages/payments-page.tsx
+index 85cbf24..a3fcc68 100644
+--- a/client/src/pages/payments-page.tsx
++++ b/client/src/pages/payments-page.tsx
+@@ -21,6 +21,14 @@ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
+ import { DomainTooltip } from "@/components/ui/domain-tooltip";
++import {
++  Dialog,
++  DialogContent,
++  DialogDescription,
++  DialogFooter,
++  DialogHeader,
++  DialogTitle,
++} from "@/components/ui/dialog";
+ import {
+   CreditCardIcon,
+   RefreshCwIcon,
+@@ -31,7 +39,6 @@ import {
+   CheckCircle2Icon,
+   UserCheckIcon,
+   LayersIcon,
+-  XIcon,
+ } from "lucide-react";
+ 
+ interface PaymentAllocation {
+@@ -914,25 +921,23 @@ export function PaymentsPage() {
+       )}
+ 
+       {/* Customer Detailed Ledger Modal */}
+-      {selectedCustomerIdForLedger && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border bg-card p-6 shadow-xl">
+-            <div className="flex items-center justify-between border-b pb-4">
++      <Dialog
++        open={selectedCustomerIdForLedger !== null}
++        onOpenChange={(open) => {
++          if (!open) setSelectedCustomerIdForLedger(null);
++        }}
++      >
++        {selectedCustomerIdForLedger && (
++          <DialogContent className="max-w-3xl">
++            <DialogHeader>
+               <div className="flex items-center gap-2">
+                 <HistoryIcon className="h-5 w-5 text-foreground" />
+-                <h3 className="text-lg font-semibold text-foreground">
+-                  Customer statement and ledger
+-                </h3>
++                <DialogTitle>Customer statement and ledger</DialogTitle>
+               </div>
+-              <Button
+-                variant="ghost"
+-                size="sm"
+-                onClick={() => setSelectedCustomerIdForLedger(null)}
+-                className="h-8 w-8 p-0"
+-              >
+-                <XIcon className="h-4 w-4" />
+-              </Button>
+-            </div>
++              <DialogDescription className="sr-only">
++                Statement and transaction history for customer
++              </DialogDescription>
++            </DialogHeader>
+ 
+             {loadingLedger || !customerLedger ? (
+               <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
+@@ -940,7 +945,7 @@ export function PaymentsPage() {
+                 Loading ledger entries...
+               </div>
+             ) : (
+-              <div className="mt-4 flex flex-col gap-6">
++              <div className="mt-2 flex flex-col gap-6">
+                 {/* Account details and ageing cards */}
+                 <div className="rounded-lg border bg-muted/30 p-4">
+                   <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+@@ -1068,35 +1073,27 @@ export function PaymentsPage() {
+                 </div>
+               </div>
+             )}
+-          </div>
+-        </div>
+-      )}
++          </DialogContent>
++        )}
++      </Dialog>
+ 
+       {/* Record Payment Modal */}
+-      {showPaymentModal && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border bg-card p-6 shadow-xl">
+-            <div className="flex items-center justify-between border-b pb-4">
+-              <div className="flex items-center gap-2">
+-                <CreditCardIcon className="h-5 w-5 text-foreground" />
+-                <h3 className="text-lg font-semibold text-foreground">
+-                  Record customer payment
+-                </h3>
+-              </div>
+-              <Button
+-                variant="ghost"
+-                size="sm"
+-                onClick={() => setShowPaymentModal(false)}
+-                className="h-8 w-8 p-0"
+-              >
+-                <XIcon className="h-4 w-4" />
+-              </Button>
++      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
++        <DialogContent className="max-w-lg">
++          <DialogHeader>
++            <div className="flex items-center gap-2">
++              <CreditCardIcon className="h-5 w-5 text-foreground" />
++              <DialogTitle>Record customer payment</DialogTitle>
+             </div>
++            <DialogDescription className="sr-only">
++              Record receipt of customer payment and allocate against outstanding invoices
++            </DialogDescription>
++          </DialogHeader>
+ 
+-            <form
+-              onSubmit={handleRecordPaymentSubmit}
+-              className="mt-4 flex flex-col gap-4"
+-            >
++          <form
++            onSubmit={handleRecordPaymentSubmit}
++            className="mt-2 flex flex-col gap-4"
++          >
+               {paymentError && (
+                 <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
+                   <AlertTriangleIcon className="h-4 w-4 shrink-0" />
+@@ -1265,7 +1262,7 @@ export function PaymentsPage() {
+                   </div>
+                 )}
+ 
+-              <div className="flex items-center justify-end gap-2 border-t pt-4">
++              <DialogFooter className="border-t pt-4">
+                 <Button
+                   type="button"
+                   variant="outline"
+@@ -1287,11 +1284,10 @@ export function PaymentsPage() {
+                   )}
+                   Save payment
+                 </Button>
+-              </div>
++              </DialogFooter>
+             </form>
+-          </div>
+-        </div>
+-      )}
++        </DialogContent>
++      </Dialog>
+     </div>
+   );
+ }
+diff --git a/client/src/pages/production-page.tsx b/client/src/pages/production-page.tsx
+index 4cf3381..5a2334b 100644
+--- a/client/src/pages/production-page.tsx
++++ b/client/src/pages/production-page.tsx
+@@ -21,6 +21,14 @@ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
+ import { DomainTooltip } from "@/components/ui/domain-tooltip";
++import {
++  Dialog,
++  DialogContent,
++  DialogDescription,
++  DialogFooter,
++  DialogHeader,
++  DialogTitle,
++} from "@/components/ui/dialog";
+ import {
+   FactoryIcon,
+   RefreshCwIcon,
+@@ -550,29 +558,17 @@ export function ProductionPage() {
+       </div>
+ 
+       {/* New Batch Modal */}
+-      {showNewBatchModal && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-xl bg-card p-6 shadow-xl border">
+-            <div className="flex items-center justify-between border-b pb-3">
+-              <div>
+-                <h3 className="text-lg font-bold text-foreground">
+-                  Record production batch
+-                </h3>
+-                <p className="text-xs text-muted-foreground">
+-                  Murukku 200g standard batch (Benchmark: 200 expected packets)
+-                </p>
+-              </div>
+-              <Button
+-                variant="ghost"
+-                size="sm"
+-                onClick={() => setShowNewBatchModal(false)}
+-              >
+-                ✕
+-              </Button>
+-            </div>
+-
+-            <div className="mt-4 flex flex-col gap-4">
+-              {/* Recipe BOM selection (MLD-010) */}
++      <Dialog open={showNewBatchModal} onOpenChange={setShowNewBatchModal}>
++        <DialogContent className="max-w-xl">
++          <DialogHeader>
++            <DialogTitle>Record production batch</DialogTitle>
++            <DialogDescription>
++              Murukku 200g standard batch (Benchmark: 200 expected packets)
++            </DialogDescription>
++          </DialogHeader>
++
++          <div className="mt-2 flex flex-col gap-4">
++            {/* Recipe BOM selection (MLD-010) */}
+               <div className="flex flex-col gap-1.5">
+                 <DomainTooltip term="BOM">
+                   <label className="text-xs font-semibold text-muted-foreground cursor-help">
+@@ -779,7 +775,7 @@ export function ProductionPage() {
+               </div>
+             </div>
+ 
+-            <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
++            <DialogFooter className="mt-6 border-t pt-4">
+               <Button
+                 variant="outline"
+                 size="sm"
+@@ -805,25 +801,29 @@ export function ProductionPage() {
+                   </>
+                 )}
+               </Button>
+-            </div>
+-          </div>
+-        </div>
+-      )}
++            </DialogFooter>
++        </DialogContent>
++      </Dialog>
+ 
+       {/* Reversal Confirmation Modal */}
+-      {selectedRun && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
+-            <h3 className="text-lg font-bold text-foreground">
+-              Reverse production run
+-            </h3>
+-            <p className="mt-1 text-xs text-muted-foreground">
+-              This will atomically restore raw materials and packaging back into
+-              inventory and deduct {Number(selectedRun.actualGoodQty)} finished
+-              packets.
+-            </p>
+-
+-            <div className="mt-4 flex flex-col gap-2">
++      <Dialog
++        open={selectedRun !== null}
++        onOpenChange={(open) => {
++          if (!open) setSelectedRun(null);
++        }}
++      >
++        {selectedRun && (
++          <DialogContent className="max-w-md">
++            <DialogHeader>
++              <DialogTitle>Reverse production run</DialogTitle>
++              <DialogDescription>
++                This will atomically restore raw materials and packaging back into
++                inventory and deduct {Number(selectedRun.actualGoodQty)} finished
++                packets.
++              </DialogDescription>
++            </DialogHeader>
++
++            <div className="mt-2 flex flex-col gap-2">
+               <label className="text-xs font-semibold text-muted-foreground">
+                 Reversal reason
+               </label>
+@@ -836,7 +836,7 @@ export function ProductionPage() {
+               />
+             </div>
+ 
+-            <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
++            <DialogFooter className="mt-6 border-t pt-4">
+               <Button
+                 variant="outline"
+                 size="sm"
+@@ -862,10 +862,10 @@ export function ProductionPage() {
+                 <RotateCcwIcon className="h-4 w-4" />
+                 Confirm reversal
+               </Button>
+-            </div>
+-          </div>
+-        </div>
+-      )}
++            </DialogFooter>
++          </DialogContent>
++        )}
++      </Dialog>
+     </div>
+   );
+ }
+diff --git a/client/src/pages/purchases-page.tsx b/client/src/pages/purchases-page.tsx
+index 5c73b6e..6591af4 100644
+--- a/client/src/pages/purchases-page.tsx
++++ b/client/src/pages/purchases-page.tsx
+@@ -21,6 +21,14 @@ import {
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
++import {
++  Dialog,
++  DialogContent,
++  DialogDescription,
++  DialogFooter,
++  DialogHeader,
++  DialogTitle,
++} from "@/components/ui/dialog";
+ import {
+   PlusIcon,
+   RefreshCwIcon,
+@@ -359,28 +367,16 @@ export function PurchasesPage() {
+       </div>
+ 
+       {/* Record Purchase Receipt Modal */}
+-      {showModal && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in-0 zoom-in-95">
+-            <div className="flex items-center justify-between border-b border-border pb-3">
+-              <div>
+-                <h3 className="text-base font-semibold text-foreground">
+-                  Record Purchase Receipt
+-                </h3>
+-                <p className="text-xs text-muted-foreground">
+-                  Intake raw materials, update stock, and recalculate WAC.
+-                </p>
+-              </div>
+-              <Button
+-                variant="ghost"
+-                size="sm"
+-                onClick={() => setShowModal(false)}
+-              >
+-                ✕
+-              </Button>
+-            </div>
++      <Dialog open={showModal} onOpenChange={setShowModal}>
++        <DialogContent className="max-w-lg">
++          <DialogHeader>
++            <DialogTitle>Record Purchase Receipt</DialogTitle>
++            <DialogDescription>
++              Intake raw materials, update stock, and recalculate WAC.
++            </DialogDescription>
++          </DialogHeader>
+ 
+-            <div className="mt-4 flex flex-col gap-4">
++          <div className="mt-2 flex flex-col gap-4">
+               {/* Supplier Selection */}
+               <div className="flex flex-col gap-1.5">
+                 <div className="flex items-center justify-between">
+@@ -512,7 +508,7 @@ export function PurchasesPage() {
+               </div>
+             </div>
+ 
+-            <div className="mt-6 flex justify-end gap-2 border-t border-border pt-4">
++            <DialogFooter className="mt-6 border-t border-border pt-4">
+               <Button
+                 variant="outline"
+                 size="sm"
+@@ -528,10 +524,9 @@ export function PurchasesPage() {
+               >
+                 {createReceiptMutation.isPending ? "Posting..." : "Post Purchase Receipt"}
+               </Button>
+-            </div>
+-          </div>
+-        </div>
+-      )}
++            </DialogFooter>
++        </DialogContent>
++      </Dialog>
+     </div>
+   );
+ }
+diff --git a/client/src/pages/settings-page.tsx b/client/src/pages/settings-page.tsx
+index a433a38..fb403ab 100644
+--- a/client/src/pages/settings-page.tsx
++++ b/client/src/pages/settings-page.tsx
+@@ -5,6 +5,14 @@ import { useCurrentUser } from "@/hooks/use-current-user";
+ import { formatDate } from "@/lib/formatters";
+ import { Button } from "@/components/ui/button";
+ import { Badge } from "@/components/ui/badge";
++import {
++  Dialog,
++  DialogContent,
++  DialogDescription,
++  DialogFooter,
++  DialogHeader,
++  DialogTitle,
++} from "@/components/ui/dialog";
+ import {
+   Table,
+   TableBody,
+@@ -431,107 +439,96 @@ export function SettingsPage() {
+       )}
+ 
+       {/* Add User Modal */}
+-      {showAddUserModal && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
+-            <div className="flex items-center justify-between border-b pb-3">
+-              <div>
+-                <h3 className="text-base font-bold text-foreground">Add New Staff Member</h3>
+-                <p className="text-xs text-muted-foreground">
+-                  Create credentials and assign operational role
+-                </p>
+-              </div>
+-              <Button
+-                variant="ghost"
+-                size="sm"
+-                onClick={() => setShowAddUserModal(false)}
+-              >
+-                ✕
+-              </Button>
+-            </div>
++      <Dialog open={showAddUserModal} onOpenChange={setShowAddUserModal}>
++        <DialogContent className="max-w-md">
++          <DialogHeader>
++            <DialogTitle>Add New Staff Member</DialogTitle>
++            <DialogDescription>
++              Create credentials and assign operational role
++            </DialogDescription>
++          </DialogHeader>
+ 
+-            <form onSubmit={handleCreateUser} className="mt-4 flex flex-col gap-4">
+-              <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
+-                  Full Name
+-                </label>
+-                <input
+-                  type="text"
+-                  required
+-                  value={newUserName}
+-                  onChange={(e) => setNewUserName(e.target.value)}
+-                  placeholder="e.g. Senthil Kumar"
+-                  className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+-                />
+-              </div>
++          <form onSubmit={handleCreateUser} className="mt-2 flex flex-col gap-4">
++            <div className="flex flex-col gap-1.5">
++              <label className="text-xs font-semibold text-muted-foreground">
++                Full Name
++              </label>
++              <input
++                type="text"
++                required
++                value={newUserName}
++                onChange={(e) => setNewUserName(e.target.value)}
++                placeholder="e.g. Senthil Kumar"
++                className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
++              />
++            </div>
+ 
+-              <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
+-                  Email Address
+-                </label>
+-                <input
+-                  type="email"
+-                  required
+-                  value={newUserEmail}
+-                  onChange={(e) => setNewUserEmail(e.target.value)}
+-                  placeholder="e.g. senthil@millledger.local"
+-                  className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+-                />
+-              </div>
++            <div className="flex flex-col gap-1.5">
++              <label className="text-xs font-semibold text-muted-foreground">
++                Email Address
++              </label>
++              <input
++                type="email"
++                required
++                value={newUserEmail}
++                onChange={(e) => setNewUserEmail(e.target.value)}
++                placeholder="e.g. senthil@millledger.local"
++                className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
++              />
++            </div>
+ 
+-              <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
+-                  Password
+-                </label>
+-                <input
+-                  type="password"
+-                  required
+-                  value={newUserPassword}
+-                  onChange={(e) => setNewUserPassword(e.target.value)}
+-                  placeholder="Minimum 8 characters"
+-                  className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+-                />
+-              </div>
++            <div className="flex flex-col gap-1.5">
++              <label className="text-xs font-semibold text-muted-foreground">
++                Password
++              </label>
++              <input
++                type="password"
++                required
++                value={newUserPassword}
++                onChange={(e) => setNewUserPassword(e.target.value)}
++                placeholder="Minimum 8 characters"
++                className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
++              />
++            </div>
+ 
+-              <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
+-                  Role Assignment
+-                </label>
+-                <select
+-                  value={newUserRole}
+-                  onChange={(e) => setNewUserRole(e.target.value as Role)}
+-                  className="rounded-md border bg-background px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+-                >
+-                  <option value="SALESMAN">Salesman (Field sales & bookings)</option>
+-                  <option value="PRODUCTION">Production Manager (Shop floor & runs)</option>
+-                  <option value="ACCOUNTANT">Accountant (Invoices, reports & taxes)</option>
+-                  <option value="ADMIN">Administrator (Full operational management)</option>
+-                  <option value="OWNER">Owner (Executive & financial oversight)</option>
+-                </select>
+-              </div>
++            <div className="flex flex-col gap-1.5">
++              <label className="text-xs font-semibold text-muted-foreground">
++                Role Assignment
++              </label>
++              <select
++                value={newUserRole}
++                onChange={(e) => setNewUserRole(e.target.value as Role)}
++                className="rounded-md border bg-background px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
++              >
++                <option value="SALESMAN">Salesman (Field sales & bookings)</option>
++                <option value="PRODUCTION">Production Manager (Shop floor & runs)</option>
++                <option value="ACCOUNTANT">Accountant (Invoices, reports & taxes)</option>
++                <option value="ADMIN">Administrator (Full operational management)</option>
++                <option value="OWNER">Owner (Executive & financial oversight)</option>
++              </select>
++            </div>
+ 
+-              <div className="mt-4 flex items-center justify-end gap-3 border-t pt-4">
+-                <Button
+-                  type="button"
+-                  variant="outline"
+-                  size="sm"
+-                  onClick={() => setShowAddUserModal(false)}
+-                >
+-                  Cancel
+-                </Button>
+-                <Button
+-                  type="submit"
+-                  size="sm"
+-                  disabled={createUserMutation.isPending}
+-                  className="cursor-pointer"
+-                >
+-                  {createUserMutation.isPending ? "Creating..." : "Create User"}
+-                </Button>
+-              </div>
+-            </form>
+-          </div>
+-        </div>
+-      )}
++            <DialogFooter className="mt-4 border-t pt-4">
++              <Button
++                type="button"
++                variant="outline"
++                size="sm"
++                onClick={() => setShowAddUserModal(false)}
++              >
++                Cancel
++              </Button>
++              <Button
++                type="submit"
++                size="sm"
++                disabled={createUserMutation.isPending}
++                className="cursor-pointer"
++              >
++                {createUserMutation.isPending ? "Creating..." : "Create User"}
++              </Button>
++            </DialogFooter>
++          </form>
++        </DialogContent>
++      </Dialog>
+     </div>
+   );
+ }
+diff --git a/client/src/pages/suppliers-page.tsx b/client/src/pages/suppliers-page.tsx
+index a786a79..5ca6447 100644
+--- a/client/src/pages/suppliers-page.tsx
++++ b/client/src/pages/suppliers-page.tsx
+@@ -18,6 +18,14 @@ import {
+ } from "@/components/ui/table";
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
++import {
++  Dialog,
++  DialogContent,
++  DialogDescription,
++  DialogFooter,
++  DialogHeader,
++  DialogTitle,
++} from "@/components/ui/dialog";
+ import {
+   RefreshCwIcon,
+   CheckCircle2Icon,
+@@ -408,32 +416,31 @@ export function SuppliersPage() {
+       </div>
+ 
+       {/* Add Supplier Modal */}
+-      {showAddModal && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
+-            <h3 className="text-lg font-bold text-foreground">
+-              Add New Raw Material Supplier
+-            </h3>
+-            <p className="mt-1 text-xs text-muted-foreground">
++      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
++        <DialogContent className="max-w-md">
++          <DialogHeader>
++            <DialogTitle>Add New Raw Material Supplier</DialogTitle>
++            <DialogDescription>
+               Register a new mandi vendor, farmer, or mill supplier for
+               purchase intake receipts.
+-            </p>
++            </DialogDescription>
++          </DialogHeader>
+ 
+-            <form
+-              onSubmit={(e) => {
+-                e.preventDefault();
+-                createSupplierMutation.mutate({
+-                  code: code.trim(),
+-                  name: name.trim(),
+-                  state: state.trim(),
+-                  phone: phone.trim() || undefined,
+-                  email: email.trim() || undefined,
+-                  gstin: gstin.trim() || undefined,
+-                  isActive,
+-                });
+-              }}
+-              className="mt-4 flex flex-col gap-3"
+-            >
++          <form
++            onSubmit={(e) => {
++              e.preventDefault();
++              createSupplierMutation.mutate({
++                code: code.trim(),
++                name: name.trim(),
++                state: state.trim(),
++                phone: phone.trim() || undefined,
++                email: email.trim() || undefined,
++                gstin: gstin.trim() || undefined,
++                isActive,
++              });
++            }}
++            className="mt-2 flex flex-col gap-3"
++          >
+               <div className="flex flex-col gap-1">
+                 <label className="text-xs font-semibold text-muted-foreground">
+                   Vendor Code *
+@@ -532,7 +539,7 @@ export function SuppliersPage() {
+                 </label>
+               </div>
+ 
+-              <div className="mt-4 flex items-center justify-end gap-3 border-t pt-3">
++              <DialogFooter className="mt-4 border-t pt-3">
+                 <Button
+                   type="button"
+                   variant="outline"
+@@ -548,22 +555,26 @@ export function SuppliersPage() {
+                 >
+                   {createSupplierMutation.isPending ? "Adding..." : "Save Supplier"}
+                 </Button>
+-              </div>
++              </DialogFooter>
+             </form>
+-          </div>
+-        </div>
+-      )}
++        </DialogContent>
++      </Dialog>
+ 
+       {/* Edit Supplier Modal */}
+-      {editingSupplier && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+-          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
+-            <h3 className="text-lg font-bold text-foreground">
+-              Edit Supplier: {editingSupplier.code}
+-            </h3>
+-            <p className="mt-1 text-xs text-muted-foreground">
+-              Update contact info, jurisdiction state, or active status.
+-            </p>
++      <Dialog
++        open={editingSupplier !== null}
++        onOpenChange={(open) => {
++          if (!open) setEditingSupplier(null);
++        }}
++      >
++        {editingSupplier && (
++          <DialogContent className="max-w-md">
++            <DialogHeader>
++              <DialogTitle>Edit Supplier: {editingSupplier.code}</DialogTitle>
++              <DialogDescription>
++                Update contact info, jurisdiction state, or active status.
++              </DialogDescription>
++            </DialogHeader>
+ 
+             <form
+               onSubmit={(e) => {
+@@ -662,7 +673,7 @@ export function SuppliersPage() {
+                 </label>
+               </div>
+ 
+-              <div className="mt-4 flex items-center justify-end gap-3 border-t pt-3">
++              <DialogFooter className="mt-4 border-t pt-3">
+                 <Button
+                   type="button"
+                   variant="outline"
+@@ -680,11 +691,11 @@ export function SuppliersPage() {
+                     ? "Updating..."
+                     : "Update Supplier"}
+                 </Button>
+-              </div>
++              </DialogFooter>
+             </form>
+-          </div>
+-        </div>
+-      )}
++          </DialogContent>
++        )}
++      </Dialog>
+     </div>
+   );
+ }

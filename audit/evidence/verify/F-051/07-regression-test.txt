@@ -1,0 +1,10 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+ ✓ audit/tests/f-051-regression.test.ts (4 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  06:46:29
+   Duration  402ms (transform 29ms, setup 0ms, collect 24ms, tests 5ms, environment 0ms, prepare 46ms)
+

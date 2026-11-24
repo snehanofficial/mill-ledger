@@ -4748,15 +4748,19 @@
       "WAI-ARIA Authoring Practices Guide (APG) Dialog (Modal) Pattern"
     ],
     "files": [
-      "client/src/pages/orders-page.ts",
-      "client/src/pages/invoices-page.ts",
-      "client/src/pages/production-page.ts",
-      "client/src/pages/payments-page.ts",
-      "client/src/pages/purchases-page.ts"
+      "client/src/components/ui/dialog.tsx",
+      "client/src/pages/orders-page.tsx",
+      "client/src/pages/invoices-page.tsx",
+      "client/src/pages/production-page.tsx",
+      "client/src/pages/payments-page.tsx",
+      "client/src/pages/purchases-page.tsx",
+      "client/src/pages/dispatch-page.tsx",
+      "client/src/pages/suppliers-page.tsx",
+      "client/src/pages/settings-page.tsx"
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -4764,12 +4768,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-051.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "8a9ce58",
+        "evidenceLink": "audit/evidence/verify/F-051/10-summary.txt",
+        "note": "VERIFIED: Replaced all custom raw overlay divs across 8 operational pages (14 modal workflows) with Radix UI Dialog primitives (@/components/ui/dialog.tsx). Guarantees APG modal semantics: role=dialog, aria-modal=true, accessible names via DialogTitle, keyboard focus containment/trapping, Escape key dismissal, and focus restoration to the trigger element. 10-point verification passed with 0 errors."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-051-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-051-regression.test.ts",
+    "fixCommit": "8a9ce58",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-051/01-git-status.txt",
+      "audit/evidence/verify/F-051/02-typecheck.txt",
+      "audit/evidence/verify/F-051/03-lint.txt",
+      "audit/evidence/verify/F-051/04-build.txt",
+      "audit/evidence/verify/F-051/05-invariants.txt",
+      "audit/evidence/verify/F-051/06-benchmark.txt",
+      "audit/evidence/verify/F-051/07-regression-test.txt",
+      "audit/evidence/verify/F-051/08-test-suite.txt",
+      "audit/evidence/verify/F-051/09-diff.txt",
+      "audit/evidence/verify/F-051/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",
