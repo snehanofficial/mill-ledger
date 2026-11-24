@@ -6177,7 +6177,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -6185,12 +6185,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-067.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "bdb819f",
+        "evidenceLink": "audit/evidence/verify/F-067/10-summary.txt",
+        "note": "Implemented TanStack Query v5 optimistic mutations with query cache snapshotting, onMutate immediate UI reflection, onError rollback to previous snapshot with visible error toasts, and onSettled cache invalidation across orders, dispatches, and settings workflows."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-067-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-067-regression.test.ts",
+    "fixCommit": "bdb819f",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-067/01-git-status.txt",
+      "audit/evidence/verify/F-067/02-regression-test.txt",
+      "audit/evidence/verify/F-067/03-typecheck.txt",
+      "audit/evidence/verify/F-067/04-lint.txt",
+      "audit/evidence/verify/F-067/05-build.txt",
+      "audit/evidence/verify/F-067/06-invariants.txt",
+      "audit/evidence/verify/F-067/07-benchmark.txt",
+      "audit/evidence/verify/F-067/08-test-suite.txt",
+      "audit/evidence/verify/F-067/09-diff.txt",
+      "audit/evidence/verify/F-067/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'transition-\\|animate-' client/src/ | grep -v 'motion-reduce' | head -n 25",
