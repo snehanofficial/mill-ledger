@@ -1,9 +1,8 @@
 {
   "trustProxy": {
-    "appTsConfigured": false,
-    "expressSetting": false,
+    "appTsConfigured": true,
+    "expressSetting": 1,
     "testForwardedFor": "203.0.113.195, 10.0.0.1",
-    "observedIp": "127.0.0.1",
     "isVulnerable": true,
     "impact": "Client IP will be misidentified as reverse proxy IP (e.g. 127.0.0.1), breaking IP-based rate limiting, audit logs, and fraud detection"
   },
@@ -12,19 +11,19 @@
     "healthStatus": 200,
     "healthData": {
       "status": "ok",
-      "timestamp": "2026-11-19T19:57:25.675Z",
-      "uptime": 0.746125669,
+      "timestamp": "2026-11-24T09:30:25.889Z",
+      "uptime": 0.752529147,
       "service": "mill-ledger-server",
       "version": "0.1.0"
     },
     "checksDatabase": false,
     "readinessRoute": "/api/v1/ready",
-    "readinessStatus": 404,
-    "readinessMissing": true,
+    "readinessStatus": 200,
+    "readinessMissing": false,
     "impact": "K8s/Docker health checks report healthy even when database is completely down or deadlocked"
   },
   "requestTimeout": {
-    "configured": false,
+    "configured": true,
     "impact": "Unbounded request duration can lead to thread/connection starvation under hanging DB queries"
   },
   "gracefulShutdown": {

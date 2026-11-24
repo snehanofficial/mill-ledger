@@ -8816,9 +8816,7 @@
     "category": "Runtime Reliability & Container Operations",
     "tier": "T11",
     "cluster": "CLUSTER-15",
-    "dependsOn": [
-      "F-070"
-    ],
+    "dependsOn": [],
     "blocks": [],
     "relatedFindings": [],
     "standardsRefs": [
@@ -8833,7 +8831,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -8841,12 +8839,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-102.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "5e8b315",
+        "evidenceLink": "audit/evidence/verify/F-102/10-summary.txt",
+        "note": "Decoupled from F-070; implemented getReadiness() with SELECT 1 db check on /api/v1/health/ready and /ready, configured app.set(trust proxy, 1), requestTimeoutMiddleware(30000), statement_timeout on pool, and prisma.$disconnect on graceful shutdown."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-102-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-102-regression.test.ts",
+    "fixCommit": "5e8b315",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-102/01-git-status.txt",
+      "audit/evidence/verify/F-102/02-regression-test.txt",
+      "audit/evidence/verify/F-102/03-typecheck.txt",
+      "audit/evidence/verify/F-102/04-lint.txt",
+      "audit/evidence/verify/F-102/05-build.txt",
+      "audit/evidence/verify/F-102/06-invariants.txt",
+      "audit/evidence/verify/F-102/07-benchmark.txt",
+      "audit/evidence/verify/F-102/08-test-suite.txt",
+      "audit/evidence/verify/F-102/09-diff.txt",
+      "audit/evidence/verify/F-102/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
@@ -8879,7 +8895,7 @@
       ]
     },
     "needsApproval": "none",
-    "notes": ""
+    "notes": "Decoupled from F-070 per Option 2 directive; added database readiness probe, trust proxy, request timeout, pg statement timeout, and graceful disconnect."
   },
   {
     "id": "F-103",
