@@ -18,9 +18,17 @@ import { isAllowedOrigin } from "./lib/origins.js";
 import { requestIdMiddleware } from "./middleware/request-id.middleware.js";
 import { requestLogger } from "./middleware/request-logger.middleware.js";
 import { createRateLimiter } from "./middleware/rate-limit.middleware.js";
+import { requestTimeoutMiddleware } from "./middleware/timeout.middleware.js";
+import { getReadiness } from "./modules/health/health.controller.js";
 
 export function createApp() {
   const app = express();
+
+  // Trust reverse proxy headers (e.g. ALB, Nginx, Kubernetes Ingress) for accurate req.ip (F-102)
+  app.set("trust proxy", 1);
+
+  // Request timeout guard (F-102)
+  app.use(requestTimeoutMiddleware(30000));
 
   // Request correlation ID and structured logger
   app.use(requestIdMiddleware);
@@ -86,6 +94,7 @@ export function createApp() {
   app.use("/api/v1/users", userRouter);
   app.use("/api/v1/admin/users", userRouter);
   app.use("/api/v1/health", healthRouter);
+  app.get(["/ready", "/api/v1/ready"], getReadiness);
   app.use("/api/v1/sales", salesRouter);
   app.use("/api/v1/orders", salesRouter);
   app.use("/api/v1/dispatches", salesRouter);

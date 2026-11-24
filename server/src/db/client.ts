@@ -5,6 +5,7 @@ import { env } from "../config/env.js";
 
 const pool = new pg.Pool({
   connectionString: env.DATABASE_URL,
+  statement_timeout: 10000,
 });
 
 const adapter = new PrismaPg(pool);
