@@ -63,11 +63,13 @@ export function AuthenticatedLayout() {
   useEffect(() => {
     document.title = `${label} | MillLedger`;
 
-    // Reset keyboard focus to primary main landmark upon client-side SPA navigation
+    // Reset keyboard focus to primary main landmark and reset scroll upon client-side SPA navigation
     const main = document.getElementById("main-content");
     if (main) {
       main.focus({ preventScroll: true });
+      main.scrollTo({ top: 0, behavior: "instant" });
     }
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [label, location.pathname]);
 
   // WCAG 2.2 SC 2.2.1 & SC 3.3.7: Proactive idle session warning and draft preservation
