@@ -77,8 +77,17 @@ jobs:
       - name: Execute benchmark verification script
         run: pnpm benchmark
 
+      - name: Run dependency vulnerability audit
+        run: pnpm audit --audit-level=critical
+
+      - name: Build all packages (server, client, shared)
+        run: pnpm build
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Playwright E2E tests
+        run: pnpm test:e2e
+
       - name: Validate Remediation Tracker
         run: node audit/tracker/check-tracker.mjs
-
-      - name: Build client production bundles
-        run: pnpm --filter client build

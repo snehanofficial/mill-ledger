@@ -300,7 +300,7 @@ export function NewOrderPage() {
         {/* Page Header */}
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {t("Order Catalog & Entry")}
+            {t("New order")}
           </h1>
           <p className="text-sm text-muted-foreground">
             {t("Select customer, browse packaged product tiles, and adjust quantities using touch-friendly steppers.")}

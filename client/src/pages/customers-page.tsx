@@ -98,6 +98,18 @@ export function CustomersPage() {
         </div>
       </div>
 
+      {/* KPI Summary Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-1 rounded-xl border border-border bg-card p-4 shadow-xs">
+          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            {t("Total Accounts")}
+          </span>
+          <span className="text-2xl font-bold tracking-tight text-foreground">
+            {customers.length}
+          </span>
+        </div>
+      </div>
+
       {/* Customers Table Card */}
       <div className="rounded-xl border border-border bg-card shadow-xs">
         <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
