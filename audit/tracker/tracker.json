@@ -8630,7 +8630,7 @@
     ],
     "effort": "M",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -8638,12 +8638,27 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-096.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "83f0336",
+        "evidenceLink": "audit/evidence/verify/F-096/verification.md",
+        "note": "Added inter-state IGST tests in invoice-dispatch.test.ts, comprehensive error guard boundary tests in payments.test.ts, authored mutant killer regression test, and verified 10-point checklist."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-096-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-096-regression.test.ts",
+    "fixCommit": "83f0336",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-096/verification.md",
+      "audit/evidence/verify/F-096/regression-test.txt",
+      "audit/evidence/verify/F-096/suite-tests.txt",
+      "audit/evidence/verify/F-096/typecheck.txt",
+      "audit/evidence/verify/F-096/lint.txt",
+      "audit/evidence/verify/F-096/benchmark.txt",
+      "audit/evidence/verify/F-096/invariants.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
