@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
   CreditCardIcon,
   RefreshCwIcon,
@@ -1214,9 +1215,16 @@ export function PaymentsPage() {
                     </div>
 
                     {!useManualAllocation ? (
-                      <p className="text-xs text-muted-foreground">
-                        Automatic FIFO mode: payment will settle oldest
-                        outstanding invoices first.
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                        <DomainTooltip term="FIFO">
+                          <span className="font-medium text-foreground">
+                            Automatic FIFO mode
+                          </span>
+                        </DomainTooltip>
+                        <span>
+                          : payment will settle oldest outstanding invoices
+                          first.
+                        </span>
                       </p>
                     ) : (
                       <div className="mt-2 flex flex-col gap-2">

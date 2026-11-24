@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
   ShoppingCartIcon,
   RefreshCwIcon,
@@ -505,9 +506,11 @@ export function OrdersPage() {
 
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium uppercase tracking-wider">
-              Available to promise
-            </span>
+            <DomainTooltip term="ATP">
+              <span className="text-xs font-medium uppercase tracking-wider">
+                Available to promise (ATP)
+              </span>
+            </DomainTooltip>
             <CheckCircle2Icon className="h-4 w-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-bold font-mono">

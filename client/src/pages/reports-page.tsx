@@ -9,6 +9,7 @@ import { SkeletonTable } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
   Table,
   TableBody,
@@ -488,8 +489,12 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                   <TableHead>Category</TableHead>
                   <TableHead className="text-right">On hand</TableHead>
                   <TableHead className="text-right">Reserved</TableHead>
-                  <TableHead className="text-right">Available</TableHead>
-                  <TableHead className="text-right">Avg cost</TableHead>
+                  <TableHead className="text-right">
+                    <DomainTooltip term="ATP">Available</DomainTooltip>
+                  </TableHead>
+                  <TableHead className="text-right">
+                    <DomainTooltip term="WAC">Avg cost</DomainTooltip>
+                  </TableHead>
                   <TableHead className="text-right">Valuation</TableHead>
                   <TableHead className="text-center">Ledger check</TableHead>
                 </TableRow>
@@ -572,7 +577,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                   <TableHead>Run number</TableHead>
                   <TableHead>Recipe</TableHead>
                   <TableHead className="text-right">Good output</TableHead>
-                  <TableHead className="text-right">Yield variance</TableHead>
+                  <TableHead className="text-right">
+                    <DomainTooltip term="YIELD_VARIANCE">
+                      Yield variance
+                    </DomainTooltip>
+                  </TableHead>
                   <TableHead className="text-right">Direct labor</TableHead>
                   <TableHead className="text-right">Gas & power</TableHead>
                   <TableHead className="text-right">Total cost</TableHead>

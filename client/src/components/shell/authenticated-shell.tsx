@@ -46,6 +46,8 @@ import {
   PackageIcon,
   ShoppingCartIcon,
   UsersIcon,
+  BookOpenIcon,
+  HelpCircleIcon,
 } from "lucide-react";
 
 import { useLanguage } from "@/lib/i18n";
@@ -108,6 +110,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { HelpGuideModal } from "@/components/help/help-guide-modal";
 
 import {
   type NavSection,
@@ -506,9 +509,14 @@ function SidebarCollapseToggle() {
 interface SidebarUserMenuProps {
   user: ShellUser;
   onSignOut?: () => void;
+  onOpenHelp?: () => void;
 }
 
-function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
+function SidebarUserMenu({
+  user,
+  onSignOut,
+  onOpenHelp,
+}: SidebarUserMenuProps) {
   const navigate = useNavigate();
   const { isMobile, setOpenMobile, state } = useSidebar();
   const { t } = useLanguage();
@@ -583,6 +591,19 @@ function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
                 aria-hidden
               />
               {t("Account settings", "Account settings")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                if (isMobile) setOpenMobile(false);
+                onOpenHelp?.();
+              }}
+              className="cursor-pointer"
+            >
+              <BookOpenIcon
+                className="mr-2 size-4 text-muted-foreground"
+                aria-hidden
+              />
+              {t("Documentation & Guide", "Documentation & Guide")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -831,6 +852,7 @@ interface StickyHeaderProps {
   onSearchOpen: () => void;
   onNotificationsClick: () => void;
   onSignOut?: () => void;
+  onOpenHelp?: () => void;
   syncState: SyncState;
   onOpenOutbox?: () => void;
   pendingCount?: number;
@@ -842,12 +864,13 @@ function StickyHeader({
   onSearchOpen,
   onNotificationsClick,
   onSignOut,
+  onOpenHelp,
   syncState,
   onOpenOutbox,
   pendingCount,
 }: StickyHeaderProps) {
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
 
   return (
     <header
@@ -921,6 +944,18 @@ function StickyHeader({
           onClick={onNotificationsClick}
         />
 
+        {/* Documentation & Help Guide Trigger (F-049) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onOpenHelp}
+          aria-label={t("Help and Documentation", "Help and Documentation")}
+          title={t("Help and Documentation", "Help and Documentation")}
+          className="size-8 text-muted-foreground hover:text-foreground cursor-pointer"
+        >
+          <HelpCircleIcon className="size-4" aria-hidden="true" />
+        </Button>
+
         {/* Top-right user avatar menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -966,6 +1001,16 @@ function StickyHeader({
                 aria-hidden
               />
               Account settings
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={onOpenHelp}
+              className="cursor-pointer"
+            >
+              <BookOpenIcon
+                className="mr-2 size-4 text-muted-foreground"
+                aria-hidden
+              />
+              Documentation & Guide
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -1089,6 +1134,7 @@ export function AuthenticatedShell({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [outboxOpen, setOutboxOpen] = useState(false);
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   const syncManager = useSyncManager(user.id);
   const { syncState, isOnline, pendingCount, conflictCount } = syncManager;
@@ -1135,7 +1181,11 @@ export function AuthenticatedShell({
 
           <SidebarFooter>
             <SidebarCollapseToggle />
-            <SidebarUserMenu user={user} onSignOut={handleSafeSignOut} />
+            <SidebarUserMenu
+              user={user}
+              onSignOut={handleSafeSignOut}
+              onOpenHelp={() => setShowHelpModal(true)}
+            />
           </SidebarFooter>
           <SidebarRail />
         </Sidebar>
@@ -1147,6 +1197,7 @@ export function AuthenticatedShell({
             onSearchOpen={() => setSearchOpen(true)}
             onNotificationsClick={() => setNotificationsOpen(true)}
             onSignOut={handleSafeSignOut}
+            onOpenHelp={() => setShowHelpModal(true)}
             syncState={syncState}
             onOpenOutbox={() => setOutboxOpen(true)}
             pendingCount={pendingCount}
@@ -1289,6 +1340,12 @@ export function AuthenticatedShell({
             </div>
           </SheetContent>
         </Sheet>
+
+        {/* Operational Documentation & Guide Modal (F-049) */}
+        <HelpGuideModal
+          open={showHelpModal}
+          onOpenChange={setShowHelpModal}
+        />
       </SidebarProvider>
     </TooltipProvider>
   );

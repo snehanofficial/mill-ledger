@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
   FactoryIcon,
   RefreshCwIcon,
@@ -431,7 +432,11 @@ export function ProductionPage() {
                   <TableHead>{t("Status")}</TableHead>
                   <TableHead>{t("Product")}</TableHead>
                   <TableHead className="text-right">{t("Good packets")}</TableHead>
-                  <TableHead className="text-right">{t("Yield variance")}</TableHead>
+                  <TableHead className="text-right">
+                    <DomainTooltip term="YIELD_VARIANCE">
+                      {t("Yield variance")}
+                    </DomainTooltip>
+                  </TableHead>
                   <TableHead className="text-right">{t("Materials cost")}</TableHead>
                   <TableHead className="text-right">{t("Total cost")}</TableHead>
                   <TableHead className="text-right">{t("Cost / packet")}</TableHead>
@@ -569,9 +574,11 @@ export function ProductionPage() {
             <div className="mt-4 flex flex-col gap-4">
               {/* Recipe BOM selection (MLD-010) */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Bill of Materials (BOM) Recipe
-                </label>
+                <DomainTooltip term="BOM">
+                  <label className="text-xs font-semibold text-muted-foreground cursor-help">
+                    Bill of Materials (BOM) Recipe
+                  </label>
+                </DomainTooltip>
                 <select
                   value={selectedRecipeId}
                   onChange={(e) => setSelectedRecipeId(e.target.value)}
