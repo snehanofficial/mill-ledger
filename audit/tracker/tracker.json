@@ -8367,9 +8367,7 @@
     "category": "Dependency Hygiene / Dead Code",
     "tier": "T11",
     "cluster": "CLUSTER-15",
-    "dependsOn": [
-      "F-070"
-    ],
+    "dependsOn": [],
     "blocks": [],
     "relatedFindings": [],
     "standardsRefs": [
@@ -8382,7 +8380,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -8390,12 +8388,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-005.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "b8da998",
+        "evidenceLink": "audit/evidence/verify/F-005/10-summary.txt",
+        "note": "Decoupled from F-070; removed redundant cn package from client/package.json. Verified cn helper in client/src/lib/utils.ts functions locally via clsx and tailwind-merge."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-005-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-005-regression.test.ts",
+    "fixCommit": "b8da998",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-005/01-git-status.txt",
+      "audit/evidence/verify/F-005/02-regression-test.txt",
+      "audit/evidence/verify/F-005/03-typecheck.txt",
+      "audit/evidence/verify/F-005/04-lint.txt",
+      "audit/evidence/verify/F-005/05-build.txt",
+      "audit/evidence/verify/F-005/06-invariants.txt",
+      "audit/evidence/verify/F-005/07-benchmark.txt",
+      "audit/evidence/verify/F-005/08-test-suite.txt",
+      "audit/evidence/verify/F-005/09-diff.txt",
+      "audit/evidence/verify/F-005/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn ': any' server/src/ | head -n 25",
@@ -8428,7 +8444,7 @@
       ]
     },
     "needsApproval": "none",
-    "notes": ""
+    "notes": "Decoupled from F-070 per Option 2 directive; removed redundant unused cn package from client/package.json and pnpm-lock.yaml."
   },
   {
     "id": "F-094",

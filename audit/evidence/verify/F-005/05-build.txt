@@ -1,0 +1,68 @@
+Scope: 3 of 4 workspace projects
+server build$ tsc
+client build$ tsc -b && vite build
+server build: Done
+client build: vite v8.3.8 building client environment for production...
+client build: transforming...
+client build: ✓ 2554 modules transformed.
+client build: rendering chunks...
+client build: computing gzip size...
+client build: dist/registerSW.js                                           0.13 kB
+client build: dist/manifest.webmanifest                                    0.37 kB
+client build: dist/index.html                                              4.54 kB │ gzip:  1.47 kB
+client build: dist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2    7.42 kB
+client build: dist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2      8.00 kB
+client build: dist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2       15.08 kB
+client build: dist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2      16.51 kB
+client build: dist/assets/geist-latin-wght-normal-BgDaEnEv.woff2          29.40 kB
+client build: dist/assets/index-BgXvO0Ps.css                              84.52 kB │ gzip: 15.12 kB
+client build: dist/assets/label-wpVtrpBY.js                                0.34 kB │ gzip:  0.25 kB
+client build: dist/assets/use-url-state-I4o25NKU.js                        0.49 kB │ gzip:  0.34 kB
+client build: dist/assets/rolldown-runtime-XKyaHtl9.js                     0.72 kB │ gzip:  0.42 kB
+client build: dist/assets/input-Ci6YNPtE.js                                0.84 kB │ gzip:  0.45 kB
+client build: dist/assets/placeholder-pages-CEScN5Vb.js                    0.99 kB │ gzip:  0.54 kB
+client build: dist/assets/card-CpEI8uJx.js                                 0.99 kB │ gzip:  0.43 kB
+client build: dist/assets/table-UBxQrhaJ.js                                1.56 kB │ gzip:  0.66 kB
+client build: dist/assets/alert-DWl2SpYs.js                                1.65 kB │ gzip:  0.72 kB
+client build: dist/assets/domain-tooltip-CqlTWsmF.js                       1.69 kB │ gzip:  1.00 kB
+client build: dist/assets/dialog-Cue44Nd6.js                               2.12 kB │ gzip:  0.86 kB
+client build: dist/assets/loading-error-empty-CgoF6p6D.js                  3.68 kB │ gzip:  1.34 kB
+client build: dist/assets/customers-page-CvBGmgQR.js                       5.24 kB │ gzip:  1.78 kB
+client build: dist/assets/dashboard-page-Cec1_twF.js                       8.32 kB │ gzip:  1.97 kB
+client build: dist/assets/public-footer-Bu4zaz-w.js                        8.99 kB │ gzip:  2.64 kB
+client build: dist/assets/login-page-DRt-pVSn.js                           9.31 kB │ gzip:  3.31 kB
+client build: dist/assets/stock-page-3IZCa0Lu.js                          10.41 kB │ gzip:  2.56 kB
+client build: dist/assets/exports-page-D1CeVBAC.js                        11.32 kB │ gzip:  3.85 kB
+client build: dist/assets/catalog-page-KKe7xlA5.js                        11.64 kB │ gzip:  3.93 kB
+client build: dist/assets/landing-page-Cl_9dWuT.js                        14.09 kB │ gzip:  4.14 kB
+client build: dist/assets/new-order-page-Dnpj7DZK.js                      14.10 kB │ gzip:  4.28 kB
+client build: dist/assets/purchases-page-Dv0sJ5EU.js                      14.26 kB │ gzip:  3.85 kB
+client build: dist/assets/suppliers-page-BFIKPrqc.js                      15.58 kB │ gzip:  3.55 kB
+client build: dist/assets/contact-page-DpjtrNjO.js                        15.70 kB │ gzip:  4.40 kB
+client build: dist/assets/dispatch-page-SXCZhSdT.js                       18.00 kB │ gzip:  4.41 kB
+client build: dist/assets/settings-page-6kytbcTF.js                       18.86 kB │ gzip:  4.18 kB
+client build: dist/assets/production-page-CI6Po381.js                     19.13 kB │ gzip:  4.58 kB
+client build: dist/assets/reports-page-BbmbP54U.js                        20.09 kB │ gzip:  4.25 kB
+client build: dist/assets/invoices-page-Dx3TeXaH.js                       24.09 kB │ gzip:  5.26 kB
+client build: dist/assets/dist-BEegrMDU.js                                28.15 kB │ gzip:  9.01 kB
+client build: dist/assets/vendor-query-BM2iswqn.js                        28.91 kB │ gzip:  8.98 kB
+client build: dist/assets/payments-page-HDZOJoTc.js                       31.44 kB │ gzip:  6.28 kB
+client build: dist/assets/vendor-icons-B7ULQVjv.js                        31.69 kB │ gzip: 11.13 kB
+client build: dist/assets/i18n-DVqgGffh.js                                32.14 kB │ gzip:  7.48 kB
+client build: dist/assets/orders-page-BJlzUkj7.js                         32.24 kB │ gzip:  6.87 kB
+client build: dist/assets/showcase-page-B1dspMoo.js                       56.90 kB │ gzip: 15.19 kB
+client build: dist/assets/api-client-41lLsq8_.js                          59.59 kB │ gzip: 22.11 kB
+client build: dist/assets/src-CgeZ6ZzY.js                                 93.46 kB │ gzip: 26.43 kB
+client build: dist/assets/vendor-ui-C42wMpap.js                          155.27 kB │ gzip: 48.34 kB
+client build: dist/assets/index-vkVKpdSv.js                              280.33 kB │ gzip: 82.70 kB
+client build: dist/assets/vendor-react-CZTVrOZX.js                       303.08 kB │ gzip: 95.74 kB
+client build: 
+client build: ✓ built in 422ms
+client build: 
+client build: PWA v2.0.0
+client build: mode      generateSW
+client build: precache  59 entries (1601.51 KiB)
+client build: files generated
+client build:   dist/sw.js
+client build:   dist/workbox-4bb8bbd8.js
+client build: Done
