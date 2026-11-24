@@ -150,7 +150,7 @@ const handleReportExport = async (
       return res.send(csvContent);
     } else {
       // JSON export
-      let data: any;
+      let data: unknown;
       switch (reportType) {
         case "sales":
           data = await reportingService.getSalesReport(params);
@@ -267,7 +267,7 @@ reportingRouter.get(
         paymentMode: req.query.paymentMode as string | undefined,
       };
 
-      let result: any;
+      let result: unknown;
       switch (reportType.toLowerCase()) {
         case "sales":
           result = await reportingService.getSalesReport(params);

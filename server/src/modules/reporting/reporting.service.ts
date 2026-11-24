@@ -1,5 +1,11 @@
 import { prisma } from "../../db/client.js";
-import { InvoiceStatus, PaymentStatus, type Prisma } from "@prisma/client";
+import {
+  InvoiceStatus,
+  PaymentStatus,
+  PaymentMode,
+  type Prisma,
+} from "@prisma/client";
+import type { UserContext } from "@mill-ledger/shared";
 import { AppError } from "../../middleware/error.middleware.js";
 import { auditService } from "./audit.service.js";
 
@@ -13,6 +19,92 @@ export interface ReportFilterParams {
   recipeId?: string;
   warehouseId?: string;
   paymentMode?: string;
+}
+
+export interface SalesReportRow {
+  invoiceId: string;
+  invoiceNumber: string;
+  financialYear: string;
+  invoiceDate: Date | null;
+  customerCode: string;
+  customerName: string;
+  customerGstin: string;
+  deliveryState: string;
+  salesmanName: string;
+  orderNumber: string;
+  productSku: string;
+  productName: string;
+  hsnCode: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate: number;
+  taxableAmount: number;
+  cgstAmount: number;
+  sgstAmount: number;
+  igstAmount: number;
+  taxAmount: number;
+  lineTotal: number;
+  paymentStatus?: PaymentStatus;
+  status?: InvoiceStatus;
+}
+
+export interface GSTSupplyRecord {
+  invoiceNumber: string;
+  invoiceDate: Date | null;
+  customerName: string;
+  customerGstin: string | null;
+  placeOfSupply: string;
+  supplyType: string;
+  taxableAmount: number;
+  cgstAmount: number;
+  sgstAmount: number;
+  igstAmount: number;
+  totalTaxAmount: number;
+  invoiceTotal: number;
+}
+
+export interface GSTCreditNoteRecord {
+  creditNoteNumber: string;
+  creditNoteDate?: Date | null;
+  date?: Date | null;
+  originalInvoiceNumber: string;
+  customerName: string;
+  customerGstin?: string | null;
+  reason: string;
+  taxableAmount: number;
+  taxAmount: number;
+  totalAmount: number;
+}
+
+export interface PurchaseReportRow {
+  receiptNumber: string;
+  receivedAt: Date | null;
+  supplierInvoiceNumber: string | null;
+  supplierCode: string;
+  supplierName: string;
+  warehouseCode: string;
+  itemSku: string;
+  itemName: string;
+  unitOfMeasure: string;
+  receivedQuantity: number;
+  unitCost: number;
+  totalCost: number;
+  status: string;
+}
+
+export interface ReportExportData {
+  reportTitle?: string;
+  companyGstin?: string;
+  generatedAt?: string | Date;
+  filters?: ReportFilterParams;
+  summary?: Record<string, unknown>;
+  rows?: unknown[];
+  b2bSupplies?: unknown[];
+  b2cSupplies?: unknown[];
+  creditNotes?: unknown[];
+  rateWiseBreakdown?: unknown[];
+  hsnSummary?: unknown[];
+  [key: string]: unknown;
 }
 
 export class ReportingService {
@@ -32,7 +124,7 @@ export class ReportingService {
   async getSalesReport(params: ReportFilterParams) {
     const orgId = await this.resolveOrgId(params.organizationId);
 
-    const where: any = {
+    const where: Prisma.SalesInvoiceWhereInput = {
       organizationId: orgId,
       status: { not: InvoiceStatus.DRAFT },
     };
@@ -65,7 +157,7 @@ export class ReportingService {
       orderBy: { postedAt: "desc" },
     });
 
-    const rows: any[] = [];
+    const rows: SalesReportRow[] = [];
     let totalTaxable = 0;
     let totalCGST = 0;
     let totalSGST = 0;
@@ -186,7 +278,7 @@ export class ReportingService {
   async getGSTOutwardSummary(params: ReportFilterParams) {
     const orgId = await this.resolveOrgId(params.organizationId);
 
-    const where: any = {
+    const where: Prisma.SalesInvoiceWhereInput = {
       organizationId: orgId,
       status: { not: InvoiceStatus.DRAFT },
     };
@@ -208,11 +300,11 @@ export class ReportingService {
     });
 
     // 1. Table 4: B2B Taxable Supplies (Registered customers with GSTIN)
-    const b2bSupplies: any[] = [];
+    const b2bSupplies: GSTSupplyRecord[] = [];
     // 2. Table 5 & 7: B2C Supplies (Unregistered customers)
-    const b2cSupplies: any[] = [];
+    const b2cSupplies: GSTSupplyRecord[] = [];
     // 3. Table 9: Credit Notes
-    const creditNotes: any[] = [];
+    const creditNotes: GSTCreditNoteRecord[] = [];
 
     // Rate wise aggregation
     const rateWiseMap: Record<
@@ -367,7 +459,7 @@ export class ReportingService {
   async getPurchaseReport(params: ReportFilterParams) {
     const orgId = await this.resolveOrgId(params.organizationId);
 
-    const where: any = {
+    const where: Prisma.PurchaseReceiptWhereInput = {
       organizationId: orgId,
     };
 
@@ -397,7 +489,7 @@ export class ReportingService {
       orderBy: { postedAt: "desc" },
     });
 
-    const rows: any[] = [];
+    const rows: PurchaseReportRow[] = [];
     let totalSpend = 0;
     let totalQty = 0;
 
@@ -552,7 +644,7 @@ export class ReportingService {
   async getProductionReport(params: ReportFilterParams) {
     const orgId = await this.resolveOrgId(params.organizationId);
 
-    const where: any = {
+    const where: Prisma.ProductionRunWhereInput = {
       organizationId: orgId,
     };
 
@@ -664,7 +756,7 @@ export class ReportingService {
   async getCollectionsReport(params: ReportFilterParams) {
     const orgId = await this.resolveOrgId(params.organizationId);
 
-    const where: any = {
+    const where: Prisma.PaymentWhereInput = {
       organizationId: orgId,
     };
 
@@ -679,7 +771,7 @@ export class ReportingService {
     }
 
     if (params.paymentMode) {
-      where.paymentMode = params.paymentMode;
+      where.paymentMode = params.paymentMode as PaymentMode;
     }
 
     if (params.salesmanId) {
@@ -1009,9 +1101,11 @@ export class ReportingService {
   async exportToCSV(
     reportType: string,
     params: ReportFilterParams,
-    userContext?: any,
+    userContext?:
+      | UserContext
+      | { id?: string; email?: string; [key: string]: unknown },
   ) {
-    let reportData: any;
+    let reportData: ReportExportData;
 
     switch (reportType.toLowerCase()) {
       case "sales":
@@ -1053,7 +1147,10 @@ export class ReportingService {
     });
 
     // Flatten rows into CSV
-    const rows: any[] = reportData.rows || reportData.b2bSupplies || [];
+    const rows: Record<string, unknown>[] =
+      (reportData.rows as Record<string, unknown>[]) ||
+      (reportData.b2bSupplies as Record<string, unknown>[]) ||
+      [];
     if (rows.length === 0) {
       return `Report: ${reportData.reportTitle}\nGenerated At: ${reportData.generatedAt}\nNo records found`;
     }

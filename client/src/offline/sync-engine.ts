@@ -1,3 +1,4 @@
+import axios from "axios";
 import { apiClient } from "@/lib/api-client";
 import {
   offlineDb,
@@ -37,8 +38,8 @@ export async function refreshMasterDataSnapshot(
 ): Promise<{ customersCount: number; productsCount: number }> {
   try {
     const [custRes, prodRes] = await Promise.all([
-      apiClient.get<{ customers: Array<any> }>("/sales/customers"),
-      apiClient.get<{ products: Array<any> }>("/sales/products"),
+      apiClient.get<{ customers: Array<CachedCustomer> }>("/sales/customers"),
+      apiClient.get<{ products: Array<CachedProduct> }>("/sales/products"),
     ]);
 
     const now = new Date().toISOString();
@@ -281,13 +282,14 @@ async function executeSyncLoop(
 
         succeeded += 1;
         notifyListeners();
-      } catch (err: any) {
-        const status = err.response?.status;
+      } catch (err: unknown) {
+        const isAxios = axios.isAxiosError(err);
+        const status = isAxios ? err.response?.status : undefined;
+        const respData = isAxios ? (err.response?.data as Record<string, unknown> | undefined) : undefined;
         const errorMessage =
-          err.response?.data?.error ||
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to sync order";
+          (typeof respData?.error === "string" ? respData.error : undefined) ||
+          (typeof respData?.message === "string" ? respData.message : undefined) ||
+          (err instanceof Error ? err.message : "Failed to sync order");
 
         // If duplicate conflict error occurred (e.g. another concurrent tab landed the order),
         // resolve cleanly as synced
@@ -309,12 +311,16 @@ async function executeSyncLoop(
         }
 
         // Check if error is an uncaught client runtime exception rather than a network/HTTP response (F-082)
+        const errObj =
+          typeof err === "object" && err !== null
+            ? (err as { response?: unknown; name?: string })
+            : undefined;
         const isClientException =
-          !err.response &&
+          !errObj?.response &&
           (err instanceof TypeError ||
             err instanceof ReferenceError ||
             err instanceof SyntaxError ||
-            err.name === "TypeError");
+            errObj?.name === "TypeError");
 
         if (isClientException) {
           conflicts += 1;

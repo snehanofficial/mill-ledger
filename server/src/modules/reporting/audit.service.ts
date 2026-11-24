@@ -1,4 +1,5 @@
 import { prisma } from "../../db/client.js";
+import type { Prisma } from "@prisma/client";
 
 export interface LogAuditInput {
   organizationId?: string;
@@ -68,7 +69,7 @@ export class AuditService {
   }) {
     const orgId = await this.resolveOrgId(params.organizationId);
 
-    const where: any = {
+    const where: Prisma.AuditLogWhereInput = {
       organizationId: orgId,
     };
 

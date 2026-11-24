@@ -222,8 +222,8 @@ export function DispatchPage() {
     const q = searchQuery.toLowerCase().trim();
     return (
       d.dispatchNumber.toLowerCase().includes(q) ||
-      d.salesOrder.orderNumber.toLowerCase().includes(q) ||
-      d.salesOrder.customer.name.toLowerCase().includes(q) ||
+      (d.salesOrder?.orderNumber && d.salesOrder.orderNumber.toLowerCase().includes(q)) ||
+      (d.salesOrder?.customer?.name && d.salesOrder.customer.name.toLowerCase().includes(q)) ||
       (d.vehicleNumber && d.vehicleNumber.toLowerCase().includes(q)) ||
       (d.driverName && d.driverName.toLowerCase().includes(q))
     );

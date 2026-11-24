@@ -52,10 +52,13 @@ export function AuthenticatedLayout() {
   let label = "Overview";
   if (lastWithHandle) {
     const handle = lastWithHandle.handle as RouteHandle;
-    label =
+    const resolvedLabel =
       typeof handle.breadcrumb === "function"
         ? handle.breadcrumb(lastWithHandle.data)
         : handle.breadcrumb;
+    if (resolvedLabel) {
+      label = resolvedLabel;
+    }
   }
 
   const routeAnnouncement = `${label} view loaded`;
