@@ -5570,7 +5570,7 @@
     ],
     "effort": "S",
     "owner": "agent",
-    "status": "OPEN",
+    "status": "VERIFIED",
     "statusHistory": [
       {
         "status": "OPEN",
@@ -5578,12 +5578,30 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-060.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "VERIFIED",
+        "date": "2026-11-24",
+        "commit": "4f4d755",
+        "evidenceLink": "audit/evidence/verify/F-060/10-summary.txt",
+        "note": "Added LangPart component and explicit lang attributes on multilingual fragments and language switcher toggle buttons."
       }
     ],
     "reproCommand": "npx vitest run --exclude '**/audit/**'",
-    "regressionTest": "audit/tests/f-060-regression.spec.ts",
-    "fixCommit": null,
-    "verifyEvidence": [],
+    "regressionTest": "audit/tests/f-060-regression.test.ts",
+    "fixCommit": "4f4d755",
+    "verifyEvidence": [
+      "audit/evidence/verify/F-060/01-git-status.txt",
+      "audit/evidence/verify/F-060/02-regression-test.txt",
+      "audit/evidence/verify/F-060/03-typecheck.txt",
+      "audit/evidence/verify/F-060/04-lint.txt",
+      "audit/evidence/verify/F-060/05-build.txt",
+      "audit/evidence/verify/F-060/06-invariants.txt",
+      "audit/evidence/verify/F-060/07-benchmark.txt",
+      "audit/evidence/verify/F-060/08-test-suite.txt",
+      "audit/evidence/verify/F-060/09-diff.txt",
+      "audit/evidence/verify/F-060/10-summary.txt"
+    ],
     "siblingSweep": {
       "done": true,
       "queryUsed": "grep -rn 'Skip to main content\\|aria-label' client/src/ | head -n 25",
