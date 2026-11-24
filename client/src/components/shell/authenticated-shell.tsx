@@ -906,14 +906,6 @@ function StickyHeader({
         "bg-background px-4 [html:has(&)]:scroll-pt-16",
       )}
     >
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-4 focus:z-50 focus:rounded-control focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground focus:shadow-md focus:outline-none"
-      >
-        {language === "ta"
-          ? "முதன்மை பகுதிக்குச் செல்லவும்"
-          : "Skip to main content"}
-      </a>
       {/* Mobile: hamburger button */}
       {isMobile ? (
         <Button
@@ -1208,6 +1200,7 @@ export function AuthenticatedShell({
   const [outboxOpen, setOutboxOpen] = useState(false);
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const { language } = useLanguage();
 
   const syncManager = useSyncManager(user.id);
   const { syncState, isOnline, pendingCount, conflictCount } = syncManager;
@@ -1225,7 +1218,7 @@ export function AuthenticatedShell({
   return (
     <TooltipProvider delayDuration={100}>
       <SidebarProvider userId={user.id}>
-        {/* Skip-to-main for keyboard accessibility */}
+        {/* Skip-to-main for keyboard accessibility (WCAG 2.2 SC 2.4.1) */}
         <a
           href="#main-content"
           className={cn(
@@ -1235,7 +1228,9 @@ export function AuthenticatedShell({
             "focus:shadow-lg focus:outline-none",
           )}
         >
-          Skip to main content
+          {language === "ta"
+            ? "முதன்மை பகுதிக்குச் செல்லவும்"
+            : "Skip to main content"}
         </a>
 
         {/* Desktop & mobile sidebar */}
