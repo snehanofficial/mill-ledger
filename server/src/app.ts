@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -116,6 +118,25 @@ export function createApp() {
     res.type("text/plain");
     res.send("User-agent: *\nDisallow: /\n");
   });
+
+  // Serve static frontend assets and SPA fallback in production/container (F-099)
+  const clientDistPath = [
+    path.resolve(process.cwd(), "client/dist"),
+    path.resolve(process.cwd(), "../client/dist"),
+  ].find((p) => fs.existsSync(p));
+
+  if (clientDistPath) {
+    app.use(express.static(clientDistPath));
+    app.use((req, res, next) => {
+      if (req.method !== "GET") {
+        return next();
+      }
+      if (req.path.startsWith("/api") || req.path === "/ready" || req.path === "/robots.txt") {
+        return next();
+      }
+      res.sendFile(path.join(clientDistPath, "index.html"));
+    });
+  }
 
   // 404 catch-all for unmatched routes
   app.use((req, res) => {
