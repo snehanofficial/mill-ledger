@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { requestPersistentStorage } from "@/offline/db";
 
 export interface BeforeInstallPromptEvent extends Event {
@@ -55,6 +55,49 @@ export async function triggerPwaInstall(options: {
   return outcome === "accepted" ? "accepted" : "dismissed";
 }
 
+// Module-level store so beforeinstallprompt is captured even before lazy routes mount.
+let globalDeferredPrompt: BeforeInstallPromptEvent | null = null;
+let globalIsInstalled = isRunningStandalone();
+const listeners = new Set<() => void>();
+let listenersAttached = false;
+
+function notifyPwaListeners() {
+  for (const listener of listeners) {
+    listener();
+  }
+}
+
+export function initPwaListeners(): void {
+  if (typeof window === "undefined" || listenersAttached) return;
+  listenersAttached = true;
+
+  window.addEventListener("beforeinstallprompt", (event: Event) => {
+    event.preventDefault();
+    globalDeferredPrompt = event as BeforeInstallPromptEvent;
+    notifyPwaListeners();
+  });
+
+  window.addEventListener("appinstalled", () => {
+    globalDeferredPrompt = null;
+    globalIsInstalled = true;
+    notifyPwaListeners();
+    void requestPersistentStorage();
+  });
+
+  const mediaQuery = window.matchMedia?.("(display-mode: standalone)");
+  mediaQuery?.addEventListener?.("change", (event: MediaQueryListEvent) => {
+    if (event.matches) {
+      globalIsInstalled = true;
+      globalDeferredPrompt = null;
+      notifyPwaListeners();
+    }
+  });
+}
+
+if (typeof window !== "undefined") {
+  initPwaListeners();
+}
+
 export interface PwaStatus {
   canInstall: boolean;
   isInstalled: boolean;
@@ -68,8 +111,7 @@ export interface PwaStatus {
 }
 
 export function usePwaStatus(): PwaStatus {
-  const [isInstalled, setIsInstalled] = useState<boolean>(() => isRunningStandalone());
-  const [hasDeferredPrompt, setHasDeferredPrompt] = useState(false);
+  const [, setVersion] = useState(0);
   const [isInstalling, setIsInstalling] = useState(false);
   const [installMessage, setInstallMessage] = useState<string | null>(null);
 
@@ -81,7 +123,6 @@ export function usePwaStatus(): PwaStatus {
   const [storagePersisted, setStoragePersisted] = useState<boolean | null>(null);
   const [isRequestingStorage, setIsRequestingStorage] = useState(false);
 
-  const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
   const supportsWebInstall = hasNativeWebInstall();
 
   const refreshStorageStatus = useCallback(async () => {
@@ -101,67 +142,39 @@ export function usePwaStatus(): PwaStatus {
   }, []);
 
   useEffect(() => {
+    initPwaListeners();
+    const onStoreChange = () => {
+      setVersion((v) => v + 1);
+      void refreshStorageStatus();
+    };
+    listeners.add(onStoreChange);
     void refreshStorageStatus();
-  }, [refreshStorageStatus]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleBeforeInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      deferredPromptRef.current = event as BeforeInstallPromptEvent;
-      setHasDeferredPrompt(true);
-    };
-
-    const handleAppInstalled = () => {
-      deferredPromptRef.current = null;
-      setHasDeferredPrompt(false);
-      setIsInstalled(true);
-      setInstallMessage("App installed.");
-      void requestPersistentStorage().then((granted) => {
-        setStoragePersisted(granted);
-      });
-    };
-
-    const mediaQuery = window.matchMedia?.("(display-mode: standalone)");
-    const handleDisplayModeChange = (event: MediaQueryListEvent) => {
-      if (event.matches) {
-        setIsInstalled(true);
-        setHasDeferredPrompt(false);
-      }
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    window.addEventListener("appinstalled", handleAppInstalled);
-    mediaQuery?.addEventListener?.("change", handleDisplayModeChange);
-
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-      window.removeEventListener("appinstalled", handleAppInstalled);
-      mediaQuery?.removeEventListener?.("change", handleDisplayModeChange);
+      listeners.delete(onStoreChange);
     };
-  }, []);
+  }, [refreshStorageStatus]);
 
   const promptInstall = useCallback(async (): Promise<
     "accepted" | "dismissed" | "unavailable"
   > => {
-    if (isInstalling || isInstalled) return "unavailable";
+    if (isInstalling || globalIsInstalled) return "unavailable";
     setIsInstalling(true);
     setInstallMessage(null);
 
     try {
       const outcome = await triggerPwaInstall({
         supportsWebInstall,
-        deferredPrompt: deferredPromptRef.current,
+        deferredPrompt: globalDeferredPrompt,
         clearDeferredPrompt: () => {
-          deferredPromptRef.current = null;
-          setHasDeferredPrompt(false);
+          globalDeferredPrompt = null;
+          notifyPwaListeners();
         },
       });
 
       if (outcome === "accepted") {
-        setIsInstalled(true);
-        setHasDeferredPrompt(false);
+        globalIsInstalled = true;
+        globalDeferredPrompt = null;
+        notifyPwaListeners();
         setInstallMessage(
           supportsWebInstall ? "App installed or opened." : "App installed.",
         );
@@ -186,7 +199,7 @@ export function usePwaStatus(): PwaStatus {
     } finally {
       setIsInstalling(false);
     }
-  }, [isInstalled, isInstalling, supportsWebInstall]);
+  }, [isInstalling, supportsWebInstall]);
 
   const requestStoragePersistence = useCallback(async (): Promise<boolean> => {
     if (isRequestingStorage) return Boolean(storagePersisted);
@@ -200,11 +213,12 @@ export function usePwaStatus(): PwaStatus {
     }
   }, [isRequestingStorage, storagePersisted]);
 
-  const canInstall = !isInstalled && (supportsWebInstall || hasDeferredPrompt);
+  const canInstall =
+    !globalIsInstalled && (supportsWebInstall || globalDeferredPrompt !== null);
 
   return {
     canInstall,
-    isInstalled,
+    isInstalled: globalIsInstalled,
     isInstalling,
     installMessage,
     storagePersisted,
