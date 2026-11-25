@@ -162,6 +162,22 @@ function isActiveHref(href: string, pathname: string): boolean {
   return href !== "/" && pathname.startsWith(`${href.replace(/\/$/, "")}/`);
 }
 
+function getActiveChildHref(
+  items: { href: string }[],
+  pathname: string,
+): string | undefined {
+  let bestHref: string | undefined;
+  for (const child of items) {
+    if (
+      isActiveHref(child.href, pathname) &&
+      (!bestHref || child.href.length > bestHref.length)
+    ) {
+      bestHref = child.href;
+    }
+  }
+  return bestHref;
+}
+
 function getInitials(name: string): string {
   return name
     .split(/\s+/)
@@ -351,8 +367,10 @@ function AppNavItem({ item, pathname }: NavItemProps) {
     if (isMobile) setOpenMobile(false);
   }, [isMobile, setOpenMobile]);
 
-  const childActive =
-    item.items?.some((c) => isActiveHref(c.href, pathname)) ?? false;
+  const activeChildHref = item.items
+    ? getActiveChildHref(item.items, pathname)
+    : undefined;
+  const childActive = activeChildHref !== undefined;
   const [expanded, setExpanded] = useState(childActive);
   const [prevChildActive, setPrevChildActive] = useState(childActive);
 
@@ -395,7 +413,71 @@ function AppNavItem({ item, pathname }: NavItemProps) {
     );
   }
 
-  // Has subitems: render as collapsible group with directed tooltip
+  // Collapsed icon rail: expose nested items via a flyout dropdown menu
+  if (isCollapsed) {
+    return (
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              isActive={childActive}
+              tooltip={translatedLabel}
+              aria-label={translatedLabel}
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              {item.icon}
+              <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate">
+                {translatedLabel}
+              </span>
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="right"
+            align="start"
+            sideOffset={8}
+            className="min-w-48 rounded-lg"
+          >
+            <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+              {translatedLabel}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {item.items.map((child) => {
+              const childLabel = t(child.label, child.label);
+              const isChildActive = activeChildHref === child.href;
+              return (
+                <DropdownMenuItem
+                  key={child.href}
+                  asChild
+                  className={cn(
+                    "cursor-pointer",
+                    isChildActive &&
+                      "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
+                  )}
+                >
+                  <Link
+                    to={child.href}
+                    aria-label={childLabel}
+                    aria-current={child.href === pathname ? "page" : undefined}
+                    onClick={closeOnMobile}
+                    {...getPrefetchProps(child.href)}
+                  >
+                    {child.icon && (
+                      <span className="shrink-0">{child.icon}</span>
+                    )}
+                    <span className="min-w-0 flex-1 truncate">
+                      {childLabel}
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    );
+  }
+
+  // Expanded mode: render as collapsible group
   return (
     <Collapsible
       open={expanded}
@@ -427,7 +509,7 @@ function AppNavItem({ item, pathname }: NavItemProps) {
                 <SidebarMenuSubItem key={child.href}>
                   <SidebarMenuSubButton
                     asChild
-                    isActive={isActiveHref(child.href, pathname)}
+                    isActive={activeChildHref === child.href}
                   >
                     <Link
                       to={child.href}
