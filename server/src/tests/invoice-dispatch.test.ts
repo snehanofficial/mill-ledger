@@ -692,4 +692,34 @@ describe("M6: Invoice generation, physical dispatch, reservation release, and cr
       Number(beforeItem.currentStock) + 5,
     );
   });
+
+  it("lists posted invoices when queried by organization code (MILL) or default", async () => {
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+
+    const byCodeRes = await fetch(
+      `${baseUrl}/api/v1/finance/invoices?organizationId=MILL&limit=50&offset=0`,
+      {
+        headers: { Cookie: adminCookie },
+      },
+    );
+    expect(byCodeRes.status).toBe(200);
+    const byCodeBody = (await byCodeRes.json()) as {
+      invoices: Array<{ id: string; invoiceNumber: string }>;
+      pagination: { count: number };
+    };
+    expect(byCodeBody.invoices.length).toBeGreaterThan(0);
+    expect(byCodeBody.pagination.count).toBe(byCodeBody.invoices.length);
+
+    const defaultRes = await fetch(`${baseUrl}/api/v1/finance/invoices`, {
+      headers: { Cookie: adminCookie },
+    });
+    expect(defaultRes.status).toBe(200);
+    const defaultBody = (await defaultRes.json()) as {
+      invoices: Array<{ id: string; invoiceNumber: string }>;
+    };
+    expect(defaultBody.invoices.length).toBe(byCodeBody.invoices.length);
+  });
 });

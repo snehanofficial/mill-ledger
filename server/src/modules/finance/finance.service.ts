@@ -45,6 +45,18 @@ export interface IssueDebitNoteInput {
 
 export class FinanceService {
   /**
+   * Resolve an organization ID from either its primary key or organization code (e.g. "MILL")
+   */
+  private async resolveOrgId(orgIdOrCode: string): Promise<string> {
+    const org = await prisma.organization.findFirst({
+      where: {
+        OR: [{ id: orgIdOrCode }, { code: orgIdOrCode }],
+      },
+    });
+    return org ? org.id : orgIdOrCode;
+  }
+
+  /**
    * Helper to derive Indian financial year (e.g. 2025-26) from a date, strictly in IST (Asia/Kolkata)
    */
   getFinancialYear(date: Date = new Date()): string {
@@ -428,8 +440,9 @@ export class FinanceService {
     customerId?: string,
     options?: { limit?: number; offset?: number },
   ) {
+    const orgId = await this.resolveOrgId(organizationId);
     const where: Prisma.SalesInvoiceWhereInput = {
-      organizationId,
+      organizationId: orgId,
     };
     if (customerId) {
       where.customerId = customerId;
@@ -612,10 +625,7 @@ export class FinanceService {
    * Get debit notes for an organization
    */
   async getDebitNotes(organizationId: string, supplierId?: string) {
-    const org = await prisma.organization.findFirst({
-      where: { OR: [{ id: organizationId }, { code: organizationId }] },
-    });
-    const orgId = org ? org.id : organizationId;
+    const orgId = await this.resolveOrgId(organizationId);
 
     return await prisma.debitNote.findMany({
       where: {
@@ -635,10 +645,7 @@ export class FinanceService {
    * List statutory tax rates for an organization, optionally filtered by HSN
    */
   async getTaxRates(organizationId: string, hsnCode?: string) {
-    const org = await prisma.organization.findFirst({
-      where: { OR: [{ id: organizationId }, { code: organizationId }] },
-    });
-    const orgId = org ? org.id : organizationId;
+    const orgId = await this.resolveOrgId(organizationId);
 
     return await prisma.taxRate.findMany({
       where: {
@@ -664,10 +671,7 @@ export class FinanceService {
       effectiveTo?: Date | null;
     },
   ) {
-    const org = await prisma.organization.findFirst({
-      where: { OR: [{ id: organizationId }, { code: organizationId }] },
-    });
-    const orgId = org ? org.id : organizationId;
+    const orgId = await this.resolveOrgId(organizationId);
 
     return await prisma.$transaction(async (tx) => {
       const hsnCode = input.hsnCode.trim();
