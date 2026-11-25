@@ -322,7 +322,6 @@ html {
   color: var(--foreground);
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
-  scrollbar-gutter: stable;
 }
 
 body {
@@ -330,7 +329,6 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background: var(--background);
-  scrollbar-gutter: stable;
 }
 
 button,
