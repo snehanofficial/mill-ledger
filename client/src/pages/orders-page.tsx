@@ -110,6 +110,32 @@ interface SalesOrder {
   }>;
 }
 
+interface NewOrderLineInput {
+  key: string;
+  productVariantId: string;
+  quantity: number;
+  discountPct: number;
+}
+
+function computeDiscountedUnitPrice(
+  listPrice: number,
+  discountPct: number,
+): number {
+  if (discountPct <= 0) return listPrice;
+  const raw = listPrice * (1 - discountPct / 100);
+  let rounded = Math.max(0, Math.round(raw * 100) / 100);
+  if (discountPct <= 15 && listPrice > 0) {
+    const actualPct = ((listPrice - rounded) / listPrice) * 100;
+    if (actualPct > 15.0001) {
+      rounded = Math.min(
+        listPrice,
+        Math.round((rounded + 0.01) * 100) / 100,
+      );
+    }
+  }
+  return rounded;
+}
+
 export function OrdersPage() {
   const queryClient = useQueryClient();
   const { user } = useCurrentUser();
@@ -190,9 +216,14 @@ export function OrdersPage() {
 
   // Form states
   const [selectedCustomerId, setSelectedCustomerId] = useState("CUST-RET-A");
-  const [selectedProductId, setSelectedProductId] =
-    useState("VAR-MURUKKU-200G");
-  const [orderQuantity, setOrderQuantity] = useState(150);
+  const [orderLines, setOrderLines] = useState<NewOrderLineInput[]>([
+    {
+      key: "line-initial",
+      productVariantId: "VAR-MURUKKU-200G",
+      quantity: 150,
+      discountPct: 0,
+    },
+  ]);
   const [orderNotes, setOrderNotes] = useState("Benchmark wholesale order");
   const [page, setPage] = useState(1);
   const pageSize = 50;
@@ -285,12 +316,7 @@ export function OrdersPage() {
       (c) => c.id === selectedCustomerId || c.code === selectedCustomerId,
     ) || customersList[0];
 
-  const activeProduct =
-    productsList.find(
-      (p) => p.id === selectedProductId || p.sku === selectedProductId,
-    ) || productsList[0];
-
-  // Fetch current available stock for selected product
+  // Fetch current available stock for products
   const { data: stockData } = useQuery<{
     balances: Array<{
       sku: string;
@@ -308,59 +334,164 @@ export function OrdersPage() {
     },
   });
 
-  const productStock = activeProduct
-    ? stockData?.balances.find(
-        (b) =>
-          b.sku === activeProduct.sku ||
-          (b.sku === "FG-MURUKKU-200G" &&
-            activeProduct.sku.includes("MURUKKU")),
-      )
-    : undefined;
-  const availablePackets = productStock?.available ?? 0;
-  const currentShortage = Math.max(0, orderQuantity - availablePackets);
+  const getAvailableStockForProduct = (product?: { sku: string }) => {
+    if (!product) return 0;
+    const stock = stockData?.balances.find(
+      (b) =>
+        b.sku === product.sku ||
+        (b.sku === "FG-MURUKKU-200G" && product.sku.includes("MURUKKU")),
+    );
+    return stock?.available ?? 0;
+  };
 
-  // Dynamic tax calculation
+  // Dynamic tax and per-line discount calculation
   const customerState = activeCustomer?.state || "Tamil Nadu";
   const isIntraState = customerState.trim().toLowerCase() === "tamil nadu";
 
-  const unitPrice = Number(activeProduct?.defaultPrice || 50.0);
-  const taxPct = Number(activeProduct?.taxRate || 5.0) / 100;
-  const calculatedTaxable = orderQuantity * unitPrice;
-  const calculatedTax = calculatedTaxable * taxPct;
+  const computedOrderLines = orderLines.map((line) => {
+    const product =
+      productsList.find(
+        (p) => p.id === line.productVariantId || p.sku === line.productVariantId,
+      ) || productsList[0];
+    const listPrice = Number(product?.defaultPrice ?? 50.0);
+    const discountPct = Number.isFinite(line.discountPct)
+      ? line.discountPct
+      : 0;
+    const isDiscountInvalid = discountPct < 0 || discountPct > 15;
+    const clampedDiscount = Math.min(15, Math.max(0, discountPct));
+    const unitPrice = computeDiscountedUnitPrice(listPrice, clampedDiscount);
+    const requiresManagerApproval = discountPct > 5 && discountPct <= 15;
+    const quantity = Number.isFinite(line.quantity) ? line.quantity : 0;
+    const isQuantityInvalid = quantity <= 0;
+    const availablePackets = getAvailableStockForProduct(product);
+    const shortage = Math.max(0, quantity - availablePackets);
+    const taxRatePct = Number(product?.taxRate ?? 5.0);
+    const taxable = quantity * unitPrice;
+    const tax = taxable * (taxRatePct / 100);
+    const lineTotal = taxable + tax;
+    const discountSavings = Math.max(0, (listPrice - unitPrice) * quantity);
+
+    return {
+      key: line.key,
+      product,
+      quantity,
+      discountPct,
+      listPrice,
+      unitPrice,
+      isDiscountInvalid,
+      requiresManagerApproval,
+      isQuantityInvalid,
+      availablePackets,
+      shortage,
+      taxRatePct,
+      taxable,
+      tax,
+      lineTotal,
+      discountSavings,
+    };
+  });
+
+  const calculatedTaxable = computedOrderLines.reduce(
+    (sum, l) => sum + l.taxable,
+    0,
+  );
+  const calculatedTax = computedOrderLines.reduce((sum, l) => sum + l.tax, 0);
   const calculatedTotal = calculatedTaxable + calculatedTax;
+  const totalDiscountSavings = computedOrderLines.reduce(
+    (sum, l) => sum + l.discountSavings,
+    0,
+  );
+  const hasManagerApprovalDiscount = computedOrderLines.some(
+    (l) => l.requiresManagerApproval,
+  );
+  const hasInvalidOrderLine =
+    computedOrderLines.length === 0 ||
+    computedOrderLines.some(
+      (l) => !l.product || l.isQuantityInvalid || l.isDiscountInvalid,
+    );
+  const remainingProducts = productsList.filter(
+    (p) => !orderLines.some((l) => l.productVariantId === p.id),
+  );
+
+  const openNewOrderModal = () => {
+    const defaultProduct = productsList[0];
+    setOrderLines([
+      {
+        key: `line-${Date.now()}`,
+        productVariantId: defaultProduct?.id || "VAR-MURUKKU-200G",
+        quantity: 150,
+        discountPct: 0,
+      },
+    ]);
+    setShowNewOrderModal(true);
+  };
+
+  const addOrderLine = () => {
+    const nextProduct = remainingProducts[0];
+    if (!nextProduct) return;
+    setOrderLines((prev) => [
+      ...prev,
+      {
+        key: `line-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        productVariantId: nextProduct.id,
+        quantity: 1,
+        discountPct: 0,
+      },
+    ]);
+  };
+
+  const removeOrderLine = (key: string) => {
+    setOrderLines((prev) =>
+      prev.length > 1 ? prev.filter((l) => l.key !== key) : prev,
+    );
+  };
+
+  const updateOrderLine = (
+    key: string,
+    patch: Partial<Omit<NewOrderLineInput, "key">>,
+  ) => {
+    setOrderLines((prev) =>
+      prev.map((l) => (l.key === key ? { ...l, ...patch } : l)),
+    );
+  };
 
   // Create order mutation (optimistic cache insert with rollback)
   const createOrderMutation = useMutation({
     mutationFn: async (status: "DRAFT" | "SUBMITTED" = "SUBMITTED") => {
-      if (!activeCustomer || !activeProduct) {
-        throw new Error("Customer and product are required to create an order.");
+      if (!activeCustomer || hasInvalidOrderLine) {
+        throw new Error(
+          "Customer and at least one valid product line are required to create an order.",
+        );
       }
       const res = await apiClient.post("/sales/orders", {
         organizationId: "MILL",
         customerId: activeCustomer.id,
         status,
         notes: orderNotes,
-        lines: [
-          {
-            productVariantId: activeProduct.id,
-            quantity: orderQuantity,
-            unitPrice,
-          },
-        ],
+        lines: computedOrderLines.map((l) => ({
+          productVariantId: l.product!.id,
+          quantity: l.quantity,
+          unitPrice: l.unitPrice,
+        })),
       });
       return res.data;
     },
     onMutate: async (status: "DRAFT" | "SUBMITTED" = "SUBMITTED") => {
-      if (!activeCustomer || !activeProduct) return {};
+      if (!activeCustomer || hasInvalidOrderLine) return {};
       await queryClient.cancelQueries({ queryKey: ["sales-orders"] });
       const previousQueries = queryClient.getQueriesData<{ orders: SalesOrder[] }>({
         queryKey: ["sales-orders"],
       });
 
+      const optimisticStatus: SalesOrder["status"] =
+        status === "SUBMITTED" && hasManagerApprovalDiscount
+          ? "UNDER_REVIEW"
+          : status;
+
       const optimisticOrder: SalesOrder = {
         id: `optimistic-${Date.now()}`,
         orderNumber: `SO-${new Date().getFullYear()}-PEND`,
-        status,
+        status: optimisticStatus,
         fulfilmentStatus: "UNFULFILLED",
         deliveryState: customerState,
         notes: orderNotes || null,
@@ -380,24 +511,22 @@ export function OrdersPage() {
           name: user?.name || "Salesman",
           email: user?.email || "",
         },
-        lines: [
-          {
-            id: `optimistic-line-${Date.now()}`,
-            productVariantId: activeProduct.id,
-            quotedQuantity: orderQuantity,
-            approvedQuantity: 0,
-            quotedUnitPrice: unitPrice,
-            approvedUnitPrice: 0,
-            taxRate: Number(activeProduct.taxRate || 5),
-            taxableAmount: calculatedTaxable,
-            taxAmount: calculatedTax,
-            lineTotal: calculatedTotal,
-            productVariant: {
-              sku: activeProduct.sku,
-              name: activeProduct.name,
-            },
+        lines: computedOrderLines.map((l, idx) => ({
+          id: `optimistic-line-${Date.now()}-${idx}`,
+          productVariantId: l.product!.id,
+          quotedQuantity: l.quantity,
+          approvedQuantity: 0,
+          quotedUnitPrice: l.unitPrice,
+          approvedUnitPrice: 0,
+          taxRate: l.taxRatePct,
+          taxableAmount: l.taxable,
+          taxAmount: l.tax,
+          lineTotal: l.lineTotal,
+          productVariant: {
+            sku: l.product!.sku,
+            name: l.product!.name,
           },
-        ],
+        })),
         reservations: [],
       };
 
@@ -426,20 +555,19 @@ export function OrdersPage() {
   });
 
   const handleCreateOrder = async (status: "DRAFT" | "SUBMITTED" = "SUBMITTED") => {
-    if (!activeCustomer || !activeProduct) {
+    if (!activeCustomer || hasInvalidOrderLine) {
+      toast.error("Please ensure all product lines have valid quantities and discounts (0-15%).");
       return;
     }
     const customerId = activeCustomer.id;
     const customerName = activeCustomer.name;
-    const items = [
-      {
-        productVariantId: activeProduct.id,
-        sku: activeProduct.sku,
-        name: activeProduct.name,
-        quantity: orderQuantity,
-        quotedUnitPrice: unitPrice,
-      },
-    ];
+    const items = computedOrderLines.map((l) => ({
+      productVariantId: l.product!.id,
+      sku: l.product!.sku,
+      name: l.product!.name,
+      quantity: l.quantity,
+      quotedUnitPrice: l.unitPrice,
+    }));
 
     if (!isOnline) {
       await queueOrder(
@@ -465,7 +593,9 @@ export function OrdersPage() {
       toast.success(
         status === "DRAFT"
           ? "Draft sales order saved."
-          : "Sales order created successfully.",
+          : hasManagerApprovalDiscount
+            ? "Sales order submitted for manager approval (discount > 5%)."
+            : "Sales order created successfully.",
       );
     } catch (err: any) {
       if (!err.response) {
@@ -722,7 +852,7 @@ export function OrdersPage() {
           {canCreateOrder && (
             <Button
               size="sm"
-              onClick={() => setShowNewOrderModal(true)}
+              onClick={openNewOrderModal}
               className="gap-2"
             >
               <PlusCircleIcon className="h-4 w-4" />
@@ -787,7 +917,13 @@ export function OrdersPage() {
             <CheckCircle2Icon className="h-4 w-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-bold font-mono">
-            {formatQuantity(availablePackets, { unit: "pkts" })}
+            {formatQuantity(
+              getAvailableStockForProduct(
+                productsList.find((p) => p.sku.includes("MURUKKU")) ||
+                  productsList[0],
+              ),
+              { unit: "pkts" },
+            )}
           </div>
           <div className="text-xs text-muted-foreground">
             Murukku 200g net of active reservations
@@ -888,7 +1024,7 @@ export function OrdersPage() {
             {canCreateOrder && (
               <Button
                 size="sm"
-                onClick={() => setShowNewOrderModal(true)}
+                onClick={openNewOrderModal}
                 className="gap-2"
               >
                 <PlusCircleIcon className="h-4 w-4" />
@@ -1529,11 +1665,11 @@ export function OrdersPage() {
       {/* New Order Modal */}
       {showNewOrderModal && (
       <Dialog open={showNewOrderModal} onOpenChange={setShowNewOrderModal}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Create sales order</DialogTitle>
             <DialogDescription>
-              Select customer and enter order quantities
+              Select customer, add products with quantities and discounts (0-5% standard, &gt;5-15% manager approval)
             </DialogDescription>
           </DialogHeader>
 
@@ -1582,82 +1718,231 @@ export function OrdersPage() {
               </span>
             </div>
 
-            {/* Product selection with image preview (F-075) */}
-            <div className="flex items-center gap-3 rounded-lg border bg-muted/30 p-2.5">
-              <div className="size-14 shrink-0 overflow-hidden rounded-md border bg-background flex items-center justify-center">
-                <img
-                  src={activeProduct?.imageUrl || "/products/murukku.svg"}
-                  alt={activeProduct?.name || "Product Packaging"}
-                  width={56}
-                  height={56}
-                  loading="lazy"
-                  decoding="async"
-                  className="size-full object-contain"
-                />
-              </div>
-              <div className="flex flex-1 flex-col gap-1">
-                <Label
-                  htmlFor="order-product-select"
-                  className="text-xs font-semibold text-muted-foreground"
-                >
-                  Product item
+            {/* Order product lines */}
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs font-semibold text-muted-foreground">
+                  Products ({computedOrderLines.length})
                 </Label>
-                <Select
-                  value={selectedProductId || undefined}
-                  onValueChange={setSelectedProductId}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addOrderLine}
+                  disabled={remainingProducts.length === 0}
+                  className="gap-1.5"
                 >
-                  <SelectTrigger id="order-product-select" className="font-medium">
-                    <SelectValue placeholder="Select product..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {productsList.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.name} ({formatINR(p.defaultPrice)})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <span className="text-xs text-muted-foreground">
-                  Standard price: {formatINR(unitPrice)} / pkt (SKU:{" "}
-                  {activeProduct?.sku || "—"})
-                </span>
+                  <PlusCircleIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                  Add product
+                </Button>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {computedOrderLines.map((line, index) => {
+                  const productSelectId = `order-product-select-${line.key}`;
+                  const qtyInputId = `order-quantity-input-${line.key}`;
+                  const discountInputId = `order-discount-input-${line.key}`;
+                  const selectableProducts = productsList.filter(
+                    (p) =>
+                      p.id === line.product?.id ||
+                      !orderLines.some(
+                        (other) =>
+                          other.key !== line.key &&
+                          other.productVariantId === p.id,
+                      ),
+                  );
+
+                  return (
+                    <div
+                      key={line.key}
+                      className="flex flex-col gap-3 rounded-lg border bg-muted/20 p-3"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="size-11 shrink-0 overflow-hidden rounded-md border bg-background flex items-center justify-center">
+                          <img
+                            src={line.product?.imageUrl || "/products/murukku.svg"}
+                            alt={line.product?.name || "Product Packaging"}
+                            width={44}
+                            height={44}
+                            loading="lazy"
+                            decoding="async"
+                            className="size-full object-contain"
+                          />
+                        </div>
+                        <div className="flex flex-1 flex-col gap-1 min-w-0">
+                          <Label
+                            htmlFor={productSelectId}
+                            className="text-xs font-semibold text-muted-foreground"
+                          >
+                            Product {index + 1}
+                          </Label>
+                          <Select
+                            value={line.product?.id || undefined}
+                            onValueChange={(val) =>
+                              updateOrderLine(line.key, { productVariantId: val })
+                            }
+                          >
+                            <SelectTrigger
+                              id={productSelectId}
+                              className="font-medium"
+                            >
+                              <SelectValue placeholder="Select product..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {selectableProducts.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>
+                                  {p.name} ({formatINR(p.defaultPrice)})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <span className="text-xs text-muted-foreground">
+                            List price: {formatINR(line.listPrice)} / pkt (SKU:{" "}
+                            {line.product?.sku || "N/A"})
+                          </span>
+                        </div>
+                        {orderLines.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeOrderLine(line.key)}
+                            aria-label={`Remove product ${index + 1}`}
+                            className="shrink-0 text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2Icon className="h-4 w-4" aria-hidden="true" />
+                          </Button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        <div className="flex flex-col gap-1">
+                          <Label
+                            htmlFor={qtyInputId}
+                            className="text-xs font-semibold text-muted-foreground"
+                          >
+                            Quantity (pkts)
+                          </Label>
+                          <Input
+                            id={qtyInputId}
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={line.quantity}
+                            onChange={(e) =>
+                              updateOrderLine(line.key, {
+                                quantity: Math.max(0, Math.floor(Number(e.target.value) || 0)),
+                              })
+                            }
+                            aria-invalid={line.isQuantityInvalid}
+                            className="font-semibold"
+                          />
+                          <span
+                            className={`text-xs ${
+                              line.isQuantityInvalid
+                                ? "text-destructive"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            {line.isQuantityInvalid
+                              ? "Quantity must be at least 1"
+                              : `Available: ${line.availablePackets} pkts`}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <Label
+                            htmlFor={discountInputId}
+                            className="text-xs font-semibold text-muted-foreground"
+                          >
+                            Discount (%)
+                          </Label>
+                          <Input
+                            id={discountInputId}
+                            type="number"
+                            min={0}
+                            max={15}
+                            step={0.5}
+                            value={line.discountPct}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              updateOrderLine(line.key, {
+                                discountPct: Number.isNaN(val) ? 0 : val,
+                              });
+                            }}
+                            aria-invalid={line.isDiscountInvalid}
+                            className="font-semibold"
+                          />
+                          <span
+                            className={`text-xs ${
+                              line.isDiscountInvalid
+                                ? "text-destructive"
+                                : line.requiresManagerApproval
+                                  ? "text-amber-600 dark:text-amber-400"
+                                  : "text-muted-foreground"
+                            }`}
+                          >
+                            {line.isDiscountInvalid
+                              ? "Max discount is 15% (0-15%)"
+                              : line.requiresManagerApproval
+                                ? "Requires manager approval (>5%)"
+                                : line.discountPct > 0
+                                  ? "Within 5% salesman limit"
+                                  : "0% (max 15%)"}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col justify-center rounded-md bg-background/70 px-3 py-2 text-xs border">
+                          <div className="flex justify-between gap-2">
+                            <span className="text-muted-foreground">Unit price:</span>
+                            <span className="font-semibold">
+                              {formatINR(line.unitPrice)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between gap-2 mt-1">
+                            <span className="text-muted-foreground">Line total:</span>
+                            <span className="font-bold text-foreground">
+                              {formatINR(line.lineTotal)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {line.shortage > 0 && (
+                        <div
+                          role="status"
+                          aria-live="polite"
+                          className="flex items-center gap-2 rounded-md bg-amber-500/10 px-2.5 py-2 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                        >
+                          <AlertTriangleIcon
+                            className="h-4 w-4 shrink-0"
+                            aria-hidden="true"
+                          />
+                          <span>
+                            Stock shortage of {line.shortage} packets for{" "}
+                            {line.product?.name}. Order requires admin review or partial allocation.
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Quantity */}
-            <div className="flex flex-col gap-1.5">
-              <Label
-                htmlFor="order-quantity-input"
-                className="text-xs font-semibold text-muted-foreground"
-              >
-                Order quantity (pkts)
-              </Label>
-              <Input
-                id="order-quantity-input"
-                type="number"
-                value={orderQuantity}
-                onChange={(e) => setOrderQuantity(Number(e.target.value))}
-                className="font-semibold"
-              />
-              <span className="text-xs text-muted-foreground">
-                Available: {availablePackets} pkts
-              </span>
-            </div>
-
-            {/* Shortage indicator */}
-            {currentShortage > 0 && (
+            {/* Manager approval notice for >5% discount */}
+            {hasManagerApprovalDiscount && (
               <div
                 role="status"
                 aria-live="polite"
-                className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300 border border-amber-500/20"
               >
                 <AlertTriangleIcon
                   className="h-4 w-4 shrink-0"
                   aria-hidden="true"
                 />
                 <span>
-                  Warning: Stock shortage of {currentShortage} packets detected.
-                  Order requires admin review or partial allocation.
+                  One or more items have a discount above 5% (up to 15%). Submitting will place this order Under Review for manager approval.
                 </span>
               </div>
             )}
@@ -1679,6 +1964,14 @@ export function OrdersPage() {
 
             {/* Order total calculation */}
             <div className="rounded-lg bg-muted/50 p-3 text-xs flex flex-col gap-1">
+              {totalDiscountSavings > 0 && (
+                <div className="flex justify-between text-emerald-700 dark:text-emerald-400">
+                  <span>Discount savings:</span>
+                  <span className="font-semibold">
+                    -{formatINR(totalDiscountSavings)}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Taxable amount:</span>
                 <span className="font-semibold">
@@ -1687,7 +1980,7 @@ export function OrdersPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">
-                  GST (5% {isIntraState ? "CGST + SGST" : "IGST"}):
+                  GST ({isIntraState ? "CGST + SGST" : "IGST"}):
                 </span>
                 <span className="font-semibold">
                   {formatINR(calculatedTax)}
@@ -1715,7 +2008,11 @@ export function OrdersPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => handleCreateOrder("DRAFT")}
-                disabled={isSubmittingOrder || createOrderMutation.isPending}
+                disabled={
+                  hasInvalidOrderLine ||
+                  isSubmittingOrder ||
+                  createOrderMutation.isPending
+                }
               >
                 Save as Draft
               </Button>
@@ -1723,7 +2020,11 @@ export function OrdersPage() {
             <Button
               size="sm"
               onClick={() => handleCreateOrder("SUBMITTED")}
-              disabled={isSubmittingOrder || createOrderMutation.isPending}
+              disabled={
+                hasInvalidOrderLine ||
+                isSubmittingOrder ||
+                createOrderMutation.isPending
+              }
               className="gap-2 cursor-pointer"
             >
               {isSubmittingOrder || createOrderMutation.isPending ? (
