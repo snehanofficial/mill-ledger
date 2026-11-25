@@ -181,15 +181,6 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/products",
-    errorElement: <RouteErrorFallback homePath="/" />,
-    element: (
-      <Suspense fallback={<PageFallback />}>
-        <CatalogPage />
-      </Suspense>
-    ),
-  },
-  {
     path: "/contact",
     errorElement: <RouteErrorFallback homePath="/" />,
     element: (
