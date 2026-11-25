@@ -443,7 +443,7 @@ export function NewOrderPage() {
                 Product Catalog ({totalProducts} {totalProducts === 1 ? "item" : "items"})
               </h2>
               <p className="text-xs text-muted-foreground">
-                Touch <strong>+</strong> or <strong>−</strong> steppers (min 44px) to adjust batch packet quantity
+                Touch <strong>+</strong> or <strong>−</strong> steppers to adjust batch packet quantity
               </p>
             </div>
             {totalProducts > 0 && (
