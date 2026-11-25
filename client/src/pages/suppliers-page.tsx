@@ -5,6 +5,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
 import { useLanguage } from "@/lib/i18n";
 import {
+  EmptyState,
   SkeletonTable,
   ErrorState,
 } from "@/components/ui/loading-error-empty";
@@ -331,9 +332,43 @@ export function SuppliersPage() {
             />
           </div>
         ) : filteredSuppliers.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            No suppliers found.
-          </div>
+          <EmptyState
+            title={
+              suppliers.length === 0
+                ? "No suppliers added yet"
+                : "No suppliers match the selected filters"
+            }
+            description={
+              suppliers.length === 0
+                ? "Add a supplier to record raw material purchase receipts."
+                : "Clear the search or status filter to view all suppliers."
+            }
+            action={
+              suppliers.length === 0 ? (
+                canManageSuppliers ? (
+                  <Button
+                    size="sm"
+                    onClick={() => setShowAddModal(true)}
+                    className="gap-1.5"
+                  >
+                    <PlusCircleIcon className="size-4" aria-hidden="true" />
+                    Add Supplier
+                  </Button>
+                ) : undefined
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("ALL");
+                  }}
+                >
+                  Clear filters
+                </Button>
+              )
+            }
+          />
         ) : (
           <Table>
             <TableHeader>

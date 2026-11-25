@@ -63,6 +63,8 @@ interface SelectContentProps
   searchable?: boolean;
   searchPlaceholder?: string;
   searchEmptyMessage?: string;
+  emptyMessage?: string;
+  emptyAction?: React.ReactNode;
 }
 
 function SelectContent({
@@ -72,6 +74,8 @@ function SelectContent({
   searchable = false,
   searchPlaceholder = "Search...",
   searchEmptyMessage = "No matching options.",
+  emptyMessage = "No options available.",
+  emptyAction,
   ...props
 }: SelectContentProps) {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -176,15 +180,32 @@ function SelectContent({
             className="max-h-60 overflow-y-auto p-1 [scrollbar-width:thin]"
           >
             {children}
-            {searchable && (
-              <div
-                role="status"
-                aria-live="polite"
-                className="hidden px-3 py-4 text-center text-xs text-muted-foreground [[data-slot=select-viewport]:not(:has([data-slot=select-item]:not([hidden])))_&]:block"
-              >
-                {searchEmptyMessage}
-              </div>
-            )}
+            <div
+              role="status"
+              aria-live="polite"
+              className="hidden flex-col items-center justify-center gap-2 px-3 py-4 text-center text-xs text-muted-foreground [[data-slot=select-viewport]:not(:has([data-slot=select-item]:not([hidden])))_&]:flex"
+            >
+              {searchable && searchQuery.trim().length > 0 ? (
+                <>
+                  <span>{searchEmptyMessage}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      inputRef.current?.focus();
+                    }}
+                    className="inline-flex min-h-7 cursor-pointer items-center justify-center rounded-small border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                  >
+                    Clear search
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span>{emptyMessage}</span>
+                  {emptyAction}
+                </>
+              )}
+            </div>
           </SelectPrimitive.Viewport>
         </SelectSearchContext.Provider>
       </SelectPrimitive.Content>

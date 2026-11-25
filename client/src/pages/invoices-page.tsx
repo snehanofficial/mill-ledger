@@ -5,7 +5,7 @@ import { apiClient } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
-import { SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
+import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import {
   Table,
   TableBody,
@@ -405,10 +405,23 @@ export function InvoicesPage() {
             />
           </div>
         ) : invoices.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 p-12 text-center text-sm text-muted-foreground">
-            <FileTextIcon className="h-8 w-8 stroke-1 text-muted-foreground" />
-            <p>No invoices posted yet.</p>
-          </div>
+          <EmptyState
+            icon={FileTextIcon}
+            title="No invoices posted yet"
+            description="Generate a tax invoice from an approved or dispatched sales order."
+            action={
+              canCreateInvoice ? (
+                <Button
+                  size="sm"
+                  onClick={() => setShowCreateInvoiceModal(true)}
+                  className="gap-1.5"
+                >
+                  <PlusCircleIcon className="h-4 w-4" aria-hidden="true" />
+                  Create Invoice
+                </Button>
+              ) : undefined
+            }
+          />
         ) : (
           <>
             {/* Mobile Card Layout (<md viewports per F-047) */}
@@ -417,9 +430,22 @@ export function InvoicesPage() {
               data-slot="mobile-cards"
             >
               {filteredInvoices.length === 0 && invoices.length > 0 && (
-                <div className="p-8 text-center text-sm text-muted-foreground">
-                  {t("No invoices match the selected filters.")}
-                </div>
+                <EmptyState
+                  title={t("No invoices match the selected filters.")}
+                  description="Clear the search or status filter to view all invoices."
+                  action={
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setStatusFilter("ALL");
+                      }}
+                    >
+                      Clear filters
+                    </Button>
+                  }
+                />
               )}
               {filteredInvoices.map((inv) => (
                 <div key={inv.id} className="p-4 space-y-2.5">
@@ -531,11 +557,24 @@ export function InvoicesPage() {
                 <TableBody>
                   {filteredInvoices.length === 0 && invoices.length > 0 && (
                     <TableRow>
-                      <TableCell
-                        colSpan={10}
-                        className="py-8 text-center text-sm text-muted-foreground"
-                      >
-                        {t("No invoices match the selected filters.")}
+                      <TableCell colSpan={10} className="p-0">
+                        <EmptyState
+                          title={t("No invoices match the selected filters.")}
+                          description="Clear the search or status filter to view all invoices."
+                          className="min-h-32 py-6"
+                          action={
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSearchQuery("");
+                                setStatusFilter("ALL");
+                              }}
+                            >
+                              Clear filters
+                            </Button>
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   )}

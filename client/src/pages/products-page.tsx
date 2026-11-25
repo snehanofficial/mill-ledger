@@ -925,9 +925,23 @@ export function ProductsPage() {
                       <TableRow>
                         <TableCell
                           colSpan={canManage ? 5 : 4}
-                          className="py-5 text-center text-xs text-muted-foreground"
+                          className="py-6 text-center text-xs text-muted-foreground"
                         >
-                          No variants match the current filter.
+                          <div className="flex flex-col items-center justify-center gap-2">
+                            <span>No variants match the current filter.</span>
+                            {(searchQuery || statusFilter !== "ALL") && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSearchQuery("");
+                                  setStatusFilter("ALL");
+                                }}
+                              >
+                                Clear filters
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ) : (

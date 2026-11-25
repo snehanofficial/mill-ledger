@@ -4,7 +4,7 @@ import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
-import { SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
+import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import {
   Table,
   TableBody,
@@ -1165,9 +1165,22 @@ export function OrdersPage() {
               {activeTab === "stream" &&
                 filteredOrders.length === 0 &&
                 orders.length > 0 && (
-                  <div className="p-8 text-center text-sm text-muted-foreground">
-                    {t("No orders match the selected filters.")}
-                  </div>
+                  <EmptyState
+                    title={t("No orders match the selected filters.")}
+                    description="Clear the search or status filter to view all orders."
+                    action={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setStatusFilter("ALL");
+                        }}
+                      >
+                        Clear filters
+                      </Button>
+                    }
+                  />
                 )}
 
               {activeTab === "stream" &&
@@ -1467,11 +1480,24 @@ export function OrdersPage() {
                     filteredOrders.length === 0 &&
                     orders.length > 0 && (
                       <TableRow>
-                        <TableCell
-                          colSpan={10}
-                          className="py-8 text-center text-sm text-muted-foreground"
-                        >
-                          {t("No orders match the selected filters.")}
+                        <TableCell colSpan={10} className="p-0">
+                          <EmptyState
+                            title={t("No orders match the selected filters.")}
+                            description="Clear the search or status filter to view all orders."
+                            className="min-h-32 py-6"
+                            action={
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSearchQuery("");
+                                  setStatusFilter("ALL");
+                                }}
+                              >
+                                Clear filters
+                              </Button>
+                            }
+                          />
                         </TableCell>
                       </TableRow>
                     )}

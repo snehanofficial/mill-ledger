@@ -5,7 +5,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
-import { SkeletonTable } from "@/components/ui/loading-error-empty";
+import { EmptyState, SkeletonTable } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1017,13 +1017,34 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
               <TableBody>
                 {filteredAuditLogs.length === 0 ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-center text-xs text-muted-foreground py-8"
-                    >
-                      {auditSearch || auditActionFilter !== "ALL"
-                        ? "No matching audit events found"
-                        : "No audit events recorded yet"}
+                    <TableCell colSpan={5} className="p-0">
+                      <EmptyState
+                        title={
+                          auditSearch || auditActionFilter !== "ALL"
+                            ? "No matching audit events found"
+                            : "No audit events recorded yet"
+                        }
+                        description={
+                          auditSearch || auditActionFilter !== "ALL"
+                            ? "Clear the search or action filter to view all audit events."
+                            : undefined
+                        }
+                        className="min-h-32 py-6"
+                        action={
+                          auditSearch || auditActionFilter !== "ALL" ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setAuditSearch("");
+                                setAuditActionFilter("ALL");
+                              }}
+                            >
+                              Clear filters
+                            </Button>
+                          ) : undefined
+                        }
+                      />
                     </TableCell>
                   </TableRow>
                 ) : (

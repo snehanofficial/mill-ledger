@@ -6,6 +6,7 @@ import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
+  EmptyState,
   SkeletonTable,
   ErrorState,
 } from "@/components/ui/loading-error-empty";
@@ -409,10 +410,31 @@ export function StockPage() {
             />
           </div>
         ) : balances.length === 0 ? (
-          <div className="flex min-h-48 items-center justify-center p-8 text-sm text-muted-foreground">
-            No inventory items registered. Run database seed to populate
-            benchmark masters.
-          </div>
+          <EmptyState
+            icon={PackageIcon}
+            title="No inventory items registered"
+            description="Add an inventory item to start tracking stock balances and weighted average cost."
+            action={
+              canManageInventory ? (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setItemSku("");
+                    setItemName("");
+                    setItemCategory("RAW_MATERIAL");
+                    setItemUomId(uomsData?.uoms?.[0]?.id || "");
+                    setItemOpeningStock(0);
+                    setItemOpeningCost(0);
+                    setShowAddItemModal(true);
+                  }}
+                  className="gap-1.5"
+                >
+                  <PlusCircleIcon className="size-4" aria-hidden="true" />
+                  Add Item
+                </Button>
+              ) : undefined
+            }
+          />
         ) : (
           <>
             {/* Mobile Card Layout (<md viewports per F-047) */}
@@ -421,9 +443,22 @@ export function StockPage() {
               data-slot="mobile-cards"
             >
               {filteredBalances.length === 0 && balances.length > 0 && (
-                <div className="p-8 text-center text-sm text-muted-foreground">
-                  {t("No items match the selected filters.")}
-                </div>
+                <EmptyState
+                  title={t("No items match the selected filters.")}
+                  description="Clear the search or category filter to view all stock items."
+                  action={
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setCategoryFilter("ALL");
+                      }}
+                    >
+                      Clear filters
+                    </Button>
+                  }
+                />
               )}
               {filteredBalances.map((item) => {
                 const totalValue = item.onHand * item.weightedAverageCost;
@@ -548,11 +583,24 @@ export function StockPage() {
                 <TableBody>
                   {filteredBalances.length === 0 && balances.length > 0 && (
                     <TableRow>
-                      <TableCell
-                        colSpan={10}
-                        className="py-8 text-center text-sm text-muted-foreground"
-                      >
-                        {t("No items match the selected filters.")}
+                      <TableCell colSpan={10} className="p-0">
+                        <EmptyState
+                          title={t("No items match the selected filters.")}
+                          description="Clear the search or category filter to view all stock items."
+                          className="min-h-32 py-6"
+                          action={
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSearchQuery("");
+                                setCategoryFilter("ALL");
+                              }}
+                            >
+                              Clear filters
+                            </Button>
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   )}

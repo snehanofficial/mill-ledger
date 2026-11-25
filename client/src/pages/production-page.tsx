@@ -7,6 +7,7 @@ import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
+  EmptyState,
   SkeletonTable,
   ErrorState,
 } from "@/components/ui/loading-error-empty";
@@ -588,11 +589,21 @@ export function ProductionPage() {
               <TableBody>
                 {filteredRuns.length === 0 && runs.length > 0 && (
                   <TableRow>
-                    <TableCell
-                      colSpan={9}
-                      className="py-8 text-center text-sm text-muted-foreground"
-                    >
-                      {t("No production batches match the search query.")}
+                    <TableCell colSpan={9} className="p-0">
+                      <EmptyState
+                        title={t("No production batches match the search query.")}
+                        description="Clear the search query to view all production batches."
+                        className="min-h-32 py-6"
+                        action={
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSearchQuery("")}
+                          >
+                            Clear search
+                          </Button>
+                        }
+                      />
                     </TableCell>
                   </TableRow>
                 )}

@@ -7,6 +7,7 @@ import { useUrlState } from "@/hooks/use-url-state";
 import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
+  EmptyState,
   SkeletonTable,
   ErrorState,
 } from "@/components/ui/loading-error-empty";
@@ -321,15 +322,23 @@ export function PurchasesPage() {
             />
           </div>
         ) : receipts.length === 0 ? (
-          <div className="flex h-48 flex-col items-center justify-center p-6 text-center">
-            <TruckIcon className="size-8 text-muted-foreground mb-2" />
-            <p className="text-sm font-medium text-foreground">
-              No purchase receipts recorded yet
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Click &quot;Record Purchase Receipt&quot; to intake flour, oil, or raw materials.
-            </p>
-          </div>
+          <EmptyState
+            icon={TruckIcon}
+            title="No purchase receipts recorded yet"
+            description="Record a purchase receipt to intake flour, oil, or raw materials."
+            action={
+              canRecordPurchase ? (
+                <Button
+                  size="sm"
+                  onClick={() => setShowModal(true)}
+                  className="gap-1.5"
+                >
+                  <PlusIcon className="size-4" aria-hidden="true" />
+                  Record Purchase Receipt
+                </Button>
+              ) : undefined
+            }
+          />
         ) : (
           <Table>
             <TableHeader>
@@ -348,11 +357,21 @@ export function PurchasesPage() {
             <TableBody>
               {filteredReceipts.length === 0 && receipts.length > 0 && (
                 <TableRow>
-                  <TableCell
-                    colSpan={9}
-                    className="py-8 text-center text-sm text-muted-foreground"
-                  >
-                    {t("No purchase receipts match the search query.")}
+                  <TableCell colSpan={9} className="p-0">
+                    <EmptyState
+                      title={t("No purchase receipts match the search query.")}
+                      description="Clear the search query to view all purchase receipts."
+                      className="min-h-32 py-6"
+                      action={
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSearchQuery("")}
+                        >
+                          Clear search
+                        </Button>
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               )}
@@ -462,7 +481,21 @@ export function PurchasesPage() {
                   <SelectTrigger id="purchase-supplier-select" className="font-medium">
                     <SelectValue placeholder="Supplier 1 (SUP-FLOUR-1)" />
                   </SelectTrigger>
-                  <SelectContent searchable searchPlaceholder="Search suppliers...">
+                  <SelectContent
+                    searchable
+                    searchPlaceholder="Search suppliers..."
+                    emptyMessage="No suppliers available."
+                    emptyAction={
+                      canManageAdminPurchase ? (
+                        <Link
+                          to="/suppliers"
+                          className="text-xs font-medium text-primary hover:underline"
+                        >
+                          + Add Supplier
+                        </Link>
+                      ) : undefined
+                    }
+                  >
                     {suppliers.map((s) => (
                       <SelectItem key={s.id} value={s.id}>
                         {s.name} ({s.code})
@@ -521,7 +554,21 @@ export function PurchasesPage() {
                   <SelectTrigger id="purchase-item-select" className="font-medium">
                     <SelectValue placeholder="Flour (RM-FLOUR)" />
                   </SelectTrigger>
-                  <SelectContent searchable searchPlaceholder="Search raw materials...">
+                  <SelectContent
+                    searchable
+                    searchPlaceholder="Search raw materials..."
+                    emptyMessage="No raw material items available."
+                    emptyAction={
+                      canManageAdminPurchase ? (
+                        <Link
+                          to="/stock"
+                          className="text-xs font-medium text-primary hover:underline"
+                        >
+                          + Add Item in Stock
+                        </Link>
+                      ) : undefined
+                    }
+                  >
                     {rawItems.map((item) => (
                       <SelectItem key={item.id} value={item.id}>
                         {item.name} ({item.sku}) — {item.baseUom?.symbol || "units"}
