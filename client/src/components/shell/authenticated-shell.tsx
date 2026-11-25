@@ -1494,17 +1494,22 @@ export function AuthenticatedShell({
     const granted = await pwaStatus.requestStoragePersistence();
     if (granted) {
       toast.success("Persistent offline storage enabled.");
+    } else if (!pwaStatus.isInstalled && pwaStatus.canInstall) {
+      toast.info(
+        "Browser kept best-effort storage. Install the app first, then open it as an app.",
+      );
+    } else if (!pwaStatus.isStandalone) {
+      toast.info(
+        "App is installed, but you are in a browser tab. Open the installed MillLedger app window for persistent storage.",
+      );
     } else {
       toast.info(
-        "Browser kept best-effort storage. Installing the app or bookmarking helps grant persistence.",
+        "Browser kept best-effort storage (Chrome/Edge grant persistence automatically over HTTPS with usage, without a popup).",
       );
     }
   }, [pwaStatus]);
 
-  const showPwaBanner =
-    !pwaPromptDismissed &&
-    (pwaStatus.canInstall ||
-      (pwaStatus.isStorageSupported && pwaStatus.storagePersisted === false));
+  const showPwaBanner = !pwaPromptDismissed && pwaStatus.canInstall;
 
   const handleSafeSignOut = () => {
     if (pendingCount > 0) {

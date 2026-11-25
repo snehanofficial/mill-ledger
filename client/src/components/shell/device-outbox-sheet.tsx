@@ -178,9 +178,13 @@ export function DeviceOutboxSheet({
                         const granted = await pwaStatus.requestStoragePersistence();
                         if (granted) {
                           toast.success("Persistent offline storage enabled.");
+                        } else if (!pwaStatus.isStandalone) {
+                          toast.info(
+                            "Open the installed MillLedger app window (not a browser tab) so the browser can grant persistent storage.",
+                          );
                         } else {
                           toast.info(
-                            "Browser kept best-effort storage. Installing the app helps grant persistence.",
+                            "Browser kept best-effort storage (Chrome/Edge grant persistence automatically over HTTPS with usage, without a popup).",
                           );
                         }
                       }}

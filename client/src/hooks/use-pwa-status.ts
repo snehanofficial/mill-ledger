@@ -101,6 +101,7 @@ if (typeof window !== "undefined") {
 export interface PwaStatus {
   canInstall: boolean;
   isInstalled: boolean;
+  isStandalone: boolean;
   isInstalling: boolean;
   installMessage: string | null;
   storagePersisted: boolean | null;
@@ -147,10 +148,29 @@ export function usePwaStatus(): PwaStatus {
       setVersion((v) => v + 1);
       void refreshStorageStatus();
     };
+    const onFocusOrVisible = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return;
+      }
+      void refreshStorageStatus();
+    };
     listeners.add(onStoreChange);
-    void refreshStorageStatus();
+    window.addEventListener("focus", onFocusOrVisible);
+    document.addEventListener("visibilitychange", onFocusOrVisible);
+
+    // When launched in the installed standalone PWA window, re-request persistence automatically.
+    if (isRunningStandalone()) {
+      void requestPersistentStorage().then((granted) => {
+        setStoragePersisted(granted);
+      });
+    } else {
+      void refreshStorageStatus();
+    }
+
     return () => {
       listeners.delete(onStoreChange);
+      window.removeEventListener("focus", onFocusOrVisible);
+      document.removeEventListener("visibilitychange", onFocusOrVisible);
     };
   }, [refreshStorageStatus]);
 
@@ -219,6 +239,7 @@ export function usePwaStatus(): PwaStatus {
   return {
     canInstall,
     isInstalled: globalIsInstalled,
+    isStandalone: isRunningStandalone(),
     isInstalling,
     installMessage,
     storagePersisted,
