@@ -1,8 +1,0 @@
-=== STEP 9: STANDARDS CHECK FOR F-013 ===
-Standards references:
-- Negotiable Instruments Act, 1881 (Dishonour of Cheque / Section 138): Mandates accounting and legal tracking of dishonoured instruments.
-- Owner Decision OD-06: Compensating journal entries, dedicated DebitNote model, PaymentStatus.BOUNCED, immutable allocation histories.
-- REQ-037 & REQ-039 (docs/product-requirements.md & audit/01-expected-spec.md):
-  - REQ-037: Dedicated DebitNote model distinct from customer credit notes.
-  - REQ-039: Transactional payment recording, FIFO allocation, and bounced payment lifecycle restoring customer receivables.
-All criteria satisfied.

@@ -1,9 +1,0 @@
-=== F-012 Verification: 07 Authorization & Access Control Checks ===
-1. Customer Creation RBAC:
-   - POST /api/v1/sales/customers requires requireAuth and authorize("customer", "create").
-   - Admin is permitted; unauthenticated callers receive 401 Unauthorized; unauthorized roles receive 403 Forbidden.
-2. Customer Update RBAC:
-   - PUT /api/v1/sales/customers/:id requires requireAuth and authorize("customer", "update").
-   - Prevents unauthorized modification of master customer tax identifiers.
-3. Multi-Tenant Scoping:
-   - Customer organizationId is automatically resolved from authenticated context or user tenant scope.

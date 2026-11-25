@@ -1,8 +1,0 @@
-=== F-022 Verification: 07 Authorization & Access Control Checks ===
-1. Actor Identity Capture:
-   - All audit log invocations capture authenticated actor identity (userId, userEmail) derived from verified session tokens via `req.user`.
-   - Admin approvals, manager overrides, salesman orders, and warehouse postings correctly attribute mutations to the authenticated caller.
-2. Tenant Boundary Isolation:
-   - Every audit record records `organizationId`, enforcing multi-tenant data isolation and preventing cross-tenant forensic leakage.
-3. Immutability Guarantee:
-   - Audit logs are append-only. No UPDATE or DELETE API endpoints exist for the `audit_log` table.

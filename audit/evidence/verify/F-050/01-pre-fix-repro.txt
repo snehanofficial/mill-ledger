@@ -1,5 +1,0 @@
-REPRODUCTION PRE-FIX:
-1. In client/src/index.css, :root { color-scheme: light; } was hardcoded and no .dark CSS custom properties block existed.
-2. No @variant dark (&:where(.dark, .dark *)); existed, causing Tailwind 4 to ignore class-based dark styling.
-3. No theme switcher toggle existed in StickyHeader or user menus.
-4. UI components had dead dark:... classes (e.g. dark:text-amber-400, dark:bg-emerald-950) that had no effect or created unreadable contrast when .dark was manually toggled.

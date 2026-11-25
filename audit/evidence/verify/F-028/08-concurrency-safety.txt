@@ -1,7 +1,0 @@
-=== F-028 Verification: 08 Transactional Safety ===
-1. Dexie Transaction Atomicity:
-   - offlineDb.purgeOnSignOut() wraps all table clear operations in a single Dexie readwrite transaction:
-     this.transaction("rw", [this.customers, this.products, this.outbox, this.meta], async () => { ... })
-   - If any table operation fails, the transaction rolls back cleanly without leaving partial records.
-2. Error Resilience:
-   - Unhandled Dexie errors during sign-out are caught and logged without preventing the user from navigating to the login page or clearing in-memory caches.

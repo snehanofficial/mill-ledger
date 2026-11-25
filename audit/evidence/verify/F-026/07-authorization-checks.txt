@@ -1,6 +1,0 @@
-=== F-026 Verification: 07 Authorization & Access Control Checks ===
-1. Export Authorization Preserved:
-   - Route `GET /api/v1/reports/:report/export` enforces `requireAuth` and `authorize("report", "read")`.
-   - Admin, Owner, and authorized roles can access exports; unauthorized roles receive 403 Forbidden.
-2. Neutralization Uniformity:
-   - All exported tables and user-controllable columns are passed through `sanitizeCSVCell`, eliminating formula injection regardless of caller role or data ownership.

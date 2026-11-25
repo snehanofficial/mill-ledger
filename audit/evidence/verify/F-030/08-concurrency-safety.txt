@@ -1,7 +1,0 @@
-=== F-030 Verification: 08 Concurrency & Validation Safety ===
-1. Input Sanitization Before Database Operation:
-   - Zod validation executes before any Prisma transaction or query is constructed, guaranteeing that malformed inputs never reach the database driver.
-2. Safe Status Updates:
-   - Status updates are constrained strictly to known enum literals, eliminating invalid database state transitions.
-3. Concurrency Compatibility:
-   - Does not alter row-locking semantics for order approval or dispatch concurrency flows.

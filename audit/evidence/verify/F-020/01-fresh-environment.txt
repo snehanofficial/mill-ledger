@@ -1,7 +1,0 @@
-=== F-020 Verification: 01 Fresh Environment ===
-Date: Mon Nov 23 16:49:30 IST 2026
-OS: Linux (Node.js v22, TypeScript 5.8, pnpm 12)
-Branch: remediation/main
-Head Commit: 53dcf5cchore(tracker): mark F-019 VERIFIED with complete evidence
-Database: Isolated local PostgreSQL (postgresql://postgres:postgres@localhost:5432/mill_ledger)
-Status: Working tree clean of unrelated changes; target files server/src/modules/sales/sales.service.ts and server/src/orders.test.ts modified for F-020.

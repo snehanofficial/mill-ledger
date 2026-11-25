@@ -1,9 +1,0 @@
-{
-  "quotaSupported": true,
-  "estimate": {
-    "quota": 10737418240,
-    "usage": 0,
-    "usageDetails": {}
-  },
-  "hasPersistentStorageApi": true
-}

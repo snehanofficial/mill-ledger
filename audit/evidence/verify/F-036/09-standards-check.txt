@@ -1,8 +1,0 @@
-=== STEP 9: STANDARDS COMPLIANCE CHECK FOR F-036 ===
-Standards Checked:
-1. OWASP ASVS v4.0.3 Section 10.3 (Accounting Integrity):
-   - Executive dashboard reporting must strictly reconcile with fundamental double-entry and invoice ledger totals.
-   - Verified that dashboard revenue equals SQL `SUM("totalAmount")`.
-2. REQ-026 (Executive Dashboard & Sales Tax Register Reporting):
-   - Revenue figures reflect all posted sales invoices without silent line-level drops.
-   - Status: VERIFIED COMPLIANT.

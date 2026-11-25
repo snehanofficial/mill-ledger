@@ -1,5 +1,0 @@
-=== F-032 Verification: Backward Compatibility ===
-
-All legitimate payloads conforming to documented contracts continue to pass validation without alteration.
-All existing unit and integration test payloads (orders, dispatches, production runs, invoices, payments) pass 100% across all 38 test suites.
-No documented API contracts or schemas were altered with breaking changes; only extraneous, unauthorized, or misspelled properties are rejected.

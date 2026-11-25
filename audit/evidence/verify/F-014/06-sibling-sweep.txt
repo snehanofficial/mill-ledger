@@ -1,9 +1,0 @@
-=== STEP 6: SIBLING SWEEP FOR F-014 ===
-Target: All services handling tax rate calculations or snapshots
-Swept Files:
-- server/src/modules/sales/sales.service.ts: createSalesOrder resolves from TaxRate schedule; getAvailableProducts resolves dynamic current rate for catalog.
-- server/src/modules/finance/finance.service.ts: createInvoiceFromOrder resolves from TaxRate schedule as of invoice posting date; setTaxRate enforces overlap constraints; getTaxRates lists schedule.
-- server/src/modules/reporting/reporting.service.ts: reads taxRate from posted invoice lines (immutable snapshot), never mutates historical invoices.
-- server/src/modules/finance/tax.util.ts: calculates exact Decimal paise breakdown (CGST, SGST, IGST) given dynamic rate.
-- server/prisma/seed.ts & server/src/db/seed.ts: seeded with statutory slabs (5%, 12%, 18%, 0%).
-No unhandled static tax rate dependencies remain in transaction posting flows.
