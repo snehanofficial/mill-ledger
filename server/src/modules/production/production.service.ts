@@ -941,6 +941,252 @@ export class ProductionService {
 
     return run;
   }
+
+  /**
+   * Update a DRAFT production run (IMP-013). Rejects POSTED or REVERSED runs.
+   */
+  async updateDraftRun(
+    runId: string,
+    input: {
+      notes?: string;
+      batchCount?: number;
+      actualGoodQty?: number;
+      directLaborCost?: number;
+      utilityCost?: number;
+    },
+    user?: UserContext,
+  ) {
+    const run = await prisma.productionRun.findUnique({
+      where: { id: runId },
+    });
+    if (!run) {
+      throw new AppError(`Production run ${runId} not found`, 404);
+    }
+    if (run.status !== ProductionRunStatus.DRAFT) {
+      throw new AppError(
+        `Cannot edit production run ${run.runNumber} in status ${run.status}. Only DRAFT runs can be modified.`,
+        400,
+      );
+    }
+
+    const updated = await prisma.productionRun.update({
+      where: { id: runId },
+      data: {
+        notes: input.notes !== undefined ? input.notes : undefined,
+        batchCount: input.batchCount !== undefined ? input.batchCount : undefined,
+        actualGoodQty:
+          input.actualGoodQty !== undefined ? input.actualGoodQty : undefined,
+        directLaborCost:
+          input.directLaborCost !== undefined ? input.directLaborCost : undefined,
+        utilityCost:
+          input.utilityCost !== undefined ? input.utilityCost : undefined,
+      },
+      include: {
+        materials: { include: { inventoryItem: true } },
+        recipe: true,
+      },
+    });
+
+    await auditService.log({
+      organizationId: run.organizationId,
+      userId: user?.id,
+      userEmail: user?.email,
+      action: "UPDATE",
+      entity: "ProductionRun",
+      entityId: run.id,
+      details: { runNumber: run.runNumber, status: run.status },
+    });
+
+    return updated;
+  }
+
+  /**
+   * Delete a DRAFT production run (IMP-013). Rejects POSTED or REVERSED runs.
+   */
+  async deleteDraftRun(runId: string, user?: UserContext) {
+    const run = await prisma.productionRun.findUnique({
+      where: { id: runId },
+    });
+    if (!run) {
+      throw new AppError(`Production run ${runId} not found`, 404);
+    }
+    if (run.status !== ProductionRunStatus.DRAFT) {
+      throw new AppError(
+        `Cannot delete production run ${run.runNumber} in status ${run.status}. Use reversal for POSTED runs.`,
+        400,
+      );
+    }
+
+    await prisma.productionRun.delete({ where: { id: runId } });
+
+    await auditService.log({
+      organizationId: run.organizationId,
+      userId: user?.id,
+      userEmail: user?.email,
+      action: "DELETE",
+      entity: "ProductionRun",
+      entityId: run.id,
+      details: { runNumber: run.runNumber },
+    });
+
+    return { deleted: true, id: runId };
+  }
+
+  /**
+   * Create a new BOM recipe (IMP-011)
+   */
+  async createRecipe(
+    input: {
+      organizationId?: string;
+      productVariantId: string;
+      name: string;
+      standardBatchSize: number;
+      expectedOutputQty: number;
+      outputUomId: string;
+      items: Array<{
+        inventoryItemId: string;
+        itemType: "INGREDIENT" | "PACKAGING";
+        plannedQty: number;
+        uomId: string;
+        tolerancePct?: number;
+      }>;
+    },
+    user?: UserContext,
+  ) {
+    const orgId = await this.resolveOrgId(input.organizationId || "MILL");
+    const maxVer = await prisma.recipe.aggregate({
+      where: { productVariantId: input.productVariantId },
+      _max: { version: true },
+    });
+    const nextVersion = (maxVer._max.version ?? 0) + 1;
+
+    const recipe = await prisma.recipe.create({
+      data: {
+        organizationId: orgId,
+        productVariantId: input.productVariantId,
+        version: nextVersion,
+        name: input.name.trim(),
+        standardBatchSize: input.standardBatchSize,
+        expectedOutputQty: input.expectedOutputQty,
+        outputUomId: input.outputUomId,
+        items: {
+          create: input.items.map((it) => ({
+            inventoryItemId: it.inventoryItemId,
+            itemType: it.itemType,
+            plannedQty: it.plannedQty,
+            uomId: it.uomId,
+            tolerancePct: it.tolerancePct ?? 5.0,
+          })),
+        },
+      },
+      include: {
+        productVariant: true,
+        items: { include: { inventoryItem: true } },
+      },
+    });
+
+    await auditService.log({
+      organizationId: orgId,
+      userId: user?.id,
+      userEmail: user?.email,
+      action: "CREATE",
+      entity: "Recipe",
+      entityId: recipe.id,
+      details: { name: recipe.name, version: recipe.version },
+    });
+
+    return recipe;
+  }
+
+  /**
+   * Clone an existing BOM recipe into a new version without mutating historical versions (IMP-011)
+   */
+  async createRecipeVersion(
+    recipeId: string,
+    input: { name?: string; expectedOutputQty?: number },
+    user?: UserContext,
+  ) {
+    const existing = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+      include: { items: true },
+    });
+    if (!existing) {
+      throw new AppError(`Recipe ${recipeId} not found`, 404);
+    }
+
+    const maxVer = await prisma.recipe.aggregate({
+      where: { productVariantId: existing.productVariantId },
+      _max: { version: true },
+    });
+    const nextVersion = (maxVer._max.version ?? existing.version) + 1;
+
+    const cloned = await prisma.recipe.create({
+      data: {
+        organizationId: existing.organizationId,
+        productVariantId: existing.productVariantId,
+        version: nextVersion,
+        name: input.name?.trim() || `${existing.name} (v${nextVersion})`,
+        standardBatchSize: existing.standardBatchSize,
+        expectedOutputQty:
+          input.expectedOutputQty ?? existing.expectedOutputQty,
+        outputUomId: existing.outputUomId,
+        items: {
+          create: existing.items.map((it) => ({
+            inventoryItemId: it.inventoryItemId,
+            itemType: it.itemType,
+            plannedQty: it.plannedQty,
+            uomId: it.uomId,
+            tolerancePct: it.tolerancePct,
+          })),
+        },
+      },
+      include: {
+        productVariant: true,
+        items: { include: { inventoryItem: true } },
+      },
+    });
+
+    await auditService.log({
+      organizationId: existing.organizationId,
+      userId: user?.id,
+      userEmail: user?.email,
+      action: "CREATE_VERSION",
+      entity: "Recipe",
+      entityId: cloned.id,
+      details: { fromRecipeId: existing.id, version: cloned.version },
+    });
+
+    return cloned;
+  }
+
+  /**
+   * Archive or restore a BOM recipe (IMP-011)
+   */
+  async archiveRecipe(recipeId: string, isActive: boolean, user?: UserContext) {
+    const existing = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+    });
+    if (!existing) {
+      throw new AppError(`Recipe ${recipeId} not found`, 404);
+    }
+
+    const updated = await prisma.recipe.update({
+      where: { id: recipeId },
+      data: { isActive },
+    });
+
+    await auditService.log({
+      organizationId: existing.organizationId,
+      userId: user?.id,
+      userEmail: user?.email,
+      action: isActive ? "RESTORE" : "ARCHIVE",
+      entity: "Recipe",
+      entityId: updated.id,
+      details: { name: updated.name, isActive },
+    });
+
+    return updated;
+  }
 }
 
 export const productionService = new ProductionService();

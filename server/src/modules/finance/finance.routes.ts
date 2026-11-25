@@ -5,6 +5,7 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { financeService } from "./finance.service.js";
+import { generateInvoicePdfBuffer } from "./invoice-pdf.util.js";
 import { AppError } from "../../middleware/error.middleware.js";
 import {
   createInvoiceSchema,
@@ -46,6 +47,36 @@ financeRouter.get(
           count: invoices.length,
         },
       });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /api/v1/finance/invoices/:id/pdf
+financeRouter.get(
+  "/invoices/:id/pdf",
+  requireAuth,
+  authorize("invoice", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const invoiceId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!invoiceId) {
+        throw new AppError("Invoice ID is required", 400);
+      }
+
+      const invoice = await financeService.getInvoiceById(invoiceId);
+      const pdfBuffer = await generateInvoicePdfBuffer(invoice);
+      const safeFileName = invoice.invoiceNumber.replace(/[^a-zA-Z0-9_-]/g, "_");
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${safeFileName}.pdf"`,
+      );
+      res.send(pdfBuffer);
     } catch (err) {
       next(err);
     }

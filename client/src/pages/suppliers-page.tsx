@@ -45,6 +45,8 @@ import {
   MailIcon,
   SearchIcon,
   Edit2Icon,
+  EyeIcon,
+  ArchiveIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { validateGstin } from "@mill-ledger/shared";
@@ -67,7 +69,8 @@ export function SuppliersPage() {
   const { user } = useCurrentUser();
   const { t } = useLanguage();
   const canManageSuppliers =
-    user?.role === "ADMIN" || user?.role === "PRODUCTION" || user?.role === "OWNER";
+    user?.role === "ADMIN" || user?.role === "PRODUCTION";
+  const [detailSupplier, setDetailSupplier] = useState<Supplier | null>(null);
 
   const [searchQuery, setSearchQuery] = useUrlState("q", "", {
     debounceMs: 250,
@@ -341,9 +344,7 @@ export function SuppliersPage() {
                 <TableHead>{t("GSTIN Status")}</TableHead>
                 <TableHead>{t("Contact Info")}</TableHead>
                 <TableHead>{t("Status")}</TableHead>
-                {canManageSuppliers && (
-                  <TableHead className="text-right">{t("Action")}</TableHead>
-                )}
+                <TableHead className="text-right">{t("Action")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -413,19 +414,46 @@ export function SuppliersPage() {
                         {s.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
-                    {canManageSuppliers && (
-                      <TableCell className="text-right">
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleStartEdit(s)}
-                          className="h-8 min-h-[32px] px-2.5 gap-1 text-xs sm:h-7 sm:min-h-[28px] sm:px-2"
+                          onClick={() => setDetailSupplier(s)}
+                          className="h-8 min-h-[32px] px-2 gap-1 text-xs sm:h-7 sm:min-h-[28px]"
                         >
-                          <Edit2Icon className="size-3" />
-                          Edit
+                          <EyeIcon className="size-3" />
+                          View
                         </Button>
-                      </TableCell>
-                    )}
+                        {canManageSuppliers && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStartEdit(s)}
+                              className="h-8 min-h-[32px] px-2.5 gap-1 text-xs sm:h-7 sm:min-h-[28px] sm:px-2"
+                            >
+                              <Edit2Icon className="size-3" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                updateSupplierMutation.mutate({
+                                  id: s.id,
+                                  payload: { isActive: !s.isActive },
+                                })
+                              }
+                              className="h-8 min-h-[32px] px-2 gap-1 text-xs text-muted-foreground sm:h-7 sm:min-h-[28px]"
+                            >
+                              <ArchiveIcon className="size-3" />
+                              {s.isActive ? "Archive" : "Restore"}
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -752,6 +780,56 @@ export function SuppliersPage() {
                 </Button>
               </DialogFooter>
             </form>
+          </DialogContent>
+        )}
+      </Dialog>
+
+      {/* Supplier Detail Modal (IMP-017) */}
+      <Dialog
+        open={detailSupplier !== null}
+        onOpenChange={(open) => {
+          if (!open) setDetailSupplier(null);
+        }}
+      >
+        {detailSupplier && (
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{detailSupplier.name}</DialogTitle>
+              <DialogDescription>
+                {detailSupplier.code} — {detailSupplier.state}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-3 rounded-lg bg-muted/40 p-3 text-xs">
+              <div>
+                <span className="text-muted-foreground">GSTIN</span>
+                <p className="font-mono font-medium">
+                  {detailSupplier.gstin || "Unregistered"}
+                </p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Status</span>
+                <p className="font-medium">
+                  {detailSupplier.isActive ? "Active" : "Archived"}
+                </p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Phone</span>
+                <p className="font-medium">{detailSupplier.phone || "—"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Email</span>
+                <p className="font-medium">{detailSupplier.email || "—"}</p>
+              </div>
+            </div>
+            <DialogFooter className="border-t pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDetailSupplier(null)}
+              >
+                Close
+              </Button>
+            </DialogFooter>
           </DialogContent>
         )}
       </Dialog>

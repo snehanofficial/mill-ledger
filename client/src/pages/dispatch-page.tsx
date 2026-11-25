@@ -45,6 +45,7 @@ import {
   PlusCircleIcon,
   PackageCheckIcon,
   FileTextIcon,
+  RotateCcwIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -121,6 +122,12 @@ export function DispatchPage() {
   const [dispatchError, setDispatchError] = useState<string | null>(null);
   const [showConfirmDispatchDialog, setShowConfirmDispatchDialog] =
     useState(false);
+  const [lineDispatchQtys, setLineDispatchQtys] = useState<
+    Record<string, number>
+  >({});
+  const [returnTarget, setReturnTarget] = useState<Dispatch | null>(null);
+  const [returnQtys, setReturnQtys] = useState<Record<string, number>>({});
+  const [returnReason, setReturnReason] = useState("");
   const [searchQuery, setSearchQuery] = useUrlState("q", "", {
     debounceMs: 250,
   });
@@ -163,6 +170,7 @@ export function DispatchPage() {
       driverName?: string;
       driverPhone?: string;
       notes?: string;
+      lines?: Array<{ salesOrderLineId: string; quantity: number }>;
     }) => {
       const res = await apiClient.post("/sales/dispatches", payload);
       return res.data;
@@ -225,6 +233,28 @@ export function DispatchPage() {
     },
   });
 
+  const salesReturnMutation = useMutation({
+    mutationFn: async (payload: {
+      dispatchId: string;
+      reason: string;
+      lines: Array<{ inventoryItemId: string; quantity: number }>;
+    }) => {
+      const res = await apiClient.post("/sales/returns", payload);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dispatches"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
+      setReturnTarget(null);
+      toast.success("Sales return recorded and stock restored.");
+    },
+    onError: (err: any) => {
+      toast.error(
+        err.response?.data?.message || err.message || "Failed to record return",
+      );
+    },
+  });
+
   const dispatches = dispatchesData?.dispatches ?? [];
 
   const filteredDispatches = dispatches.filter((d) => {
@@ -259,12 +289,25 @@ export function DispatchPage() {
 
   const handleExecuteDispatch = () => {
     setShowConfirmDispatchDialog(false);
+    const selectedOrder = eligibleOrders.find((o) => o.id === selectedOrderId);
+    const linesPayload = selectedOrder
+      ? selectedOrder.lines
+          .map((l) => ({
+            salesOrderLineId: l.id,
+            quantity:
+              lineDispatchQtys[l.id] ??
+              Math.max(0, l.approvedQuantity - l.dispatchedQuantity),
+          }))
+          .filter((l) => l.quantity > 0)
+      : undefined;
+
     dispatchMutation.mutate({
       salesOrderId: selectedOrderId,
       vehicleNumber: vehicleNumber.trim() || undefined,
       driverName: driverName.trim() || undefined,
       driverPhone: driverPhone.trim() || undefined,
       notes: notes.trim() || undefined,
+      lines: linesPayload,
     });
   };
 
@@ -580,13 +623,34 @@ export function DispatchPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Badge
-                          variant={
-                            disp.status === "POSTED" ? "success" : "default"
-                          }
-                        >
-                          {disp.status}
-                        </Badge>
+                        <div className="flex items-center justify-end gap-2">
+                          <Badge
+                            variant={
+                              disp.status === "POSTED" ? "success" : "default"
+                            }
+                          >
+                            {disp.status}
+                          </Badge>
+                          {disp.status === "POSTED" && canRecordDispatch && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setReturnTarget(disp);
+                                const init: Record<string, number> = {};
+                                disp.lines.forEach((l) => {
+                                  init[l.inventoryItemId] = Number(l.quantity);
+                                });
+                                setReturnQtys(init);
+                                setReturnReason("");
+                              }}
+                              className="h-7 px-2 text-xs gap-1"
+                            >
+                              <RotateCcwIcon className="size-3" />
+                              Return
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -640,7 +704,20 @@ export function DispatchPage() {
                 ) : (
                   <Select
                     value={selectedOrderId || undefined}
-                    onValueChange={setSelectedOrderId}
+                    onValueChange={(orderId) => {
+                      setSelectedOrderId(orderId);
+                      const ord = eligibleOrders.find((o) => o.id === orderId);
+                      if (ord) {
+                        const next: Record<string, number> = {};
+                        ord.lines.forEach((l) => {
+                          next[l.id] = Math.max(
+                            0,
+                            l.approvedQuantity - l.dispatchedQuantity,
+                          );
+                        });
+                        setLineDispatchQtys(next);
+                      }
+                    }}
                     required
                   >
                     <SelectTrigger
@@ -668,6 +745,57 @@ export function DispatchPage() {
                   </Select>
                 )}
               </div>
+
+              {/* Partial Dispatch Per-Line Quantities (IMP-014) */}
+              {selectedOrderId && (() => {
+                const ord = eligibleOrders.find((o) => o.id === selectedOrderId);
+                if (!ord) return null;
+                return (
+                  <div className="rounded-lg border bg-muted/20 p-3 flex flex-col gap-2">
+                    <span className="text-xs font-semibold text-foreground">
+                      Dispatch quantities (supports partial dispatch)
+                    </span>
+                    {ord.lines.map((l) => {
+                      const remaining = Math.max(
+                        0,
+                        l.approvedQuantity - l.dispatchedQuantity,
+                      );
+                      const val = lineDispatchQtys[l.id] ?? remaining;
+                      return (
+                        <div
+                          key={l.id}
+                          className="flex items-center justify-between gap-3 text-xs"
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-medium">
+                              {l.productVariant?.name || "Item"}
+                            </span>
+                            <span className="text-muted-foreground">
+                              Remaining: {remaining} pkts
+                            </span>
+                          </div>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={remaining}
+                            value={val}
+                            onChange={(e) =>
+                              setLineDispatchQtys((prev) => ({
+                                ...prev,
+                                [l.id]: Math.min(
+                                  remaining,
+                                  Math.max(0, Number(e.target.value)),
+                                ),
+                              }))
+                            }
+                            className="h-8 w-24 text-right font-mono text-xs"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
@@ -836,6 +964,57 @@ export function DispatchPage() {
                   </div>
                 )}
               </div>
+
+              {/* Partial Dispatch Per-Line Quantities (IMP-014) */}
+              {selectedOrderId && (() => {
+                const ord = eligibleOrders.find((o) => o.id === selectedOrderId);
+                if (!ord) return null;
+                return (
+                  <div className="rounded-lg border bg-muted/20 p-3 flex flex-col gap-2">
+                    <span className="text-xs font-semibold text-foreground">
+                      Dispatch quantities (supports partial dispatch)
+                    </span>
+                    {ord.lines.map((l) => {
+                      const remaining = Math.max(
+                        0,
+                        l.approvedQuantity - l.dispatchedQuantity,
+                      );
+                      const val = lineDispatchQtys[l.id] ?? remaining;
+                      return (
+                        <div
+                          key={l.id}
+                          className="flex items-center justify-between gap-3 text-xs"
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-medium">
+                              {l.productVariant?.name || "Item"}
+                            </span>
+                            <span className="text-muted-foreground">
+                              Remaining: {remaining} pkts
+                            </span>
+                          </div>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={remaining}
+                            value={val}
+                            onChange={(e) =>
+                              setLineDispatchQtys((prev) => ({
+                                ...prev,
+                                [l.id]: Math.min(
+                                  remaining,
+                                  Math.max(0, Number(e.target.value)),
+                                ),
+                              }))
+                            }
+                            className="h-8 w-24 text-right font-mono text-xs"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
               <div className="rounded-md bg-destructive/10 p-2.5 text-xs font-medium text-destructive border border-destructive/20">
                 Warning: This operational action cannot be undone. Physical on-hand stock balances will be deducted immediately.
               </div>
@@ -852,6 +1031,89 @@ export function DispatchPage() {
           destructive
         />
       )}
+
+      {/* Sales Return Modal (IMP-014) */}
+      <Dialog
+        open={returnTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setReturnTarget(null);
+        }}
+      >
+        {returnTarget && (
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Record Sales Return</DialogTitle>
+              <DialogDescription>
+                Restore returned stock from {returnTarget.dispatchNumber} into inventory.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 py-2">
+              {returnTarget.lines.map((l) => (
+                <div
+                  key={l.id}
+                  className="flex items-center justify-between gap-2 text-xs"
+                >
+                  <span className="font-medium">
+                    {l.inventoryItem?.name || "Item"} (Dispatched: {l.quantity})
+                  </span>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={Number(l.quantity)}
+                    value={returnQtys[l.inventoryItemId] ?? 0}
+                    onChange={(e) =>
+                      setReturnQtys((prev) => ({
+                        ...prev,
+                        [l.inventoryItemId]: Number(e.target.value),
+                      }))
+                    }
+                    className="h-8 w-24 text-right font-mono text-xs"
+                  />
+                </div>
+              ))}
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="return-reason" className="text-xs">
+                  Return Reason
+                </Label>
+                <Input
+                  id="return-reason"
+                  value={returnReason}
+                  onChange={(e) => setReturnReason(e.target.value)}
+                  placeholder="Damaged in transit / customer return"
+                />
+              </div>
+            </div>
+            <DialogFooter className="border-t pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setReturnTarget(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={salesReturnMutation.isPending || !returnReason.trim()}
+                onClick={() => {
+                  const lines = Object.entries(returnQtys)
+                    .filter(([, q]) => q > 0)
+                    .map(([inventoryItemId, quantity]) => ({
+                      inventoryItemId,
+                      quantity,
+                    }));
+                  salesReturnMutation.mutate({
+                    dispatchId: returnTarget.id,
+                    reason: returnReason.trim(),
+                    lines,
+                  });
+                }}
+              >
+                Post Return
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

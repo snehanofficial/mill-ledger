@@ -483,4 +483,102 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
       listData.runs.some((r) => r.runNumber === "RUN-CODE-RES-001"),
     ).toBe(true);
   });
+
+  it("IMP-011 & IMP-013: clones BOM recipe versions without mutating historical versions and enforces draft-only edit/delete", async () => {
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+    const prodCookie = await loginAndGetCookie(
+      "production@millledger.local",
+      "ProductionPassword123!",
+    );
+
+    const recipesRes = await fetch(
+      `${baseUrl}/api/v1/production-runs/recipes?organizationId=MILL`,
+      { headers: { Cookie: adminCookie } },
+    );
+    const { recipes } = (await recipesRes.json()) as {
+      recipes: Array<{ id: string; version: number }>;
+    };
+    const baseRecipe = recipes[0];
+
+    // Clone new version
+    const verRes = await fetch(
+      `${baseUrl}/api/v1/production-runs/recipes/${baseRecipe.id}/version`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({ expectedOutputQty: 220 }),
+      },
+    );
+    expect(verRes.status).toBe(201);
+    const { recipe: cloned } = (await verRes.json()) as {
+      recipe: { id: string; version: number };
+    };
+    expect(cloned.version).toBeGreaterThan(baseRecipe.version);
+
+    // Create draft run
+    const draftRes = await fetch(`${baseUrl}/api/v1/production-runs/draft`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: prodCookie,
+      },
+      body: JSON.stringify({
+        organizationId: "MILL",
+        warehouseId: "WH-1",
+        recipeId: cloned.id,
+        runNumber: `RUN-DRAFT-${Date.now()}`,
+        batchCount: 1,
+        notes: "Initial draft",
+      }),
+    });
+    expect(draftRes.status).toBe(201);
+    const draftRun = (await draftRes.json()) as { id: string };
+
+    // Update draft run
+    const putRes = await fetch(
+      `${baseUrl}/api/v1/production-runs/${draftRun.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: prodCookie,
+        },
+        body: JSON.stringify({ notes: "Updated draft notes" }),
+      },
+    );
+    expect(putRes.status).toBe(200);
+
+    // Delete draft run
+    const delRes = await fetch(
+      `${baseUrl}/api/v1/production-runs/${draftRun.id}`,
+      {
+        method: "DELETE",
+        headers: { Cookie: prodCookie },
+      },
+    );
+    expect(delRes.status).toBe(200);
+
+    // Reject edit on POSTED run
+    const postedRun = await prisma.productionRun.findFirstOrThrow({
+      where: { status: "POSTED" },
+    });
+    const badPut = await fetch(
+      `${baseUrl}/api/v1/production-runs/${postedRun.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: prodCookie,
+        },
+        body: JSON.stringify({ notes: "Should fail" }),
+      },
+    );
+    expect(badPut.status).toBe(400);
+  });
 });

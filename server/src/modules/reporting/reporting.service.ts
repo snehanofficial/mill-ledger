@@ -8,6 +8,8 @@ import {
 import type { UserContext } from "@mill-ledger/shared";
 import { AppError } from "../../middleware/error.middleware.js";
 import { auditService } from "./audit.service.js";
+import ExcelJS from "exceljs";
+import PDFDocument from "pdfkit";
 
 export interface ReportFilterParams {
   organizationId?: string;
@@ -1022,6 +1024,105 @@ export class ReportingService {
       },
     });
 
+    // Today's IST start (UTC+05:30)
+    const now = new Date();
+    const istDateStr = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now);
+    const todayStartIst = new Date(`${istDateStr}T00:00:00+05:30`);
+
+    const [todayOrdersCount, todayInvoices, variantsWithCost] = await Promise.all([
+      prisma.salesOrder.count({
+        where: {
+          organizationId: orgId,
+          createdAt: { gte: todayStartIst },
+        },
+      }),
+      prisma.salesInvoice.findMany({
+        where: {
+          organizationId: orgId,
+          status: { not: InvoiceStatus.DRAFT },
+          postedAt: { gte: todayStartIst },
+        },
+        select: { taxableAmount: true },
+      }),
+      prisma.productVariant.findMany({
+        where: {
+          product: { organizationId: orgId },
+          isActive: true,
+        },
+        include: {
+          priceLines: {
+            where: { priceList: { isDefault: true } },
+          },
+          recipes: {
+            include: {
+              productionRuns: {
+                where: { status: "POSTED" },
+                orderBy: { postedAt: "desc" },
+                take: 1,
+              },
+            },
+          },
+        },
+      }),
+    ]);
+
+    const todayRevenue = todayInvoices.reduce(
+      (sum, inv) => sum + Number(inv.taxableAmount),
+      0,
+    );
+
+    const lowStockAlerts = stockRep.rows
+      .filter((r) => r.available <= 50)
+      .map((r) => ({
+        sku: r.sku,
+        name: r.name,
+        available: r.available,
+        onHand: r.onHand,
+      }));
+
+    const varianceAlerts = prodRep.rows
+      .filter((r) => Math.abs(r.yieldVariancePct) >= 5)
+      .map((r) => ({
+        runNumber: r.runNumber,
+        productName: r.productName,
+        yieldVariancePct: r.yieldVariancePct,
+      }));
+
+    const productMargins = variantsWithCost
+      .map((v) => {
+        const sellingPriceExclGst = Number(v.priceLines[0]?.price ?? 0);
+        const latestRun = v.recipes
+          .flatMap((r) => r.productionRuns)
+          .sort(
+            (a, b) =>
+              new Date(b.postedAt ?? 0).getTime() -
+              new Date(a.postedAt ?? 0).getTime(),
+          )[0];
+        const unitCost = latestRun ? Number(latestRun.costPerGoodUnit) : 0;
+        const marginAmount =
+          sellingPriceExclGst > 0 && unitCost > 0
+            ? Number((sellingPriceExclGst - unitCost).toFixed(2))
+            : 0;
+        const marginPct =
+          sellingPriceExclGst > 0 && unitCost > 0
+            ? Number(((marginAmount / sellingPriceExclGst) * 100).toFixed(1))
+            : 0;
+        return {
+          sku: v.sku,
+          name: v.name,
+          sellingPriceExclGst,
+          unitCost,
+          marginAmount,
+          marginPct,
+        };
+      })
+      .filter((m) => m.sellingPriceExclGst > 0);
+
     return {
       dashboardTitle: "MillLedger Operational Overview",
       asOf: new Date(),
@@ -1036,13 +1137,196 @@ export class ReportingService {
         totalOutstandingReceivables: recRep.summary.totalOutstanding,
         unallocatedCashCredit: collRep.summary.totalUnallocated,
         pendingOrdersCount,
+        todayOrdersCount,
+        todayRevenue,
       },
+      lowStockAlerts,
+      varianceAlerts,
+      productMargins,
       recentInvoices: salesRep.rows.slice(0, 5),
       stockItems: stockRep.rows.slice(0, 8),
       recentProductionRuns: prodRep.rows.slice(0, 5),
       topReceivables: recRep.rows
         .filter((r) => r.netOutstanding > 0)
         .slice(0, 5),
+    };
+  }
+
+  /**
+   * 8c. Customer-wise Sales Report (IMP-020)
+   */
+  async getCustomerWiseSalesReport(params: ReportFilterParams) {
+    const orgId = await this.resolveOrgId(params.organizationId);
+    const where: Prisma.SalesInvoiceWhereInput = {
+      organizationId: orgId,
+      status: { not: InvoiceStatus.DRAFT },
+    };
+    if (params.startDate || params.endDate) {
+      where.postedAt = {};
+      if (params.startDate) where.postedAt.gte = params.startDate;
+      if (params.endDate) where.postedAt.lte = params.endDate;
+    }
+    if (params.customerId) {
+      where.customerId = params.customerId;
+    }
+    if (params.salesmanId) {
+      where.salesOrder = { salesmanId: params.salesmanId };
+    }
+
+    const invoices = await prisma.salesInvoice.findMany({
+      where,
+      include: { customer: true },
+    });
+
+    const map = new Map<
+      string,
+      {
+        customerCode: string;
+        customerName: string;
+        state: string;
+        invoicesCount: number;
+        taxableAmount: number;
+        totalTaxAmount: number;
+        totalAmount: number;
+        outstandingAmount: number;
+      }
+    >();
+
+    for (const inv of invoices) {
+      const entry = map.get(inv.customerId) || {
+        customerCode: inv.customer.code,
+        customerName: inv.customerNameSnapshot,
+        state: inv.deliveryStateSnapshot,
+        invoicesCount: 0,
+        taxableAmount: 0,
+        totalTaxAmount: 0,
+        totalAmount: 0,
+        outstandingAmount: 0,
+      };
+      entry.invoicesCount += 1;
+      entry.taxableAmount += Number(inv.taxableAmount);
+      entry.totalTaxAmount += Number(inv.totalTaxAmount);
+      entry.totalAmount += Number(inv.totalAmount);
+      entry.outstandingAmount += Number(inv.outstandingAmount);
+      map.set(inv.customerId, entry);
+    }
+
+    const rows = Array.from(map.values()).sort(
+      (a, b) => b.totalAmount - a.totalAmount,
+    );
+    return {
+      reportTitle: "Customer-Wise Sales Summary",
+      generatedAt: new Date().toISOString(),
+      rows,
+    };
+  }
+
+  /**
+   * 8d. Product-wise Sales Report (IMP-020)
+   */
+  async getProductWiseSalesReport(params: ReportFilterParams) {
+    const orgId = await this.resolveOrgId(params.organizationId);
+    const invoiceWhere: Prisma.SalesInvoiceWhereInput = {
+      organizationId: orgId,
+      status: { not: InvoiceStatus.DRAFT },
+    };
+    if (params.startDate || params.endDate) {
+      invoiceWhere.postedAt = {};
+      if (params.startDate) invoiceWhere.postedAt.gte = params.startDate;
+      if (params.endDate) invoiceWhere.postedAt.lte = params.endDate;
+    }
+    if (params.customerId) {
+      invoiceWhere.customerId = params.customerId;
+    }
+    if (params.salesmanId) {
+      invoiceWhere.salesOrder = { salesmanId: params.salesmanId };
+    }
+
+    const lines = await prisma.salesInvoiceLine.findMany({
+      where: { salesInvoice: invoiceWhere },
+    });
+
+    const map = new Map<
+      string,
+      {
+        productName: string;
+        hsnCode: string;
+        totalQuantity: number;
+        taxableAmount: number;
+        totalTaxAmount: number;
+        totalAmount: number;
+      }
+    >();
+
+    for (const l of lines) {
+      const key = `${l.productNameSnapshot}::${l.hsnCodeSnapshot}`;
+      const entry = map.get(key) || {
+        productName: l.productNameSnapshot,
+        hsnCode: l.hsnCodeSnapshot,
+        totalQuantity: 0,
+        taxableAmount: 0,
+        totalTaxAmount: 0,
+        totalAmount: 0,
+      };
+      entry.totalQuantity += Number(l.quantity);
+      entry.taxableAmount += Number(l.taxableAmount);
+      entry.totalTaxAmount += Number(l.taxAmount);
+      entry.totalAmount += Number(l.lineTotal);
+      map.set(key, entry);
+    }
+
+    const rows = Array.from(map.values()).sort(
+      (a, b) => b.totalAmount - a.totalAmount,
+    );
+    return {
+      reportTitle: "Product-Wise Sales Summary",
+      generatedAt: new Date().toISOString(),
+      rows,
+    };
+  }
+
+  /**
+   * 8e. Stock Ledger Report (IMP-020)
+   */
+  async getStockLedgerReport(params: ReportFilterParams) {
+    const orgId = await this.resolveOrgId(params.organizationId);
+    const where: Prisma.StockMovementWhereInput = {
+      inventoryItem: { organizationId: orgId },
+    };
+    if (params.startDate || params.endDate) {
+      where.postedAt = {};
+      if (params.startDate) where.postedAt.gte = params.startDate;
+      if (params.endDate) where.postedAt.lte = params.endDate;
+    }
+
+    const movements = await prisma.stockMovement.findMany({
+      where,
+      include: {
+        inventoryItem: { include: { baseUom: true } },
+        warehouse: true,
+      },
+      orderBy: { postedAt: "desc" },
+      take: 1000,
+    });
+
+    const rows = movements.map((m) => ({
+      postedAt: m.postedAt.toISOString(),
+      sku: m.inventoryItem.sku,
+      itemName: m.inventoryItem.name,
+      uom: m.inventoryItem.baseUom.symbol,
+      warehouse: m.warehouse.name,
+      movementType: m.movementType,
+      quantity: Number(m.quantity),
+      unitCost: Number(m.unitCost),
+      totalCost: Number(m.totalCost),
+      referenceType: m.referenceDocumentType || "",
+      notes: m.notes || "",
+    }));
+
+    return {
+      reportTitle: "Stock Movement Ledger",
+      generatedAt: new Date().toISOString(),
+      rows,
     };
   }
 
@@ -1098,6 +1382,55 @@ export class ReportingService {
   /**
    * 9. Export Report to CSV format
    */
+  private async resolveReportData(
+    reportType: string,
+    params: ReportFilterParams,
+  ): Promise<ReportExportData> {
+    switch (reportType.toLowerCase()) {
+      case "sales":
+        return await this.getSalesReport(params);
+      case "customer-sales":
+        return await this.getCustomerWiseSalesReport(params);
+      case "product-sales":
+        return await this.getProductWiseSalesReport(params);
+      case "stock-ledger":
+        return await this.getStockLedgerReport(params);
+      case "gst":
+        return await this.getGSTOutwardSummary(params);
+      case "purchase":
+        return await this.getPurchaseReport(params);
+      case "stock":
+        return await this.getStockSummaryReport(params);
+      case "production":
+        return await this.getProductionReport(params);
+      case "collections":
+        return await this.getCollectionsReport(params);
+      case "receivables":
+        return await this.getReceivablesReport(params);
+      case "audit":
+        return await this.getAuditReport(params);
+      default:
+        throw new AppError(`Unknown report type: ${reportType}`, 400);
+    }
+  }
+
+  private extractTabularRows(reportData: ReportExportData): {
+    headers: string[];
+    rows: Record<string, unknown>[];
+  } {
+    const rows: Record<string, unknown>[] =
+      (reportData.rows as Record<string, unknown>[]) ||
+      (reportData.b2bSupplies as Record<string, unknown>[]) ||
+      [];
+    if (rows.length === 0) {
+      return { headers: [], rows: [] };
+    }
+    const headers = Object.keys(rows[0]).filter(
+      (k) => typeof rows[0][k] !== "object" || rows[0][k] instanceof Date,
+    );
+    return { headers, rows };
+  }
+
   async exportToCSV(
     reportType: string,
     params: ReportFilterParams,
@@ -1105,38 +1438,8 @@ export class ReportingService {
       | UserContext
       | { id?: string; email?: string; [key: string]: unknown },
   ) {
-    let reportData: ReportExportData;
+    const reportData = await this.resolveReportData(reportType, params);
 
-    switch (reportType.toLowerCase()) {
-      case "sales":
-        reportData = await this.getSalesReport(params);
-        break;
-      case "gst":
-        reportData = await this.getGSTOutwardSummary(params);
-        break;
-      case "purchase":
-        reportData = await this.getPurchaseReport(params);
-        break;
-      case "stock":
-        reportData = await this.getStockSummaryReport(params);
-        break;
-      case "production":
-        reportData = await this.getProductionReport(params);
-        break;
-      case "collections":
-        reportData = await this.getCollectionsReport(params);
-        break;
-      case "receivables":
-        reportData = await this.getReceivablesReport(params);
-        break;
-      case "audit":
-        reportData = await this.getAuditReport(params);
-        break;
-      default:
-        throw new AppError(`Unknown report type: ${reportType}`, 400);
-    }
-
-    // Log audit event for export
     await auditService.log({
       organizationId: params.organizationId,
       userId: userContext?.id,
@@ -1146,18 +1449,11 @@ export class ReportingService {
       details: { reportType, format: "CSV" },
     });
 
-    // Flatten rows into CSV
-    const rows: Record<string, unknown>[] =
-      (reportData.rows as Record<string, unknown>[]) ||
-      (reportData.b2bSupplies as Record<string, unknown>[]) ||
-      [];
+    const { headers, rows } = this.extractTabularRows(reportData);
     if (rows.length === 0) {
       return `Report: ${reportData.reportTitle}\nGenerated At: ${reportData.generatedAt}\nNo records found`;
     }
 
-    const headers = Object.keys(rows[0]).filter(
-      (k) => typeof rows[0][k] !== "object",
-    );
     const csvLines = [
       `# Report: ${reportData.reportTitle}`,
       `# Generated At: ${new Date().toISOString()}`,
@@ -1170,6 +1466,154 @@ export class ReportingService {
     }
 
     return csvLines.join("\n");
+  }
+
+  async exportToXLSX(
+    reportType: string,
+    params: ReportFilterParams,
+    userContext?:
+      | UserContext
+      | { id?: string; email?: string; [key: string]: unknown },
+  ): Promise<Buffer> {
+    const reportData = await this.resolveReportData(reportType, params);
+
+    await auditService.log({
+      organizationId: params.organizationId,
+      userId: userContext?.id,
+      userEmail: userContext?.email,
+      action: "EXPORT",
+      entity: "REPORT",
+      details: { reportType, format: "XLSX" },
+    });
+
+    const { headers, rows } = this.extractTabularRows(reportData);
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "MillLedger ERP";
+    workbook.created = new Date();
+
+    const title = reportData.reportTitle || `${reportType.toUpperCase()} Report`;
+    const sheet = workbook.addWorksheet(title.slice(0, 31));
+    sheet.addRow([title]);
+    sheet.addRow([`Generated At: ${new Date().toISOString()}`]);
+    sheet.addRow([]);
+
+    if (headers.length === 0) {
+      sheet.addRow(["No records found"]);
+    } else {
+      const headerRow = sheet.addRow(headers);
+      headerRow.font = { bold: true };
+      for (const r of rows) {
+        sheet.addRow(
+          headers.map((h) => {
+            const v = r[h];
+            return v instanceof Date ? v.toISOString() : (v ?? "");
+          }),
+        );
+      }
+      sheet.columns.forEach((col) => {
+        col.width = 18;
+      });
+    }
+
+    const arrayBuffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(arrayBuffer);
+  }
+
+  async exportToPDF(
+    reportType: string,
+    params: ReportFilterParams,
+    userContext?:
+      | UserContext
+      | { id?: string; email?: string; [key: string]: unknown },
+  ): Promise<Buffer> {
+    const reportData = await this.resolveReportData(reportType, params);
+
+    await auditService.log({
+      organizationId: params.organizationId,
+      userId: userContext?.id,
+      userEmail: userContext?.email,
+      action: "EXPORT",
+      entity: "REPORT",
+      details: { reportType, format: "PDF" },
+    });
+
+    const { headers, rows } = this.extractTabularRows(reportData);
+
+    return await new Promise<Buffer>((resolve, reject) => {
+      const doc = new PDFDocument({
+        size: "A4",
+        layout: "landscape",
+        margin: 32,
+      });
+      const chunks: Buffer[] = [];
+      doc.on("data", (chunk: Buffer) => chunks.push(chunk));
+      doc.on("end", () => resolve(Buffer.concat(chunks)));
+      doc.on("error", (err) => reject(err));
+
+      const title = reportData.reportTitle || `${reportType.toUpperCase()} Report`;
+      doc.fontSize(15).font("Helvetica-Bold").text(title);
+      doc
+        .fontSize(8)
+        .font("Helvetica")
+        .fillColor("#4b5563")
+        .text(`Generated: ${new Date().toISOString()} | Records: ${rows.length}`);
+      doc.moveDown(0.75);
+
+      if (headers.length === 0) {
+        doc.fontSize(10).fillColor("#111827").text("No records found.");
+      } else {
+        const displayHeaders = headers.slice(0, 8);
+        const usableWidth = 778;
+        const colWidth = Math.floor(usableWidth / displayHeaders.length);
+
+        const drawHeader = (y: number) => {
+          doc.rect(32, y - 3, usableWidth, 16).fill("#f3f4f6");
+          doc.fillColor("#111827").font("Helvetica-Bold").fontSize(7.5);
+          displayHeaders.forEach((h, idx) => {
+            doc.text(h, 34 + idx * colWidth, y, {
+              width: colWidth - 4,
+              ellipsis: true,
+            });
+          });
+        };
+
+        let y = doc.y;
+        drawHeader(y);
+        y += 18;
+        doc.font("Helvetica").fontSize(7.5).fillColor("#111827");
+
+        for (const r of rows) {
+          if (y > 540) {
+            doc.addPage();
+            y = 32;
+            drawHeader(y);
+            y += 18;
+            doc.font("Helvetica").fontSize(7.5).fillColor("#111827");
+          }
+          displayHeaders.forEach((h, idx) => {
+            const raw = r[h];
+            const text =
+              raw instanceof Date
+                ? raw.toISOString().slice(0, 10)
+                : raw === null || raw === undefined
+                  ? ""
+                  : String(raw);
+            doc.text(text, 34 + idx * colWidth, y, {
+              width: colWidth - 4,
+              ellipsis: true,
+            });
+          });
+          y += 15;
+          doc
+            .moveTo(32, y - 3)
+            .lineTo(32 + usableWidth, y - 3)
+            .strokeColor("#e5e7eb")
+            .stroke();
+        }
+      }
+
+      doc.end();
+    });
   }
 }
 

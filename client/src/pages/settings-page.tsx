@@ -40,6 +40,7 @@ import {
   FileTextIcon,
   PauseIcon,
   PlayIcon,
+  PencilIcon,
 } from "lucide-react";
 import { useMotion } from "@/hooks/use-motion";
 import { toast } from "sonner";
@@ -60,6 +61,116 @@ export function SettingsPage() {
   const { isMotionPaused, toggleMotion } = useMotion();
   const [activeTab, setActiveTab] = useState<"mill" | "users" | "dpdp">("mill");
   const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
+  const [editUserName, setEditUserName] = useState("");
+  const [editUserRole, setEditUserRole] = useState<Role>("SALESMAN");
+  const [showEditOrgModal, setShowEditOrgModal] = useState(false);
+  const [orgNameInput, setOrgNameInput] = useState("");
+  const [orgStateInput, setOrgStateInput] = useState("");
+  const [orgGstinInput, setOrgGstinInput] = useState("");
+  const [showAddTaxModal, setShowAddTaxModal] = useState(false);
+  const [taxHsn, setTaxHsn] = useState("21069099");
+  const [taxRateVal, setTaxRateVal] = useState(5);
+  const canEditSettings = currentUser?.role === "ADMIN";
+
+  const { data: orgData } = useQuery<{
+    organization: {
+      id: string;
+      code: string;
+      name: string;
+      state: string;
+      gstin: string | null;
+    };
+  }>({
+    queryKey: ["masters-organization"],
+    queryFn: async () => {
+      const res = await apiClient.get("/masters/organization?organizationId=MILL");
+      return res.data;
+    },
+  });
+
+  const { data: taxRatesData } = useQuery<{
+    taxRates: Array<{
+      id: string;
+      hsnCode: string;
+      rate: number | string;
+      cgstRate: number | string;
+      sgstRate: number | string;
+      igstRate: number | string;
+      effectiveFrom: string;
+    }>;
+  }>({
+    queryKey: ["finance-tax-rates"],
+    queryFn: async () => {
+      const res = await apiClient.get("/finance/tax-rates?organizationId=MILL");
+      return res.data;
+    },
+  });
+
+  const updateOrgMutation = useMutation({
+    mutationFn: async () => {
+      return (
+        await apiClient.put("/masters/organization", {
+          organizationId: "MILL",
+          name: orgNameInput.trim(),
+          state: orgStateInput.trim(),
+          gstin: orgGstinInput.trim() || null,
+        })
+      ).data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["masters-organization"] });
+      setShowEditOrgModal(false);
+      toast.success("Organization settings updated.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to update organization"));
+    },
+  });
+
+  const addTaxRateMutation = useMutation({
+    mutationFn: async () => {
+      const rate = Number(taxRateVal);
+      return (
+        await apiClient.post("/finance/tax-rates", {
+          organizationId: "MILL",
+          hsnCode: taxHsn.trim(),
+          rate,
+          cgstRate: rate / 2,
+          sgstRate: rate / 2,
+          igstRate: rate,
+        })
+      ).data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["finance-tax-rates"] });
+      setShowAddTaxModal(false);
+      toast.success("Tax rate added.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to add tax rate"));
+    },
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingUser) return;
+      return (
+        await apiClient.put(`/users/${editingUser.id}`, {
+          name: editUserName.trim(),
+          role: editUserRole,
+        })
+      ).data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["system-users"] });
+      setEditingUser(null);
+      toast.success("User updated.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to update user"));
+    },
+  });
 
   // Add User Form State
   const [newUserName, setNewUserName] = useState("");
@@ -221,32 +332,58 @@ export function SettingsPage() {
       {activeTab === "mill" && (
         <div className="flex flex-col gap-6">
           <div className="rounded-xl border border-border/80 bg-card shadow-xs">
-            <div className="border-b border-border/60 px-5 py-4 sm:px-6">
-              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-                <Building2Icon className="size-4 text-primary" />
-                Mill Organization Profile
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Official entity registration and place of supply configurations
-              </p>
+            <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 sm:px-6">
+              <div>
+                <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                  <Building2Icon className="size-4 text-primary" />
+                  Mill Organization Profile
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Official entity registration and place of supply configurations
+                </p>
+              </div>
+              {canEditSettings && orgData?.organization && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setOrgNameInput(orgData.organization.name);
+                    setOrgStateInput(orgData.organization.state);
+                    setOrgGstinInput(orgData.organization.gstin || "");
+                    setShowEditOrgModal(true);
+                  }}
+                  className="h-8 gap-1.5 text-xs"
+                >
+                  <PencilIcon className="size-3.5" />
+                  Edit Profile
+                </Button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 px-5 py-4 sm:px-6 sm:pb-6">
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-xs text-muted-foreground font-semibold">Legal Entity Name</span>
-                <span className="text-sm font-bold text-foreground">MillLedger Foods Pvt Ltd</span>
+                <span className="text-sm font-bold text-foreground">
+                  {orgData?.organization?.name || "MillLedger Foods Pvt Ltd"}
+                </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-xs text-muted-foreground font-semibold">Organization Code</span>
-                <span className="text-sm font-mono font-bold text-foreground">MILL</span>
+                <span className="text-sm font-mono font-bold text-foreground">
+                  {orgData?.organization?.code || "MILL"}
+                </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-xs text-muted-foreground font-semibold">Principal Place of Business</span>
-                <span className="text-sm font-bold text-foreground">Tamil Nadu (State Code 33)</span>
+                <span className="text-sm font-bold text-foreground">
+                  {orgData?.organization?.state || "Tamil Nadu"}
+                </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-xs text-muted-foreground font-semibold">Statutory GSTIN</span>
-                <span className="text-sm font-mono font-bold text-foreground">33AAAAA0000A1Z5</span>
+                <span className="text-sm font-mono font-bold text-foreground">
+                  {orgData?.organization?.gstin || "Unregistered"}
+                </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-xs text-muted-foreground font-semibold">Primary Milling HSN</span>
@@ -257,6 +394,55 @@ export function SettingsPage() {
                 <span className="text-sm font-bold text-emerald-600">5.00% (2.5% CGST + 2.5% SGST)</span>
               </div>
             </div>
+          </div>
+
+          {/* Statutory Tax Rates Schedule (IMP-016) */}
+          <div className="rounded-xl border border-border/80 bg-card shadow-xs">
+            <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 sm:px-6">
+              <div>
+                <h2 className="text-base font-bold text-foreground">
+                  Statutory GST Tax Rate Schedule
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Effective-dated HSN tax rates enforced during invoicing
+                </p>
+              </div>
+              {canEditSettings && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAddTaxModal(true)}
+                  className="h-8 gap-1.5 text-xs"
+                >
+                  <PlusIcon className="size-3.5" />
+                  Add Tax Rate
+                </Button>
+              )}
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>HSN Code</TableHead>
+                  <TableHead className="text-right">Total Rate</TableHead>
+                  <TableHead className="text-right">CGST</TableHead>
+                  <TableHead className="text-right">SGST</TableHead>
+                  <TableHead className="text-right">IGST</TableHead>
+                  <TableHead>Effective From</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(taxRatesData?.taxRates ?? []).map((tr) => (
+                  <TableRow key={tr.id}>
+                    <TableCell className="font-mono text-xs font-semibold">{tr.hsnCode}</TableCell>
+                    <TableCell className="text-right text-xs font-bold">{Number(tr.rate)}%</TableCell>
+                    <TableCell className="text-right text-xs">{Number(tr.cgstRate)}%</TableCell>
+                    <TableCell className="text-right text-xs">{Number(tr.sgstRate)}%</TableCell>
+                    <TableCell className="text-right text-xs">{Number(tr.igstRate)}%</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{formatDate(tr.effectiveFrom)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
 
           <div className="rounded-xl border border-border/80 bg-card shadow-xs">
@@ -445,20 +631,36 @@ export function SettingsPage() {
                         {formatDate(u.createdAt)}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={u.id === currentUser?.id || toggleUserMutation.isPending}
-                          onClick={() =>
-                            toggleUserMutation.mutate({
-                              id: u.id,
-                              isActive: !u.isActive,
-                            })
-                          }
-                          className="text-xs cursor-pointer"
-                        >
-                          {u.isActive ? "Deactivate" : "Activate"}
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          {canEditSettings && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setEditingUser(u);
+                                setEditUserName(u.name);
+                                setEditUserRole(u.role);
+                              }}
+                              className="text-xs cursor-pointer"
+                            >
+                              Edit
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={u.id === currentUser?.id || toggleUserMutation.isPending}
+                            onClick={() =>
+                              toggleUserMutation.mutate({
+                                id: u.id,
+                                isActive: !u.isActive,
+                              })
+                            }
+                            className="text-xs cursor-pointer"
+                          >
+                            {u.isActive ? "Deactivate" : "Activate"}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -624,6 +826,93 @@ export function SettingsPage() {
             </DialogFooter>
           </form>
         </DialogContent>
+      </Dialog>
+
+      {/* Edit Organization Modal (IMP-016) */}
+      <Dialog open={showEditOrgModal} onOpenChange={setShowEditOrgModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Organization Profile</DialogTitle>
+            <DialogDescription>Update legal entity name, state, and GSTIN.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="org-name" className="text-xs">Legal Entity Name</Label>
+              <Input id="org-name" value={orgNameInput} onChange={(e) => setOrgNameInput(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="org-state" className="text-xs">State</Label>
+              <Input id="org-state" value={orgStateInput} onChange={(e) => setOrgStateInput(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="org-gstin" className="text-xs">GSTIN</Label>
+              <Input id="org-gstin" value={orgGstinInput} onChange={(e) => setOrgGstinInput(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" size="sm" onClick={() => setShowEditOrgModal(false)}>Cancel</Button>
+            <Button size="sm" disabled={updateOrgMutation.isPending} onClick={() => updateOrgMutation.mutate()}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Tax Rate Modal (IMP-016) */}
+      <Dialog open={showAddTaxModal} onOpenChange={setShowAddTaxModal}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Add Statutory Tax Rate</DialogTitle>
+            <DialogDescription>Configure effective-dated GST rate for an HSN code.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="tax-hsn" className="text-xs">HSN Code</Label>
+              <Input id="tax-hsn" value={taxHsn} onChange={(e) => setTaxHsn(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="tax-rate" className="text-xs">Total GST Rate (%)</Label>
+              <Input id="tax-rate" type="number" step="0.5" value={taxRateVal} onChange={(e) => setTaxRateVal(Number(e.target.value))} />
+            </div>
+          </div>
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" size="sm" onClick={() => setShowAddTaxModal(false)}>Cancel</Button>
+            <Button size="sm" disabled={addTaxRateMutation.isPending} onClick={() => addTaxRateMutation.mutate()}>Save Tax Rate</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Modal (IMP-017) */}
+      <Dialog open={editingUser !== null} onOpenChange={(o) => { if (!o) setEditingUser(null); }}>
+        {editingUser && (
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit User</DialogTitle>
+              <DialogDescription>{editingUser.email}</DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 py-2">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="edit-user-name" className="text-xs">Full Name</Label>
+                <Input id="edit-user-name" value={editUserName} onChange={(e) => setEditUserName(e.target.value)} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs">Role</Label>
+                <Select value={editUserRole} onValueChange={(v) => setEditUserRole(v as Role)}>
+                  <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SALESMAN">Salesman</SelectItem>
+                    <SelectItem value="PRODUCTION">Production Manager</SelectItem>
+                    <SelectItem value="ACCOUNTANT">Accountant</SelectItem>
+                    <SelectItem value="ADMIN">Administrator</SelectItem>
+                    <SelectItem value="OWNER">Owner</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter className="border-t pt-4">
+              <Button variant="outline" size="sm" onClick={() => setEditingUser(null)}>Cancel</Button>
+              <Button size="sm" disabled={updateUserMutation.isPending} onClick={() => updateUserMutation.mutate()}>Save User</Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
       </Dialog>
     </div>
   );

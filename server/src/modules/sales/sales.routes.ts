@@ -59,6 +59,96 @@ salesRouter.post(
   },
 );
 
+// GET /api/v1/sales/salesmen - List active salesmen for assignment
+salesRouter.get(
+  "/salesmen",
+  requireAuth,
+  authorize("customer", "update"),
+  async (_req: AuthenticatedRequest, res, next) => {
+    try {
+      const salesmen = await salesService.listSalesmen();
+      res.json({ salesmen });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /api/v1/sales/customers/:id - Customer detail (ABAC enforced)
+salesRouter.get(
+  "/customers/:id",
+  requireAuth,
+  authorize("customer", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const customerId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!customerId) {
+        throw new AppError("Customer ID is required", 400);
+      }
+      const customer = await salesService.getCustomerById(customerId, req.user!);
+      res.json({ customer });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/sales/customers/:id/assignments - Assign salesman
+salesRouter.post(
+  "/customers/:id/assignments",
+  requireAuth,
+  authorize("customer", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const customerId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      const salesmanId = req.body?.salesmanId as string | undefined;
+      if (!customerId || !salesmanId) {
+        throw new AppError("Customer ID and salesmanId are required", 400);
+      }
+      const assignment = await salesService.assignSalesman(
+        customerId,
+        salesmanId,
+        req.user!,
+      );
+      res.status(201).json({ status: "assigned", assignment });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// DELETE /api/v1/sales/customers/:id/assignments/:salesmanId - Unassign salesman
+salesRouter.delete(
+  "/customers/:id/assignments/:salesmanId",
+  requireAuth,
+  authorize("customer", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const customerId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      const salesmanId = Array.isArray(req.params.salesmanId)
+        ? req.params.salesmanId[0]
+        : req.params.salesmanId;
+      if (!customerId || !salesmanId) {
+        throw new AppError("Customer ID and salesmanId are required", 400);
+      }
+      const result = await salesService.unassignSalesman(
+        customerId,
+        salesmanId,
+        req.user!,
+      );
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // PUT /api/v1/sales/customers/:id - Update a customer with validated GSTIN
 salesRouter.put(
   "/customers/:id",
@@ -439,6 +529,24 @@ salesRouter.get(
         req.user,
       );
       res.json({ dispatch });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/sales/returns - Record sales return against posted dispatch (IMP-014)
+salesRouter.post(
+  "/returns",
+  requireAuth,
+  authorize("order", "dispatch"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const result = await dispatchService.recordSalesReturn(
+        req.body,
+        req.user,
+      );
+      res.status(201).json(result);
     } catch (err) {
       next(err);
     }

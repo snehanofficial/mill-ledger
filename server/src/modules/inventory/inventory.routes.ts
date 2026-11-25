@@ -34,6 +34,44 @@ inventoryRouter.get(
   handleGetPurchaseReceipts,
 );
 
+// GET /purchase-receipts/:id (IMP-015)
+inventoryRouter.get(
+  "/purchase-receipts/:id",
+  requireAuth,
+  authorize("purchase", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!id) throw new AppError("Receipt ID is required", 400);
+      const receipt = await inventoryService.getPurchaseReceiptById(id);
+      res.json({ receipt });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /purchase-receipts/:id/reverse (IMP-015)
+inventoryRouter.post(
+  "/purchase-receipts/:id/reverse",
+  requireAuth,
+  authorize("purchase", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!id) throw new AppError("Receipt ID is required", 400);
+      const result = await inventoryService.reversePurchaseReceipt(
+        id,
+        req.body?.reason || "",
+        req.user,
+      );
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /suppliers (mounted under /api/v1/inventory)
 inventoryRouter.get(
   "/suppliers",
@@ -159,6 +197,112 @@ inventoryRouter.get(
 
       const ledger = await inventoryService.getItemLedger(itemId, warehouseId);
       res.json({ ledger });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /items - Create inventory item (IMP-012)
+inventoryRouter.post(
+  "/items",
+  requireAuth,
+  authorize("inventory", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const item = await inventoryService.createInventoryItem(
+        req.body,
+        req.user,
+      );
+      res.status(201).json({ item });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// PUT /items/:id - Update/archive inventory item (IMP-012)
+inventoryRouter.put(
+  "/items/:id",
+  requireAuth,
+  authorize("inventory", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!id) throw new AppError("Item ID is required", 400);
+      const item = await inventoryService.updateInventoryItem(
+        id,
+        req.body || {},
+        req.user,
+      );
+      res.json({ item });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /adjustments - Post audited stock adjustment (IMP-012)
+inventoryRouter.post(
+  "/adjustments",
+  requireAuth,
+  authorize("inventory", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const result = await inventoryService.postStockAdjustment(
+        req.body,
+        req.user,
+      );
+      res.status(201).json(result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /uoms - List UOMs and conversions (IMP-012)
+inventoryRouter.get(
+  "/uoms",
+  requireAuth,
+  authorize("inventory", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = (req.query.organizationId as string) || "MILL";
+      const data = await inventoryService.getUomsAndConversions(orgId);
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /uoms - Create UOM (IMP-012)
+inventoryRouter.post(
+  "/uoms",
+  requireAuth,
+  authorize("inventory", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const uom = await inventoryService.createUom(req.body, req.user);
+      res.status(201).json({ uom });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /unit-conversions - Create UOM conversion (IMP-012)
+inventoryRouter.post(
+  "/unit-conversions",
+  requireAuth,
+  authorize("inventory", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const conversion = await inventoryService.createUnitConversion(
+        req.body,
+        req.user,
+      );
+      res.status(201).json({ conversion });
     } catch (err) {
       next(err);
     }

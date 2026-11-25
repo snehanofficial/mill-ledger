@@ -39,6 +39,9 @@ import {
   RefreshCwIcon,
   FileCheck2Icon,
   PrinterIcon,
+  DownloadIcon,
+  Share2Icon,
+  CopyIcon,
   IndianRupeeIcon,
   PlusCircleIcon,
   AlertTriangleIcon,
@@ -810,7 +813,7 @@ export function InvoicesPage() {
               </div>
             </div>
 
-            <DialogFooter className="mt-6 border-t pt-4">
+            <DialogFooter className="mt-6 flex-wrap gap-2 border-t pt-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -819,12 +822,74 @@ export function InvoicesPage() {
                 Close
               </Button>
               <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const summary = `Invoice ${selectedInvoice.invoiceNumber} | ${selectedInvoice.customerNameSnapshot} | Total: ${formatINR(selectedInvoice.totalAmount)} | Outstanding: ${formatINR(selectedInvoice.outstandingAmount)} | PDF: ${window.location.origin}/api/v1/finance/invoices/${selectedInvoice.id}/pdf`;
+                  try {
+                    await navigator.clipboard.writeText(summary);
+                    toast.success("Invoice summary & PDF link copied");
+                  } catch {
+                    toast.error("Could not copy to clipboard");
+                  }
+                }}
+                className="gap-2"
+              >
+                <CopyIcon className="h-4 w-4" />
+                Copy Link
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const text = encodeURIComponent(
+                    `Tax Invoice ${selectedInvoice.invoiceNumber} for ${selectedInvoice.customerNameSnapshot}\nTotal: ${formatINR(selectedInvoice.totalAmount)}\nOutstanding: ${formatINR(selectedInvoice.outstandingAmount)}`,
+                  );
+                  window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
+                }}
+                className="gap-2"
+              >
+                <Share2Icon className="h-4 w-4" />
+                WhatsApp
+              </Button>
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => window.print()}
                 className="gap-2"
               >
                 <PrinterIcon className="h-4 w-4" />
-                Print / Save PDF
+                Print
+              </Button>
+              <Button
+                size="sm"
+                onClick={async () => {
+                  try {
+                    const res = await fetch(
+                      `/api/v1/finance/invoices/${selectedInvoice.id}/pdf`,
+                      { credentials: "include" },
+                    );
+                    if (!res.ok) {
+                      throw new Error("Failed to download PDF");
+                    }
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${selectedInvoice.invoiceNumber}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                    toast.success(`Downloaded ${selectedInvoice.invoiceNumber}.pdf`);
+                  } catch {
+                    toast.error("Failed to download invoice PDF");
+                  }
+                }}
+                className="gap-2"
+              >
+                <DownloadIcon className="h-4 w-4" />
+                Download PDF
               </Button>
             </DialogFooter>
           </DialogContent>

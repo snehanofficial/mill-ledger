@@ -59,4 +59,41 @@ describe("MLD-012: Atomic document sequence generation and concurrency", () => {
 
     expect(invoiceNumber).toMatch(/^INV-2026-27-\d{4}$/);
   });
+
+  it("generates collision-free order and payment numbers under concurrent transactions", async () => {
+    const year = "2099";
+    await prisma.documentSequence.deleteMany({
+      where: {
+        organizationId: orgId,
+        financialYear: year,
+        type: { in: ["SALES_ORDER", "PAYMENT"] },
+      },
+    });
+
+    const [orderNumbers, paymentNumbers] = await Promise.all([
+      Promise.all(
+        Array.from({ length: 10 }, () =>
+          prisma.$transaction((tx) =>
+            sequenceService.getNextOrderNumber(tx, orgId, year),
+          ),
+        ),
+      ),
+      Promise.all(
+        Array.from({ length: 10 }, () =>
+          prisma.$transaction((tx) =>
+            sequenceService.getNextPaymentNumber(tx, orgId, year),
+          ),
+        ),
+      ),
+    ]);
+
+    expect(new Set(orderNumbers).size).toBe(10);
+    expect(new Set(paymentNumbers).size).toBe(10);
+    for (const num of orderNumbers) {
+      expect(num).toMatch(/^SO-2099-\d{4}$/);
+    }
+    for (const num of paymentNumbers) {
+      expect(num).toMatch(/^REC-2099-\d{4}$/);
+    }
+  });
 });

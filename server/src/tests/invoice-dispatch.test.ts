@@ -612,4 +612,84 @@ describe("M6: Invoice generation, physical dispatch, reservation release, and cr
     expect(Number(line.taxAmount)).toBe(125);
     expect(Number(line.lineTotal)).toBe(2625);
   });
+
+  it("IMP-001: downloads a real application/pdf for posted invoices and enforces RBAC", async () => {
+    const invoice = await prisma.salesInvoice.findFirstOrThrow();
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+    const salesmanCookie = await loginAndGetCookie(
+      "salesman1@millledger.local",
+      "SalesmanPassword123!",
+    );
+    const productionCookie = await loginAndGetCookie(
+      "production@millledger.local",
+      "ProductionPassword123!",
+    );
+
+    const pdfRes = await fetch(
+      `${baseUrl}/api/v1/finance/invoices/${invoice.id}/pdf`,
+      {
+        headers: { Cookie: adminCookie },
+      },
+    );
+    expect(pdfRes.status).toBe(200);
+    expect(pdfRes.headers.get("content-type")).toContain("application/pdf");
+    const pdfBytes = Buffer.from(await pdfRes.arrayBuffer());
+    expect(pdfBytes.subarray(0, 5).toString("utf8")).toBe("%PDF-");
+    expect(pdfBytes.length).toBeGreaterThan(500);
+
+    const salesmanRes = await fetch(
+      `${baseUrl}/api/v1/finance/invoices/${invoice.id}/pdf`,
+      {
+        headers: { Cookie: salesmanCookie },
+      },
+    );
+    expect(salesmanRes.status).toBe(403);
+
+    const prodRes = await fetch(
+      `${baseUrl}/api/v1/finance/invoices/${invoice.id}/pdf`,
+      {
+        headers: { Cookie: productionCookie },
+      },
+    );
+    expect(prodRes.status).toBe(403);
+  });
+
+  it("IMP-014: records a sales return against a posted dispatch and restores stock", async () => {
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+    const dispatch = await prisma.dispatch.findFirstOrThrow({
+      where: { status: "POSTED" },
+      include: { lines: true },
+    });
+    const line = dispatch.lines[0];
+    const beforeItem = await prisma.inventoryItem.findUniqueOrThrow({
+      where: { id: line.inventoryItemId },
+    });
+
+    const retRes = await fetch(`${baseUrl}/api/v1/sales/returns`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: adminCookie,
+      },
+      body: JSON.stringify({
+        dispatchId: dispatch.id,
+        reason: "Customer returned 5 packets",
+        lines: [{ inventoryItemId: line.inventoryItemId, quantity: 5 }],
+      }),
+    });
+    expect(retRes.status).toBe(201);
+
+    const afterItem = await prisma.inventoryItem.findUniqueOrThrow({
+      where: { id: line.inventoryItemId },
+    });
+    expect(Number(afterItem.currentStock)).toBe(
+      Number(beforeItem.currentStock) + 5,
+    );
+  });
 });

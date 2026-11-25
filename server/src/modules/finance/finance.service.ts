@@ -465,6 +465,7 @@ export class FinanceService {
     const invoice = await prisma.salesInvoice.findUnique({
       where: { id: invoiceId },
       include: {
+        organization: true,
         customer: true,
         lines: true,
         salesOrder: {

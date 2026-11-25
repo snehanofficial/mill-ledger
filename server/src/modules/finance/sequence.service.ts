@@ -48,6 +48,24 @@ export class SequenceService {
           },
         },
       });
+    } else if (type === "SALES_ORDER") {
+      existingCount = await tx.salesOrder.count({
+        where: {
+          organizationId,
+          orderNumber: {
+            startsWith: `SO-${financialYear}-`,
+          },
+        },
+      });
+    } else if (type === "PAYMENT") {
+      existingCount = await tx.payment.count({
+        where: {
+          organizationId,
+          paymentNumber: {
+            startsWith: `REC-${financialYear}-`,
+          },
+        },
+      });
     }
 
     const initialVal = existingCount + 1;
@@ -98,6 +116,40 @@ export class SequenceService {
       year,
     );
     return `DSP-${year}-${seq.toString().padStart(4, "0")}`;
+  }
+
+  /**
+   * Format sales order number: SO-{YYYY}-{XXXX}
+   */
+  async getNextOrderNumber(
+    tx: Prisma.TransactionClient,
+    organizationId: string,
+    year: string = new Date().getFullYear().toString(),
+  ): Promise<string> {
+    const seq = await this.getNextSequence(
+      tx,
+      organizationId,
+      "SALES_ORDER",
+      year,
+    );
+    return `SO-${year}-${seq.toString().padStart(4, "0")}`;
+  }
+
+  /**
+   * Format payment receipt number: REC-{YYYY}-{XXXX}
+   */
+  async getNextPaymentNumber(
+    tx: Prisma.TransactionClient,
+    organizationId: string,
+    year: string = new Date().getFullYear().toString(),
+  ): Promise<string> {
+    const seq = await this.getNextSequence(
+      tx,
+      organizationId,
+      "PAYMENT",
+      year,
+    );
+    return `REC-${year}-${seq.toString().padStart(4, "0")}`;
   }
 }
 

@@ -3,6 +3,7 @@ import { OrderStatus, ReservationStatus, Prisma } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
 import type { UserContext } from "@mill-ledger/shared";
 import { calculateLineTax } from "../finance/tax.util.js";
+import { sequenceService } from "../finance/sequence.service.js";
 import { auditService } from "../reporting/audit.service.js";
 
 export interface CreateOrderLineInput {
@@ -240,7 +241,7 @@ export class SalesService {
 
         const orderNumber =
           input.orderNumber ??
-          `SO-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
+          (await sequenceService.getNextOrderNumber(tx, organizationId));
 
         // 4. Place of supply tax calculation
         // Factory state: Tamil Nadu
@@ -1261,7 +1262,15 @@ export class SalesService {
       const assignments = await prisma.salesmanCustomerAssignment.findMany({
         where: { salesmanId: user.id },
         include: {
-          customer: true,
+          customer: {
+            include: {
+              assignments: {
+                include: {
+                  salesman: { select: { id: true, name: true, email: true } },
+                },
+              },
+            },
+          },
         },
       });
       return assignments.map((a) => a.customer);
@@ -1269,6 +1278,132 @@ export class SalesService {
 
     return await prisma.customer.findMany({
       where: { organizationId: org },
+      include: {
+        assignments: {
+          include: {
+            salesman: { select: { id: true, name: true, email: true } },
+          },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+  }
+
+  /**
+   * Get single customer detail with ABAC check
+   */
+  async getCustomerById(customerId: string, user: UserContext) {
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
+      include: {
+        assignments: {
+          include: {
+            salesman: { select: { id: true, name: true, email: true } },
+          },
+        },
+      },
+    });
+    if (!customer) {
+      throw new AppError(`Customer ${customerId} not found`, 404);
+    }
+    if (user.role === "SALESMAN") {
+      const assigned = customer.assignments.some(
+        (a) => a.salesmanId === user.id,
+      );
+      if (!assigned) {
+        throw new AppError(
+          "Access denied: Customer is not assigned to you",
+          403,
+        );
+      }
+    }
+    return customer;
+  }
+
+  /**
+   * Assign a salesman to a customer
+   */
+  async assignSalesman(
+    customerId: string,
+    salesmanId: string,
+    user: UserContext,
+  ) {
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
+    });
+    if (!customer) {
+      throw new AppError(`Customer ${customerId} not found`, 404);
+    }
+    const salesman = await prisma.user.findUnique({
+      where: { id: salesmanId },
+    });
+    if (!salesman || salesman.role !== "SALESMAN") {
+      throw new AppError("Valid salesman user is required", 400);
+    }
+
+    const assignment = await prisma.salesmanCustomerAssignment.upsert({
+      where: {
+        salesmanId_customerId: { salesmanId, customerId },
+      },
+      update: {},
+      create: { salesmanId, customerId },
+      include: {
+        salesman: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    await auditService.log({
+      organizationId: customer.organizationId,
+      userId: user.id,
+      userEmail: user.email,
+      action: "ASSIGN_SALESMAN",
+      entity: "Customer",
+      entityId: customerId,
+      details: { salesmanId, salesmanEmail: salesman.email },
+    });
+
+    return assignment;
+  }
+
+  /**
+   * Unassign a salesman from a customer
+   */
+  async unassignSalesman(
+    customerId: string,
+    salesmanId: string,
+    user: UserContext,
+  ) {
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
+    });
+    if (!customer) {
+      throw new AppError(`Customer ${customerId} not found`, 404);
+    }
+
+    await prisma.salesmanCustomerAssignment.deleteMany({
+      where: { customerId, salesmanId },
+    });
+
+    await auditService.log({
+      organizationId: customer.organizationId,
+      userId: user.id,
+      userEmail: user.email,
+      action: "UNASSIGN_SALESMAN",
+      entity: "Customer",
+      entityId: customerId,
+      details: { salesmanId },
+    });
+
+    return { customerId, salesmanId, removed: true };
+  }
+
+  /**
+   * List active salesmen for assignment dropdown
+   */
+  async listSalesmen() {
+    return await prisma.user.findMany({
+      where: { role: "SALESMAN", isActive: true },
+      select: { id: true, name: true, email: true },
       orderBy: { name: "asc" },
     });
   }

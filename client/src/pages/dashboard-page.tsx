@@ -45,7 +45,28 @@ interface DashboardData {
     totalOutstandingReceivables: number;
     unallocatedCashCredit: number;
     pendingOrdersCount: number;
+    todayOrdersCount?: number;
+    todayRevenue?: number;
   };
+  lowStockAlerts?: Array<{
+    sku: string;
+    name: string;
+    available: number;
+    onHand: number;
+  }>;
+  varianceAlerts?: Array<{
+    runNumber: string;
+    productName: string;
+    yieldVariancePct: number;
+  }>;
+  productMargins?: Array<{
+    sku: string;
+    name: string;
+    sellingPriceExclGst: number;
+    unitCost: number;
+    marginAmount: number;
+    marginPct: number;
+  }>;
   recentInvoices: Array<{
     invoiceId: string;
     invoiceNumber: string;
@@ -228,6 +249,52 @@ export function DashboardPage() {
               <div className="text-xs text-muted-foreground">
                 Run cost: {formatINR(metrics?.totalProductionCost || 0)}
               </div>
+            </div>
+          </div>
+
+          {/* Today Activity, Alerts & Margin Summary (IMP-019) */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="rounded-xl border bg-card p-4 shadow-xs flex flex-col gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Today&apos;s Activity (IST)
+              </span>
+              <div className="flex items-baseline justify-between">
+                <span className="text-xl font-bold">{metrics?.todayOrdersCount ?? 0} orders</span>
+                <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                  {formatINR(metrics?.todayRevenue ?? 0)}
+                </span>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                Pending approvals/fulfilment: {metrics?.pendingOrdersCount ?? 0}
+              </span>
+            </div>
+
+            <div className="rounded-xl border bg-card p-4 shadow-xs flex flex-col gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Operational Alerts
+              </span>
+              <div className="text-xs flex flex-col gap-1">
+                <span className={data?.varianceAlerts?.length ? "text-amber-600 font-semibold" : "text-muted-foreground"}>
+                  Yield variance alerts: {data?.varianceAlerts?.length ?? 0}
+                </span>
+                <span className={data?.lowStockAlerts?.length ? "text-amber-600 font-semibold" : "text-muted-foreground"}>
+                  Low-stock items (&le;50 ATP): {data?.lowStockAlerts?.length ?? 0}
+                </span>
+              </div>
+            </div>
+
+            <div className="rounded-xl border bg-card p-4 shadow-xs flex flex-col gap-2">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Unit Margin (Excl. GST)
+              </span>
+              {(data?.productMargins ?? []).slice(0, 2).map((m) => (
+                <div key={m.sku} className="flex items-center justify-between text-xs">
+                  <span className="font-medium truncate">{m.name}</span>
+                  <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+                    {formatINR(m.marginAmount)} ({m.marginPct}%)
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 

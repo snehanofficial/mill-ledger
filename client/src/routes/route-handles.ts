@@ -12,6 +12,7 @@ export const productionTodayHandle: RouteHandle = { breadcrumb: "Today" };
 export const productionNewHandle: RouteHandle = { breadcrumb: "New batch" };
 export const productionHistoryHandle: RouteHandle = { breadcrumb: "History" };
 export const customersHandle: RouteHandle = { breadcrumb: "Customers" };
+export const productsHandle: RouteHandle = { breadcrumb: "Products" };
 export const reportsSalesHandle: RouteHandle = { breadcrumb: "Sales" };
 export const reportsStockHandle: RouteHandle = { breadcrumb: "Stock" };
 export const reportsProductionHandle: RouteHandle = {

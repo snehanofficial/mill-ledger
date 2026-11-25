@@ -46,6 +46,16 @@ const REPORT_TABS: ReportTabItem[] = [
     roles: ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
   },
   {
+    id: "customer-sales",
+    label: "Customer-wise sales",
+    roles: ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
+  },
+  {
+    id: "product-sales",
+    label: "Product-wise sales",
+    roles: ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
+  },
+  {
     id: "gst",
     label: "GST outward summary",
     roles: ["ADMIN", "ACCOUNTANT", "OWNER"],
@@ -53,6 +63,11 @@ const REPORT_TABS: ReportTabItem[] = [
   {
     id: "stock",
     label: "Stock valuation",
+    roles: ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
+  },
+  {
+    id: "stock-ledger",
+    label: "Stock ledger",
     roles: ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
   },
   {
@@ -92,10 +107,31 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     : allowedTabs[0]?.id || "sales";
 
   const [exporting, setExporting] = useState(false);
+  const [startDate, setStartDate] = useUrlState("startDate", "");
+  const [endDate, setEndDate] = useUrlState("endDate", "");
+  const [customerIdFilter, setCustomerIdFilter] = useUrlState("customerId", "ALL");
   const [auditSearch, setAuditSearch] = useUrlState("q", "", {
     debounceMs: 250,
   });
   const [auditActionFilter, setAuditActionFilter] = useUrlState("action", "ALL");
+
+  const filterParams = new URLSearchParams({ organizationId: "MILL" });
+  if (startDate) filterParams.set("startDate", startDate);
+  if (endDate) filterParams.set("endDate", endDate);
+  if (customerIdFilter && customerIdFilter !== "ALL") {
+    filterParams.set("customerId", customerIdFilter);
+  }
+  const filterQs = filterParams.toString();
+
+  const { data: customersListData } = useQuery<{
+    customers: Array<{ id: string; name: string }>;
+  }>({
+    queryKey: ["report-filter-customers"],
+    queryFn: async () => {
+      const res = await apiClient.get("/sales/customers");
+      return res.data;
+    },
+  });
 
   // 1. Sales Report
   const {
@@ -103,9 +139,9 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     isLoading: loadingSales,
     refetch: refetchSales,
   } = useQuery({
-    queryKey: ["report-sales"],
+    queryKey: ["report-sales", filterQs],
     queryFn: async () => {
-      const res = await apiClient.get("/reports/sales?organizationId=MILL");
+      const res = await apiClient.get(`/reports/sales?${filterQs}`);
       return res.data;
     },
     enabled: effectiveTab === "sales",
@@ -113,9 +149,9 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
 
   // 2. GST Outward Summary
   const { data: gstData, refetch: refetchGST } = useQuery({
-    queryKey: ["report-gst"],
+    queryKey: ["report-gst", filterQs],
     queryFn: async () => {
-      const res = await apiClient.get("/reports/gst?organizationId=MILL");
+      const res = await apiClient.get(`/reports/gst?${filterQs}`);
       return res.data;
     },
     enabled: effectiveTab === "gst",
@@ -123,9 +159,9 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
 
   // 3. Stock Valuation Report
   const { data: stockData, refetch: refetchStock } = useQuery({
-    queryKey: ["report-stock"],
+    queryKey: ["report-stock", filterQs],
     queryFn: async () => {
-      const res = await apiClient.get("/reports/stock?organizationId=MILL");
+      const res = await apiClient.get(`/reports/stock?${filterQs}`);
       return res.data;
     },
     enabled: effectiveTab === "stock",
@@ -133,11 +169,9 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
 
   // 4. Production Report
   const { data: prodData, refetch: refetchProd } = useQuery({
-    queryKey: ["report-production"],
+    queryKey: ["report-production", filterQs],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/reports/production?organizationId=MILL",
-      );
+      const res = await apiClient.get(`/reports/production?${filterQs}`);
       return res.data;
     },
     enabled: effectiveTab === "production",
@@ -145,14 +179,42 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
 
   // 5. Receivables Report
   const { data: recData, refetch: refetchRec } = useQuery({
-    queryKey: ["report-receivables"],
+    queryKey: ["report-receivables", filterQs],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/reports/receivables?organizationId=MILL",
-      );
+      const res = await apiClient.get(`/reports/receivables?${filterQs}`);
       return res.data;
     },
     enabled: effectiveTab === "receivables",
+  });
+
+  // 5b. Customer-wise Sales (IMP-020)
+  const { data: custSalesData, refetch: refetchCustSales } = useQuery({
+    queryKey: ["report-customer-sales", filterQs],
+    queryFn: async () => {
+      const res = await apiClient.get(`/reports/customer-sales?${filterQs}`);
+      return res.data;
+    },
+    enabled: effectiveTab === "customer-sales",
+  });
+
+  // 5c. Product-wise Sales (IMP-020)
+  const { data: prodSalesData, refetch: refetchProdSales } = useQuery({
+    queryKey: ["report-product-sales", filterQs],
+    queryFn: async () => {
+      const res = await apiClient.get(`/reports/product-sales?${filterQs}`);
+      return res.data;
+    },
+    enabled: effectiveTab === "product-sales",
+  });
+
+  // 5d. Stock Ledger (IMP-020)
+  const { data: stockLedgerData, refetch: refetchStockLedger } = useQuery({
+    queryKey: ["report-stock-ledger", filterQs],
+    queryFn: async () => {
+      const res = await apiClient.get(`/reports/stock-ledger?${filterQs}`);
+      return res.data;
+    },
+    enabled: effectiveTab === "stock-ledger",
   });
 
   // 6. Audit Report
@@ -180,11 +242,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     return true;
   });
 
-  const handleExportCSV = async () => {
+  const handleExport = async (format: "csv" | "xlsx" | "pdf") => {
     try {
       setExporting(true);
       const res = await apiClient.get(
-        `/reports/${effectiveTab}/export?format=csv&organizationId=MILL`,
+        `/reports/${effectiveTab}/export?format=${format}&${filterQs}`,
         {
           responseType: "blob",
         },
@@ -194,11 +256,12 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
       link.href = url;
       link.setAttribute(
         "download",
-        `${effectiveTab}-report-${new Date().toISOString().slice(0, 10)}.csv`,
+        `${effectiveTab}-report-${new Date().toISOString().slice(0, 10)}.${format}`,
       );
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Export failed", err);
     } finally {
@@ -222,14 +285,17 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
               if (effectiveTab === "sales") refetchSales();
+              if (effectiveTab === "customer-sales") refetchCustSales();
+              if (effectiveTab === "product-sales") refetchProdSales();
               if (effectiveTab === "gst") refetchGST();
               if (effectiveTab === "stock") refetchStock();
+              if (effectiveTab === "stock-ledger") refetchStockLedger();
               if (effectiveTab === "production") refetchProd();
               if (effectiveTab === "receivables") refetchRec();
               if (effectiveTab === "audit") refetchAudit();
@@ -240,15 +306,97 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
             Refresh
           </Button>
           <Button
+            variant="outline"
             size="sm"
-            onClick={handleExportCSV}
+            onClick={() => handleExport("csv")}
             disabled={exporting}
-            className="gap-2 cursor-pointer"
+            className="gap-1.5 cursor-pointer"
           >
             <DownloadIcon className="h-4 w-4" />
-            {exporting ? "Exporting..." : "Export CSV"}
+            CSV
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleExport("xlsx")}
+            disabled={exporting}
+            className="gap-1.5 cursor-pointer"
+          >
+            <DownloadIcon className="h-4 w-4" />
+            Excel
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => handleExport("pdf")}
+            disabled={exporting}
+            className="gap-1.5 cursor-pointer"
+          >
+            <DownloadIcon className="h-4 w-4" />
+            PDF
           </Button>
         </div>
+      </div>
+
+      {/* Report Filter Bar (IMP-006) */}
+      <div className="flex flex-wrap items-end gap-3 rounded-xl border bg-card p-3 shadow-xs">
+        <div className="flex flex-col gap-1">
+          <label htmlFor="report-start-date" className="text-2xs font-medium uppercase text-muted-foreground">
+            From Date
+          </label>
+          <Input
+            id="report-start-date"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="h-8 w-40 text-xs"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="report-end-date" className="text-2xs font-medium uppercase text-muted-foreground">
+            To Date
+          </label>
+          <Input
+            id="report-end-date"
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="h-8 w-40 text-xs"
+          />
+        </div>
+        {(effectiveTab === "sales" || effectiveTab === "receivables") && (
+          <div className="flex flex-col gap-1">
+            <label htmlFor="report-customer-filter" className="text-2xs font-medium uppercase text-muted-foreground">
+              Customer
+            </label>
+            <Select value={customerIdFilter} onValueChange={setCustomerIdFilter}>
+              <SelectTrigger id="report-customer-filter" className="h-8 w-48 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Customers</SelectItem>
+                {(customersListData?.customers ?? []).map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        {(startDate || endDate || customerIdFilter !== "ALL") && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setStartDate("");
+              setEndDate("");
+              setCustomerIdFilter("ALL");
+            }}
+            className="h-8 text-xs text-muted-foreground"
+          >
+            Clear Filters
+          </Button>
+        )}
       </div>
 
       {/* Navigation Tabs */}
@@ -715,6 +863,98 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
               </TableBody>
             </Table>
           </div>
+        </div>
+      )}
+
+      {/* Tab: Customer-Wise Sales (IMP-020) */}
+      {effectiveTab === "customer-sales" && (
+        <div className="rounded-xl border bg-card shadow-xs overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Customer</TableHead>
+                <TableHead>State</TableHead>
+                <TableHead className="text-right">Invoices</TableHead>
+                <TableHead className="text-right">Taxable</TableHead>
+                <TableHead className="text-right">GST</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Outstanding</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(custSalesData?.rows || []).map((r: any) => (
+                <TableRow key={r.customerCode}>
+                  <TableCell className="font-medium text-xs">{r.customerName} ({r.customerCode})</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{r.state}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{r.invoicesCount}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{formatINR(r.taxableAmount)}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{formatINR(r.totalTaxAmount)}</TableCell>
+                  <TableCell className="text-right font-mono text-xs font-bold">{formatINR(r.totalAmount)}</TableCell>
+                  <TableCell className="text-right font-mono text-xs text-amber-600">{formatINR(r.outstandingAmount)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Tab: Product-Wise Sales (IMP-020) */}
+      {effectiveTab === "product-sales" && (
+        <div className="rounded-xl border bg-card shadow-xs overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Product</TableHead>
+                <TableHead>HSN</TableHead>
+                <TableHead className="text-right">Qty Sold</TableHead>
+                <TableHead className="text-right">Taxable</TableHead>
+                <TableHead className="text-right">GST</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(prodSalesData?.rows || []).map((r: any) => (
+                <TableRow key={`${r.productName}-${r.hsnCode}`}>
+                  <TableCell className="font-medium text-xs">{r.productName}</TableCell>
+                  <TableCell className="font-mono text-xs">{r.hsnCode}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{r.totalQuantity}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{formatINR(r.taxableAmount)}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{formatINR(r.totalTaxAmount)}</TableCell>
+                  <TableCell className="text-right font-mono text-xs font-bold">{formatINR(r.totalAmount)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Tab: Stock Ledger (IMP-020) */}
+      {effectiveTab === "stock-ledger" && (
+        <div className="rounded-xl border bg-card shadow-xs overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Item</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead className="text-right">Qty</TableHead>
+                <TableHead className="text-right">Unit Cost</TableHead>
+                <TableHead>Notes</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(stockLedgerData?.rows || []).map((r: any, idx: number) => (
+                <TableRow key={`${r.sku}-${r.postedAt}-${idx}`}>
+                  <TableCell className="text-xs text-muted-foreground">{formatDateTime(r.postedAt)}</TableCell>
+                  <TableCell className="text-xs font-medium">{r.itemName} ({r.sku})</TableCell>
+                  <TableCell><Badge variant="outline" className="font-mono text-2xs">{r.movementType}</Badge></TableCell>
+                  <TableCell className="text-right font-mono text-xs font-semibold">{r.quantity} {r.uom}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{formatINR(r.unitCost)}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground max-w-xs truncate">{r.notes}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 

@@ -47,6 +47,8 @@ import {
   PlusCircleIcon,
   BoxesIcon,
   IndianRupeeIcon,
+  Trash2Icon,
+  LayersIcon,
 } from "lucide-react";
 
 interface ProductionRunMaterial {
@@ -107,7 +109,9 @@ export function ProductionPage() {
   const { t } = useLanguage();
   const canRecordProduction =
     user?.role === "ADMIN" || user?.role === "PRODUCTION";
+  const canManageBom = user?.role === "ADMIN";
   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
+  const [showBomModal, setShowBomModal] = useState(false);
   const [selectedRun, setSelectedRun] = useState<ProductionRun | null>(null);
   const [searchQuery, setSearchQuery] = useUrlState("q", "", {
     debounceMs: 250,
@@ -237,6 +241,104 @@ export function ProductionPage() {
     },
   });
 
+  // Save draft production batch mutation (IMP-013)
+  const saveDraftMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeRecipe) throw new Error("Recipe is required");
+      const res = await apiClient.post("/production-runs/draft", {
+        organizationId: "MILL",
+        warehouseId: "WH-1",
+        recipeId: activeRecipe.id,
+        runNumber: `RUN-DRAFT-${Date.now().toString().slice(-5)}`,
+        batchCount: 1,
+        notes,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["production-runs"] });
+      setShowNewBatchModal(false);
+      toast.success("Production run saved as DRAFT.");
+    },
+    onError: (err) => {
+      toast.error(extractErrorMessage(err, "Failed to save draft"));
+    },
+  });
+
+  const postDraftMutation = useMutation({
+    mutationFn: async (run: ProductionRun) => {
+      const res = await apiClient.post(`/production-runs/${run.id}/post`, {
+        organizationId: "MILL",
+        warehouseId: "WH-1",
+        recipeId: activeRecipe?.id || "",
+        runNumber: run.runNumber,
+        batchCount: 1,
+        actualGoodQty: Number(run.actualGoodQty) || Number(run.expectedOutputQty) || 200,
+        directLaborCost: Number(run.directLaborCost) || 0,
+        utilityCost: Number(run.utilityCost) || 0,
+        notes: run.notes || undefined,
+        consumedMaterials: run.materials.map((m) => ({
+          inventoryItemId: m.inventoryItemId,
+          actualQty: Number(m.actualQty),
+          damagedQty: Number(m.damagedQty),
+        })),
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["production-runs"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
+      toast.success("Draft run posted to stock ledger.");
+    },
+    onError: (err) => {
+      toast.error(extractErrorMessage(err, "Failed to post draft run"));
+    },
+  });
+
+  const deleteDraftMutation = useMutation({
+    mutationFn: async (runId: string) => {
+      const res = await apiClient.delete(`/production-runs/${runId}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["production-runs"] });
+      toast.success("Draft run deleted.");
+    },
+    onError: (err) => {
+      toast.error(extractErrorMessage(err, "Failed to delete draft"));
+    },
+  });
+
+  const cloneRecipeVersionMutation = useMutation({
+    mutationFn: async (recipeId: string) => {
+      const res = await apiClient.post(`/production-runs/recipes/${recipeId}/version`, {});
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["production-recipes"] });
+      toast.success("New BOM version created.");
+    },
+    onError: (err) => {
+      toast.error(extractErrorMessage(err, "Failed to clone BOM version"));
+    },
+  });
+
+  const archiveRecipeMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const res = await apiClient.patch(`/production-runs/recipes/${id}/archive`, {
+        isActive,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["production-recipes"] });
+      toast.success("BOM status updated.");
+    },
+    onError: (err) => {
+      toast.error(extractErrorMessage(err, "Failed to update BOM"));
+    },
+  });
+
   // Reverse production run mutation
   const reverseMutation = useMutation({
     mutationFn: async ({
@@ -318,6 +420,15 @@ export function ProductionPage() {
             {t("Refresh")}
           </Button>
 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowBomModal(true)}
+            className="gap-2"
+          >
+            <LayersIcon className="h-4 w-4" />
+            Manage BOMs
+          </Button>
           {canRecordProduction && (
             <Button
               size="sm"
@@ -434,7 +545,16 @@ export function ProductionPage() {
           <div className="flex flex-col items-center justify-center gap-3 p-12 text-center text-sm text-muted-foreground">
             <FactoryIcon className="h-8 w-8 stroke-1 text-muted-foreground" />
             <p>No production batches recorded yet.</p>
-            {canRecordProduction && (
+            <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowBomModal(true)}
+            className="gap-2"
+          >
+            <LayersIcon className="h-4 w-4" />
+            Manage BOMs
+          </Button>
+          {canRecordProduction && (
               <Button
                 size="sm"
                 onClick={() => setShowNewBatchModal(true)}
@@ -546,7 +666,29 @@ export function ProductionPage() {
                         {formatINR(r.costPerGoodUnit)}
                       </TableCell>
                       <TableCell className="text-right">
-                        {r.status === "POSTED" ? (
+                        {r.status === "DRAFT" && canRecordProduction ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => postDraftMutation.mutate(r)}
+                              disabled={postDraftMutation.isPending}
+                              className="h-7 px-2 text-xs text-emerald-600"
+                            >
+                              Post Draft
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteDraftMutation.mutate(r.id)}
+                              disabled={deleteDraftMutation.isPending}
+                              className="h-7 px-2 text-xs text-destructive"
+                              aria-label={`Delete draft ${r.runNumber}`}
+                            >
+                              <Trash2Icon className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : r.status === "POSTED" ? (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -842,13 +984,21 @@ export function ProductionPage() {
               </div>
             )}
 
-            <DialogFooter className="mt-6 border-t pt-4">
+            <DialogFooter className="mt-6 flex-wrap gap-2 border-t pt-4">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowNewBatchModal(false)}
               >
                 {t("Cancel")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => saveDraftMutation.mutate()}
+                disabled={saveDraftMutation.isPending || postMutation.isPending}
+              >
+                Save as Draft
               </Button>
               <Button
                 size="sm"
@@ -932,6 +1082,71 @@ export function ProductionPage() {
             </DialogFooter>
           </DialogContent>
         )}
+      </Dialog>
+
+      {/* BOM Recipes Management Modal (IMP-011) */}
+      <Dialog open={showBomModal} onOpenChange={setShowBomModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <LayersIcon className="size-4" />
+              Bill of Materials (BOM) Recipes
+            </DialogTitle>
+            <DialogDescription>
+              Active BOM recipes and version history. Cloning creates a new version without mutating historical runs.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto flex flex-col gap-3 py-2">
+            {(recipesData?.recipes ?? []).map((r) => (
+              <div key={r.id} className="rounded-lg border p-3 flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <span className="font-semibold text-sm">{r.name}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      ({r.productVariant?.name}) — Target: {Number(r.expectedOutputQty)} pkts
+                    </span>
+                  </div>
+                  {canManageBom && (
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        disabled={cloneRecipeVersionMutation.isPending}
+                        onClick={() => cloneRecipeVersionMutation.mutate(r.id)}
+                      >
+                        Clone New Version
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs text-muted-foreground"
+                        disabled={archiveRecipeMutation.isPending}
+                        onClick={() =>
+                          archiveRecipeMutation.mutate({ id: r.id, isActive: false })
+                        }
+                      >
+                        Archive
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5 text-2xs text-muted-foreground">
+                  {r.items.map((it) => (
+                    <Badge key={it.id} variant="outline" className="text-2xs">
+                      {it.inventoryItem.name}: {Number(it.plannedQty)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" size="sm" onClick={() => setShowBomModal(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </div>
   );

@@ -164,3 +164,56 @@ paymentRouter.post(
     }
   },
 );
+
+// POST /api/v1/payments/:id/allocate - Allocate unallocated cash to open invoices (IMP-018)
+paymentRouter.post(
+  "/:id/allocate",
+  requireAuth,
+  authorize("payment", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const paymentId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!paymentId) {
+        throw new AppError("Payment ID is required", 400);
+      }
+      const payment = await paymentService.allocateUnallocatedPayment(
+        paymentId,
+        req.body?.allocations || [],
+        req.user,
+      );
+      res.json(payment);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/payments/:id/reverse-allocation - Reverse single allocation (IMP-018)
+paymentRouter.post(
+  "/:id/reverse-allocation",
+  requireAuth,
+  authorize("payment", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const paymentId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      const allocationId = req.body?.allocationId as string | undefined;
+      const reason = req.body?.reason as string | undefined;
+      if (!paymentId || !allocationId) {
+        throw new AppError("Payment ID and allocationId are required", 400);
+      }
+      const payment = await paymentService.reversePaymentAllocation(
+        paymentId,
+        allocationId,
+        reason || "",
+        req.user,
+      );
+      res.json(payment);
+    } catch (err) {
+      next(err);
+    }
+  },
+);

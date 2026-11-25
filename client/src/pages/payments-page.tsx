@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatDate, formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
@@ -153,6 +153,52 @@ export function PaymentsPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedCustomerIdForLedger, setSelectedCustomerIdForLedger] =
     useState<string | null>(null);
+  const [allocatingPayment, setAllocatingPayment] = useState<Payment | null>(
+    null,
+  );
+  const [postAllocInvoiceId, setPostAllocInvoiceId] = useState("");
+  const [postAllocAmount, setPostAllocAmount] = useState("");
+
+  const { data: postAllocInvoicesData } = useQuery<{
+    invoices: OpenInvoice[];
+  }>({
+    queryKey: ["open-invoices-for-alloc", allocatingPayment?.customer?.id],
+    enabled: allocatingPayment !== null,
+    queryFn: async () => {
+      const res = await apiClient.get(
+        `/finance/invoices?organizationId=MILL&customerId=${allocatingPayment?.customer?.id ?? ""}`,
+      );
+      return res.data;
+    },
+  });
+
+  const allocateExistingMutation = useMutation({
+    mutationFn: async () => {
+      if (!allocatingPayment) return;
+      const res = await apiClient.post(
+        `/payments/${allocatingPayment.id}/allocate`,
+        {
+          allocations: [
+            {
+              salesInvoiceId: postAllocInvoiceId,
+              amount: Number(postAllocAmount),
+            },
+          ],
+        },
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["receivables-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["finance-invoices"] });
+      setAllocatingPayment(null);
+      toast.success("Unallocated cash applied to invoice.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to allocate payment"));
+    },
+  });
 
   // Payment form state
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
@@ -726,13 +772,33 @@ export function PaymentsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Badge
-                          variant={
-                            p.status === "POSTED" ? "success" : "default"
-                          }
-                        >
-                          {p.status}
-                        </Badge>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Badge
+                            variant={
+                              p.status === "POSTED" ? "success" : "default"
+                            }
+                          >
+                            {p.status}
+                          </Badge>
+                          {p.status === "POSTED" &&
+                            Number(p.unallocatedAmount) > 0 &&
+                            canRecordPayment && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setAllocatingPayment(p);
+                                  setPostAllocInvoiceId("");
+                                  setPostAllocAmount(
+                                    String(Number(p.unallocatedAmount)),
+                                  );
+                                }}
+                                className="h-7 px-2 text-xs"
+                              >
+                                Allocate Cash
+                              </Button>
+                            )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -1418,6 +1484,82 @@ export function PaymentsPage() {
           }}
         />
       )}
+
+      {/* Allocate Unallocated Cash Modal (IMP-018) */}
+      <Dialog
+        open={allocatingPayment !== null}
+        onOpenChange={(open) => {
+          if (!open) setAllocatingPayment(null);
+        }}
+      >
+        {allocatingPayment && (
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Allocate Unallocated Cash</DialogTitle>
+              <DialogDescription>
+                {allocatingPayment.paymentNumber} — Unallocated:{" "}
+                {formatINR(allocatingPayment.unallocatedAmount)}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 py-2">
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs">Open Invoice</Label>
+                <Select
+                  value={postAllocInvoiceId}
+                  onValueChange={setPostAllocInvoiceId}
+                >
+                  <SelectTrigger className="h-9 text-xs">
+                    <SelectValue placeholder="Select invoice..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(postAllocInvoicesData?.invoices ?? [])
+                      .filter((inv) => Number(inv.outstandingAmount) > 0)
+                      .map((inv) => (
+                        <SelectItem key={inv.id} value={inv.id}>
+                          {inv.invoiceNumber} — Outstanding:{" "}
+                          {formatINR(inv.outstandingAmount)}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="post-alloc-amount" className="text-xs">
+                  Allocation Amount (₹)
+                </Label>
+                <Input
+                  id="post-alloc-amount"
+                  type="number"
+                  min={0.01}
+                  step="0.01"
+                  value={postAllocAmount}
+                  onChange={(e) => setPostAllocAmount(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter className="border-t pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAllocatingPayment(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={
+                  allocateExistingMutation.isPending ||
+                  !postAllocInvoiceId ||
+                  Number(postAllocAmount) <= 0
+                }
+                onClick={() => allocateExistingMutation.mutate()}
+              >
+                Apply Allocation
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

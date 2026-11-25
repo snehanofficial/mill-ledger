@@ -47,6 +47,7 @@ import {
   RotateCcwIcon,
   Trash2Icon,
   ClockIcon,
+  PencilIcon,
 } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSyncManager } from "@/offline/use-offline";
@@ -143,6 +144,49 @@ export function OrdersPage() {
     null,
   );
   const [rejectionReason, setRejectionReason] = useState("Stock unavailable");
+  const [approvalLines, setApprovalLines] = useState<
+    Array<{
+      lineId: string;
+      productName: string;
+      quotedQuantity: number;
+      quotedUnitPrice: number;
+      approvedQuantity: number;
+      approvedUnitPrice: number;
+    }>
+  >([]);
+  const [overrideReason, setOverrideReason] = useState("");
+  const [editingDraftOrder, setEditingDraftOrder] = useState<SalesOrder | null>(
+    null,
+  );
+  const [draftProductId, setDraftProductId] = useState("");
+  const [draftQuantity, setDraftQuantity] = useState(1);
+  const [draftUnitPrice, setDraftUnitPrice] = useState(50);
+  const [draftNotes, setDraftNotes] = useState("");
+
+  const openApproveDialog = (order: SalesOrder) => {
+    setSelectedOrderForAction(order);
+    setActionType("APPROVE");
+    setOverrideReason("");
+    setApprovalLines(
+      order.lines.map((l) => ({
+        lineId: l.id,
+        productName: l.productVariant?.name || l.productVariant?.sku || "Item",
+        quotedQuantity: Number(l.quotedQuantity),
+        quotedUnitPrice: Number(l.quotedUnitPrice),
+        approvedQuantity: Number(l.quotedQuantity),
+        approvedUnitPrice: Number(l.quotedUnitPrice),
+      })),
+    );
+  };
+
+  const openEditDraftDialog = (order: SalesOrder) => {
+    const firstLine = order.lines[0];
+    setEditingDraftOrder(order);
+    setDraftProductId(firstLine?.productVariantId || productsList[0]?.id || "");
+    setDraftQuantity(Number(firstLine?.quotedQuantity || 1));
+    setDraftUnitPrice(Number(firstLine?.quotedUnitPrice || 50));
+    setDraftNotes(order.notes || "");
+  };
 
   // Form states
   const [selectedCustomerId, setSelectedCustomerId] = useState("CUST-RET-A");
@@ -287,14 +331,14 @@ export function OrdersPage() {
 
   // Create order mutation (optimistic cache insert with rollback)
   const createOrderMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (status: "DRAFT" | "SUBMITTED" = "SUBMITTED") => {
       if (!activeCustomer || !activeProduct) {
         throw new Error("Customer and product are required to create an order.");
       }
       const res = await apiClient.post("/sales/orders", {
         organizationId: "MILL",
         customerId: activeCustomer.id,
-        orderNumber: `SO-2026-${Date.now().toString().slice(-4)}`,
+        status,
         notes: orderNotes,
         lines: [
           {
@@ -306,7 +350,7 @@ export function OrdersPage() {
       });
       return res.data;
     },
-    onMutate: async () => {
+    onMutate: async (status: "DRAFT" | "SUBMITTED" = "SUBMITTED") => {
       if (!activeCustomer || !activeProduct) return {};
       await queryClient.cancelQueries({ queryKey: ["sales-orders"] });
       const previousQueries = queryClient.getQueriesData<{ orders: SalesOrder[] }>({
@@ -315,8 +359,8 @@ export function OrdersPage() {
 
       const optimisticOrder: SalesOrder = {
         id: `optimistic-${Date.now()}`,
-        orderNumber: `SO-2026-${Date.now().toString().slice(-4)}`,
-        status: "SUBMITTED",
+        orderNumber: `SO-${new Date().getFullYear()}-PEND`,
+        status,
         fulfilmentStatus: "UNFULFILLED",
         deliveryState: customerState,
         notes: orderNotes || null,
@@ -381,7 +425,7 @@ export function OrdersPage() {
     },
   });
 
-  const handleCreateOrder = async () => {
+  const handleCreateOrder = async (status: "DRAFT" | "SUBMITTED" = "SUBMITTED") => {
     if (!activeCustomer || !activeProduct) {
       return;
     }
@@ -417,8 +461,12 @@ export function OrdersPage() {
 
     setIsSubmittingOrder(true);
     try {
-      await createOrderMutation.mutateAsync();
-      toast.success("Sales order created successfully.");
+      await createOrderMutation.mutateAsync(status);
+      toast.success(
+        status === "DRAFT"
+          ? "Draft sales order saved."
+          : "Sales order created successfully.",
+      );
     } catch (err: any) {
       if (!err.response) {
         // Network drop during submit: queue into outbox
@@ -444,13 +492,61 @@ export function OrdersPage() {
     }
   };
 
-  // Approve order mutation (F-067: Optimistic update with cache rollback)
-  const approveMutation = useMutation({
-    mutationFn: async (orderId: string) => {
-      const res = await apiClient.post(`/sales/orders/${orderId}/approve`, {});
+  // Update draft order mutation (IMP-003)
+  const updateDraftMutation = useMutation({
+    mutationFn: async (payload: {
+      orderId: string;
+      status: "DRAFT" | "SUBMITTED";
+      notes: string;
+      lines: Array<{ productVariantId: string; quantity: number; unitPrice: number }>;
+    }) => {
+      const res = await apiClient.put(`/sales/orders/${payload.orderId}`, {
+        status: payload.status,
+        notes: payload.notes,
+        lines: payload.lines,
+      });
       return res.data;
     },
-    onMutate: async (orderId: string) => {
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
+      setEditingDraftOrder(null);
+      toast.success(
+        vars.status === "SUBMITTED"
+          ? "Draft order updated and submitted."
+          : "Draft order updated.",
+      );
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to update draft order"));
+    },
+  });
+
+  // Approve order mutation (F-067 + IMP-002 lineOverrides)
+  const approveMutation = useMutation({
+    mutationFn: async ({
+      orderId,
+      lineOverrides,
+      overrideReason: reason,
+    }: {
+      orderId: string;
+      lineOverrides?: Array<{
+        lineId: string;
+        approvedQuantity: number;
+        approvedUnitPrice?: number;
+      }>;
+      overrideReason?: string;
+    }) => {
+      const body: Record<string, unknown> = {};
+      if (lineOverrides && lineOverrides.length > 0) {
+        body.lineOverrides = lineOverrides;
+      }
+      if (reason && reason.trim()) {
+        body.overrideReason = reason.trim();
+      }
+      const res = await apiClient.post(`/sales/orders/${orderId}/approve`, body);
+      return res.data;
+    },
+    onMutate: async ({ orderId }) => {
       await queryClient.cancelQueries({ queryKey: ["sales-orders"] });
       const previousQueries = queryClient.getQueriesData<{ orders: SalesOrder[] }>({
         queryKey: ["sales-orders"],
@@ -747,6 +843,7 @@ export function OrdersPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">All statuses</SelectItem>
+                <SelectItem value="DRAFT">Draft</SelectItem>
                 <SelectItem value="SUBMITTED">Submitted</SelectItem>
                 <SelectItem value="APPROVED">Approved</SelectItem>
                 <SelectItem value="REJECTED">Rejected</SelectItem>
@@ -1008,15 +1105,22 @@ export function OrdersPage() {
 
                       {/* Action buttons (min 44px tap target height) */}
                       <div className="flex items-center justify-end gap-2 pt-1">
-                        {o.status === "SUBMITTED" && canApproveOrder ? (
+                        {o.status === "DRAFT" && canCreateOrder ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditDraftDialog(o)}
+                            className="min-h-[44px] px-4 text-xs gap-1.5"
+                          >
+                            <PencilIcon className="size-3.5" />
+                            Edit Draft
+                          </Button>
+                        ) : o.status === "SUBMITTED" && canApproveOrder ? (
                           <>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                setSelectedOrderForAction(o);
-                                setActionType("APPROVE");
-                              }}
+                              onClick={() => openApproveDialog(o)}
                               className="min-h-[44px] px-4 text-xs font-semibold text-emerald-600 hover:text-emerald-700"
                             >
                               Approve
@@ -1313,15 +1417,22 @@ export function OrdersPage() {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            {o.status === "SUBMITTED" && canApproveOrder ? (
+                            {o.status === "DRAFT" && canCreateOrder ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDraftDialog(o)}
+                                className="h-8 min-h-[32px] px-2.5 text-xs gap-1 sm:h-7 sm:min-h-[28px] sm:px-2"
+                              >
+                                <PencilIcon className="size-3" />
+                                Edit Draft
+                              </Button>
+                            ) : o.status === "SUBMITTED" && canApproveOrder ? (
                               <div className="flex items-center justify-end gap-1.5">
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => {
-                                    setSelectedOrderForAction(o);
-                                    setActionType("APPROVE");
-                                  }}
+                                  onClick={() => openApproveDialog(o)}
                                   className="h-8 min-h-[32px] px-2.5 text-xs text-emerald-600 hover:text-emerald-700 sm:h-7 sm:min-h-[28px] sm:px-2"
                                 >
                                   Approve
@@ -1591,7 +1702,7 @@ export function OrdersPage() {
             </div>
           </div>
 
-          <DialogFooter className="mt-6 border-t pt-4">
+          <DialogFooter className="mt-6 flex-wrap gap-2 border-t pt-4">
             <Button
               variant="outline"
               size="sm"
@@ -1599,9 +1710,19 @@ export function OrdersPage() {
             >
               Cancel
             </Button>
+            {isOnline && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleCreateOrder("DRAFT")}
+                disabled={isSubmittingOrder || createOrderMutation.isPending}
+              >
+                Save as Draft
+              </Button>
+            )}
             <Button
               size="sm"
-              onClick={handleCreateOrder}
+              onClick={() => handleCreateOrder("SUBMITTED")}
               disabled={isSubmittingOrder || createOrderMutation.isPending}
               className="gap-2 cursor-pointer"
             >
@@ -1689,7 +1810,133 @@ export function OrdersPage() {
         </ConfirmationDialog>
       )}
 
-      {/* Approve Dialog */}
+      {/* Edit Draft Order Modal (IMP-003) */}
+      <Dialog
+        open={editingDraftOrder !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditingDraftOrder(null);
+        }}
+      >
+        {editingDraftOrder && (
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Edit Draft Order</DialogTitle>
+              <DialogDescription>
+                {editingDraftOrder.orderNumber} — {editingDraftOrder.customer.name}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-2 flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="draft-product-select" className="text-xs font-semibold text-muted-foreground">
+                  Product item
+                </Label>
+                <Select value={draftProductId} onValueChange={setDraftProductId}>
+                  <SelectTrigger id="draft-product-select">
+                    <SelectValue placeholder="Select product..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {productsList.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name} ({formatINR(p.defaultPrice)})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="draft-quantity-input" className="text-xs font-semibold text-muted-foreground">
+                    Quantity (pkts)
+                  </Label>
+                  <Input
+                    id="draft-quantity-input"
+                    type="number"
+                    min={1}
+                    value={draftQuantity}
+                    onChange={(e) => setDraftQuantity(Number(e.target.value))}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="draft-price-input" className="text-xs font-semibold text-muted-foreground">
+                    Unit Price (₹)
+                  </Label>
+                  <Input
+                    id="draft-price-input"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={draftUnitPrice}
+                    onChange={(e) => setDraftUnitPrice(Number(e.target.value))}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="draft-notes-input" className="text-xs font-semibold text-muted-foreground">
+                  Notes
+                </Label>
+                <Input
+                  id="draft-notes-input"
+                  type="text"
+                  value={draftNotes}
+                  onChange={(e) => setDraftNotes(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter className="mt-6 flex-wrap gap-2 border-t pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditingDraftOrder(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={updateDraftMutation.isPending || draftQuantity <= 0}
+                onClick={() =>
+                  updateDraftMutation.mutate({
+                    orderId: editingDraftOrder.id,
+                    status: "DRAFT",
+                    notes: draftNotes,
+                    lines: [
+                      {
+                        productVariantId: draftProductId,
+                        quantity: draftQuantity,
+                        unitPrice: draftUnitPrice,
+                      },
+                    ],
+                  })
+                }
+              >
+                Save Draft
+              </Button>
+              <Button
+                size="sm"
+                disabled={updateDraftMutation.isPending || draftQuantity <= 0}
+                onClick={() =>
+                  updateDraftMutation.mutate({
+                    orderId: editingDraftOrder.id,
+                    status: "SUBMITTED",
+                    notes: draftNotes,
+                    lines: [
+                      {
+                        productVariantId: draftProductId,
+                        quantity: draftQuantity,
+                        unitPrice: draftUnitPrice,
+                      },
+                    ],
+                  })
+                }
+              >
+                Save & Submit
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
+
+      {/* Approve Dialog (IMP-002: editable qty/price overrides + overrideReason) */}
       <Dialog
         open={selectedOrderForAction !== null && actionType === "APPROVE"}
         onOpenChange={(open) => {
@@ -1699,27 +1946,105 @@ export function OrdersPage() {
           }
         }}
       >
-        {selectedOrderForAction && actionType === "APPROVE" && (
-          <DialogContent className="max-w-md">
+        {selectedOrderForAction && actionType === "APPROVE" && (() => {
+          const hasOverrides = approvalLines.some(
+            (l) =>
+              l.approvedQuantity !== l.quotedQuantity ||
+              l.approvedUnitPrice !== l.quotedUnitPrice,
+          );
+          const missingReason = hasOverrides && overrideReason.trim().length === 0;
+
+          return (
+          <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Approve sales order</DialogTitle>
               <DialogDescription>
                 Order {selectedOrderForAction.orderNumber} for{" "}
-                {selectedOrderForAction.customer.name} (
-                {Number(selectedOrderForAction.lines[0]?.quotedQuantity)}{" "}
-                packets)
+                {selectedOrderForAction.customer.name}
               </DialogDescription>
             </DialogHeader>
 
             <div className="flex flex-col gap-3">
-              <p className="text-xs text-foreground">
-                Approving this order will atomically reserve{" "}
-                <span className="font-semibold">
-                  {Number(selectedOrderForAction.lines[0]?.quotedQuantity)}{" "}
-                  packets
-                </span>{" "}
-                of finished goods Murukku 200g.
-              </p>
+              <div className="flex flex-col gap-2.5 max-h-64 overflow-y-auto pr-1">
+                {approvalLines.map((line, idx) => (
+                  <div
+                    key={line.lineId}
+                    className="rounded-lg border bg-muted/20 p-3 flex flex-col gap-2"
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-foreground">
+                        {line.productName}
+                      </span>
+                      <span className="text-muted-foreground">
+                        Quoted: {line.quotedQuantity} @ {formatINR(line.quotedUnitPrice)}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex flex-col gap-1">
+                        <Label htmlFor={`approve-qty-${line.lineId}`} className="text-2xs text-muted-foreground">
+                          Approved Qty
+                        </Label>
+                        <Input
+                          id={`approve-qty-${line.lineId}`}
+                          type="number"
+                          min={1}
+                          value={line.approvedQuantity}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            setApprovalLines((prev) =>
+                              prev.map((item, i) =>
+                                i === idx ? { ...item, approvedQuantity: val } : item,
+                              ),
+                            );
+                          }}
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <Label htmlFor={`approve-price-${line.lineId}`} className="text-2xs text-muted-foreground">
+                          Approved Price (₹)
+                        </Label>
+                        <Input
+                          id={`approve-price-${line.lineId}`}
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          value={line.approvedUnitPrice}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            setApprovalLines((prev) =>
+                              prev.map((item, i) =>
+                                i === idx ? { ...item, approvedUnitPrice: val } : item,
+                              ),
+                            );
+                          }}
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {hasOverrides && (
+                <div className="flex flex-col gap-1.5">
+                  <Label
+                    htmlFor="approve-override-reason"
+                    className="text-xs font-semibold text-amber-700 dark:text-amber-400"
+                  >
+                    Override reason (required when modifying qty/price)
+                  </Label>
+                  <Input
+                    id="approve-override-reason"
+                    type="text"
+                    placeholder="e.g. Partial stock allocation or agreed wholesale discount"
+                    value={overrideReason}
+                    onChange={(e) => setOverrideReason(e.target.value)}
+                    className="text-xs"
+                  />
+                </div>
+              )}
+
               {selectedOrderForAction.totalShortage &&
               selectedOrderForAction.totalShortage > 0 ? (
                 <div
@@ -1753,9 +2078,19 @@ export function OrdersPage() {
               <Button
                 size="sm"
                 onClick={() =>
-                  approveMutation.mutate(selectedOrderForAction.id)
+                  approveMutation.mutate({
+                    orderId: selectedOrderForAction.id,
+                    lineOverrides: hasOverrides
+                      ? approvalLines.map((l) => ({
+                          lineId: l.lineId,
+                          approvedQuantity: l.approvedQuantity,
+                          approvedUnitPrice: l.approvedUnitPrice,
+                        }))
+                      : undefined,
+                    overrideReason: hasOverrides ? overrideReason : undefined,
+                  })
                 }
-                disabled={approveMutation.isPending}
+                disabled={approveMutation.isPending || missingReason}
                 className="gap-2"
               >
                 <CheckCircle2Icon className="h-4 w-4" />
@@ -1763,7 +2098,8 @@ export function OrdersPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        )}
+          );
+        })()}
       </Dialog>
     </div>
   );

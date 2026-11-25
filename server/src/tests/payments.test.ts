@@ -536,5 +536,192 @@ describe("M7: Payments, customer ledger, allocations, and costing", () => {
       const data = (await res.json()) as { message: string };
       expect(data.message).toMatch(/cannot allocate payment to invoice|exceeds invoice .* outstanding balance/i);
     });
+
+    it("handles exact decimal paise allocations without floating-point drift", async () => {
+      const org = await prisma.organization.findUniqueOrThrow({
+        where: { code: "MILL" },
+      });
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      // Create two small invoices with paise amounts (100.10 and 200.20)
+      const inv1 = await prisma.salesInvoice.create({
+        data: {
+          organizationId: org.id,
+          invoiceNumber: `INV-DEC-1-${Date.now()}`,
+          financialYear: "2026-27",
+          customerId: retailerA.id,
+          customerNameSnapshot: retailerA.name,
+          deliveryStateSnapshot: retailerA.state,
+          status: "POSTED",
+          taxableAmount: 100.1,
+          cgstAmount: 0,
+          sgstAmount: 0,
+          igstAmount: 0,
+          totalTaxAmount: 0,
+          totalAmount: 100.1,
+          paidAmount: 0,
+          outstandingAmount: 100.1,
+        },
+      });
+      const inv2 = await prisma.salesInvoice.create({
+        data: {
+          organizationId: org.id,
+          invoiceNumber: `INV-DEC-2-${Date.now()}`,
+          financialYear: "2026-27",
+          customerId: retailerA.id,
+          customerNameSnapshot: retailerA.name,
+          deliveryStateSnapshot: retailerA.state,
+          status: "POSTED",
+          taxableAmount: 200.2,
+          cgstAmount: 0,
+          sgstAmount: 0,
+          igstAmount: 0,
+          totalTaxAmount: 0,
+          totalAmount: 200.2,
+          paidAmount: 0,
+          outstandingAmount: 200.2,
+        },
+      });
+
+      // 100.10 + 200.20 = 300.30 (classic IEEE-754 float trap: 100.1 + 200.2 = 300.29999999999995)
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: retailerA.id,
+          amount: 300.3,
+          allocations: [
+            { salesInvoiceId: inv1.id, amount: 100.1 },
+            { salesInvoiceId: inv2.id, amount: 200.2 },
+          ],
+        }),
+      });
+      expect(res.status).toBe(201);
+      const body = (await res.json()) as {
+        unallocatedAmount: string | number;
+        paymentNumber: string;
+      };
+      expect(Number(body.unallocatedAmount)).toBe(0);
+      expect(body.paymentNumber).toMatch(/^REC-\d{4}-\d{4}$/);
+
+      const [updatedInv1, updatedInv2] = await Promise.all([
+        prisma.salesInvoice.findUniqueOrThrow({ where: { id: inv1.id } }),
+        prisma.salesInvoice.findUniqueOrThrow({ where: { id: inv2.id } }),
+      ]);
+      expect(updatedInv1.status).toBe("PAID");
+      expect(Number(updatedInv1.outstandingAmount)).toBe(0);
+      expect(updatedInv2.status).toBe("PAID");
+      expect(Number(updatedInv2.outstandingAmount)).toBe(0);
+    });
+
+    it("IMP-018: allocates unallocated advance cash to a later invoice and reverses allocation cleanly", async () => {
+      const org = await prisma.organization.findUniqueOrThrow({
+        where: { code: "MILL" },
+      });
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      // Record advance payment (with no open invoices matching explicit/FIFO or over-payment)
+      const advRes = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: retailerA.id,
+          amount: 500,
+          notes: "Advance cash for IMP-018",
+        }),
+      });
+      expect(advRes.status).toBe(201);
+      const advPayment = (await advRes.json()) as {
+        id: string;
+        unallocatedAmount: string | number;
+      };
+      expect(Number(advPayment.unallocatedAmount)).toBe(500);
+
+      // Later invoice is posted
+      const laterInv = await prisma.salesInvoice.create({
+        data: {
+          organizationId: org.id,
+          invoiceNumber: `INV-ADV-${Date.now()}`,
+          financialYear: "2026-27",
+          customerId: retailerA.id,
+          customerNameSnapshot: retailerA.name,
+          deliveryStateSnapshot: retailerA.state,
+          status: "POSTED",
+          taxableAmount: 500,
+          cgstAmount: 0,
+          sgstAmount: 0,
+          igstAmount: 0,
+          totalTaxAmount: 0,
+          totalAmount: 500,
+          paidAmount: 0,
+          outstandingAmount: 500,
+        },
+      });
+
+      // Allocate unallocated cash
+      const allocRes = await fetch(
+        `${baseUrl}/api/v1/payments/${advPayment.id}/allocate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: adminCookie,
+          },
+          body: JSON.stringify({
+            allocations: [{ salesInvoiceId: laterInv.id, amount: 500 }],
+          }),
+        },
+      );
+      expect(allocRes.status).toBe(200);
+      const allocated = (await allocRes.json()) as {
+        unallocatedAmount: string | number;
+        allocations: Array<{ id: string }>;
+      };
+      expect(Number(allocated.unallocatedAmount)).toBe(0);
+
+      const invAfter = await prisma.salesInvoice.findUniqueOrThrow({
+        where: { id: laterInv.id },
+      });
+      expect(invAfter.status).toBe("PAID");
+
+      // Reverse that single allocation
+      const revRes = await fetch(
+        `${baseUrl}/api/v1/payments/${advPayment.id}/reverse-allocation`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: adminCookie,
+          },
+          body: JSON.stringify({
+            allocationId: allocated.allocations[0].id,
+            reason: "Applied to wrong invoice",
+          }),
+        },
+      );
+      expect(revRes.status).toBe(200);
+      const revPayment = (await revRes.json()) as {
+        unallocatedAmount: string | number;
+      };
+      expect(Number(revPayment.unallocatedAmount)).toBe(500);
+    });
   });
 });

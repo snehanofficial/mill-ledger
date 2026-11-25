@@ -55,6 +55,33 @@ const DATASETS: ExportDataset[] = [
     fields: ["Invoice Number", "Order Date", "Customer Name", "State", "Taxable Value", "CGST", "SGST", "IGST", "Total Amount"],
   },
   {
+    id: "customer-sales",
+    reportType: "customer-sales",
+    name: "Customer-Wise Sales Summary",
+    category: "Finance & Sales",
+    icon: <ReceiptIcon className="size-5 text-emerald-600" />,
+    description: "Aggregated taxable value, GST, total invoiced, and outstanding balance per customer.",
+    fields: ["Customer Code", "Customer Name", "State", "Invoices Count", "Taxable Amount", "Total Tax", "Total Amount", "Outstanding"],
+  },
+  {
+    id: "product-sales",
+    reportType: "product-sales",
+    name: "Product-Wise Sales Summary",
+    category: "Finance & Sales",
+    icon: <PackageIcon className="size-5 text-blue-600" />,
+    description: "Aggregated quantities, taxable value, and GST by product and HSN code.",
+    fields: ["Product Name", "HSN Code", "Total Quantity", "Taxable Amount", "Total Tax", "Total Amount"],
+  },
+  {
+    id: "stock-ledger",
+    reportType: "stock-ledger",
+    name: "Stock Movement Ledger",
+    category: "Warehouse & Supply",
+    icon: <BoxIcon className="size-5 text-amber-600" />,
+    description: "Chronological append-only stock movement ledger across all materials and finished goods.",
+    fields: ["Posted At", "SKU", "Item Name", "Warehouse", "Movement Type", "Quantity", "Unit Cost", "Reference"],
+  },
+  {
     id: "gst",
     reportType: "gst",
     name: "GSTR-1 Outward Summary",
@@ -124,7 +151,7 @@ export function ExportsPage() {
   const dateRangeSelectId = useId();
   const formatSelectId = useId();
   const [selectedReportType, setSelectedReportType] = useState<string>("sales");
-  const [selectedFormat, setSelectedFormat] = useState<"csv" | "json">("csv");
+  const [selectedFormat, setSelectedFormat] = useState<"csv" | "xlsx" | "pdf" | "json">("csv");
   const [dateRange, setDateRange] = useState<"all" | "month" | "year">("all");
   const [isExporting, setIsExporting] = useState(false);
 
@@ -165,9 +192,15 @@ export function ExportsPage() {
       );
 
       // Trigger browser file download
-      const blob = new Blob([response.data], {
-        type: selectedFormat === "csv" ? "text/csv;charset=utf-8;" : "application/json",
-      });
+      const mimeType =
+        selectedFormat === "csv"
+          ? "text/csv;charset=utf-8;"
+          : selectedFormat === "xlsx"
+            ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            : selectedFormat === "pdf"
+              ? "application/pdf"
+              : "application/json";
+      const blob = new Blob([response.data], { type: mimeType });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -308,7 +341,7 @@ export function ExportsPage() {
               </Label>
               <Select
                 value={selectedFormat}
-                onValueChange={(value) => setSelectedFormat(value as "csv" | "json")}
+                onValueChange={(value) => setSelectedFormat(value as "csv" | "xlsx" | "pdf" | "json")}
               >
                 <SelectTrigger
                   id={formatSelectId}
@@ -317,14 +350,20 @@ export function ExportsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="csv">CSV (Spreadsheet / Microsoft Excel / Tally)</SelectItem>
+                  <SelectItem value="csv">CSV (Spreadsheet / Tally)</SelectItem>
+                  <SelectItem value="xlsx">Excel (.xlsx Workbook)</SelectItem>
+                  <SelectItem value="pdf">PDF Document (.pdf)</SelectItem>
                   <SelectItem value="json">JSON (Standard Machine-Readable Payload)</SelectItem>
                 </SelectContent>
               </Select>
               <span className="mt-1.5 text-xs text-muted-foreground">
                 {selectedFormat === "csv"
                   ? "UTF-8 with commas, escaped quotes, and decimal headers"
-                  : "Structured array of typed schema objects"}
+                  : selectedFormat === "xlsx"
+                    ? "Formatted Microsoft Excel workbook (.xlsx)"
+                    : selectedFormat === "pdf"
+                      ? "Printable landscape PDF report"
+                      : "Structured array of typed schema objects"}
               </span>
             </div>
           </div>

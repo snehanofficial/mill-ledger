@@ -92,6 +92,9 @@ const SuppliersPage = lazy(() =>
 const CustomersPage = lazy(() =>
   import("@/pages/customers-page").then((m) => ({ default: m.CustomersPage })),
 );
+const ProductsPage = lazy(() =>
+  import("@/pages/products-page").then((m) => ({ default: m.ProductsPage })),
+);
 const ExportsPage = lazy(() =>
   import("@/pages/exports-page").then((m) => ({ default: m.ExportsPage })),
 );
@@ -117,6 +120,7 @@ import {
   productionNewHandle,
   productionHistoryHandle,
   customersHandle,
+  productsHandle,
   reportsSalesHandle,
   reportsStockHandle,
   reportsProductionHandle,
@@ -360,6 +364,17 @@ const router = createBrowserRouter([
           </RoleGuard>
         ),
         handle: customersHandle,
+      },
+
+      // Products & Price Lists
+      {
+        path: "products",
+        element: (
+          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/products"]}>
+            <ProductsPage />
+          </RoleGuard>
+        ),
+        handle: productsHandle,
       },
 
       // Reports

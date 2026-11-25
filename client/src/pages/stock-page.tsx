@@ -1,5 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api-client";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
@@ -18,6 +20,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -26,10 +30,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   CheckCircleIcon,
   RefreshCwIcon,
   PackageIcon,
   AlertTriangleIcon,
+  BookOpenIcon,
+  PlusCircleIcon,
+  SlidersHorizontalIcon,
 } from "lucide-react";
 
 interface InventoryBalance {
@@ -59,11 +74,117 @@ const CATEGORY_LABELS: Record<
 };
 
 export function StockPage() {
+  const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
   const { t } = useLanguage();
+  const canManageInventory = user?.role === "ADMIN";
   const [searchQuery, setSearchQuery] = useUrlState("q", "", {
     debounceMs: 250,
   });
   const [categoryFilter, setCategoryFilter] = useUrlState("category", "ALL");
+  const [selectedLedgerItem, setSelectedLedgerItem] =
+    useState<InventoryBalance | null>(null);
+  const [showAddItemModal, setShowAddItemModal] = useState(false);
+  const [showAdjustModal, setShowAdjustModal] = useState(false);
+
+  // Add Item state
+  const [itemSku, setItemSku] = useState("");
+  const [itemName, setItemName] = useState("");
+  const [itemCategory, setItemCategory] = useState<
+    "RAW_MATERIAL" | "PACKAGING" | "FINISHED_GOODS"
+  >("RAW_MATERIAL");
+  const [itemUomId, setItemUomId] = useState("");
+  const [itemOpeningStock, setItemOpeningStock] = useState(0);
+  const [itemOpeningCost, setItemOpeningCost] = useState(0);
+
+  // Stock Adjustment state
+  const [adjItemId, setAdjItemId] = useState("");
+  const [adjQty, setAdjQty] = useState(0);
+  const [adjReason, setAdjReason] = useState("");
+
+  const { data: uomsData } = useQuery<{
+    uoms: Array<{ id: string; code: string; name: string; symbol: string }>;
+  }>({
+    queryKey: ["inventory-uoms"],
+    enabled: canManageInventory,
+    queryFn: async () => {
+      const res = await apiClient.get("/inventory/uoms?organizationId=MILL");
+      return res.data;
+    },
+  });
+
+  const addItemMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiClient.post("/inventory/items", {
+        organizationId: "MILL",
+        sku: itemSku.trim(),
+        name: itemName.trim(),
+        category: itemCategory,
+        baseUomId: itemUomId,
+        openingStock: Number(itemOpeningStock),
+        openingUnitCost: Number(itemOpeningCost),
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
+      setShowAddItemModal(false);
+      toast.success("Inventory item created.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to create inventory item"));
+    },
+  });
+
+  const adjustStockMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiClient.post("/inventory/adjustments", {
+        organizationId: "MILL",
+        inventoryItemId: adjItemId,
+        quantity: Number(adjQty),
+        reason: adjReason.trim(),
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
+      setShowAdjustModal(false);
+      toast.success("Stock adjustment posted.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to post stock adjustment"));
+    },
+  });
+
+  const {
+    data: ledgerData,
+    isLoading: isLedgerLoading,
+    isError: isLedgerError,
+    refetch: refetchLedger,
+  } = useQuery<{
+    ledger: Array<{
+      id: string;
+      movementType: string;
+      quantity: number;
+      unitCost: number;
+      totalCost: number;
+      runningBalance: number;
+      referenceDocumentType: string | null;
+      referenceDocumentId: string | null;
+      notes: string | null;
+      warehouseName: string;
+      postedAt: string;
+    }>;
+  }>({
+    queryKey: ["inventory-item-ledger", selectedLedgerItem?.id],
+    enabled: selectedLedgerItem !== null,
+    queryFn: async () => {
+      const res = await apiClient.get(
+        `/inventory/items/${selectedLedgerItem!.id}/ledger`,
+      );
+      return res.data;
+    },
+  });
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     balances: InventoryBalance[];
@@ -122,19 +243,56 @@ export function StockPage() {
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className="gap-2 self-start sm:self-auto"
-        >
-          <RefreshCwIcon
-            className={`size-4 ${isFetching ? "animate-spin" : ""}`}
-            aria-hidden="true"
-          />
-          <span>{t("Refresh Balances")}</span>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="gap-2"
+          >
+            <RefreshCwIcon
+              className={`size-4 ${isFetching ? "animate-spin" : ""}`}
+              aria-hidden="true"
+            />
+            <span>{t("Refresh Balances")}</span>
+          </Button>
+          {canManageInventory && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setAdjItemId(balances[0]?.id || "");
+                  setAdjQty(0);
+                  setAdjReason("");
+                  setShowAdjustModal(true);
+                }}
+                disabled={balances.length === 0}
+                className="gap-1.5"
+              >
+                <SlidersHorizontalIcon className="size-4" />
+                Stock Adjustment
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setItemSku("");
+                  setItemName("");
+                  setItemCategory("RAW_MATERIAL");
+                  setItemUomId(uomsData?.uoms?.[0]?.id || "");
+                  setItemOpeningStock(0);
+                  setItemOpeningCost(0);
+                  setShowAddItemModal(true);
+                }}
+                className="gap-1.5"
+              >
+                <PlusCircleIcon className="size-4" />
+                Add Item
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* KPI Summary Cards */}
@@ -333,23 +491,35 @@ export function StockPage() {
                       </div>
                       <div>
                         <span className="text-muted-foreground text-2xs uppercase">
-                          Avg Unit Cost
+                          Reserved
                         </span>
-                        <p className="font-medium text-muted-foreground">
-                          {formatINR(item.weightedAverageCost, {
-                            maximumFractionDigits:
-                              item.weightedAverageCost % 1 === 0 ? 2 : 3,
-                          })}
+                        <p className="font-medium text-amber-600 dark:text-amber-400">
+                          {formatQuantity(item.reserved)}
                         </p>
                       </div>
                       <div className="text-right">
                         <span className="text-muted-foreground text-2xs uppercase">
-                          Total Value
+                          Available (ATP)
                         </span>
-                        <p className="font-bold text-foreground">
-                          {formatINR(totalValue)}
+                        <p className="font-bold text-emerald-600 dark:text-emerald-400">
+                          {formatQuantity(item.available)}
                         </p>
                       </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <span className="text-muted-foreground">
+                        Value: <strong className="text-foreground">{formatINR(totalValue)}</strong>
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedLedgerItem(item)}
+                        className="min-h-[44px] px-3 text-xs gap-1.5"
+                      >
+                        <BookOpenIcon className="size-3.5" />
+                        View Ledger
+                      </Button>
                     </div>
                   </div>
                 );
@@ -365,18 +535,21 @@ export function StockPage() {
                     <TableHead>{t("Item Name")}</TableHead>
                     <TableHead className="w-[140px]">{t("Category")}</TableHead>
                     <TableHead className="text-right">{t("On Hand")}</TableHead>
+                    <TableHead className="text-right">{t("Reserved")}</TableHead>
+                    <TableHead className="text-right">{t("Available (ATP)")}</TableHead>
                     <TableHead className="text-right">{t("Avg Unit Cost")}</TableHead>
                     <TableHead className="text-right">{t("Total Value")}</TableHead>
-                    <TableHead className="w-[120px] text-center">
+                    <TableHead className="w-[110px] text-center">
                       {t("Ledger Status")}
                     </TableHead>
+                    <TableHead className="text-right">{t("Actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredBalances.length === 0 && balances.length > 0 && (
                     <TableRow>
                       <TableCell
-                        colSpan={7}
+                        colSpan={10}
                         className="py-8 text-center text-sm text-muted-foreground"
                       >
                         {t("No items match the selected filters.")}
@@ -412,6 +585,12 @@ export function StockPage() {
                             {item.baseUom.symbol}
                           </span>
                         </TableCell>
+                        <TableCell className="text-right font-mono text-xs text-amber-600 dark:text-amber-400">
+                          {formatQuantity(item.reserved)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                          {formatQuantity(item.available)}
+                        </TableCell>
                         <TableCell className="text-right text-muted-foreground">
                           {formatINR(item.weightedAverageCost, {
                             maximumFractionDigits:
@@ -446,6 +625,17 @@ export function StockPage() {
                             </span>
                           )}
                         </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedLedgerItem(item)}
+                            className="h-7 px-2.5 text-xs gap-1"
+                          >
+                            <BookOpenIcon className="size-3" />
+                            Ledger
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -455,6 +645,210 @@ export function StockPage() {
           </>
         )}
       </div>
+
+      {/* Item Stock Ledger Drill-Down Modal (IMP-004) */}
+      <Dialog
+        open={selectedLedgerItem !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedLedgerItem(null);
+        }}
+      >
+        {selectedLedgerItem && (
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>
+                Stock Ledger: {selectedLedgerItem.name} ({selectedLedgerItem.sku})
+              </DialogTitle>
+              <DialogDescription>
+                On Hand: {formatQuantity(selectedLedgerItem.onHand)} {selectedLedgerItem.baseUom.symbol} | Reserved:{" "}
+                {formatQuantity(selectedLedgerItem.reserved)} | Available (ATP):{" "}
+                {formatQuantity(selectedLedgerItem.available)}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="max-h-96 overflow-y-auto">
+              {isLedgerLoading ? (
+                <SkeletonTable rows={4} columns={6} />
+              ) : isLedgerError ? (
+                <ErrorState
+                  title="Failed to load item ledger"
+                  description="Could not fetch stock movements."
+                  onRetry={() => refetchLedger()}
+                />
+              ) : !ledgerData?.ledger || ledgerData.ledger.length === 0 ? (
+                <div className="py-8 text-center text-sm text-muted-foreground">
+                  No stock movements recorded for this item yet.
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Movement</TableHead>
+                      <TableHead className="text-right">Qty</TableHead>
+                      <TableHead className="text-right">Balance</TableHead>
+                      <TableHead className="text-right">Unit Cost</TableHead>
+                      <TableHead>Source / Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {ledgerData.ledger.map((m) => (
+                      <TableRow key={m.id}>
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(m.postedAt).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="font-mono text-2xs">
+                            {m.movementType}
+                          </Badge>
+                        </TableCell>
+                        <TableCell
+                          className={`text-right font-mono text-xs font-semibold ${
+                            m.quantity >= 0
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-amber-600 dark:text-amber-400"
+                          }`}
+                        >
+                          {m.quantity >= 0 ? `+${m.quantity}` : m.quantity}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-xs font-bold">
+                          {m.runningBalance}
+                        </TableCell>
+                        <TableCell className="text-right text-xs text-muted-foreground">
+                          {formatINR(m.unitCost)}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground max-w-xs truncate">
+                          {m.referenceDocumentType
+                            ? `${m.referenceDocumentType} (${m.referenceDocumentId?.slice(-6) ?? ""})`
+                            : ""}
+                          {m.notes ? ` ${m.notes}` : ""}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+
+            <DialogFooter className="border-t pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedLedgerItem(null)}
+              >
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
+
+      {/* Add Inventory Item Modal (IMP-012) */}
+      <Dialog open={showAddItemModal} onOpenChange={setShowAddItemModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Inventory Item</DialogTitle>
+            <DialogDescription>
+              Create a raw material, packaging item, or finished good.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="item-sku" className="text-xs">SKU</Label>
+                <Input id="item-sku" value={itemSku} onChange={(e) => setItemSku(e.target.value)} placeholder="RM-SUGAR" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs">Category</Label>
+                <Select value={itemCategory} onValueChange={(v) => setItemCategory(v as "RAW_MATERIAL" | "PACKAGING" | "FINISHED_GOODS")}>
+                  <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="RAW_MATERIAL">Raw Material</SelectItem>
+                    <SelectItem value="PACKAGING">Packaging</SelectItem>
+                    <SelectItem value="FINISHED_GOODS">Finished Goods</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="item-name" className="text-xs">Item Name</Label>
+              <Input id="item-name" value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="Refined Sugar" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs">Base UOM</Label>
+              <Select value={itemUomId} onValueChange={setItemUomId}>
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {(uomsData?.uoms ?? []).map((u) => (
+                    <SelectItem key={u.id} value={u.id}>{u.name} ({u.symbol})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="item-open-qty" className="text-xs">Opening Stock</Label>
+                <Input id="item-open-qty" type="number" min={0} value={itemOpeningStock} onChange={(e) => setItemOpeningStock(Number(e.target.value))} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="item-open-cost" className="text-xs">Opening Unit Cost (₹)</Label>
+                <Input id="item-open-cost" type="number" min={0} step="0.01" value={itemOpeningCost} onChange={(e) => setItemOpeningCost(Number(e.target.value))} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" size="sm" onClick={() => setShowAddItemModal(false)}>Cancel</Button>
+            <Button size="sm" disabled={addItemMutation.isPending || !itemSku.trim() || !itemName.trim()} onClick={() => addItemMutation.mutate()}>
+              Create Item
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Stock Adjustment Modal (IMP-012) */}
+      <Dialog open={showAdjustModal} onOpenChange={setShowAdjustModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Post Stock Adjustment</DialogTitle>
+            <DialogDescription>
+              Creates an audited ADJUSTMENT movement in the stock ledger.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs">Inventory Item</Label>
+              <Select value={adjItemId} onValueChange={setAdjItemId}>
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {balances.map((b) => (
+                    <SelectItem key={b.id} value={b.id}>
+                      {b.name} ({b.sku}) — On Hand: {b.onHand}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="adj-qty" className="text-xs">Adjustment Quantity (+ or -)</Label>
+              <Input id="adj-qty" type="number" step="0.01" value={adjQty} onChange={(e) => setAdjQty(Number(e.target.value))} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="adj-reason" className="text-xs">Reason</Label>
+              <Input id="adj-reason" value={adjReason} onChange={(e) => setAdjReason(e.target.value)} placeholder="Physical count reconciliation" />
+            </div>
+          </div>
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" size="sm" onClick={() => setShowAdjustModal(false)}>Cancel</Button>
+            <Button size="sm" disabled={adjustStockMutation.isPending || adjQty === 0 || !adjReason.trim()} onClick={() => adjustStockMutation.mutate()}>
+              Post Adjustment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

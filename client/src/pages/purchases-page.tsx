@@ -43,6 +43,9 @@ import {
   RefreshCwIcon,
   TruckIcon,
   CheckCircle2Icon,
+  EyeIcon,
+  FileWarningIcon,
+  RotateCcwIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -90,8 +93,14 @@ export function PurchasesPage() {
   const { t } = useLanguage();
   const canRecordPurchase =
     user?.role === "ADMIN" || user?.role === "PRODUCTION";
+  const canManageAdminPurchase = user?.role === "ADMIN";
   const [showModal, setShowModal] = useState(false);
   const [showConfirmReceipt, setShowConfirmReceipt] = useState(false);
+  const [detailReceipt, setDetailReceipt] = useState<PurchaseReceipt | null>(null);
+  const [debitNoteTarget, setDebitNoteTarget] = useState<PurchaseReceipt | null>(null);
+  const [debitNoteReason, setDebitNoteReason] = useState("");
+  const [debitNoteAmount, setDebitNoteAmount] = useState(0);
+  const [reverseReason, setReverseReason] = useState("");
   const [searchQuery, setSearchQuery] = useUrlState("q", "", {
     debounceMs: 250,
   });
@@ -333,13 +342,14 @@ export function PurchasesPage() {
                 <TableHead className="text-right">{t("Unit Rate")}</TableHead>
                 <TableHead className="text-right">{t("Total Amount")}</TableHead>
                 <TableHead className="w-[100px] text-center">{t("Status")}</TableHead>
+                <TableHead className="text-right">{t("Actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredReceipts.length === 0 && receipts.length > 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={9}
                     className="py-8 text-center text-sm text-muted-foreground"
                   >
                     {t("No purchase receipts match the search query.")}
@@ -381,6 +391,34 @@ export function PurchasesPage() {
                         <CheckCircle2Icon className="size-2.5" />
                         Posted
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDetailReceipt(rec)}
+                          className="h-7 px-2 text-xs gap-1"
+                        >
+                          <EyeIcon className="size-3" />
+                          View
+                        </Button>
+                        {canManageAdminPurchase && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setDebitNoteTarget(rec);
+                              setDebitNoteReason("");
+                              setDebitNoteAmount(totalAmount);
+                            }}
+                            className="h-7 px-2 text-xs gap-1"
+                          >
+                            <FileWarningIcon className="size-3" />
+                            Debit Note
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -656,6 +694,168 @@ export function PurchasesPage() {
           onConfirm={() => createReceiptMutation.mutate()}
         />
       )}
+
+      {/* Purchase Receipt Detail & Reversal Modal (IMP-015) */}
+      <Dialog
+        open={detailReceipt !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDetailReceipt(null);
+            setReverseReason("");
+          }
+        }}
+      >
+        {detailReceipt && (
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Purchase Receipt {detailReceipt.receiptNumber}</DialogTitle>
+              <DialogDescription>
+                {detailReceipt.supplier.name} ({detailReceipt.supplier.code}) — {formatDate(detailReceipt.postedAt)}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 text-xs">
+              <div className="rounded-lg bg-muted/40 p-3 flex flex-col gap-1">
+                <div>Warehouse: <strong>{detailReceipt.warehouse.name}</strong></div>
+                <div>Supplier Invoice: <strong className="font-mono">{detailReceipt.supplierInvoiceNumber || "—"}</strong></div>
+                <div>Notes: {detailReceipt.notes || "—"}</div>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                    <TableHead className="text-right">Rate</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {detailReceipt.lines.map((l) => (
+                    <TableRow key={l.id}>
+                      <TableCell>{l.inventoryItem.name}</TableCell>
+                      <TableCell className="text-right font-mono">{Number(l.quantity)} {l.inventoryItem.baseUom?.symbol}</TableCell>
+                      <TableCell className="text-right">{formatINR(l.unitPrice)}</TableCell>
+                      <TableCell className="text-right font-semibold">{formatINR(l.totalPrice)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {canManageAdminPurchase && (
+                <div className="flex flex-col gap-1.5 border-t pt-3">
+                  <Label htmlFor="pr-reverse-reason" className="text-xs">
+                    Reversal Reason (optional — reverses stock if unconsumed)
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="pr-reverse-reason"
+                      value={reverseReason}
+                      onChange={(e) => setReverseReason(e.target.value)}
+                      placeholder="e.g. Duplicate receipt entry"
+                      className="h-8 text-xs"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={!reverseReason.trim()}
+                      onClick={async () => {
+                        try {
+                          await apiClient.post(
+                            `/inventory/purchase-receipts/${detailReceipt.id}/reverse`,
+                            { reason: reverseReason.trim() },
+                          );
+                          queryClient.invalidateQueries({ queryKey: ["purchase-receipts"] });
+                          queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
+                          setDetailReceipt(null);
+                          toast.success("Purchase receipt reversed.");
+                        } catch (err) {
+                          toast.error(extractErrorMessage(err, "Failed to reverse receipt"));
+                        }
+                      }}
+                      className="h-8 gap-1 text-xs shrink-0"
+                    >
+                      <RotateCcwIcon className="size-3.5" />
+                      Reverse
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter className="border-t pt-4">
+              <Button variant="outline" size="sm" onClick={() => setDetailReceipt(null)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
+
+      {/* Issue Debit Note Modal (IMP-015) */}
+      <Dialog
+        open={debitNoteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDebitNoteTarget(null);
+        }}
+      >
+        {debitNoteTarget && (
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Issue Supplier Debit Note</DialogTitle>
+              <DialogDescription>
+                Against {debitNoteTarget.receiptNumber} — {debitNoteTarget.supplier.name}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 py-2">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="dn-amount" className="text-xs">Taxable Amount (₹)</Label>
+                <Input
+                  id="dn-amount"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={debitNoteAmount}
+                  onChange={(e) => setDebitNoteAmount(Number(e.target.value))}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="dn-reason" className="text-xs">Reason</Label>
+                <Input
+                  id="dn-reason"
+                  value={debitNoteReason}
+                  onChange={(e) => setDebitNoteReason(e.target.value)}
+                  placeholder="Quality deduction / short weight"
+                />
+              </div>
+            </div>
+            <DialogFooter className="border-t pt-4">
+              <Button variant="outline" size="sm" onClick={() => setDebitNoteTarget(null)}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={!debitNoteReason.trim() || debitNoteAmount <= 0}
+                onClick={async () => {
+                  try {
+                    await apiClient.post("/finance/debit-notes", {
+                      organizationId: "MILL",
+                      supplierId: debitNoteTarget.supplier.id,
+                      purchaseReceiptId: debitNoteTarget.id,
+                      reason: debitNoteReason.trim(),
+                      taxableAmount: debitNoteAmount,
+                      taxAmount: 0,
+                      totalAmount: debitNoteAmount,
+                    });
+                    setDebitNoteTarget(null);
+                    toast.success("Debit note issued.");
+                  } catch (err) {
+                    toast.error(extractErrorMessage(err, "Failed to issue debit note"));
+                  }
+                }}
+              >
+                Issue Debit Note
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

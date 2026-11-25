@@ -399,4 +399,84 @@ describe("M8: Reporting, audit logs, and owner dashboard", () => {
     expect(spoofCodes).toContain("CUST-RET-A");
     expect(spoofCodes).not.toContain("CUST-DIST-B");
   });
+
+  it("IMP-005: exports reports to XLSX and PDF formats with proper headers and role scoping", async () => {
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+    const salesmanCookie = await loginAndGetCookie(
+      "salesman1@millledger.local",
+      "SalesmanPassword123!",
+    );
+
+    const xlsxRes = await fetch(
+      `${baseUrl}/api/v1/reports/sales/export?format=xlsx&organizationId=MILL`,
+      { headers: { Cookie: adminCookie } },
+    );
+    expect(xlsxRes.status).toBe(200);
+    expect(xlsxRes.headers.get("content-type")).toContain(
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    const xlsxBytes = Buffer.from(await xlsxRes.arrayBuffer());
+    // XLSX is a ZIP archive starting with PK\x03\x04
+    expect(xlsxBytes.subarray(0, 2).toString("utf8")).toBe("PK");
+
+    const pdfRes = await fetch(
+      `${baseUrl}/api/v1/reports/stock/export?format=pdf&organizationId=MILL`,
+      { headers: { Cookie: adminCookie } },
+    );
+    expect(pdfRes.status).toBe(200);
+    expect(pdfRes.headers.get("content-type")).toContain("application/pdf");
+    const pdfBytes = Buffer.from(await pdfRes.arrayBuffer());
+    expect(pdfBytes.subarray(0, 5).toString("utf8")).toBe("%PDF-");
+
+    // Salesman cannot export GST report in any format
+    const forbiddenRes = await fetch(
+      `${baseUrl}/api/v1/reports/gst/export?format=xlsx`,
+      { headers: { Cookie: salesmanCookie } },
+    );
+    expect(forbiddenRes.status).toBe(403);
+  });
+
+  it("IMP-019 & IMP-020: returns customer-sales, product-sales, stock-ledger reports and extended owner dashboard", async () => {
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+
+    const [custRes, prodRes, ledgerRes, dashRes] = await Promise.all([
+      fetch(`${baseUrl}/api/v1/reports/customer-sales?organizationId=MILL`, {
+        headers: { Cookie: adminCookie },
+      }),
+      fetch(`${baseUrl}/api/v1/reports/product-sales?organizationId=MILL`, {
+        headers: { Cookie: adminCookie },
+      }),
+      fetch(`${baseUrl}/api/v1/reports/stock-ledger?organizationId=MILL`, {
+        headers: { Cookie: adminCookie },
+      }),
+      fetch(`${baseUrl}/api/v1/dashboard?organizationId=MILL`, {
+        headers: { Cookie: adminCookie },
+      }),
+    ]);
+
+    expect(custRes.status).toBe(200);
+    expect(prodRes.status).toBe(200);
+    expect(ledgerRes.status).toBe(200);
+    expect(dashRes.status).toBe(200);
+
+    const custData = (await custRes.json()) as { rows: unknown[] };
+    const prodData = (await prodRes.json()) as { rows: unknown[] };
+    const ledgerData = (await ledgerRes.json()) as { rows: unknown[] };
+    const dashData = (await dashRes.json()) as {
+      metrics: { todayOrdersCount: number; todayRevenue: number };
+      productMargins: Array<{ sellingPriceExclGst: number; unitCost: number }>;
+    };
+
+    expect(custData.rows.length).toBeGreaterThan(0);
+    expect(prodData.rows.length).toBeGreaterThan(0);
+    expect(ledgerData.rows.length).toBeGreaterThan(0);
+    expect(typeof dashData.metrics.todayOrdersCount).toBe("number");
+    expect(Array.isArray(dashData.productMargins)).toBe(true);
+  });
 });

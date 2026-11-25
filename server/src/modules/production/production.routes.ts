@@ -184,3 +184,107 @@ productionRouter.post(
     }
   },
 );
+
+// PUT /api/v1/production-runs/:id - Update DRAFT production run (IMP-013)
+productionRouter.put(
+  "/:id",
+  requireAuth,
+  authorize("production_run", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const runId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!runId) {
+        throw new AppError("Production run ID is required", 400);
+      }
+      const updated = await productionService.updateDraftRun(
+        runId,
+        req.body || {},
+        req.user,
+      );
+      res.json(updated);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// DELETE /api/v1/production-runs/:id - Delete DRAFT production run (IMP-013)
+productionRouter.delete(
+  "/:id",
+  requireAuth,
+  authorize("production_run", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const runId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!runId) {
+        throw new AppError("Production run ID is required", 400);
+      }
+      const result = await productionService.deleteDraftRun(runId, req.user);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/production-runs/recipes - Create BOM recipe (IMP-011)
+productionRouter.post(
+  "/recipes",
+  requireAuth,
+  authorize("inventory", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const recipe = await productionService.createRecipe(req.body, req.user);
+      res.status(201).json({ recipe });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/production-runs/recipes/:id/version - Clone new BOM version (IMP-011)
+productionRouter.post(
+  "/recipes/:id/version",
+  requireAuth,
+  authorize("inventory", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!id) throw new AppError("Recipe ID is required", 400);
+      const recipe = await productionService.createRecipeVersion(
+        id,
+        req.body || {},
+        req.user,
+      );
+      res.status(201).json({ recipe });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// PATCH /api/v1/production-runs/recipes/:id/archive - Archive/restore BOM (IMP-011)
+productionRouter.patch(
+  "/recipes/:id/archive",
+  requireAuth,
+  authorize("inventory", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!id) throw new AppError("Recipe ID is required", 400);
+      const isActive = Boolean(req.body?.isActive);
+      const recipe = await productionService.archiveRecipe(
+        id,
+        isActive,
+        req.user,
+      );
+      res.json({ recipe });
+    } catch (err) {
+      next(err);
+    }
+  },
+);

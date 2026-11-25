@@ -94,9 +94,15 @@ const handleReportExport = async (
     }
     if (
       role === "PRODUCTION" &&
-      ["sales", "gst", "receivables", "collections", "audit"].includes(
-        reportType,
-      )
+      [
+        "sales",
+        "customer-sales",
+        "product-sales",
+        "gst",
+        "receivables",
+        "collections",
+        "audit",
+      ].includes(reportType)
     ) {
       throw new AppError(
         "Production scope cannot access this report export",
@@ -148,12 +154,48 @@ const handleReportExport = async (
         `attachment; filename="${reportType}-report-${new Date().toISOString().slice(0, 10)}.csv"`,
       );
       return res.send(csvContent);
+    } else if (format === "xlsx") {
+      const xlsxBuffer = await reportingService.exportToXLSX(
+        reportType,
+        params,
+        req.user,
+      );
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${reportType}-report-${new Date().toISOString().slice(0, 10)}.xlsx"`,
+      );
+      return res.send(xlsxBuffer);
+    } else if (format === "pdf") {
+      const pdfBuffer = await reportingService.exportToPDF(
+        reportType,
+        params,
+        req.user,
+      );
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${reportType}-report-${new Date().toISOString().slice(0, 10)}.pdf"`,
+      );
+      return res.send(pdfBuffer);
     } else {
       // JSON export
       let data: unknown;
       switch (reportType) {
         case "sales":
           data = await reportingService.getSalesReport(params);
+          break;
+        case "customer-sales":
+          data = await reportingService.getCustomerWiseSalesReport(params);
+          break;
+        case "product-sales":
+          data = await reportingService.getProductWiseSalesReport(params);
+          break;
+        case "stock-ledger":
+          data = await reportingService.getStockLedgerReport(params);
           break;
         case "gst":
           data = await reportingService.getGSTOutwardSummary(params);
@@ -239,9 +281,15 @@ reportingRouter.get(
       }
       if (
         role === "PRODUCTION" &&
-        ["sales", "gst", "receivables", "collections", "audit"].includes(
-          reportType,
-        )
+        [
+          "sales",
+          "customer-sales",
+          "product-sales",
+          "gst",
+          "receivables",
+          "collections",
+          "audit",
+        ].includes(reportType)
       ) {
         throw new AppError("Production scope cannot access this report", 403);
       }
@@ -271,6 +319,15 @@ reportingRouter.get(
       switch (reportType.toLowerCase()) {
         case "sales":
           result = await reportingService.getSalesReport(params);
+          break;
+        case "customer-sales":
+          result = await reportingService.getCustomerWiseSalesReport(params);
+          break;
+        case "product-sales":
+          result = await reportingService.getProductWiseSalesReport(params);
+          break;
+        case "stock-ledger":
+          result = await reportingService.getStockLedgerReport(params);
           break;
         case "gst":
           result = await reportingService.getGSTOutwardSummary(params);

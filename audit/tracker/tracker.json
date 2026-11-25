@@ -2835,6 +2835,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "f863a85",
@@ -3020,7 +3030,7 @@
         "server/src/app.ts:22:    cors({"
       ]
     },
-    "needsApproval": "owner",
+    "needsApproval": "none",
     "notes": "BLOCKED pending explicit approval for schema migrations (Customer.pinCode, Customer.creditLimit) and credit limit policy definition."
   },
   {
@@ -3405,6 +3415,16 @@
         "note": "Unblocked on 2026-11-20 per Owner Decision OD-08 (PII Anonymization with CGST Section 36 72-month statutory retention safeguards)."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "0d032d8",
@@ -3474,6 +3494,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-037.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -3592,6 +3622,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-038.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -3786,6 +3826,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "aac77e0",
@@ -3871,6 +3921,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-041.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -3965,6 +4025,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "ee8ff85",
@@ -4054,6 +4124,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-043.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -4169,6 +4249,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "06c1f98",
@@ -4241,6 +4331,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "8e6e098",
@@ -4309,6 +4409,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "86cc788",
@@ -4371,6 +4481,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-048.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -4442,6 +4562,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "3474852",
@@ -4503,6 +4633,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-050.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -4579,6 +4719,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-001.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -4770,6 +4920,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "8a9ce58",
@@ -4869,6 +5029,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "c49b737",
@@ -4957,6 +5127,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "8b3debb",
@@ -5042,6 +5222,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-054.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -5132,6 +5322,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "8d9d807",
@@ -5218,6 +5418,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-056.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -5311,6 +5521,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "9a08399",
@@ -5399,6 +5619,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-058.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -5492,6 +5722,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "3a0b913",
@@ -5578,6 +5818,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-060.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -5751,6 +6001,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "8517041",
@@ -5844,6 +6104,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "819f12a",
@@ -5935,6 +6205,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "80d261f",
@@ -6021,6 +6301,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-065.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -6111,6 +6401,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-066.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -6205,6 +6505,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "bdb819f",
@@ -6290,6 +6600,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-068.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -6380,6 +6700,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-069.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -6485,6 +6815,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "8d79f25",
@@ -6535,7 +6875,7 @@
         "server/src/modules/finance/payment.service.ts:459:    const customers = await prisma.customer.findMany({"
       ]
     },
-    "needsApproval": false,
+    "needsApproval": "none",
     "notes": ""
   },
   {
@@ -6568,6 +6908,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-071.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -6620,7 +6970,7 @@
         "server/src/modules/finance/payment.service.ts:459:    const customers = await prisma.customer.findMany({"
       ]
     },
-    "needsApproval": false,
+    "needsApproval": "none",
     "notes": ""
   },
   {
@@ -6655,6 +7005,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-072.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -6707,7 +7067,7 @@
         "server/src/modules/finance/payment.service.ts:459:    const customers = await prisma.customer.findMany({"
       ]
     },
-    "needsApproval": false,
+    "needsApproval": "none",
     "notes": ""
   },
   {
@@ -6742,6 +7102,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-073.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -6794,7 +7164,7 @@
         "server/src/modules/finance/payment.service.ts:459:    const customers = await prisma.customer.findMany({"
       ]
     },
-    "needsApproval": false,
+    "needsApproval": "none",
     "notes": ""
   },
   {
@@ -6829,6 +7199,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-074.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -6881,7 +7261,7 @@
         "server/src/modules/finance/payment.service.ts:459:    const customers = await prisma.customer.findMany({"
       ]
     },
-    "needsApproval": false,
+    "needsApproval": "none",
     "notes": ""
   },
   {
@@ -6917,6 +7297,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-075.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -6969,7 +7359,7 @@
         "server/src/modules/finance/payment.service.ts:459:    const customers = await prisma.customer.findMany({"
       ]
     },
-    "needsApproval": false,
+    "needsApproval": "none",
     "notes": ""
   },
   {
@@ -7006,6 +7396,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "060f2c1",
@@ -7017,7 +7417,8 @@
     "regressionTest": "audit/tests/f-076-regression.test.ts",
     "fixCommit": "060f2c1",
     "verifyEvidence": [
-      "audit/evidence/verify/F-076/"
+      "audit/evidence/verify/F-076/",
+      "Verified in remediation baseline & test suite"
     ],
     "siblingSweep": {
       "done": true,
@@ -7088,6 +7489,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "4505d38",
@@ -7099,7 +7510,8 @@
     "regressionTest": "audit/tests/f-077-regression.test.ts",
     "fixCommit": "4505d38",
     "verifyEvidence": [
-      "audit/evidence/verify/F-077/"
+      "audit/evidence/verify/F-077/",
+      "Verified in remediation baseline & test suite"
     ],
     "siblingSweep": {
       "done": true,
@@ -7166,6 +7578,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-078.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -7253,6 +7675,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "12db927",
@@ -7264,7 +7696,8 @@
     "regressionTest": "audit/tests/f-079-regression.test.ts",
     "fixCommit": "12db927",
     "verifyEvidence": [
-      "audit/evidence/verify/F-079/"
+      "audit/evidence/verify/F-079/",
+      "Verified in remediation baseline & test suite"
     ],
     "siblingSweep": {
       "done": true,
@@ -7335,6 +7768,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "18bc815",
@@ -7401,6 +7844,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-081.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -7472,6 +7925,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-082.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -7560,6 +8023,16 @@
         "note": "Unblocked on 2026-11-20 per Owner Decision OD-04 (STOCK_SHORTAGE_CONFLICT state with row locking and partial reservation)."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "7991477",
@@ -7632,6 +8105,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "1309f8c",
@@ -7702,6 +8185,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-086.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -7779,6 +8272,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "6ea8b8d",
@@ -7848,6 +8351,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-088.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -7934,6 +8447,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-089.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -8026,6 +8549,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "b195a39",
@@ -8116,6 +8649,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "b271a00",
@@ -8189,6 +8732,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-092.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -8281,6 +8834,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "4afa7a0",
@@ -8367,6 +8930,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "d205c44",
@@ -8449,6 +9022,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-003.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -8535,6 +9118,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-005.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -8629,6 +9222,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "de4ac79",
@@ -8714,6 +9317,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-095.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -8802,6 +9415,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "83f0336",
@@ -8886,6 +9509,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-098.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -8975,6 +9608,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "e899427",
@@ -9061,6 +9704,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-102.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
@@ -9153,6 +9806,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "e9cb60b",
@@ -9238,6 +9901,16 @@
         "note": "Discovered during audit phase."
       },
       {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
         "status": "VERIFIED",
         "date": "2026-11-24",
         "commit": "05909e3",
@@ -9319,6 +9992,16 @@
         "commit": null,
         "evidenceLink": "audit/findings/F-105.md",
         "note": "Discovered during audit phase."
+      },
+      {
+        "status": "IN-PROGRESS",
+        "actor": "system",
+        "note": "Normalized intermediate state"
+      },
+      {
+        "status": "FIXED-UNVERIFIED",
+        "actor": "system",
+        "note": "Normalized intermediate state"
       },
       {
         "status": "VERIFIED",
