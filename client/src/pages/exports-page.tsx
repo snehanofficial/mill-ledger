@@ -31,6 +31,7 @@ import {
   PackageIcon,
   HistoryIcon,
   FileTextIcon,
+  ArrowRightIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -462,8 +463,9 @@ export function ExportsPage() {
                 <span className="text-[11px] text-muted-foreground">
                   {d.fields.length} columns
                 </span>
-                <span className="text-primary font-semibold hover:underline">
-                  Select →
+                <span className="inline-flex items-center gap-1 text-primary font-semibold hover:underline">
+                  Select
+                  <ArrowRightIcon className="size-3.5" aria-hidden="true" />
                 </span>
               </div>
             </article>

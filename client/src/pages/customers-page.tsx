@@ -5,6 +5,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
 import { useLanguage } from "@/lib/i18n";
 import {
+  EmptyState,
   SkeletonTable,
   ErrorState,
 } from "@/components/ui/loading-error-empty";
@@ -344,15 +345,24 @@ export function CustomersPage() {
             />
           </div>
         ) : customers.length === 0 ? (
-          <div className="flex h-48 flex-col items-center justify-center p-6 text-center">
-            <UsersIcon className="size-8 text-muted-foreground mb-2" />
-            <p className="text-sm font-medium text-foreground">
-              No customer accounts found
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Customer accounts configured in master data will appear here.
-            </p>
-          </div>
+          <EmptyState
+            icon={UsersIcon}
+            title="No customer accounts found"
+            description="Add a customer account to create orders, invoices, and track receivables."
+            action={
+              canManageCustomers ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCreateModal(true)}
+                  className="gap-1.5"
+                >
+                  <PlusCircleIcon className="size-4" aria-hidden="true" />
+                  Add Customer
+                </Button>
+              ) : undefined
+            }
+          />
         ) : (
           <div className="overflow-x-auto">
             <Table>
@@ -370,11 +380,21 @@ export function CustomersPage() {
               <TableBody>
                 {filteredCustomers.length === 0 && customers.length > 0 && (
                   <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="py-8 text-center text-sm text-muted-foreground"
-                    >
-                      {t("No customer accounts match the search query.")}
+                    <TableCell colSpan={7} className="p-0">
+                      <EmptyState
+                        title={t("No customer accounts match the search query.")}
+                        description="Clear the search query to view all customer accounts."
+                        className="min-h-32 py-6"
+                        action={
+                          <Button
+                            variant="tertiary"
+                            size="sm"
+                            onClick={() => setSearchQuery("")}
+                          >
+                            Clear search
+                          </Button>
+                        }
+                      />
                     </TableCell>
                   </TableRow>
                 )}

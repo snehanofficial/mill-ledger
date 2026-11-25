@@ -6,6 +6,7 @@ import { useUrlState } from "@/hooks/use-url-state";
 import { formatDate, formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
+  EmptyState,
   SkeletonTable,
   ErrorState,
 } from "@/components/ui/loading-error-empty";
@@ -587,16 +588,24 @@ export function PaymentsPage() {
               />
             </div>
           ) : payments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 text-center text-sm text-muted-foreground">
-              <CreditCardIcon className="mb-3 h-8 w-8 text-muted-foreground" />
-              <p className="font-medium text-foreground">
-                No payments recorded
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Record receipts from customers to allocate against outstanding
-                invoices.
-              </p>
-            </div>
+            <EmptyState
+              icon={CreditCardIcon}
+              title="No payments recorded"
+              description="Record receipts from customers to allocate against outstanding invoices."
+              action={
+                canRecordPayment ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowPaymentModal(true)}
+                    className="gap-1.5"
+                  >
+                    <PlusCircleIcon className="h-4 w-4" aria-hidden="true" />
+                    Record Payment
+                  </Button>
+                ) : undefined
+              }
+            />
           ) : (
             <>
               {/* Mobile Card Layout (<md viewports per F-047) */}
@@ -605,9 +614,22 @@ export function PaymentsPage() {
                 data-slot="mobile-cards"
               >
                 {filteredPayments.length === 0 && payments.length > 0 && (
-                  <div className="p-8 text-center text-sm text-muted-foreground">
-                    {t("No payments match the selected filters.")}
-                  </div>
+                  <EmptyState
+                    title={t("No payments match the selected filters.")}
+                    description="Clear the search or payment mode filter to view all payments."
+                    action={
+                      <Button
+                        variant="tertiary"
+                        size="sm"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setModeFilter("ALL");
+                        }}
+                      >
+                        Clear filters
+                      </Button>
+                    }
+                  />
                 )}
                 {filteredPayments.map((p) => (
                   <div key={p.id} className="p-4 space-y-2.5">
@@ -700,11 +722,24 @@ export function PaymentsPage() {
                 <TableBody>
                   {filteredPayments.length === 0 && payments.length > 0 && (
                     <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        className="py-8 text-center text-sm text-muted-foreground"
-                      >
-                        {t("No payments match the selected filters.")}
+                      <TableCell colSpan={8} className="p-0">
+                        <EmptyState
+                          title={t("No payments match the selected filters.")}
+                          description="Clear the search or payment mode filter to view all payments."
+                          className="min-h-32 py-6"
+                          action={
+                            <Button
+                              variant="tertiary"
+                              size="sm"
+                              onClick={() => {
+                                setSearchQuery("");
+                                setModeFilter("ALL");
+                              }}
+                            >
+                              Clear filters
+                            </Button>
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   )}
@@ -850,9 +885,19 @@ export function PaymentsPage() {
                 data-slot="mobile-cards"
               >
                 {filteredReceivables.length === 0 && receivables.length > 0 && (
-                  <div className="p-8 text-center text-sm text-muted-foreground">
-                    {t("No customer receivables match the search query.")}
-                  </div>
+                  <EmptyState
+                    title={t("No customer receivables match the search query.")}
+                    description="Clear the search query to view all customer receivables."
+                    action={
+                      <Button
+                        variant="tertiary"
+                        size="sm"
+                        onClick={() => setSearchQuery("")}
+                      >
+                        Clear search
+                      </Button>
+                    }
+                  />
                 )}
                 {filteredReceivables.map((r) => (
                   <div key={r.customerId} className="p-4 space-y-2.5">
@@ -948,11 +993,21 @@ export function PaymentsPage() {
                 <TableBody>
                   {filteredReceivables.length === 0 && receivables.length > 0 && (
                     <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        className="py-8 text-center text-sm text-muted-foreground"
-                      >
-                        {t("No customer receivables match the search query.")}
+                      <TableCell colSpan={8} className="p-0">
+                        <EmptyState
+                          title={t("No customer receivables match the search query.")}
+                          description="Clear the search query to view all customer receivables."
+                          className="min-h-32 py-6"
+                          action={
+                            <Button
+                              variant="tertiary"
+                              size="sm"
+                              onClick={() => setSearchQuery("")}
+                            >
+                              Clear search
+                            </Button>
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   )}

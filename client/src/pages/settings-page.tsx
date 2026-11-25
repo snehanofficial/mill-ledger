@@ -587,8 +587,19 @@ export function SettingsPage() {
                   </TableRow>
                 ) : usersList.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-xs">
-                      No users found.
+                    <TableCell colSpan={6} className="p-6 text-center">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <p className="text-xs text-muted-foreground">No users found.</p>
+                        {canEditSettings && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setShowAddUserModal(true)}
+                          >
+                            Add User
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (

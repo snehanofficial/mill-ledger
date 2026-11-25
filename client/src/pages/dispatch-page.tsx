@@ -6,6 +6,7 @@ import { useUrlState } from "@/hooks/use-url-state";
 import { formatDateTime, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
+  EmptyState,
   SkeletonTable,
   ErrorState,
 } from "@/components/ui/loading-error-empty";
@@ -440,14 +441,24 @@ export function DispatchPage() {
             />
           </div>
         ) : dispatches.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 text-center text-sm text-muted-foreground">
-            <TruckIcon className="mb-3 h-8 w-8 text-muted-foreground" />
-            <p className="font-medium text-foreground">No dispatches yet</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Record a physical dispatch for an approved sales order to deduct
-              inventory.
-            </p>
-          </div>
+          <EmptyState
+            icon={TruckIcon}
+            title="No dispatches yet"
+            description="Record a physical dispatch for an approved sales order to deduct inventory."
+            action={
+              canRecordDispatch ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCreateModal(true)}
+                  className="gap-1.5"
+                >
+                  <PlusCircleIcon className="h-4 w-4" aria-hidden="true" />
+                  Record Dispatch
+                </Button>
+              ) : undefined
+            }
+          />
         ) : (
           <>
             {/* Mobile Card Layout (<md viewports per F-047) */}
@@ -456,9 +467,19 @@ export function DispatchPage() {
               data-slot="mobile-cards"
             >
               {filteredDispatches.length === 0 && dispatches.length > 0 && (
-                <div className="p-8 text-center text-sm text-muted-foreground">
-                  {t("No dispatches match the search query.")}
-                </div>
+                <EmptyState
+                  title={t("No dispatches match the search query.")}
+                  description="Clear the search query to view all dispatches."
+                  action={
+                    <Button
+                      variant="tertiary"
+                      size="sm"
+                      onClick={() => setSearchQuery("")}
+                    >
+                      Clear search
+                    </Button>
+                  }
+                />
               )}
               {filteredDispatches.map((disp) => (
                 <div key={disp.id} className="p-4 space-y-2.5">
@@ -547,11 +568,21 @@ export function DispatchPage() {
                 <TableBody>
                   {filteredDispatches.length === 0 && dispatches.length > 0 && (
                     <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        className="py-8 text-center text-sm text-muted-foreground"
-                      >
-                        {t("No dispatches match the search query.")}
+                      <TableCell colSpan={8} className="p-0">
+                        <EmptyState
+                          title={t("No dispatches match the search query.")}
+                          description="Clear the search query to view all dispatches."
+                          className="min-h-32 py-6"
+                          action={
+                            <Button
+                              variant="tertiary"
+                              size="sm"
+                              onClick={() => setSearchQuery("")}
+                            >
+                              Clear search
+                            </Button>
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   )}

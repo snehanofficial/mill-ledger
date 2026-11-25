@@ -172,4 +172,42 @@ function ErrorState({
   );
 }
 
-export { ErrorState, LoadingState, SkeletonTable, SkeletonKPIs };
+function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+  className,
+}: {
+  icon?: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      data-slot="empty-state"
+      className={cn(
+        "flex min-h-40 flex-col items-center justify-center gap-3 px-6 py-8 text-center",
+        className,
+      )}
+    >
+      {Icon && (
+        <Icon
+          aria-hidden={true}
+          className="size-8 stroke-1 text-muted-foreground"
+        />
+      )}
+      <div className="max-w-sm space-y-1">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        {description && (
+          <p className="text-xs text-muted-foreground">{description}</p>
+        )}
+      </div>
+      {action && <div className="flex flex-wrap items-center justify-center gap-2 pt-1">{action}</div>}
+    </div>
+  );
+}
+
+export { EmptyState, ErrorState, LoadingState, SkeletonTable, SkeletonKPIs };
