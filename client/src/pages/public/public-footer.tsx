@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ShieldCheckIcon } from "lucide-react";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { useLanguage } from "@/lib/i18n";
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -14,9 +14,7 @@ export function PublicFooter() {
           {/* Identity */}
           <div className="space-y-3 md:col-span-1">
             <div className="flex items-center gap-2">
-              <div className="flex size-7 items-center justify-center rounded-control bg-primary text-primary-foreground">
-                <ShieldCheckIcon className="size-4" aria-hidden="true" />
-              </div>
+              <BrandLogo size="sm" />
               <span className="font-bold text-foreground text-base">MillLedger</span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">

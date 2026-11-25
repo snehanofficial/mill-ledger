@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShieldCheckIcon, MenuIcon, XIcon } from "lucide-react";
+import { MenuIcon, XIcon } from "lucide-react";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -40,9 +41,7 @@ export function PublicHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-control bg-primary text-primary-foreground shadow-xs">
-            <ShieldCheckIcon className="size-5" aria-hidden="true" />
-          </div>
+          <BrandLogo size="nav" className="shadow-xs" />
           <div className="flex flex-col">
             <span className="font-bold tracking-tight text-foreground text-sm sm:text-base">
               MillLedger

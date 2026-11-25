@@ -24,10 +24,10 @@ import { getDefaultRouteForRole } from "@/lib/role-routing";
 import {
   LockIcon,
   MailIcon,
-  ShieldCheckIcon,
   EyeIcon,
   EyeOffIcon,
 } from "lucide-react";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -219,9 +219,7 @@ export function LoginPage() {
       <div className="w-full max-w-md space-y-6">
         {/* Brand Header */}
         <div className="text-center">
-          <div className="inline-flex size-12 items-center justify-center rounded-control bg-primary text-primary-foreground shadow-xs">
-            <ShieldCheckIcon className="size-6" aria-hidden="true" />
-          </div>
+          <BrandLogo size="lg" className="mx-auto shadow-xs" />
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-foreground">
             {language === "ta" ? "ஆலை ஏடு உள்நுழைவு" : "Sign in to MillLedger"}
           </h1>

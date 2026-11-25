@@ -30,6 +30,7 @@ import {
   useMemo,
 } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import {
   BellIcon,
   ChevronRightIcon,
@@ -257,7 +258,7 @@ function SyncIndicator({
 }
 
 // ─── BrandMark ────────────────────────────────────────────────────────────────
-// DashboardBlocks brandmark: Pine square with "M" lettermark.
+// Standardized MillLedger brandmark using the custom emblem in /favicon.svg.
 
 function BrandMark({
   children,
@@ -266,17 +267,21 @@ function BrandMark({
   children?: ReactNode;
   className?: string;
 }) {
-  return (
-    <span
-      className={cn(
-        "bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg font-semibold text-sm",
-        className,
-      )}
-      aria-hidden
-    >
-      {children ?? "M"}
-    </span>
-  );
+  if (children) {
+    return (
+      <span
+        className={cn(
+          "bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg font-semibold text-sm",
+          className,
+        )}
+        aria-hidden
+      >
+        {children}
+      </span>
+    );
+  }
+
+  return <BrandLogo size="md" className={className} />;
 }
 
 // ─── AppBrand ─────────────────────────────────────────────────────────────────
@@ -312,7 +317,7 @@ function AppBrand({
             aria-label={`${name} ${description ? description + " - " : ""}Home`}
             {...getPrefetchProps(href)}
           >
-            <BrandMark>{logo ?? "M"}</BrandMark>
+            <BrandMark>{logo}</BrandMark>
             <div className="grid flex-1 min-w-0 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
               <span className="truncate font-semibold text-foreground">
                 {name}
