@@ -1,3 +1,0 @@
-$ oxlint .
-Found 0 warnings and 0 errors.
-Finished in 38ms on 196 files using 16 threads.

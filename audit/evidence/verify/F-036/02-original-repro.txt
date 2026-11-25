@@ -1,7 +1,0 @@
-=== STEP 2: ORIGINAL REPRODUCTION EVIDENCE FOR F-036 ===
-Repro: Compare reportingService.getSalesReport and getOwnerDashboard metrics against SQL SUM(totalAmount) when line-less invoices are present.
-Observed without fix:
-- SQL Invoices total: ₹19,875.00
-- Dashboard totalRevenue: ₹7,875.00
-- Discrepancy: ₹12,000.00 silently dropped because getSalesReport iterated only over inv.lines.
-- Operational check: financeService.createInvoiceFromOrder permitted posting invoices with 0 lines.

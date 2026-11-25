@@ -1,6 +1,0 @@
-=== F-034 Verification: Backward Compatibility ===
-
-1. All API error responses provide BOTH `error` and `message` properties carrying the identical human-readable description, guaranteeing 100% backward compatibility with legacy clients and tests asserting `response.body.error`.
-2. Standard fields `code`, `fieldErrors`, and `requestId` are non-breaking additions conforming to RFC 7807 problem details.
-3. Client UI toasts (`orders-page.tsx`) now gracefully read `err.response?.data?.message || err.response?.data?.error`, preventing silent error masking.
-4. All existing tests in the repository pass with zero breaking changes.

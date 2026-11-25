@@ -1,1 +1,0 @@
-F-081 verified: DeviceOutboxSheet enforces explicit ConfirmationDialog before discarding unsynchronized field orders, preventing accidental data loss.

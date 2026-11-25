@@ -1,5 +1,0 @@
-=== F-028 Verification: 09 Backward Compatibility ===
-1. Normal Session Offline Sync:
-   - Synchronous order creation, offline queueing, and background sync remain fully functional while the user remains logged in.
-2. Sign-Out Flow:
-   - Both normal user logout via the authenticated shell and automatic sign-out via forbidden pages or network fallbacks successfully trigger the purge routine.

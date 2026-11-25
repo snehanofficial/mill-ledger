@@ -1,8 +1,0 @@
-$ pnpm -r run typecheck
-Scope: 3 of 4 workspace projects
-shared typecheck$ tsc --noEmit
-shared typecheck: Done
-client typecheck$ tsc -b --noEmit
-server typecheck$ tsc --noEmit
-server typecheck: Done
-client typecheck: Done

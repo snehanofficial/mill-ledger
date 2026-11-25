@@ -1,6 +1,0 @@
-=== F-012 Verification: 08 Concurrency & Algorithmic Safety ===
-1. Pure Algorithmic Validation:
-   - computeGstinCheckDigit and validateGstin are pure mathematical functions executing in O(1) time complexity with zero database locking or IO overhead.
-2. Safe Database Persistence:
-   - Customers created with normalized uppercase GSTIN strings.
-   - Unique constraint @@unique([organizationId, code]) prevents duplicate customer account creation during concurrent requests.

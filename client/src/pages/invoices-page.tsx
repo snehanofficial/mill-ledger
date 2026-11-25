@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient } from "@/lib/api-client";
+import { BACKEND_URL } from "@/lib/env";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
@@ -865,7 +866,7 @@ export function InvoicesPage() {
                 variant="outline"
                 size="sm"
                 onClick={async () => {
-                  const summary = `Invoice ${selectedInvoice.invoiceNumber} | ${selectedInvoice.customerNameSnapshot} | Total: ${formatINR(selectedInvoice.totalAmount)} | Outstanding: ${formatINR(selectedInvoice.outstandingAmount)} | PDF: ${window.location.origin}/api/v1/finance/invoices/${selectedInvoice.id}/pdf`;
+                  const summary = `Invoice ${selectedInvoice.invoiceNumber} | ${selectedInvoice.customerNameSnapshot} | Total: ${formatINR(selectedInvoice.totalAmount)} | Outstanding: ${formatINR(selectedInvoice.outstandingAmount)} | PDF: ${BACKEND_URL}/api/v1/finance/invoices/${selectedInvoice.id}/pdf`;
                   try {
                     await navigator.clipboard.writeText(summary);
                     toast.success("Invoice summary & PDF link copied");
@@ -906,7 +907,7 @@ export function InvoicesPage() {
                 onClick={async () => {
                   try {
                     const res = await fetch(
-                      `/api/v1/finance/invoices/${selectedInvoice.id}/pdf`,
+                      `${BACKEND_URL}/api/v1/finance/invoices/${selectedInvoice.id}/pdf`,
                       { credentials: "include" },
                     );
                     if (!res.ok) {

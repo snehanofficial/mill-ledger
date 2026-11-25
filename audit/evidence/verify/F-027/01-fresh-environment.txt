@@ -1,7 +1,0 @@
-=== F-027 Verification: 01 Fresh Environment ===
-Date: Mon Nov 23 17:24:30 IST 2026
-OS: Linux (Node.js v22, TypeScript 5.8, pnpm 12)
-Branch: remediation/main
-Head Commit: 723058a chore(tracker): mark F-021 VERIFIED with complete evidence
-Database: Isolated local PostgreSQL (postgresql://postgres:postgres@localhost:5432/mill_ledger)
-Status: Working tree clean of unrelated changes; target files server/prisma/schema.prisma, server/prisma/migrations/20261123000003_f027_stock_reservation_ttl/migration.sql, server/src/modules/sales/sales.service.ts, server/src/modules/sales/sales.routes.ts, server/src/modules/inventory/inventory.service.ts, and server/src/orders.test.ts modified for F-027.

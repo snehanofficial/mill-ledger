@@ -1,7 +1,0 @@
-=== F-020 Verification: 09 Backward Compatibility ===
-1. Default Price List Continuity:
-   Orders without explicit unitPrice supplied continue to automatically inherit the default list price rate (e.g. ₹50 for Murukku) with 0% discount, smoothly creating orders in SUBMITTED status without requiring reviews.
-2. Benchmark Fixture Invariance:
-   Transactions 4, 5, and 6 in benchmark.md execute unmodified with 100% exact numerical match.
-3. API Contracts:
-   Responses from createSalesOrder and approveSalesOrder retain identical JSON payload shapes and database schemas.

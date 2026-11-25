@@ -1,9 +1,0 @@
-HTTP/1.1 200
-vary: Origin
-content-type: text/html
-cache-control: no-cache
-etag: W/"385-VUYbYgo55rA3j2H+kw1h+Lag3aI"
-date: Thu, 19 Nov 2026 18:46:33 GMT
-connection: keep-alive
-keep-alive: timeout=5
-content-length: 901

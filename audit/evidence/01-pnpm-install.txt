@@ -1,7 +1,0 @@
-Scope: all 4 workspace projects
-Already up to date
-Done in 9ms using pnpm v12.18.0
-
-real	0m0.031s
-user	0m0.009s
-sys	0m0.026s

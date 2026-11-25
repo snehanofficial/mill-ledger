@@ -1,6 +1,0 @@
-=== F-022 Verification: 09 Backward Compatibility ===
-1. Non-Breaking API Signature:
-   - All updated domain service methods (`postDispatch`, `postProductionRun`, `createDraftRun`, `reverseProductionRun`, `createInvoiceFromOrder`, `issueCreditNote`, `recordPayment`, `bouncePayment`, `postPurchaseReceipt`) accept optional `user?: UserContext` parameters.
-   - Existing unit tests, integration tests, benchmark runners, and seeds that invoke service functions without passing `user` continue to execute without disruption.
-2. Production Build:
-   - Full client and server builds pass cleanly without warnings or bundle size regressions.

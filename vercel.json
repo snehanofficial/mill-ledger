@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://mill-ledger-194q.onrender.com/api/:path*"
+    }
+  ]
+}

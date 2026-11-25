@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { authClient } from "./auth-client";
 import { apiClient } from "./api-client";
+import { BACKEND_URL, requireEnvUrl } from "./env";
 import { getInitials, mapAuthUserToShellUser } from "../hooks/use-current-user";
 
 describe("authClient and OWASP authentication security", () => {
@@ -56,7 +57,7 @@ describe("authClient and OWASP authentication security", () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        "/api/auth/sign-in/email",
+        `${BACKEND_URL}/api/auth/sign-in/email`,
         expect.objectContaining({
           body: JSON.stringify({
             email: "admin@millledger.local",
@@ -165,6 +166,23 @@ describe("authClient and OWASP authentication security", () => {
         initials: "PM",
         avatar: undefined,
       });
+    });
+  });
+
+  describe("requireEnvUrl", () => {
+    it("strips trailing slashes and whitespace", () => {
+      expect(requireEnvUrl("  http://localhost:4000///  ", "VITE_BACKEND_URL")).toBe(
+        "http://localhost:4000",
+      );
+    });
+
+    it("throws when the required environment variable is missing or blank", () => {
+      expect(() => requireEnvUrl(undefined, "VITE_BACKEND_URL")).toThrow(
+        "Missing required environment variable: VITE_BACKEND_URL",
+      );
+      expect(() => requireEnvUrl("   ", "VITE_BACKEND_URL")).toThrow(
+        "Missing required environment variable: VITE_BACKEND_URL",
+      );
     });
   });
 });
