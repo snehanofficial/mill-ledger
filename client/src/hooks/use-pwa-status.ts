@@ -164,7 +164,7 @@ export function usePwaStatus(): PwaStatus {
         setStoragePersisted(granted);
       });
     } else {
-      void refreshStorageStatus();
+      void Promise.resolve().then(() => refreshStorageStatus());
     }
 
     return () => {

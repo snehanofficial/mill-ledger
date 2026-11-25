@@ -832,7 +832,7 @@ export function SuppliersPage() {
             <DialogHeader>
               <DialogTitle>{detailSupplier.name}</DialogTitle>
               <DialogDescription>
-                {detailSupplier.code} — {detailSupplier.state}
+                {detailSupplier.code} · {detailSupplier.state}
               </DialogDescription>
             </DialogHeader>
             <div className="grid grid-cols-2 gap-3 rounded-lg bg-muted/40 p-3 text-xs">

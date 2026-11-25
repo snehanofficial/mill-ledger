@@ -762,7 +762,7 @@ export function ProductionPage() {
                   <SelectContent searchable searchPlaceholder="Search BOM recipes...">
                     {(recipesData?.recipes || []).map((r) => (
                       <SelectItem key={r.id} value={r.id}>
-                        {r.name} — Target: {r.expectedOutputQty} pkts
+                        {r.name} · Target: {r.expectedOutputQty} pkts
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1115,7 +1115,7 @@ export function ProductionPage() {
                   <div>
                     <span className="font-semibold text-sm">{r.name}</span>
                     <span className="ml-2 text-xs text-muted-foreground">
-                      ({r.productVariant?.name}) — Target: {Number(r.expectedOutputQty)} pkts
+                      ({r.productVariant?.name}) · Target: {Number(r.expectedOutputQty)} pkts
                     </span>
                   </div>
                   {canManageBom && (

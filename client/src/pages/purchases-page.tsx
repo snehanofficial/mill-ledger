@@ -572,7 +572,7 @@ export function PurchasesPage() {
                   >
                     {rawItems.map((item) => (
                       <SelectItem key={item.id} value={item.id}>
-                        {item.name} ({item.sku}) — {item.baseUom?.symbol || "units"}
+                        {item.name} ({item.sku}) · {item.baseUom?.symbol || "units"}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -758,7 +758,7 @@ export function PurchasesPage() {
             <DialogHeader>
               <DialogTitle>Purchase Receipt {detailReceipt.receiptNumber}</DialogTitle>
               <DialogDescription>
-                {detailReceipt.supplier.name} ({detailReceipt.supplier.code}) — {formatDate(detailReceipt.postedAt)}
+                {detailReceipt.supplier.name} ({detailReceipt.supplier.code}) · {formatDate(detailReceipt.postedAt)}
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-3 text-xs">
@@ -790,7 +790,7 @@ export function PurchasesPage() {
               {canManageAdminPurchase && (
                 <div className="flex flex-col gap-1.5 border-t pt-3">
                   <Label htmlFor="pr-reverse-reason" className="text-xs">
-                    Reversal Reason (optional — reverses stock if unconsumed)
+                    Reversal Reason (optional, reverses stock if unconsumed)
                   </Label>
                   <div className="flex gap-2">
                     <Input
@@ -848,7 +848,7 @@ export function PurchasesPage() {
             <DialogHeader>
               <DialogTitle>Issue Supplier Debit Note</DialogTitle>
               <DialogDescription>
-                Against {debitNoteTarget.receiptNumber} — {debitNoteTarget.supplier.name}
+                Against {debitNoteTarget.receiptNumber} · {debitNoteTarget.supplier.name}
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-3 py-2">

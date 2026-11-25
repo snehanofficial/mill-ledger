@@ -670,7 +670,7 @@ export function CustomersPage() {
             <DialogHeader>
               <DialogTitle>{detailCustomer.name}</DialogTitle>
               <DialogDescription>
-                {detailCustomer.code} — {detailCustomer.state}
+                {detailCustomer.code} · {detailCustomer.state}
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-4 text-sm">

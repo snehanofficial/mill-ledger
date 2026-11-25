@@ -1552,7 +1552,7 @@ export function PaymentsPage() {
             <DialogHeader>
               <DialogTitle>Allocate Unallocated Cash</DialogTitle>
               <DialogDescription>
-                {allocatingPayment.paymentNumber} — Unallocated:{" "}
+                {allocatingPayment.paymentNumber} · Unallocated:{" "}
                 {formatINR(allocatingPayment.unallocatedAmount)}
               </DialogDescription>
             </DialogHeader>
@@ -1571,7 +1571,7 @@ export function PaymentsPage() {
                       .filter((inv) => Number(inv.outstandingAmount) > 0)
                       .map((inv) => (
                         <SelectItem key={inv.id} value={inv.id}>
-                          {inv.invoiceNumber} — Outstanding:{" "}
+                          {inv.invoiceNumber} · Outstanding:{" "}
                           {formatINR(inv.outstandingAmount)}
                         </SelectItem>
                       ))}

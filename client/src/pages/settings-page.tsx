@@ -43,6 +43,7 @@ import {
   PencilIcon,
 } from "lucide-react";
 import { useMotion } from "@/hooks/use-motion";
+import { ErrorState } from "@/components/ui/loading-error-empty";
 import { toast } from "sonner";
 import type { Role } from "@mill-ledger/shared";
 
@@ -179,7 +180,13 @@ export function SettingsPage() {
   const [newUserRole, setNewUserRole] = useState<Role>("SALESMAN");
 
   // Query users
-  const { data: usersData, isLoading: isLoadingUsers, refetch: refetchUsers } = useQuery<{
+  const {
+    data: usersData,
+    isLoading: isLoadingUsers,
+    isError: isErrorUsers,
+    error: errorUsers,
+    refetch: refetchUsers,
+  } = useQuery<{
     users: UserRecord[];
   }>({
     queryKey: ["admin-users"],
@@ -289,9 +296,11 @@ export function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-border">
+      <div role="tablist" aria-label="Settings sections" className="flex flex-wrap border-b border-border">
         <button
           type="button"
+          role="tab"
+          aria-selected={activeTab === "mill"}
           onClick={() => setActiveTab("mill")}
           className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
             activeTab === "mill"
@@ -299,11 +308,13 @@ export function SettingsPage() {
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Building2Icon className="size-4" />
+          <Building2Icon className="size-4" aria-hidden="true" />
           Mill & Statutory GST
         </button>
         <button
           type="button"
+          role="tab"
+          aria-selected={activeTab === "users"}
           onClick={() => setActiveTab("users")}
           className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
             activeTab === "users"
@@ -311,11 +322,13 @@ export function SettingsPage() {
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
-          <UsersIcon className="size-4" />
+          <UsersIcon className="size-4" aria-hidden="true" />
           User & Role Management
         </button>
         <button
           type="button"
+          role="tab"
+          aria-selected={activeTab === "dpdp"}
           onClick={() => setActiveTab("dpdp")}
           className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
             activeTab === "dpdp"
@@ -323,7 +336,7 @@ export function SettingsPage() {
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
-          <LockIcon className="size-4" />
+          <LockIcon className="size-4" aria-hidden="true" />
           Data Protection (DPDP 2023)
         </button>
       </div>
@@ -567,6 +580,15 @@ export function SettingsPage() {
           </div>
 
           <div className="rounded-xl border bg-card overflow-hidden shadow-xs">
+            {isErrorUsers ? (
+              <ErrorState
+                title="Could not load users"
+                description={extractErrorMessage(errorUsers)}
+                error={errorUsers}
+                onRetry={() => refetchUsers()}
+                className="border-0 rounded-none"
+              />
+            ) : (
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30">
@@ -678,6 +700,7 @@ export function SettingsPage() {
                 )}
               </TableBody>
             </Table>
+            )}
           </div>
         </div>
       )}

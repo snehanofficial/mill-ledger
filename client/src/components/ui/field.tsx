@@ -26,7 +26,7 @@ function FieldDescription({ className, ...props }: React.ComponentProps<"p">) {
   return (
     <p
       data-slot="field-description"
-      className={cn("text-caption text-muted", className)}
+      className={cn("text-caption text-muted-foreground", className)}
       {...props}
     />
   );

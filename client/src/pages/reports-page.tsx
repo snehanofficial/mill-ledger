@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
-import { EmptyState, SkeletonTable } from "@/components/ui/loading-error-empty";
+import { EmptyState, ErrorState, SkeletonTable } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -137,6 +137,8 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   const {
     data: salesData,
     isLoading: loadingSales,
+    isError: isErrorSales,
+    error: errorSales,
     refetch: refetchSales,
   } = useQuery({
     queryKey: ["report-sales", filterQs],
@@ -148,7 +150,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   });
 
   // 2. GST Outward Summary
-  const { data: gstData, refetch: refetchGST } = useQuery({
+  const { data: gstData, isError: isErrorGST, error: errorGST, refetch: refetchGST } = useQuery({
     queryKey: ["report-gst", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/gst?${filterQs}`);
@@ -158,7 +160,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   });
 
   // 3. Stock Valuation Report
-  const { data: stockData, refetch: refetchStock } = useQuery({
+  const { data: stockData, isError: isErrorStock, error: errorStock, refetch: refetchStock } = useQuery({
     queryKey: ["report-stock", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/stock?${filterQs}`);
@@ -168,7 +170,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   });
 
   // 4. Production Report
-  const { data: prodData, refetch: refetchProd } = useQuery({
+  const { data: prodData, isError: isErrorProd, error: errorProd, refetch: refetchProd } = useQuery({
     queryKey: ["report-production", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/production?${filterQs}`);
@@ -178,7 +180,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   });
 
   // 5. Receivables Report
-  const { data: recData, refetch: refetchRec } = useQuery({
+  const { data: recData, isError: isErrorRec, error: errorRec, refetch: refetchRec } = useQuery({
     queryKey: ["report-receivables", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/receivables?${filterQs}`);
@@ -188,7 +190,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   });
 
   // 5b. Customer-wise Sales (IMP-020)
-  const { data: custSalesData, refetch: refetchCustSales } = useQuery({
+  const { data: custSalesData, isError: isErrorCustSales, error: errorCustSales, refetch: refetchCustSales } = useQuery({
     queryKey: ["report-customer-sales", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/customer-sales?${filterQs}`);
@@ -198,7 +200,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   });
 
   // 5c. Product-wise Sales (IMP-020)
-  const { data: prodSalesData, refetch: refetchProdSales } = useQuery({
+  const { data: prodSalesData, isError: isErrorProdSales, error: errorProdSales, refetch: refetchProdSales } = useQuery({
     queryKey: ["report-product-sales", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/product-sales?${filterQs}`);
@@ -208,7 +210,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   });
 
   // 5d. Stock Ledger (IMP-020)
-  const { data: stockLedgerData, refetch: refetchStockLedger } = useQuery({
+  const { data: stockLedgerData, isError: isErrorStockLedger, error: errorStockLedger, refetch: refetchStockLedger } = useQuery({
     queryKey: ["report-stock-ledger", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/stock-ledger?${filterQs}`);
@@ -218,7 +220,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   });
 
   // 6. Audit Report
-  const { data: auditData, refetch: refetchAudit } = useQuery({
+  const { data: auditData, isError: isErrorAudit, error: errorAudit, refetch: refetchAudit } = useQuery({
     queryKey: ["report-audit"],
     queryFn: async () => {
       const res = await apiClient.get("/reports/audit?organizationId=MILL");
@@ -226,6 +228,31 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     },
     enabled: effectiveTab === "audit",
   });
+
+  const activeReportError = (() => {
+    switch (effectiveTab) {
+      case "sales":
+        return isErrorSales ? { error: errorSales, refetch: refetchSales } : null;
+      case "gst":
+        return isErrorGST ? { error: errorGST, refetch: refetchGST } : null;
+      case "stock":
+        return isErrorStock ? { error: errorStock, refetch: refetchStock } : null;
+      case "production":
+        return isErrorProd ? { error: errorProd, refetch: refetchProd } : null;
+      case "receivables":
+        return isErrorRec ? { error: errorRec, refetch: refetchRec } : null;
+      case "customer-sales":
+        return isErrorCustSales ? { error: errorCustSales, refetch: refetchCustSales } : null;
+      case "product-sales":
+        return isErrorProdSales ? { error: errorProdSales, refetch: refetchProdSales } : null;
+      case "stock-ledger":
+        return isErrorStockLedger ? { error: errorStockLedger, refetch: refetchStockLedger } : null;
+      case "audit":
+        return isErrorAudit ? { error: errorAudit, refetch: refetchAudit } : null;
+      default:
+        return null;
+    }
+  })();
 
   const filteredAuditLogs = (auditData?.logs || []).filter((log: any) => {
     if (auditActionFilter !== "ALL" && log.action !== auditActionFilter) {
@@ -400,10 +427,13 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex flex-wrap border-b border-border">
+      <div role="tablist" aria-label="Report views" className="flex flex-wrap border-b border-border">
         {allowedTabs.map((tab) => (
           <button
             key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={effectiveTab === tab.id}
             data-testid={`report-tab-${tab.id}`}
             onClick={() => setActiveTab(tab.id)}
             className={`border-b-2 px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
@@ -417,6 +447,15 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
         ))}
       </div>
 
+      {activeReportError ? (
+        <ErrorState
+          title="Could not load report"
+          description={extractErrorMessage(activeReportError.error)}
+          error={activeReportError.error}
+          onRetry={() => activeReportError.refetch()}
+        />
+      ) : (
+        <>
       {/* Tab 1: Sales Register */}
       {effectiveTab === "sales" && (
         <div className="rounded-xl border bg-card shadow-xs">
@@ -1077,6 +1116,8 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
             </Table>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );
