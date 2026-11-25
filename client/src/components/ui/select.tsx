@@ -136,6 +136,7 @@ function SelectContent({
             <input
               ref={inputRef}
               type="text"
+              autoFocus
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleSearchKeyDown}
