@@ -448,6 +448,7 @@ export function DispatchPage() {
             action={
               canRecordDispatch ? (
                 <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setShowCreateModal(true)}
                   className="gap-1.5"
@@ -471,7 +472,7 @@ export function DispatchPage() {
                   description="Clear the search query to view all dispatches."
                   action={
                     <Button
-                      variant="outline"
+                      variant="tertiary"
                       size="sm"
                       onClick={() => setSearchQuery("")}
                     >
@@ -574,7 +575,7 @@ export function DispatchPage() {
                           className="min-h-32 py-6"
                           action={
                             <Button
-                              variant="outline"
+                              variant="tertiary"
                               size="sm"
                               onClick={() => setSearchQuery("")}
                             >

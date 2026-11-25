@@ -352,6 +352,7 @@ export function CustomersPage() {
             action={
               canManageCustomers ? (
                 <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setShowCreateModal(true)}
                   className="gap-1.5"
@@ -386,7 +387,7 @@ export function CustomersPage() {
                         className="min-h-32 py-6"
                         action={
                           <Button
-                            variant="outline"
+                            variant="tertiary"
                             size="sm"
                             onClick={() => setSearchQuery("")}
                           >

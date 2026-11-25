@@ -1033,7 +1033,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                         action={
                           auditSearch || auditActionFilter !== "ALL" ? (
                             <Button
-                              variant="outline"
+                              variant="tertiary"
                               size="sm"
                               onClick={() => {
                                 setAuditSearch("");

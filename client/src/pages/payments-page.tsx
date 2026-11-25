@@ -595,6 +595,7 @@ export function PaymentsPage() {
               action={
                 canRecordPayment ? (
                   <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => setShowPaymentModal(true)}
                     className="gap-1.5"
@@ -618,7 +619,7 @@ export function PaymentsPage() {
                     description="Clear the search or payment mode filter to view all payments."
                     action={
                       <Button
-                        variant="outline"
+                        variant="tertiary"
                         size="sm"
                         onClick={() => {
                           setSearchQuery("");
@@ -728,7 +729,7 @@ export function PaymentsPage() {
                           className="min-h-32 py-6"
                           action={
                             <Button
-                              variant="outline"
+                              variant="tertiary"
                               size="sm"
                               onClick={() => {
                                 setSearchQuery("");
@@ -889,7 +890,7 @@ export function PaymentsPage() {
                     description="Clear the search query to view all customer receivables."
                     action={
                       <Button
-                        variant="outline"
+                        variant="tertiary"
                         size="sm"
                         onClick={() => setSearchQuery("")}
                       >
@@ -999,7 +1000,7 @@ export function PaymentsPage() {
                           className="min-h-32 py-6"
                           action={
                             <Button
-                              variant="outline"
+                              variant="tertiary"
                               size="sm"
                               onClick={() => setSearchQuery("")}
                             >

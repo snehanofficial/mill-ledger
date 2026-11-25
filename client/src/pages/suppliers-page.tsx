@@ -347,6 +347,7 @@ export function SuppliersPage() {
               suppliers.length === 0 ? (
                 canManageSuppliers ? (
                   <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => setShowAddModal(true)}
                     className="gap-1.5"
@@ -357,7 +358,7 @@ export function SuppliersPage() {
                 ) : undefined
               ) : (
                 <Button
-                  variant="outline"
+                  variant="tertiary"
                   size="sm"
                   onClick={() => {
                     setSearchQuery("");

@@ -417,6 +417,7 @@ export function StockPage() {
             action={
               canManageInventory ? (
                 <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => {
                     setItemSku("");
@@ -448,7 +449,7 @@ export function StockPage() {
                   description="Clear the search or category filter to view all stock items."
                   action={
                     <Button
-                      variant="outline"
+                      variant="tertiary"
                       size="sm"
                       onClick={() => {
                         setSearchQuery("");
@@ -590,7 +591,7 @@ export function StockPage() {
                           className="min-h-32 py-6"
                           action={
                             <Button
-                              variant="outline"
+                              variant="tertiary"
                               size="sm"
                               onClick={() => {
                                 setSearchQuery("");

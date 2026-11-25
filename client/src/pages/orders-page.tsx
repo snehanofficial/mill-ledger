@@ -1023,6 +1023,7 @@ export function OrdersPage() {
             <p>No sales orders created yet.</p>
             {canCreateOrder && (
               <Button
+                variant="outline"
                 size="sm"
                 onClick={openNewOrderModal}
                 className="gap-2"
@@ -1170,7 +1171,7 @@ export function OrdersPage() {
                     description="Clear the search or status filter to view all orders."
                     action={
                       <Button
-                        variant="outline"
+                        variant="tertiary"
                         size="sm"
                         onClick={() => {
                           setSearchQuery("");
@@ -1487,7 +1488,7 @@ export function OrdersPage() {
                             className="min-h-32 py-6"
                             action={
                               <Button
-                                variant="outline"
+                                variant="tertiary"
                                 size="sm"
                                 onClick={() => {
                                   setSearchQuery("");

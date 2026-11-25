@@ -329,6 +329,7 @@ export function PurchasesPage() {
             action={
               canRecordPurchase ? (
                 <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setShowModal(true)}
                   className="gap-1.5"
@@ -364,7 +365,7 @@ export function PurchasesPage() {
                       className="min-h-32 py-6"
                       action={
                         <Button
-                          variant="outline"
+                          variant="tertiary"
                           size="sm"
                           onClick={() => setSearchQuery("")}
                         >

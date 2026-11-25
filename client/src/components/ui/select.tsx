@@ -194,7 +194,7 @@ function SelectContent({
                       setSearchQuery("");
                       inputRef.current?.focus();
                     }}
-                    className="inline-flex min-h-7 cursor-pointer items-center justify-center rounded-small border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                    className="inline-flex min-h-7 cursor-pointer items-center justify-center rounded-small px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
                   >
                     Clear search
                   </button>

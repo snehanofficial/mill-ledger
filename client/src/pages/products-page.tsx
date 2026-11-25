@@ -618,14 +618,14 @@ export function ProductsPage() {
               </p>
             </div>
             {products.length === 0 && canManage ? (
-              <Button size="sm" onClick={openAddProductModal} className="gap-1.5">
+              <Button variant="outline" size="sm" onClick={openAddProductModal} className="gap-1.5">
                 <PlusCircleIcon aria-hidden="true" className="size-4" />
                 Add Product
               </Button>
             ) : (
               (searchQuery || statusFilter !== "ALL") && (
                 <Button
-                  variant="outline"
+                  variant="tertiary"
                   size="sm"
                   onClick={() => {
                     setSearchQuery("");
@@ -931,7 +931,7 @@ export function ProductsPage() {
                             <span>No variants match the current filter.</span>
                             {(searchQuery || statusFilter !== "ALL") && (
                               <Button
-                                variant="outline"
+                                variant="tertiary"
                                 size="sm"
                                 onClick={() => {
                                   setSearchQuery("");

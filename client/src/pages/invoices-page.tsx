@@ -412,6 +412,7 @@ export function InvoicesPage() {
             action={
               canCreateInvoice ? (
                 <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setShowCreateInvoiceModal(true)}
                   className="gap-1.5"
@@ -435,7 +436,7 @@ export function InvoicesPage() {
                   description="Clear the search or status filter to view all invoices."
                   action={
                     <Button
-                      variant="outline"
+                      variant="tertiary"
                       size="sm"
                       onClick={() => {
                         setSearchQuery("");
@@ -564,7 +565,7 @@ export function InvoicesPage() {
                           className="min-h-32 py-6"
                           action={
                             <Button
-                              variant="outline"
+                              variant="tertiary"
                               size="sm"
                               onClick={() => {
                                 setSearchQuery("");

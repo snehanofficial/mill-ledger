@@ -557,6 +557,7 @@ export function ProductionPage() {
           </Button>
           {canRecordProduction && (
               <Button
+                variant="outline"
                 size="sm"
                 onClick={() => setShowNewBatchModal(true)}
                 className="gap-2"
@@ -596,7 +597,7 @@ export function ProductionPage() {
                         className="min-h-32 py-6"
                         action={
                           <Button
-                            variant="outline"
+                            variant="tertiary"
                             size="sm"
                             onClick={() => setSearchQuery("")}
                           >
