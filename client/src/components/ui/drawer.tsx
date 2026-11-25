@@ -50,7 +50,10 @@ function DrawerDescription(
   props: React.ComponentProps<typeof DrawerPrimitive.Description>,
 ) {
   return (
-    <DrawerPrimitive.Description className="text-body text-muted" {...props} />
+    <DrawerPrimitive.Description
+      className="text-body text-muted-foreground"
+      {...props}
+    />
   );
 }
 function DrawerFooter({ className, ...props }: React.ComponentProps<"div">) {

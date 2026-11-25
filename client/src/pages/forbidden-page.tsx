@@ -45,7 +45,7 @@ export function ForbiddenPage({ requiredRoles }: ForbiddenPageProps) {
   };
 
   return (
-    <main
+    <div
       role="region"
       aria-labelledby="forbidden-heading"
       className="flex min-h-[calc(100vh-4rem)] flex-1 flex-col items-center justify-center p-6 bg-background text-foreground"
@@ -97,6 +97,6 @@ export function ForbiddenPage({ requiredRoles }: ForbiddenPageProps) {
           </Button>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

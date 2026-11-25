@@ -489,7 +489,7 @@ export function OrdersPage() {
           : status;
 
       const optimisticOrder: SalesOrder = {
-        id: `optimistic-${Date.now()}`,
+        id: `optimistic-${optimisticStatus}-${customerState}`,
         orderNumber: `SO-${new Date().getFullYear()}-PEND`,
         status: optimisticStatus,
         fulfilmentStatus: "UNFULFILLED",
@@ -2150,7 +2150,7 @@ export function OrdersPage() {
             <DialogHeader>
               <DialogTitle>Edit Draft Order</DialogTitle>
               <DialogDescription>
-                {editingDraftOrder.orderNumber} — {editingDraftOrder.customer.name}
+                {editingDraftOrder.orderNumber} · {editingDraftOrder.customer.name}
               </DialogDescription>
             </DialogHeader>
             <div className="mt-2 flex flex-col gap-4">

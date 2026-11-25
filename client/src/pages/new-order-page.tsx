@@ -398,7 +398,7 @@ export function NewOrderPage() {
                 <SelectContent searchable searchPlaceholder="Search customers...">
                   {customersList.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.name} ({c.code}) — {c.state}
+                      {c.name} ({c.code}) · {c.state}
                     </SelectItem>
                   ))}
                 </SelectContent>

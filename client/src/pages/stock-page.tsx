@@ -875,7 +875,7 @@ export function StockPage() {
                 <SelectContent searchable searchPlaceholder="Search inventory items...">
                   {balances.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
-                      {b.name} ({b.sku}) — On Hand: {b.onHand}
+                      {b.name} ({b.sku}) · On Hand: {b.onHand}
                     </SelectItem>
                   ))}
                 </SelectContent>

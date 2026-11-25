@@ -48,7 +48,7 @@ function SheetContent({
         {children}
         <DialogPrimitive.Close
           aria-label="Close panel"
-          className="absolute right-4 top-4 inline-flex size-11 items-center justify-center rounded-control text-muted hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/30"
+          className="absolute right-3 top-3 inline-flex size-11 items-center justify-center rounded-control text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:outline-none"
         >
           <XIcon className="size-5" aria-hidden="true" />
         </DialogPrimitive.Close>
@@ -76,7 +76,10 @@ function SheetDescription(
   props: React.ComponentProps<typeof DialogPrimitive.Description>,
 ) {
   return (
-    <DialogPrimitive.Description className="text-body text-muted" {...props} />
+    <DialogPrimitive.Description
+      className="text-body text-muted-foreground"
+      {...props}
+    />
   );
 }
 

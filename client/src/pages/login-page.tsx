@@ -99,6 +99,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const isSessionExpired = Boolean(
     (location.state as { sessionExpired?: boolean })?.sessionExpired,
   );
@@ -133,20 +134,43 @@ export function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setErrorMessage(null);
 
     const cleanEmail = email.trim();
+    const nextFieldErrors: { email?: string; password?: string } = {};
 
-    if (!cleanEmail || !password) {
-      setIsSubmitting(false);
+    if (!cleanEmail) {
+      nextFieldErrors.email =
+        language === "ta" ? "மின்னஞ்சல் தேவை" : "Email address is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      nextFieldErrors.email =
+        language === "ta"
+          ? "சரியான மின்னஞ்சலை உள்ளிடவும்"
+          : "Enter a valid email address";
+    }
+
+    if (!password) {
+      nextFieldErrors.password =
+        language === "ta" ? "கடவுச்சொல் தேவை" : "Password is required";
+    }
+
+    if (nextFieldErrors.email || nextFieldErrors.password) {
+      setFieldErrors(nextFieldErrors);
       setErrorMessage(
         language === "ta"
           ? "மின்னஞ்சல் மற்றும் கடவுச்சொல் தேவை"
           : "Email and password are required",
       );
+      if (nextFieldErrors.email) {
+        document.getElementById("email")?.focus();
+      } else if (nextFieldErrors.password) {
+        document.getElementById("password")?.focus();
+      }
       return;
     }
+
+    setFieldErrors({});
+    setIsSubmitting(true);
 
     try {
       const authUser = await authClient.signIn({
@@ -293,15 +317,25 @@ export function LoginPage() {
                     autoCapitalize="none"
                     spellCheck={false}
                     required
+                    aria-invalid={Boolean(fieldErrors.email)}
+                    aria-describedby={fieldErrors.email ? "email-error" : undefined}
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
+                      if (fieldErrors.email) {
+                        setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                      }
                       if (errorMessage) setErrorMessage(null);
                     }}
                     className="pl-9"
                     placeholder="user@millledger.local"
                   />
                 </div>
+                {fieldErrors.email && (
+                  <p id="email-error" className="text-xs font-medium text-destructive">
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1.5">
@@ -321,9 +355,14 @@ export function LoginPage() {
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     required
+                    aria-invalid={Boolean(fieldErrors.password)}
+                    aria-describedby={fieldErrors.password ? "password-error" : undefined}
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
+                      if (fieldErrors.password) {
+                        setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                      }
                       if (errorMessage) setErrorMessage(null);
                     }}
                     className="pl-9 pr-10"
@@ -350,6 +389,11 @@ export function LoginPage() {
                     )}
                   </button>
                 </div>
+                {fieldErrors.password && (
+                  <p id="password-error" className="text-xs font-medium text-destructive">
+                    {fieldErrors.password}
+                  </p>
+                )}
               </div>
 
               <Button

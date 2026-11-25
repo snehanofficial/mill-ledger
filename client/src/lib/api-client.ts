@@ -3,6 +3,7 @@ import axios from "axios";
 export const apiClient = axios.create({
   baseURL: "/api/v1",
   withCredentials: true,
+  timeout: 30_000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -33,14 +34,24 @@ export function extractErrorMessage(
 ): string {
   if (!error || typeof error !== "object") return fallback;
   const e = error as {
-    response?: { data?: { message?: unknown } };
+    code?: unknown;
+    response?: { status?: number; data?: { message?: unknown } };
     message?: unknown;
   };
+  if (e.code === "ECONNABORTED") {
+    return "The request timed out. Please check your connection and try again.";
+  }
+  if (e.response?.status === 429) {
+    return "Too many requests. Please wait a moment before trying again.";
+  }
   if (
     typeof e.response?.data?.message === "string" &&
     e.response.data.message.trim().length > 0
   ) {
     return e.response.data.message;
+  }
+  if (!e.response && e.message === "Network Error") {
+    return "Unable to reach the server. Check your internet connection and try again.";
   }
   if (typeof e.message === "string" && e.message.trim().length > 0) {
     return e.message;

@@ -124,7 +124,12 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { HelpGuideModal } from "@/components/help/help-guide-modal";
@@ -1781,13 +1786,16 @@ export function AuthenticatedShell({
             side="right"
             className="flex w-84 max-w-full flex-col p-0"
           >
-            <div className="flex h-14 items-center justify-between border-b border-border px-5">
+            <div className="flex h-14 items-center justify-between border-b border-border px-5 pr-14">
               <div className="flex items-center gap-2">
                 <BellIcon
                   className="size-4 text-foreground"
                   aria-hidden="true"
                 />
-                <h2 className="text-sm font-semibold">Notifications</h2>
+                <SheetTitle className="text-sm font-semibold">Notifications</SheetTitle>
+                <SheetDescription className="sr-only">
+                  Recent operational alerts and system notifications
+                </SheetDescription>
                 {unreadCount > 0 && (
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 text-2xs font-bold text-primary">
                     {unreadCount}
@@ -1837,11 +1845,12 @@ export function AuthenticatedShell({
               ) : (
                 <div className="flex flex-col gap-2.5">
                   {notifications.map((n) => (
-                    <div
+                    <button
+                      type="button"
                       key={n.id}
                       onClick={() => markAsRead(n.id)}
                       className={cn(
-                        "group relative flex flex-col gap-1 rounded-lg border p-3 text-left transition-colors cursor-pointer",
+                        "group relative flex w-full flex-col gap-1 rounded-lg border p-3 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         n.read
                           ? "border-border/60 bg-card/60 opacity-80"
                           : "border-primary/30 bg-card shadow-xs",
@@ -1893,7 +1902,7 @@ export function AuthenticatedShell({
                         </span>
                         <span className="capitalize">{n.type}</span>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}

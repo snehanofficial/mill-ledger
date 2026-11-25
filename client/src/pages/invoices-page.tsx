@@ -1082,7 +1082,7 @@ export function InvoicesPage() {
                   <SelectContent searchable searchPlaceholder="Search orders or customers...">
                     {eligibleOrders.map((ord) => (
                       <SelectItem key={ord.id} value={ord.id}>
-                        {ord.orderNumber} — {ord.customer.name} (
+                        {ord.orderNumber} · {ord.customer.name} (
                         {formatINR(ord.totalAmount)})
                       </SelectItem>
                     ))}

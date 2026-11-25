@@ -23,7 +23,10 @@ function EmptyTitle({ className, ...props }: React.ComponentProps<"h3">) {
 }
 function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
   return (
-    <p className={cn("max-w-md text-body text-muted", className)} {...props} />
+    <p
+      className={cn("max-w-md text-body text-muted-foreground", className)}
+      {...props}
+    />
   );
 }
 
