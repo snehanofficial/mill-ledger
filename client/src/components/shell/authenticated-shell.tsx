@@ -57,7 +57,11 @@ import {
   PlayIcon,
   InfoIcon,
   Trash2Icon,
+  DownloadIcon,
+  HardDriveIcon,
+  XIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { useLanguage } from "@/lib/i18n";
 import { useNotifications } from "@/lib/notifications-store";
@@ -136,6 +140,7 @@ import { useBreadcrumbs } from "./use-breadcrumbs";
 import { type SyncState } from "./use-connection-status";
 import { useSyncManager } from "@/offline/use-offline";
 import { DeviceOutboxSheet } from "./device-outbox-sheet";
+import { usePwaStatus } from "@/hooks/use-pwa-status";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1019,6 +1024,9 @@ interface StickyHeaderProps {
   syncState: SyncState;
   onOpenOutbox?: () => void;
   pendingCount?: number;
+  canInstallApp?: boolean;
+  isInstallingApp?: boolean;
+  onInstallApp?: () => void;
 }
 
 function StickyHeader({
@@ -1031,6 +1039,9 @@ function StickyHeader({
   syncState,
   onOpenOutbox,
   pendingCount,
+  canInstallApp,
+  isInstallingApp,
+  onInstallApp,
 }: StickyHeaderProps) {
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
   const { language, setLanguage, t } = useLanguage();
@@ -1147,6 +1158,22 @@ function StickyHeader({
             pendingCount={pendingCount}
           />
         </div>
+
+        {canInstallApp && onInstallApp && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onInstallApp}
+            aria-disabled={isInstallingApp || undefined}
+            aria-label={t("Install MillLedger app", "Install MillLedger app")}
+            title={t("Install MillLedger app", "Install MillLedger app")}
+            className="h-8 gap-1.5 px-2.5 text-xs font-medium cursor-pointer"
+          >
+            <DownloadIcon className="size-3.5 shrink-0" aria-hidden="true" />
+            <span className="hidden sm:inline">{t("Install", "Install")}</span>
+          </Button>
+        )}
 
         <HeaderSearchButton onOpen={onSearchOpen} />
 
@@ -1433,6 +1460,51 @@ export function AuthenticatedShell({
 
   const syncManager = useSyncManager(user.id);
   const { syncState, isOnline, pendingCount, conflictCount } = syncManager;
+  const pwaStatus = usePwaStatus();
+  const [pwaPromptDismissed, setPwaPromptDismissed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return sessionStorage.getItem("mill_ledger_pwa_prompt_dismissed") === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const handleDismissPwaPrompt = useCallback(() => {
+    setPwaPromptDismissed(true);
+    try {
+      sessionStorage.setItem("mill_ledger_pwa_prompt_dismissed", "1");
+    } catch {
+      // Ignore storage access errors
+    }
+  }, []);
+
+  const handleInstallApp = useCallback(async () => {
+    const outcome = await pwaStatus.promptInstall();
+    if (outcome === "accepted") {
+      toast.success("MillLedger installed on this device.");
+    } else if (outcome === "dismissed") {
+      toast.info("App installation canceled.");
+    } else {
+      toast.error("App installation could not start in this browser.");
+    }
+  }, [pwaStatus]);
+
+  const handleRequestStorage = useCallback(async () => {
+    const granted = await pwaStatus.requestStoragePersistence();
+    if (granted) {
+      toast.success("Persistent offline storage enabled.");
+    } else {
+      toast.info(
+        "Browser kept best-effort storage. Installing the app or bookmarking helps grant persistence.",
+      );
+    }
+  }, [pwaStatus]);
+
+  const showPwaBanner =
+    !pwaPromptDismissed &&
+    (pwaStatus.canInstall ||
+      (pwaStatus.isStorageSupported && pwaStatus.storagePersisted === false));
 
   const handleSafeSignOut = () => {
     if (pendingCount > 0) {
@@ -1507,7 +1579,73 @@ export function AuthenticatedShell({
             syncState={syncState}
             onOpenOutbox={handleOpenOutbox}
             pendingCount={pendingCount}
+            canInstallApp={pwaStatus.canInstall}
+            isInstallingApp={pwaStatus.isInstalling}
+            onInstallApp={handleInstallApp}
           />
+
+          {showPwaBanner && (
+            <div
+              role="region"
+              aria-label="App installation and offline storage"
+              className="border-b border-border bg-muted/50 px-4 py-2 text-xs flex flex-wrap items-center justify-between gap-2 text-foreground shrink-0"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <HardDriveIcon
+                  className="size-4 shrink-0 text-primary"
+                  aria-hidden="true"
+                />
+                <span>
+                  {pwaStatus.canInstall && pwaStatus.storagePersisted === false
+                    ? "Install MillLedger as an app and enable persistent storage so offline orders are not cleared by the browser."
+                    : pwaStatus.canInstall
+                      ? "Install MillLedger on this device for quick launch and reliable offline access."
+                      : "Enable persistent storage so your browser does not clear offline orders under disk pressure."}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {pwaStatus.canInstall && (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    onClick={handleInstallApp}
+                    aria-disabled={pwaStatus.isInstalling || undefined}
+                    className="h-8 min-h-[32px] px-2.5 text-xs gap-1.5 cursor-pointer sm:h-7 sm:min-h-[28px]"
+                  >
+                    <DownloadIcon className="size-3.5" aria-hidden="true" />
+                    {pwaStatus.isInstalling ? "Installing..." : "Install app"}
+                  </Button>
+                )}
+                {pwaStatus.isStorageSupported &&
+                  pwaStatus.storagePersisted === false && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRequestStorage}
+                      aria-disabled={pwaStatus.isRequestingStorage || undefined}
+                      className="h-8 min-h-[32px] px-2.5 text-xs gap-1.5 cursor-pointer sm:h-7 sm:min-h-[28px]"
+                    >
+                      <HardDriveIcon className="size-3.5" aria-hidden="true" />
+                      {pwaStatus.isRequestingStorage
+                        ? "Requesting..."
+                        : "Enable persistent storage"}
+                    </Button>
+                  )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDismissPwaPrompt}
+                  aria-label="Dismiss install and storage prompt"
+                  className="size-8 sm:size-7 text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <XIcon className="size-3.5" aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Offline / Pending Outbox Notification Banner */}
           {(!isOnline || pendingCount > 0 || conflictCount > 0) && (
@@ -1594,6 +1732,7 @@ export function AuthenticatedShell({
             open={outboxOpen}
             onOpenChange={setOutboxOpen}
             userId={user.id}
+            pwaStatus={pwaStatus}
           />
         )}
 

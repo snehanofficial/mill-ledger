@@ -11,13 +11,18 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
+      devOptions: {
+        enabled: true,
+      },
       manifest: {
+        id: "/",
         name: "MillLedger ERP",
         short_name: "MillLedger",
         description: "Order-to-Audit System for a Small Food Manufacturer",
         theme_color: "#176b54",
         background_color: "#fcfdfc",
         display: "standalone",
+        scope: "/",
         start_url: "/",
         icons: [
           {

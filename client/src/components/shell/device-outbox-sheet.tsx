@@ -17,9 +17,12 @@ import {
   DatabaseIcon,
   LayersIcon,
   ClockIcon,
+  DownloadIcon,
+  HardDriveIcon,
 } from "lucide-react";
 import { useSyncManager } from "@/offline/use-offline";
 import type { OfflineOrder } from "@/offline/db";
+import type { PwaStatus } from "@/hooks/use-pwa-status";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { toast } from "sonner";
 import { formatINR, formatTime } from "@/lib/formatters";
@@ -29,12 +32,14 @@ interface DeviceOutboxSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userId: string;
+  pwaStatus?: PwaStatus;
 }
 
 export function DeviceOutboxSheet({
   open,
   onOpenChange,
   userId,
+  pwaStatus,
 }: DeviceOutboxSheetProps) {
   const { t } = useLanguage();
   const {
@@ -149,6 +154,65 @@ export function DeviceOutboxSheet({
               </Button>
             )}
           </div>
+
+          {pwaStatus &&
+            (pwaStatus.canInstall || pwaStatus.isStorageSupported) && (
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 px-3 py-2 text-xs">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <HardDriveIcon className="size-3.5 shrink-0" aria-hidden="true" />
+                  <span>
+                    {pwaStatus.storagePersisted === true
+                      ? t("Storage: Persistent")
+                      : pwaStatus.storagePersisted === false
+                        ? t("Storage: Best-effort")
+                        : t("Storage: Checking...")}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {pwaStatus.storagePersisted === false && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        const granted = await pwaStatus.requestStoragePersistence();
+                        if (granted) {
+                          toast.success("Persistent offline storage enabled.");
+                        } else {
+                          toast.info(
+                            "Browser kept best-effort storage. Installing the app helps grant persistence.",
+                          );
+                        }
+                      }}
+                      aria-disabled={pwaStatus.isRequestingStorage || undefined}
+                      className="h-7 px-2 text-xs cursor-pointer"
+                    >
+                      {pwaStatus.isRequestingStorage
+                        ? t("Requesting...")
+                        : t("Persist storage")}
+                    </Button>
+                  )}
+                  {pwaStatus.canInstall && (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      onClick={async () => {
+                        const outcome = await pwaStatus.promptInstall();
+                        if (outcome === "accepted") {
+                          toast.success("MillLedger installed on this device.");
+                        }
+                      }}
+                      aria-disabled={pwaStatus.isInstalling || undefined}
+                      className="h-7 gap-1 px-2 text-xs cursor-pointer"
+                    >
+                      <DownloadIcon className="size-3" aria-hidden="true" />
+                      {t("Install app")}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
         </div>
 
         {/* Content list */}
