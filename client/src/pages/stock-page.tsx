@@ -834,7 +834,7 @@ export function StockPage() {
             </div>
             <div className="flex flex-col gap-1">
               <Label htmlFor="adj-qty" className="text-xs">Adjustment Quantity (+ or -)</Label>
-              <Input id="adj-qty" type="number" step="0.01" value={adjQty} onChange={(e) => setAdjQty(Number(e.target.value))} />
+              <Input id="adj-qty" type="number" step="1" value={adjQty} onChange={(e) => setAdjQty(Number(e.target.value))} />
             </div>
             <div className="flex flex-col gap-1">
               <Label htmlFor="adj-reason" className="text-xs">Reason</Label>
