@@ -1039,7 +1039,7 @@ export function InvoicesPage() {
                   >
                     <SelectValue placeholder="Select an approved order..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable searchPlaceholder="Search orders or customers...">
                     {eligibleOrders.map((ord) => (
                       <SelectItem key={ord.id} value={ord.id}>
                         {ord.orderNumber} — {ord.customer.name} (

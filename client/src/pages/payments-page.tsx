@@ -1224,7 +1224,7 @@ export function PaymentsPage() {
                   >
                     <SelectValue placeholder="Choose customer..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable searchPlaceholder="Search customers...">
                     {receivables.map((cust) => (
                       <SelectItem key={cust.customerId} value={cust.customerId}>
                         {cust.customerName} ({cust.customerCode}) | Outstanding:{" "}
@@ -1511,7 +1511,7 @@ export function PaymentsPage() {
                   <SelectTrigger className="h-9 text-xs">
                     <SelectValue placeholder="Select invoice..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable searchPlaceholder="Search invoices...">
                     {(postAllocInvoicesData?.invoices ?? [])
                       .filter((inv) => Number(inv.outstandingAmount) > 0)
                       .map((inv) => (

@@ -730,7 +730,7 @@ export function CustomersPage() {
                       <SelectTrigger className="h-8 flex-1 text-xs">
                         <SelectValue placeholder="Select salesman to assign..." />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent searchable searchPlaceholder="Search salesmen...">
                         {salesmen.map((s) => (
                           <SelectItem key={s.id} value={s.id}>
                             {s.name} ({s.email})

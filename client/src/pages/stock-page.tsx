@@ -823,7 +823,7 @@ export function StockPage() {
               <Label className="text-xs">Inventory Item</Label>
               <Select value={adjItemId} onValueChange={setAdjItemId}>
                 <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder="Search inventory items...">
                   {balances.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
                       {b.name} ({b.sku}) — On Hand: {b.onHand}

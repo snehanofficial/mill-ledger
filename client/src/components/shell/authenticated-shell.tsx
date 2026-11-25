@@ -496,7 +496,7 @@ function AppNavItem({ item, pathname }: NavItemProps) {
               {translatedLabel}
             </span>
             <ChevronRightIcon
-              className="ml-auto size-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden transition-transform duration-200 group-data-open/collapsible:rotate-90"
+              className="ml-auto size-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden transition-transform duration-(--ml-motion-standard) ease-standard group-data-open/collapsible:rotate-90"
               aria-hidden
             />
           </SidebarMenuButton>
@@ -1454,7 +1454,7 @@ export function AuthenticatedShell({
   }, []);
 
   return (
-    <TooltipProvider delayDuration={100}>
+    <TooltipProvider delayDuration={0}>
       <SidebarProvider userId={user.id}>
         {/* Skip-to-main for keyboard accessibility (WCAG 2.2 SC 2.4.1) */}
         <a

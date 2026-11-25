@@ -726,7 +726,7 @@ export function DispatchPage() {
                     >
                       <SelectValue placeholder="Choose an order to dispatch..." />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent searchable searchPlaceholder="Search orders or customers...">
                       {eligibleOrders.map((order) => {
                         const totalQty = order.lines.reduce(
                           (sum, l) =>

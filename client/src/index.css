@@ -99,6 +99,21 @@
   --shadow-menu: 0 4px 16px rgba(0, 0, 0, 0.08);
   --shadow-modal: 0 16px 36px rgba(0, 0, 0, 0.16);
 
+  /* Motion tokens from docs/design/milledger-design-system.json */
+  --ml-motion-instant: 0ms;
+  --ml-motion-press: 80ms;
+  --ml-motion-micro: 100ms;
+  --ml-motion-fast: 120ms;
+  --ml-motion-standard: 160ms;
+  --ml-motion-panel-enter: 220ms;
+  --ml-motion-overlay-enter: 240ms;
+  --ml-motion-overlay-exit: 140ms;
+  --ml-motion-toast-enter: 160ms;
+  --ml-motion-toast-exit: 120ms;
+  --ml-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ml-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --ml-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
   --font-sans:
     "Geist Variable", "Noto Sans Tamil", Inter, ui-sans-serif, system-ui,
     sans-serif;
@@ -218,6 +233,12 @@
   --color-neutral: var(--neutral);
   --color-neutral-bg: var(--neutral-bg);
   --color-neutral-border: var(--neutral-border);
+
+  --default-transition-duration: var(--ml-motion-micro);
+  --default-transition-timing-function: var(--ml-ease-standard);
+  --ease-standard: var(--ml-ease-standard);
+  --ease-enter: var(--ml-ease-enter);
+  --ease-exit: var(--ml-ease-exit);
 }
 
 @utility rounded-control {
@@ -361,10 +382,10 @@ select {
   overflow: hidden;
 }
 [data-radix-collapsible-content][data-state="open"] {
-  animation: collapsible-open 160ms cubic-bezier(0.2, 0, 0, 1);
+  animation: collapsible-open var(--ml-motion-standard) var(--ml-ease-standard);
 }
 [data-radix-collapsible-content][data-state="closed"] {
-  animation: collapsible-close 120ms cubic-bezier(0.4, 0, 1, 1);
+  animation: collapsible-close var(--ml-motion-fast) var(--ml-ease-exit);
 }
 /* F-063: GPU-composited accordion transitions avoiding layout-thrashing height mutation */
 @keyframes collapsible-open {

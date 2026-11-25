@@ -27,7 +27,7 @@ export function DomainTooltip({
   const content = explanation || (term ? DOMAIN_GLOSSARY[term] : "");
 
   return (
-    <TooltipProvider delayDuration={150}>
+    <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <span

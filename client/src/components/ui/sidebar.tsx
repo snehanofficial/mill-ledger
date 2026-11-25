@@ -243,7 +243,7 @@ export function Sidebar({
           aria-hidden={!openMobile}
           className={cn(
             "fixed inset-y-0 left-0 z-50 flex flex-col bg-sidebar border-r border-sidebar-border shadow-2xl",
-            "transition-transform duration-220 motion-reduce:transition-none",
+            "transition-transform duration-(--ml-motion-panel-enter) ease-enter motion-reduce:transition-none",
             openMobile
               ? "translate-x-0 visible"
               : "-translate-x-full invisible",
@@ -711,7 +711,7 @@ export function SidebarRail({ className, ...props }: ComponentProps<"button">) {
       title="Resize sidebar"
       className={cn(
         "absolute inset-y-0 z-20 hidden w-6 min-w-6 -translate-x-1/2 cursor-col-resize",
-        "transition-colors duration-150",
+        "transition-colors duration-(--ml-motion-micro) ease-standard",
         "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5",
         "hover:after:bg-border group-data-[side=left]:right-0 md:flex",
         className,

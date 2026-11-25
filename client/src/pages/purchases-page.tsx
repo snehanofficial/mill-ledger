@@ -462,7 +462,7 @@ export function PurchasesPage() {
                   <SelectTrigger id="purchase-supplier-select" className="font-medium">
                     <SelectValue placeholder="Supplier 1 (SUP-FLOUR-1)" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable searchPlaceholder="Search suppliers...">
                     {suppliers.map((s) => (
                       <SelectItem key={s.id} value={s.id}>
                         {s.name} ({s.code})
@@ -521,7 +521,7 @@ export function PurchasesPage() {
                   <SelectTrigger id="purchase-item-select" className="font-medium">
                     <SelectValue placeholder="Flour (RM-FLOUR)" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable searchPlaceholder="Search raw materials...">
                     {rawItems.map((item) => (
                       <SelectItem key={item.id} value={item.id}>
                         {item.name} ({item.sku}) — {item.baseUom?.symbol || "units"}

@@ -372,7 +372,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
               <SelectTrigger id="report-customer-filter" className="h-8 w-48 text-xs">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder="Search customers...">
                 <SelectItem value="ALL">All Customers</SelectItem>
                 {(customersListData?.customers ?? []).map((c) => (
                   <SelectItem key={c.id} value={c.id}>

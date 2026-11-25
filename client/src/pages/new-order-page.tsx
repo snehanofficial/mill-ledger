@@ -395,7 +395,7 @@ export function NewOrderPage() {
                 <SelectTrigger id={customerSelectId} className="font-medium">
                   <SelectValue placeholder="Select customer..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder="Search customers...">
                   {customersList.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name} ({c.code}) — {c.state}
@@ -520,7 +520,7 @@ export function NewOrderPage() {
                   return (
                     <article
                       key={product.id}
-                      className={`product-card group relative flex flex-col justify-between rounded-xl border bg-card p-4 sm:p-5 shadow-xs transition-all duration-200 hover:shadow-md ${
+                      className={`product-card group relative flex flex-col justify-between rounded-xl border bg-card p-4 sm:p-5 shadow-xs transition-[border-color,box-shadow] duration-(--ml-motion-micro) ease-standard hover:shadow-md ${
                         hasOrder
                           ? "border-primary/40 ring-1 ring-primary/20 bg-primary/[0.02]"
                           : "border-border"
@@ -534,7 +534,7 @@ export function NewOrderPage() {
                             alt={`${product.name} packaging pouch`}
                             width={112}
                             height={112}
-                            className="h-28 w-28 object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-xs"
+                            className="h-28 w-28 object-contain transition-transform duration-(--ml-motion-fast) ease-enter group-hover:scale-105 drop-shadow-xs"
                           />
                       <div className="absolute top-2 right-2">
                         {availableStock > 0 ? (

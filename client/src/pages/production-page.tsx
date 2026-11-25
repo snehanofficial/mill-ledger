@@ -747,7 +747,7 @@ export function ProductionPage() {
                   <SelectTrigger id="production-recipe-select" className="font-medium">
                     <SelectValue placeholder="Murukku 200 g (Standard BOM)" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable searchPlaceholder="Search BOM recipes...">
                     {(recipesData?.recipes || []).map((r) => (
                       <SelectItem key={r.id} value={r.id}>
                         {r.name} — Target: {r.expectedOutputQty} pkts

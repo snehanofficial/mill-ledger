@@ -1700,7 +1700,7 @@ export function OrdersPage() {
                 <SelectTrigger id="order-customer-select" className="font-medium">
                   <SelectValue placeholder="Select customer..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent searchable searchPlaceholder="Search customers...">
                   {customersList.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name} ({c?.state || "Tamil Nadu"},{" "}
@@ -1788,7 +1788,7 @@ export function OrdersPage() {
                             >
                               <SelectValue placeholder="Select product..." />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent searchable searchPlaceholder="Search products...">
                               {selectableProducts.map((p) => (
                                 <SelectItem key={p.id} value={p.id}>
                                   {p.name} ({formatINR(p.defaultPrice)})
@@ -2135,7 +2135,7 @@ export function OrdersPage() {
                   <SelectTrigger id="draft-product-select">
                     <SelectValue placeholder="Select product..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent searchable searchPlaceholder="Search products...">
                     {productsList.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.name} ({formatINR(p.defaultPrice)})

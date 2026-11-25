@@ -605,7 +605,7 @@ export function ProductsPage() {
                   <Label className="text-xs">Product</Label>
                   <Select value={varProductId} onValueChange={setVarProductId}>
                     <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectContent searchable searchPlaceholder="Search products...">
                       {products.map((p) => (
                         <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                       ))}
