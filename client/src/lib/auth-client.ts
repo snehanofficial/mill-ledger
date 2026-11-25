@@ -1,6 +1,7 @@
 import { createAuthClient } from "better-auth/react";
 import type { Role } from "@mill-ledger/shared";
 import { apiClient } from "./api-client";
+import { BACKEND_URL } from "./env";
 
 export interface SignInCredentials {
   email: string;
@@ -22,7 +23,7 @@ export interface SessionResponse {
 }
 
 export const betterAuth = createAuthClient({
-  baseURL: typeof window !== "undefined" ? window.location.origin : undefined,
+  baseURL: BACKEND_URL,
   basePath: "/api/auth",
 });
 
@@ -41,7 +42,7 @@ export const authClient = {
       throw new Error("Email and password are required");
     }
 
-    const response = await fetch("/api/auth/sign-in/email", {
+    const response = await fetch(`${BACKEND_URL}/api/auth/sign-in/email`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -88,7 +89,7 @@ export const authClient = {
       await (betterAuth.signOut as () => Promise<unknown>)();
     } catch {
       // Fallback POST to ensure session cookie is purged
-      await fetch("/api/auth/sign-out", {
+      await fetch(`${BACKEND_URL}/api/auth/sign-out`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

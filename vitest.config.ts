@@ -11,6 +11,9 @@ export default defineConfig({
     },
   },
   test: {
+    env: {
+      VITE_BACKEND_URL: "http://localhost:4000",
+    },
     exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**", "**/audit/**"],
     fileParallelism: false,
   },
