@@ -77,17 +77,15 @@ function SelectContent({
   const [searchQuery, setSearchQuery] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
   const viewportRef = React.useRef<HTMLDivElement>(null);
+  const hasRedirectedInitialFocusRef = React.useRef(false);
 
   React.useEffect(() => {
     if (!searchable) return;
+    hasRedirectedInitialFocusRef.current = false;
     const focusInput = () => inputRef.current?.focus({ preventScroll: true });
     focusInput();
     const frameId = requestAnimationFrame(focusInput);
-    const timeoutId = window.setTimeout(focusInput, 0);
-    return () => {
-      cancelAnimationFrame(frameId);
-      window.clearTimeout(timeoutId);
-    };
+    return () => cancelAnimationFrame(frameId);
   }, [searchable]);
 
   const contextValue = React.useMemo(
@@ -114,6 +112,15 @@ function SelectContent({
       <SelectPrimitive.Content
         data-slot="select-content"
         position={position}
+        onFocus={(e) => {
+          props.onFocus?.(e);
+          if (!searchable) return;
+          if (e.target === inputRef.current) return;
+          if (!hasRedirectedInitialFocusRef.current || e.target === e.currentTarget) {
+            hasRedirectedInitialFocusRef.current = true;
+            inputRef.current?.focus({ preventScroll: true });
+          }
+        }}
         className={cn(
           "z-50 flex max-h-72 min-w-32 flex-col overflow-hidden rounded-control border border-border bg-popover text-popover-foreground shadow-menu",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
