@@ -1,0 +1,13 @@
+=== Pre-Fix Defect Reproduction: F-045 ===
+Finding: F-045 Lack of Skeleton Loaders and Omission of Request IDs in UI Error States
+Severity: P2 (Tier T6, CLUSTER-09)
+Applicable Standards: NN/g Heuristic #1 (Visibility of system status), WCAG 2.2 SC 4.1.3 (Status Messages), RFC 9110
+
+Defect Summary:
+Prior to this remediation, core operational views (orders, inventory, dispatches, invoices, customers, production, purchases, suppliers, payments) relied on generic loading spinners without layout preservation, resulting in severe Cumulative Layout Shift (CLS) when data loaded. Furthermore, when server or network errors occurred, error dialogs and banners omitted correlation Request IDs, preventing factory operators and administrative personnel from triaging issues with system logs or backend traces.
+
+Reproduction Evidence:
+1. Grepping `client/src/pages/` revealed multiple raw `<Spinner />` or generic `<LoadingState />` instances without tabular skeleton structure:
+   - Tables jumped from empty/spinner to full height abruptly.
+   - Error messages lacked `requestId` extraction and clipboard copy actions.
+2. API errors returned with `{ requestId: "...", error: { message: "..." } }` from Express middleware (F-035), but UI components ignored the header and body fields.

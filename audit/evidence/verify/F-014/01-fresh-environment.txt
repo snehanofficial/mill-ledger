@@ -1,0 +1,6 @@
+=== STEP 1: FRESH ENVIRONMENT CHECK FOR F-014 ===
+Timestamp: 2026-11-23T13:18:00+05:30
+Environment: Node v22.22.1, PostgreSQL 16 on port 5432, Prisma 7.10.1
+Prisma schema validated, db push up to date.
+Benchmark master seeds with statutory GST slabs (5%, 12%, 18%, 0%) applied cleanly without drift.
+Database connection verified and active on postgresql://postgres:postgres@localhost:5432/mill_ledger.

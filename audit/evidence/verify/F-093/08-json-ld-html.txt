@@ -1,0 +1,33 @@
+diff --git a/client/index.html b/client/index.html
+index 41d4063..f8fb373 100644
+--- a/client/index.html
++++ b/client/index.html
+@@ -44,6 +44,28 @@
+     <meta name="twitter:image" content="/og-preview.png" />
+     <meta name="twitter:image:alt" content="MillLedger ERP Platform Preview" />
+ 
++    <!-- Schema.org JSON-LD Structured Data -->
++    <script type="application/ld+json">
++      {
++        "@context": "https://schema.org",
++        "@type": "SoftwareApplication",
++        "name": "MillLedger ERP",
++        "applicationCategory": "BusinessApplication",
++        "operatingSystem": "All modern web browsers",
++        "description": "Precision order-to-audit ERP and shop floor ledger for small food manufacturing mills in India.",
++        "offers": {
++          "@type": "Offer",
++          "price": "0",
++          "priceCurrency": "INR"
++        },
++        "publisher": {
++          "@type": "Organization",
++          "name": "MillLedger Technologies",
++          "url": "https://millledger.local/"
++        }
++      }
++    </script>
++
+     <title>
+       MillLedger | Order-to-Audit System for a Small Food Manufacturer
+     </title>

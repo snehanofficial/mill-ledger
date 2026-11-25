@@ -1,0 +1,7 @@
+=== F-030 Verification: 09 Backward Compatibility ===
+1. Valid Draft Order Updates:
+   - Partial updates submitting legitimate fields (notes, status: "DRAFT" | "SUBMITTED", lines) continue to work seamlessly and return HTTP 200.
+2. Cross-salesman Spoof Testing:
+   - Request bodies containing creatorId in existing tests are tolerated by the schema but disregarded by authorization logic.
+3. API Contracts Preserved:
+   - Response structure { status: "updated", order: updated } remains identical.

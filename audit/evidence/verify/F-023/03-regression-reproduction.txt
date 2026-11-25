@@ -1,0 +1,20 @@
+=== F-023 Verification: 03 Regression Reproduction ===
+Finding Title: Backend lacks user and role management API endpoints; super admin accounts rely on hardcoded seeded credentials without last-admin demotion safeguards or MFA
+Defect Analysis:
+1. Missing User Routes:
+   Prior to this fix, no routes existed at /api/v1/users or /api/v1/admin/users. Any HTTP requests to list or create users returned 404 Not Found.
+2. Unprotected Last Admin:
+   No application logic or validation checked if an administrator was the sole active admin before role modification, deactivation, or deletion, leading to accidental administrative lockout.
+3. Hardcoded Seed Passwords:
+   Initial administrators were provisioned only through seed scripts with well-known static passwords in plaintext source code (AdminPassword123!), without an interactive bootstrap CLI.
+4. Referral Integrity Vulnerability:
+   Deleting an operational user (such as a salesman who has submitted sales orders) could break foreign key constraints or cascade deletions unpredictably.
+
+Fix Applied:
+- Implemented UserService in server/src/modules/auth/user.service.ts with CRUD operations, input validation, audit logging, and the Last-Admin Demotion/Deactivation/Deletion safeguard.
+- Implemented userRouter in server/src/modules/auth/user.routes.ts enforcing RBAC authorize("user", action).
+- Mounted userRouter at /api/v1/users and /api/v1/admin/users in server/src/app.ts.
+- Implemented secure interactive bootstrap CLI in server/src/scripts/bootstrap-admin.ts with masked password entry, pre-existing admin check refusal, and audit logging.
+- Added admin:bootstrap script to server/package.json and root package.json.
+- Updated seed scripts to avoid seeding default admin in production.
+- Verified all regression tests in server/src/user-management.test.ts.

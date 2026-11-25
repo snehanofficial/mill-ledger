@@ -1,0 +1,20 @@
+=== F-032 Verification: Typecheck & Lint ===
+
+Command: pnpm typecheck
+Scope: 3 of 4 workspace projects
+shared typecheck: tsc --noEmit -> Done in 1s
+client typecheck: tsc -b --noEmit -> Done in 4.4s
+server typecheck: tsc --noEmit -> Done in 5s
+Exit code: 0
+
+Command: pnpm lint
+$ oxlint .
+Found 0 warnings and 0 errors.
+Finished in 27ms on 179 files using 16 threads.
+Exit code: 0
+
+Command: pnpm build
+Scope: 3 of 4 workspace projects
+client build: tsc -b && vite build -> Success (dist generated, PWA precache 42 entries)
+server build: tsc -> Success
+Exit code: 0

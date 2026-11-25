@@ -2,9 +2,9 @@ name: MillLedger CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, "remediation/*", "remediation/**"]
   pull_request:
-    branches: [main]
+    branches: [main, "remediation/*", "remediation/**"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,15 +40,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
         with:
           version: 12.18.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: 22
           cache: pnpm
@@ -77,5 +77,17 @@ jobs:
       - name: Execute benchmark verification script
         run: pnpm benchmark
 
-      - name: Build client production bundles
-        run: pnpm --filter client build
+      - name: Run dependency vulnerability audit
+        run: pnpm audit --audit-level=critical
+
+      - name: Build all packages (server, client, shared)
+        run: pnpm build
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Playwright E2E tests
+        run: pnpm test:e2e
+
+      - name: Validate Remediation Tracker
+        run: node audit/tracker/check-tracker.mjs

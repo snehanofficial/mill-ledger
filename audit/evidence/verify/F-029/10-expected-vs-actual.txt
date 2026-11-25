@@ -1,0 +1,20 @@
+=== F-029 Verification: 10 Expected vs Actual ===
+
+EXPECTED (Source: OWASP ASVS v4.0.3 Section 10.3.1, Section 14.2.1, OWASP Top 10:2021 A08:2021, GitHub Actions Security Hardening Guide):
+1. GitHub Actions steps must be pinned to full 40-character commit SHAs rather than mutable tags to prevent upstream supply-chain tampering.
+2. Package manager configurations (.npmrc, pnpm-workspace.yaml) must enforce minimum package release age and block exotic subdependencies.
+3. Database seed scripts containing default test accounts must be explicitly prohibited from running in production (NODE_ENV === "production").
+
+ACTUAL:
+1. Pinned all GitHub Action steps in .github/workflows/ci.yml to full 40-character commit SHAs:
+   - actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+   - pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+   - actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+2. Added min-release-age = 7 to .npmrc and blockExoticSubdeps: true to pnpm-workspace.yaml.
+3. Added strict production guard in runFullSeed() across server/prisma/seed.ts and server/src/db/seed.ts.
+4. Added regression tests in audit/tests/f-029-regression.spec.ts and server/src/supply-chain.test.ts. All 4 regression tests pass.
+5. All 36 test files and 205 tests pass. 0 typecheck errors, 0 lint warnings. 18/18 benchmark assertions pass. 10/10 SQL invariants hold. Production build passes.
+
+DELTA:
+None. All expected criteria fully satisfied.
+Status: VERIFIED-PASS

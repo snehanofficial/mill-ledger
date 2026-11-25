@@ -1,0 +1,28 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | audit/tests/f-038-regression.test.ts > F-038 Regression Test: Supplier Master Data Management API & UI > POST /api/v1/inventory/suppliers creates a supplier and enforces duplicate code check
+{"level":"INFO","timestamp":"2026-11-23T22:33:08.878Z","requestId":"61323556-7339-42b8-ad0e-b5ac54e47de2","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":189,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | audit/tests/f-038-regression.test.ts > F-038 Regression Test: Supplier Master Data Management API & UI > POST /api/v1/inventory/suppliers creates a supplier and enforces duplicate code check
+{"level":"INFO","timestamp":"2026-11-23T22:33:08.913Z","requestId":"6a799544-54db-4093-96ac-d9499d9a9e73","method":"POST","path":"/api/v1/inventory/suppliers","statusCode":201,"durationMs":28,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stderr | audit/tests/f-038-regression.test.ts > F-038 Regression Test: Supplier Master Data Management API & UI > POST /api/v1/inventory/suppliers creates a supplier and enforces duplicate code check
+{"level":"WARN","timestamp":"2026-11-23T22:33:08.923Z","requestId":"6ea5677c-81c0-4ec2-8ce7-d0bb7b407989","method":"POST","path":"/api/v1/inventory/suppliers","statusCode":409,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | audit/tests/f-038-regression.test.ts > F-038 Regression Test: Supplier Master Data Management API & UI > POST /api/v1/inventory/suppliers creates a supplier and enforces duplicate code check
+{"level":"INFO","timestamp":"2026-11-23T22:33:08.935Z","requestId":"11b7228c-5b77-4328-98fa-7d0458a02e01","method":"GET","path":"/api/v1/inventory/suppliers/cmwtudn3d0000b9abyj1iw4hq","statusCode":200,"durationMs":10,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | audit/tests/f-038-regression.test.ts > F-038 Regression Test: Supplier Master Data Management API & UI > POST /api/v1/inventory/suppliers creates a supplier and enforces duplicate code check
+{"level":"INFO","timestamp":"2026-11-23T22:33:08.951Z","requestId":"d9efc708-413e-4823-981d-04244f4ddbc9","method":"PUT","path":"/api/v1/inventory/suppliers/cmwtudn3d0000b9abyj1iw4hq","statusCode":200,"durationMs":12,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stderr | audit/tests/f-038-regression.test.ts > F-038 Regression Test: Supplier Master Data Management API & UI > POST /api/v1/inventory/suppliers rejects unauthenticated requests with 401
+{"level":"WARN","timestamp":"2026-11-23T22:33:08.963Z","requestId":"0c8de050-203e-47d8-ad55-806a00debae1","method":"POST","path":"/api/v1/inventory/suppliers","statusCode":401,"durationMs":2,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+ ✓ audit/tests/f-038-regression.test.ts (3 tests) 298ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  04:03:07
+   Duration  1.41s (transform 288ms, setup 0ms, collect 702ms, tests 298ms, environment 0ms, prepare 46ms)
+

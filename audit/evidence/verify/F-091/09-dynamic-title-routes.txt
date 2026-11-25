@@ -1,0 +1,94 @@
+diff --git a/client/src/layouts/authenticated-layout.tsx b/client/src/layouts/authenticated-layout.tsx
+index 663fa34..64062a0 100644
+--- a/client/src/layouts/authenticated-layout.tsx
++++ b/client/src/layouts/authenticated-layout.tsx
+@@ -6,12 +6,19 @@
+  */
+ 
+ import { Suspense, useEffect } from "react";
+-import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
++import {
++  Outlet,
++  Navigate,
++  useNavigate,
++  useLocation,
++  useMatches,
++} from "react-router-dom";
+ import { useQueryClient } from "@tanstack/react-query";
+ import { AuthenticatedShell } from "@/components/shell/authenticated-shell";
+ import { useCurrentUser } from "@/hooks/use-current-user";
+ import { authClient } from "@/lib/auth-client";
+ import { offlineDb } from "@/offline/db";
++import type { RouteHandle } from "@/components/shell/use-breadcrumbs";
+ 
+ function RouteLoadingFallback() {
+   return (
+@@ -28,8 +35,30 @@ export function AuthenticatedLayout() {
+   const { user, isLoading } = useCurrentUser();
+   const navigate = useNavigate();
+   const location = useLocation();
++  const matches = useMatches();
+   const queryClient = useQueryClient();
+ 
++  // WCAG 2.2 SC 2.4.2 & REQ-062: Dynamically update document title based on active view
++  useEffect(() => {
++    const lastWithHandle = [...matches]
++      .reverse()
++      .find(
++        (m) =>
++          (m.handle as RouteHandle | undefined)?.breadcrumb !== undefined,
++      );
++
++    if (lastWithHandle) {
++      const handle = lastWithHandle.handle as RouteHandle;
++      const label =
++        typeof handle.breadcrumb === "function"
++          ? handle.breadcrumb(lastWithHandle.data)
++          : handle.breadcrumb;
++      document.title = `${label} | MillLedger`;
++    } else {
++      document.title = "MillLedger";
++    }
++  }, [matches]);
++
+   // Listen for unauthorized session expiration across active API queries
+   useEffect(() => {
+     const handleUnauthorized = () => {
+diff --git a/client/src/pages/login-page.tsx b/client/src/pages/login-page.tsx
+index 9cc093c..0b7a8c5 100644
+--- a/client/src/pages/login-page.tsx
++++ b/client/src/pages/login-page.tsx
+@@ -85,6 +85,10 @@ export function LoginPage() {
+   const queryClient = useQueryClient();
+   const { language, setLanguage } = useLanguage();
+ 
++  React.useEffect(() => {
++    document.title = "Sign In | MillLedger";
++  }, []);
++
+   const { user, isLoading: isCheckingAuth } = useCurrentUser();
+ 
+   const [email, setEmail] = useState("admin@millledger.local");
+diff --git a/client/src/pages/placeholder-pages.tsx b/client/src/pages/placeholder-pages.tsx
+index 8c4e763..b8cfa49 100644
+--- a/client/src/pages/placeholder-pages.tsx
++++ b/client/src/pages/placeholder-pages.tsx
+@@ -4,6 +4,7 @@
+  * These will be replaced with real portal screens in subsequent milestones.
+  */
+ 
++import { useEffect } from "react";
+ import { Badge } from "@/components/ui/badge";
+ import { FolderKanbanIcon } from "lucide-react";
+ 
+@@ -280,6 +281,10 @@ export function LoginPage() {
+ }
+ 
+ export function NotFoundPage() {
++  useEffect(() => {
++    document.title = "Page Not Found | MillLedger";
++  }, []);
++
+   return (
+     <div className="flex min-h-[60vh] flex-1 flex-col items-center justify-center p-8 text-center">
+       <h1 className="text-2xl font-bold text-foreground">

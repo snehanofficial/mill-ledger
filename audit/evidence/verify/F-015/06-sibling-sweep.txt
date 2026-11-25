@@ -1,0 +1,10 @@
+=== STEP 6: SIBLING SWEEP FOR F-015 ===
+Inspected all service mutations across the entire backend that accept idempotencyKey:
+1. salesService.createSalesOrder -> Protected with P2002 fallback
+2. financeService.createInvoiceFromOrder -> Protected with P2002 fallback
+3. paymentService.recordPayment -> Protected with P2002 fallback
+4. dispatchService.postDispatch -> Protected with P2002 fallback
+5. inventoryService.postPurchaseReceipt -> Protected with P2002 fallback
+6. productionService.createDraftRun -> Protected with P2002 fallback
+
+All write endpoints accepting idempotencyKey now have robust concurrency and collision handling.

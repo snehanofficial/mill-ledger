@@ -1,0 +1,134 @@
+client/src/pages/invoices-page.tsx:182:            {totalBilled.toLocaleString(undefined, {
+client/src/pages/invoices-page.tsx:200:            {totalOutstanding.toLocaleString(undefined, {
+client/src/pages/invoices-page.tsx:288:                      {Number(inv.taxableAmount).toLocaleString(undefined, {
+client/src/pages/invoices-page.tsx:294:                        <span>IGST: ₹{Number(inv.igstAmount).toFixed(2)}</span>
+client/src/pages/invoices-page.tsx:300:                          ).toFixed(2)}
+client/src/pages/invoices-page.tsx:306:                      {Number(inv.totalAmount).toLocaleString(undefined, {
+client/src/pages/invoices-page.tsx:312:                      {Number(inv.outstandingAmount).toLocaleString(undefined, {
+client/src/pages/invoices-page.tsx:435:                          ₹{Number(l.unitPrice).toFixed(2)}
+client/src/pages/invoices-page.tsx:438:                          ₹{Number(l.taxableAmount).toFixed(2)}
+client/src/pages/invoices-page.tsx:441:                          ₹{Number(l.taxAmount).toFixed(2)}
+client/src/pages/invoices-page.tsx:444:                          ₹{Number(l.lineTotal).toFixed(2)}
+client/src/pages/invoices-page.tsx:460:                      ₹{Number(selectedInvoice.taxableAmount).toFixed(2)}
+client/src/pages/invoices-page.tsx:470:                          ₹{Number(selectedInvoice.cgstAmount).toFixed(2)}
+client/src/pages/invoices-page.tsx:478:                          ₹{Number(selectedInvoice.sgstAmount).toFixed(2)}
+client/src/pages/invoices-page.tsx:489:                        ₹{Number(selectedInvoice.igstAmount).toFixed(2)}
+client/src/pages/invoices-page.tsx:496:                      ₹{Number(selectedInvoice.totalAmount).toFixed(2)}
+client/src/pages/invoices-page.tsx:502:                      ₹{Number(selectedInvoice.outstandingAmount).toFixed(2)}
+client/src/pages/invoices-page.tsx:567:                  {Number(selectedInvoice.outstandingAmount).toFixed(2)}
+client/src/pages/dispatch-page.tsx:250:            {totalUnitsDispatched.toLocaleString()} units
+client/src/pages/dispatch-page.tsx:265:            {totalUnitsDispatched.toLocaleString()} units
+client/src/pages/dispatch-page.tsx:326:                      {new Date(disp.dispatchedAt).toLocaleString("en-IN", {
+client/src/pages/reports-page.tsx:203:                  Taxable: ₹{salesData.summary.totalTaxable.toFixed(2)}
+client/src/pages/reports-page.tsx:205:                <span>Tax: ₹{salesData.summary.totalTax.toFixed(2)}</span>
+client/src/pages/reports-page.tsx:207:                  Grand total: ₹{salesData.summary.grandTotal.toFixed(2)}
+client/src/pages/reports-page.tsx:241:                        {new Date(row.invoiceDate).toLocaleDateString("en-IN")}
+client/src/pages/reports-page.tsx:260:                        ₹{row.taxableAmount.toFixed(2)}
+client/src/pages/reports-page.tsx:263:                        ₹{row.cgstAmount.toFixed(2)}
+client/src/pages/reports-page.tsx:266:                        ₹{row.sgstAmount.toFixed(2)}
+client/src/pages/reports-page.tsx:269:                        ₹{row.lineTotal.toFixed(2)}
+client/src/pages/reports-page.tsx:289:                ₹{Number(gstData?.summary?.totalTaxable || 0).toFixed(2)}
+client/src/pages/reports-page.tsx:297:                ₹{Number(gstData?.summary?.totalTaxAmount || 0).toFixed(2)}
+client/src/pages/reports-page.tsx:306:                {Number(gstData?.summary?.totalCreditNotesAmount || 0).toFixed(
+client/src/pages/reports-page.tsx:336:                        ₹{r.taxable.toFixed(2)}
+client/src/pages/reports-page.tsx:339:                        ₹{r.cgst.toFixed(2)}
+client/src/pages/reports-page.tsx:342:                        ₹{r.sgst.toFixed(2)}
+client/src/pages/reports-page.tsx:345:                        ₹{r.totalTax.toFixed(2)}
+client/src/pages/reports-page.tsx:374:                        ₹{h.taxable.toFixed(2)}
+client/src/pages/reports-page.tsx:377:                        ₹{(h.cgst + h.sgst + h.igst).toFixed(2)}
+client/src/pages/reports-page.tsx:406:                  ₹{Number(stockData.summary.totalValuation).toFixed(2)}
+client/src/pages/reports-page.tsx:447:                      ₹{row.weightedAverageCost.toFixed(2)}
+client/src/pages/reports-page.tsx:450:                      ₹{row.totalValuation.toFixed(2)}
+client/src/pages/reports-page.tsx:492:                  Total cost: ₹{prodData.summary.totalRunCost.toFixed(2)}
+client/src/pages/reports-page.tsx:534:                      ₹{row.directLaborCost.toFixed(2)}
+client/src/pages/reports-page.tsx:537:                      ₹{row.gasPowerCost.toFixed(2)}
+client/src/pages/reports-page.tsx:540:                      ₹{row.totalCost.toFixed(2)}
+client/src/pages/reports-page.tsx:543:                      ₹{row.unitCost.toFixed(2)}
+client/src/pages/reports-page.tsx:571:                  ₹{Number(recData.summary.totalOutstanding).toFixed(2)}
+client/src/pages/reports-page.tsx:608:                      ₹{row.totalInvoiced.toFixed(2)}
+client/src/pages/reports-page.tsx:611:                      ₹{row.totalPaid.toFixed(2)}
+client/src/pages/reports-page.tsx:614:                      ₹{row.netOutstanding.toFixed(2)}
+client/src/pages/reports-page.tsx:617:                      ₹{row.ageing.current0to30.toFixed(2)}
+client/src/pages/reports-page.tsx:620:                      ₹{row.ageing.days31to60.toFixed(2)}
+client/src/pages/reports-page.tsx:623:                      ₹{row.ageing.over90days.toFixed(2)}
+client/src/pages/reports-page.tsx:673:                        {new Date(log.timestamp).toLocaleString("en-IN")}
+client/src/pages/dashboard-page.tsx:110:              {new Date(data.asOf).toLocaleTimeString("en-IN", {
+client/src/pages/dashboard-page.tsx:158:                {Number(metrics?.totalRevenue || 0).toLocaleString(undefined, {
+client/src/pages/dashboard-page.tsx:181:                ).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+client/src/pages/dashboard-page.tsx:185:                {Number(metrics?.totalCollections || 0).toLocaleString()}
+client/src/pages/dashboard-page.tsx:199:                {Number(metrics?.totalStockValuation || 0).toLocaleString(
+client/src/pages/dashboard-page.tsx:228:                {Number(metrics?.totalProductionUnits || 0).toLocaleString()}{" "}
+client/src/pages/dashboard-page.tsx:233:                {Number(metrics?.totalProductionCost || 0).toLocaleString()}
+client/src/pages/dashboard-page.tsx:286:                            ₹{Number(inv.lineTotal).toFixed(2)}
+client/src/pages/dashboard-page.tsx:363:                            ₹{item.weightedAverageCost.toFixed(2)}
+client/src/pages/dashboard-page.tsx:367:                            {item.totalValuation.toLocaleString(undefined, {
+client/src/pages/stock-page.tsx:153:              : `₹${totalInventoryValue.toLocaleString("en-IN", {
+client/src/pages/stock-page.tsx:239:                      {item.onHand.toLocaleString("en-IN")}{" "}
+client/src/pages/stock-page.tsx:246:                      {item.weightedAverageCost.toFixed(
+client/src/pages/stock-page.tsx:252:                      {totalValue.toLocaleString("en-IN", {
+client/src/pages/production-page.tsx:305:            {totalPacketsProduced.toLocaleString()}
+client/src/pages/production-page.tsx:321:            {totalProductionCost.toLocaleString(undefined, {
+client/src/pages/production-page.tsx:433:                        {Number(r.actualGoodQty).toLocaleString()}
+client/src/pages/production-page.tsx:453:                        {Number(r.directMaterialCost).toLocaleString(
+client/src/pages/production-page.tsx:462:                        {Number(r.totalRunCost).toLocaleString(undefined, {
+client/src/pages/production-page.tsx:467:                        ₹{Number(r.costPerGoodUnit).toFixed(2)}
+client/src/pages/production-page.tsx:698:                  <span className="font-semibold">₹{laborCost.toFixed(2)}</span>
+client/src/pages/production-page.tsx:703:                    ₹{utilityCost.toFixed(2)}
+client/src/pages/production-page.tsx:709:                    ₹{(4055 + laborCost + utilityCost).toFixed(2)}
+client/src/pages/production-page.tsx:716:                    {((4055 + laborCost + utilityCost) / actualGoodQty).toFixed(
+client/src/pages/orders-page.tsx:440:            {totalRevenueBooked.toLocaleString(undefined, {
+client/src/pages/orders-page.tsx:457:            {availablePackets.toLocaleString()} pkts
+client/src/pages/orders-page.tsx:608:                        {qty.toLocaleString()} pkts
+client/src/pages/orders-page.tsx:611:                        ₹{taxable.toFixed(2)}
+client/src/pages/orders-page.tsx:614:                        ₹{gst.toFixed(2)}
+client/src/pages/orders-page.tsx:617:                        ₹{total.toFixed(2)}
+client/src/pages/orders-page.tsx:705:                          {qty.toLocaleString()} pkts
+client/src/pages/orders-page.tsx:709:                          {Number(o.taxableAmount).toLocaleString(undefined, {
+client/src/pages/orders-page.tsx:716:                              IGST: ₹{Number(o.igstAmount).toFixed(2)}
+client/src/pages/orders-page.tsx:723:                              ).toFixed(2)}
+client/src/pages/orders-page.tsx:729:                          {Number(o.totalAmount).toLocaleString(undefined, {
+client/src/pages/orders-page.tsx:864:                        {p.name} (₹{Number(p.defaultPrice).toFixed(2)})
+client/src/pages/orders-page.tsx:869:                    Standard price: ₹{unitPrice.toFixed(2)} / pkt
+client/src/pages/orders-page.tsx:917:                    ₹{calculatedTaxable.toFixed(2)}
+client/src/pages/orders-page.tsx:925:                    ₹{calculatedTax.toFixed(2)}
+client/src/pages/orders-page.tsx:931:                    ₹{calculatedTotal.toFixed(2)}
+client/src/pages/purchases-page.tsx:275:                      {new Date(rec.postedAt).toLocaleDateString("en-IN", {
+client/src/pages/purchases-page.tsx:288:                      {Number(firstLine?.quantity || 0).toLocaleString("en-IN")}{" "}
+client/src/pages/purchases-page.tsx:292:                      ₹{Number(firstLine?.unitPrice || 0).toFixed(2)}
+client/src/pages/purchases-page.tsx:295:                      ₹{totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+client/src/pages/purchases-page.tsx:438:                  ₹{lineTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+client/src/pages/payments-page.tsx:348:            {totalCollected.toLocaleString(undefined, {
+client/src/pages/payments-page.tsx:366:            {totalNetOutstanding.toLocaleString(undefined, {
+client/src/pages/payments-page.tsx:384:            {totalUnallocated.toLocaleString(undefined, {
+client/src/pages/payments-page.tsx:470:                        {new Date(p.paymentDate).toLocaleDateString("en-IN", {
+client/src/pages/payments-page.tsx:498:                        {Number(p.amount).toLocaleString(undefined, {
+client/src/pages/payments-page.tsx:505:                            ₹{Number(p.unallocatedAmount).toFixed(2)}
+client/src/pages/payments-page.tsx:526:                                <span>₹{Number(a.amount).toFixed(2)}</span>
+client/src/pages/payments-page.tsx:608:                        {r.totalInvoiced.toLocaleString(undefined, {
+client/src/pages/payments-page.tsx:614:                        {r.totalCreditNotes.toLocaleString(undefined, {
+client/src/pages/payments-page.tsx:620:                        {r.totalPaid.toLocaleString(undefined, {
+client/src/pages/payments-page.tsx:628:                            {r.netOutstanding.toLocaleString(undefined, {
+client/src/pages/payments-page.tsx:712:                        {customerLedger.summary.netOutstanding.toLocaleString(
+client/src/pages/payments-page.tsx:727:                        ₹{customerLedger.summary.ageing.current0to30.toFixed(2)}
+client/src/pages/payments-page.tsx:735:                        ₹{customerLedger.summary.ageing.days31to60.toFixed(2)}
+client/src/pages/payments-page.tsx:743:                        ₹{customerLedger.summary.ageing.days61to90.toFixed(2)}
+client/src/pages/payments-page.tsx:751:                        ₹{customerLedger.summary.ageing.over90days.toFixed(2)}
+client/src/pages/payments-page.tsx:782:                              {new Date(entry.date).toLocaleDateString(
+client/src/pages/payments-page.tsx:808:                                ? `₹${entry.debit.toFixed(2)}`
+client/src/pages/payments-page.tsx:813:                                ? `₹${entry.credit.toFixed(2)}`
+client/src/pages/payments-page.tsx:817:                              ₹{entry.balance.toFixed(2)}
+client/src/pages/payments-page.tsx:881:                      {cust.netOutstanding.toFixed(2)}
+client/src/pages/payments-page.tsx:994:                                {Number(inv.outstandingAmount).toFixed(2)}
+client/src/components/shell/device-outbox-sheet.tsx:185:                        {new Date(ord.createdAt).toLocaleTimeString([], {
+client/src/components/shell/device-outbox-sheet.tsx:232:                          ₹{(it.quantity * it.quotedUnitPrice).toFixed(2)}
+client/src/components/shell/device-outbox-sheet.tsx:238:                      <span>₹{totalQuoted.toFixed(2)}</span>
+server/src/scripts/run-benchmark.ts:150:    actual: `₹${avgCostFlour.toFixed(3)} / kg`,
+server/src/scripts/run-benchmark.ts:192:    actual: `₹${Number(postedRun.totalRunCost).toFixed(2)}`,
+server/src/scripts/run-benchmark.ts:200:    actual: `₹${costPerGoodPkt.toFixed(2)}`,
+server/src/scripts/run-benchmark.ts:260:    actual: `₹${Number(orderA.taxableAmount).toFixed(2)}`,
+server/src/scripts/run-benchmark.ts:267:    actual: `₹${Number(orderA.cgstAmount).toFixed(2)}`,
+server/src/scripts/run-benchmark.ts:274:    actual: `₹${Number(orderA.sgstAmount).toFixed(2)}`,
+server/src/scripts/run-benchmark.ts:281:    actual: `₹${Number(orderA.totalAmount).toFixed(2)}`,
+server/src/scripts/run-benchmark.ts:384:    actual: `₹${outstanding.toFixed(2)}`,
+server/src/scripts/run-benchmark.ts:456:    actual: `₹${salesReport.summary.grandTotal.toFixed(2)}`,
+server/src/scripts/run-benchmark.ts:466:    actual: `₹${collectionsReport.summary.totalAmount.toFixed(2)}`,

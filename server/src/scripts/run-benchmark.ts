@@ -26,27 +26,8 @@ async function runBenchmark() {
 
   // Clean database
   console.log("Cleaning database tables...");
-  await prisma.auditLog.deleteMany();
-  await prisma.paymentAllocation.deleteMany();
-  await prisma.payment.deleteMany();
-  await prisma.creditNote.deleteMany();
-  await prisma.dispatchLine.deleteMany();
-  await prisma.dispatch.deleteMany();
-  await prisma.salesInvoiceLine.deleteMany();
-  await prisma.salesInvoice.deleteMany();
-  await prisma.stockReservation.deleteMany();
-  await prisma.salesOrderLine.deleteMany();
-  await prisma.salesOrder.deleteMany();
-  await prisma.productionRunReversal.deleteMany();
-  await prisma.productionRunMaterial.deleteMany();
-  await prisma.productionRun.deleteMany();
-  await prisma.purchaseReceiptLine.deleteMany();
-  await prisma.purchaseReceipt.deleteMany();
-  await prisma.stockMovement.deleteMany({
-    where: {
-      movementType: { not: "OPENING_BALANCE" },
-    },
-  });
+  const { resetOperationalData } = await import("../db/reset.js");
+  await resetOperationalData();
 
   // Seed benchmark master data
   console.log("Seeding benchmark masters and opening stock...");

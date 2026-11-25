@@ -1,0 +1,27 @@
+======================================================================
+F-005 VERIFICATION SUMMARY: REMOVAL OF REDUNDANT UNUSED CN PACKAGE
+======================================================================
+Date: 2026-11-24
+Severity: P3 | Tier: T11 | Cluster: CLUSTER-15
+Status: VERIFIED-PASS
+
+1. Root Cause:
+`client/package.json` included the npm dependency `"cn": "^0.5.2"`. However, the client workspace
+never imported `from "cn"` anywhere; `@/lib/utils.ts` implements `cn()` locally using `clsx` and `twMerge`.
+The package was dead code that added redundant dependencies and supply-chain exposure to the workspace.
+
+2. Implementation Summary:
+- `client/package.json`:
+  * Removed `"cn": "^0.5.2"`.
+- `pnpm-lock.yaml`:
+  * Pruned `cn` package and its dependency metadata via `pnpm install`.
+- Verified local `cn()` in `client/src/lib/utils.ts` continues to function without third-party `cn` package.
+
+3. Verification Results:
+- Regression Test: `audit/tests/f-005-regression.test.ts` passed (2/2 tests).
+- Typecheck: Passed with 0 errors across shared, client, and server workspaces.
+- Lint: Passed with 0 errors and 0 warnings (oxlint).
+- Build: Passed (`pnpm -r run build`).
+- Benchmark: 18/18 numerical assertions passed (100% exact numerical match).
+- Database Invariants: 10/10 PostgreSQL invariants passed (0 violations).
+- Full Test Suite: All unit and integration tests passing.

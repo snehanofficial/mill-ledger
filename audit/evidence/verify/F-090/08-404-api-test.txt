@@ -1,0 +1,13 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stderr | audit/tests/f-090-regression.test.ts > F-090 Regression Test: Soft 404 Status & Redirect Hijacking Prevention > server returns HTTP 404 with code NOT_FOUND for unknown API routes
+{"level":"WARN","timestamp":"2026-11-23T21:48:54.896Z","requestId":"239b6572-08f2-483a-ba2c-3d894e0b0f97","method":"GET","path":"/api/v1/non-existent-random-route-1795470534881","statusCode":404,"durationMs":5,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+ ✓ audit/tests/f-090-regression.test.ts (2 tests) 28ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  03:18:53
+   Duration  1.03s (transform 298ms, setup 0ms, collect 685ms, tests 28ms, environment 0ms, prepare 89ms)
+

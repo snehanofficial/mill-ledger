@@ -1,0 +1,260 @@
+diff --git a/server/src/modules/auth/user.service.ts b/server/src/modules/auth/user.service.ts
+index 67e6117..8e7e21c 100644
+--- a/server/src/modules/auth/user.service.ts
++++ b/server/src/modules/auth/user.service.ts
+@@ -284,6 +284,29 @@ export class UserService {
+ 
+     return { success: true, id };
+   }
++
++  /**
++   * Automated Session & Token Cleanup Procedure (DPDP Act 2023 - Data Minimization)
++   * Purges expired sessions and sessions older than 90 days.
++   */
++  async cleanupExpiredSessions() {
++    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
++    const now = new Date();
++
++    const result = await prisma.session.deleteMany({
++      where: {
++        OR: [
++          { expiresAt: { lt: now } },
++          { createdAt: { lt: ninetyDaysAgo } },
++        ],
++      },
++    });
++
++    return {
++      deletedCount: result.count,
++      purgedAt: now.toISOString(),
++    };
++  }
+ }
+ 
+ export const userService = new UserService();
+diff --git a/server/src/modules/sales/sales.routes.ts b/server/src/modules/sales/sales.routes.ts
+index 36ceb6a..a752c53 100644
+--- a/server/src/modules/sales/sales.routes.ts
++++ b/server/src/modules/sales/sales.routes.ts
+@@ -90,6 +90,58 @@ salesRouter.put(
+   },
+ );
+ 
++// GET /api/v1/sales/customers/:id/data-export - DPDP Act Section 11 Data Subject Export
++salesRouter.get(
++  "/customers/:id/data-export",
++  requireAuth,
++  authorize("customer", "read"),
++  async (req: AuthenticatedRequest, res, next) => {
++    try {
++      const customerId = Array.isArray(req.params.id)
++        ? req.params.id[0]
++        : req.params.id;
++      if (!customerId) {
++        throw new AppError("Customer ID is required", 400);
++      }
++
++      const exportData = await salesService.exportCustomerData(
++        customerId,
++        req.user!,
++      );
++      res.json({ status: "success", data: exportData });
++    } catch (err) {
++      next(err);
++    }
++  },
++);
++
++// POST /api/v1/sales/customers/:id/anonymize - DPDP Act Section 12 Data Subject Erasure
++salesRouter.post(
++  "/customers/:id/anonymize",
++  requireAuth,
++  authorize("customer", "update"),
++  async (req: AuthenticatedRequest, res, next) => {
++    try {
++      const customerId = Array.isArray(req.params.id)
++        ? req.params.id[0]
++        : req.params.id;
++      if (!customerId) {
++        throw new AppError("Customer ID is required", 400);
++      }
++
++      const { reason } = req.body || {};
++      const customer = await salesService.anonymizeCustomer(
++        customerId,
++        req.user!,
++        reason,
++      );
++      res.json({ status: "anonymized", customer });
++    } catch (err) {
++      next(err);
++    }
++  },
++);
++
+ // GET /api/v1/sales/products - Product snapshot and price list for offline cache
+ salesRouter.get(
+   "/products",
+diff --git a/server/src/modules/sales/sales.service.ts b/server/src/modules/sales/sales.service.ts
+index 5e72808..287414e 100644
+--- a/server/src/modules/sales/sales.service.ts
++++ b/server/src/modules/sales/sales.service.ts
+@@ -1308,6 +1308,158 @@ export class SalesService {
+       };
+     });
+   }
++
++  /**
++   * Export Customer Data (DPDP Act 2023 Section 11 - Right to Access)
++   */
++  async exportCustomerData(customerId: string, user: UserContext) {
++    const customer = await prisma.customer.findUnique({
++      where: { id: customerId },
++      include: {
++        salesOrders: {
++          select: {
++            id: true,
++            orderNumber: true,
++            status: true,
++            totalAmount: true,
++            createdAt: true,
++          },
++          orderBy: { createdAt: "desc" },
++        },
++        invoices: {
++          select: {
++            id: true,
++            invoiceNumber: true,
++            status: true,
++            totalAmount: true,
++            outstandingAmount: true,
++            createdAt: true,
++          },
++          orderBy: { createdAt: "desc" },
++        },
++        payments: {
++          select: {
++            id: true,
++            paymentNumber: true,
++            amount: true,
++            paymentMode: true,
++            paymentDate: true,
++          },
++          orderBy: { paymentDate: "desc" },
++        },
++      },
++    });
++
++    if (!customer) {
++      throw new AppError("Customer not found", 404);
++    }
++
++    // Verify ABAC access
++    if (user.role === "SALESMAN") {
++      const isAssigned = await prisma.salesmanCustomerAssignment.findFirst({
++        where: {
++          salesmanId: user.id,
++          customerId,
++        },
++      });
++      if (!isAssigned) {
++        throw new AppError("Access denied: Customer is not assigned to you", 403);
++      }
++    }
++
++    await auditService.log({
++      organizationId: customer.organizationId,
++      userId: user.id,
++      userEmail: user.email,
++      action: "EXPORT",
++      entity: "Customer",
++      entityId: customer.id,
++      details: { exportType: "DPDP_DATA_ACCESS", customerCode: customer.code },
++    });
++
++    return {
++      exportedAt: new Date().toISOString(),
++      statutoryReference: "DPDP Act 2023 Section 11",
++      profile: {
++        id: customer.id,
++        code: customer.code,
++        name: customer.name,
++        phone: customer.phone,
++        email: customer.email,
++        state: customer.state,
++        gstin: customer.gstin,
++        isActive: customer.isActive,
++        createdAt: customer.createdAt,
++        updatedAt: customer.updatedAt,
++      },
++      documentSummary: {
++        ordersCount: customer.salesOrders.length,
++        invoicesCount: customer.invoices.length,
++        paymentsCount: customer.payments.length,
++        salesOrders: customer.salesOrders,
++        salesInvoices: customer.invoices,
++        payments: customer.payments,
++      },
++    };
++  }
++
++  /**
++   * Anonymize Customer PII (DPDP Act 2023 Section 12 - Right to Erasure)
++   * Redacts personal identifiers without breaking historical accounting records (CGST Section 36).
++   */
++  async anonymizeCustomer(
++    customerId: string,
++    user: UserContext,
++    reason?: string,
++  ) {
++    if (user.role !== "ADMIN" && user.role !== "OWNER") {
++      throw new AppError(
++        "Only administrators and owners can anonymize customer data under DPDP Act",
++        403,
++      );
++    }
++
++    const customer = await prisma.customer.findUnique({
++      where: { id: customerId },
++    });
++
++    if (!customer) {
++      throw new AppError("Customer not found", 404);
++    }
++
++    const previousCode = customer.code;
++
++    const [anonymized] = await prisma.$transaction([
++      prisma.customer.update({
++        where: { id: customerId },
++        data: {
++          name: "ANONYMIZED_CUSTOMER",
++          phone: null,
++          email: null,
++          gstin: null,
++          isActive: false,
++        },
++      }),
++      prisma.salesmanCustomerAssignment.deleteMany({
++        where: { customerId },
++      }),
++    ]);
++
++    await auditService.log({
++      organizationId: customer.organizationId,
++      userId: user.id,
++      userEmail: user.email,
++      action: "ANONYMIZE",
++      entity: "Customer",
++      entityId: customer.id,
++      details: {
++        previousCode,
++        reason: reason || "Data Subject Erasure Request (DPDP Act 2023 Section 12)",
++      },
++    });
++
++    return anonymized;
++  }
+ }
+ 
+ export const salesService = new SalesService();

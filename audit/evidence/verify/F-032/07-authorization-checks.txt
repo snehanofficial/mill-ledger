@@ -1,0 +1,6 @@
+=== F-032 Verification: Authorization Checks ===
+
+Zod schema strict mode is enforced prior to and complementary with route-level authorization and ABAC checks.
+If an attacker attempts parameter tampering by injecting unauthorized privilege escalation flags (e.g. `bypassCreditCheck: true`, `role: "ADMIN"`, or `unauthorizedRebate: 20`), the schema layer immediately rejects the payload with HTTP 400 Bad Request before controller or database layer execution.
+
+RBAC and ABAC policies in `server/src/policies/rbac.ts` and `server/src/policies/abac.ts` continue to pass all authorization tests (19/19 tests passing).

@@ -1,0 +1,93 @@
+diff --git a/client/src/pages/orders-page.tsx b/client/src/pages/orders-page.tsx
+index 96dd111..8f1643d 100644
+--- a/client/src/pages/orders-page.tsx
++++ b/client/src/pages/orders-page.tsx
+@@ -79,6 +79,12 @@ interface SalesOrder {
+     reservedQuantity: number;
+     status: string;
+   }>;
++  invoices?: Array<{
++    id: string;
++    invoiceNumber: string;
++    status: string;
++    totalAmount: number;
++  }>;
+ }
+ 
+ export function OrdersPage() {
+@@ -97,6 +103,7 @@ export function OrdersPage() {
+   const [activeTab, setActiveTab] = useState<"stream" | "outbox">("stream");
+   const canCreateOrder = user?.role === "ADMIN" || user?.role === "SALESMAN";
+   const canApproveOrder = user?.role === "ADMIN";
++  const canCreateInvoice = user?.role === "ADMIN";
+   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+   const [showNewOrderModal, setShowNewOrderModal] = useState(false);
+   const [selectedOrderForAction, setSelectedOrderForAction] =
+@@ -332,6 +339,26 @@ export function OrdersPage() {
+     },
+   });
+ 
++  // Create invoice mutation (F-037)
++  const createInvoiceMutation = useMutation({
++    mutationFn: async (salesOrderId: string) => {
++      const res = await apiClient.post("/finance/invoices", { salesOrderId });
++      return res.data;
++    },
++    onSuccess: (invoice) => {
++      queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
++      queryClient.invalidateQueries({ queryKey: ["finance-invoices"] });
++      toast.success(
++        `Invoice ${invoice.invoiceNumber ?? "generated"} posted successfully`,
++      );
++    },
++    onError: (err: any) => {
++      toast.error(
++        err.response?.data?.message || err.message || "Failed to create invoice",
++      );
++    },
++  });
++
+   // Reject order mutation
+   const rejectMutation = useMutation({
+     mutationFn: async ({
+@@ -775,9 +802,39 @@ export function OrdersPage() {
+                                 Reject
+                               </Button>
+                             </div>
++                          ) : o.status === "APPROVED" ? (
++                            <div className="flex items-center justify-end gap-1.5">
++                              {o.invoices && o.invoices.length > 0 ? (
++                                <Badge variant="secondary" className="text-xs">
++                                  Invoiced ({o.invoices[0].invoiceNumber})
++                                </Badge>
++                              ) : canCreateInvoice ? (
++                                <Button
++                                  variant="outline"
++                                  size="sm"
++                                  onClick={() =>
++                                    createInvoiceMutation.mutate(o.id)
++                                  }
++                                  disabled={createInvoiceMutation.isPending}
++                                  className="h-7 text-xs text-primary hover:bg-primary/10 border-primary/30"
++                                >
++                                  {createInvoiceMutation.isPending
++                                    ? "Invoicing..."
++                                    : "Invoice Order"}
++                                </Button>
++                              ) : (
++                                <span className="text-xs text-muted-foreground italic">
++                                  Approved
++                                </span>
++                              )}
++                            </div>
+                           ) : (
+                             <span className="text-xs text-muted-foreground italic">
+-                              {o.status === "SUBMITTED" ? "Pending approval" : "Completed"}
++                              {o.status === "SUBMITTED"
++                                ? "Pending approval"
++                                : o.status === "REJECTED"
++                                  ? "Rejected"
++                                  : "Completed"}
+                             </span>
+                           )}
+                         </TableCell>

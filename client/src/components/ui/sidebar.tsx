@@ -243,7 +243,7 @@ export function Sidebar({
           aria-hidden={!openMobile}
           className={cn(
             "fixed inset-y-0 left-0 z-50 flex flex-col bg-sidebar border-r border-sidebar-border shadow-2xl",
-            "transition-transform duration-220 motion-reduce:transition-none",
+            "transition-transform duration-(--ml-motion-panel-enter) ease-enter motion-reduce:transition-none",
             openMobile
               ? "translate-x-0 visible"
               : "-translate-x-full invisible",
@@ -282,8 +282,7 @@ export function Sidebar({
       data-collapsible={state === "collapsed" ? collapsible : ""}
       className={cn(
         "group hidden md:flex h-svh flex-col bg-sidebar border-r border-sidebar-border",
-        "transition-[width] duration-220 ease-[cubic-bezier(0.2,0,0,1)]",
-        "motion-reduce:transition-none shrink-0",
+        "shrink-0",
         state === "expanded" ? "overflow-visible" : "overflow-hidden",
         variant === "floating" &&
           "rounded-panel border shadow-menu m-2 h-[calc(100svh-1rem)]",
@@ -711,8 +710,8 @@ export function SidebarRail({ className, ...props }: ComponentProps<"button">) {
       onClick={toggleSidebar}
       title="Resize sidebar"
       className={cn(
-        "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 cursor-col-resize",
-        "transition-all ease-linear",
+        "absolute inset-y-0 z-20 hidden w-6 min-w-6 -translate-x-1/2 cursor-col-resize",
+        "transition-colors duration-(--ml-motion-micro) ease-standard",
         "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5",
         "hover:after:bg-border group-data-[side=left]:right-0 md:flex",
         className,

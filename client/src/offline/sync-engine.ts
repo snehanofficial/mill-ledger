@@ -1,6 +1,8 @@
-import { apiClient } from "@/lib/api-client";
+import axios from "axios";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import {
   offlineDb,
+  requestPersistentStorage,
   type CachedCustomer,
   type CachedProduct,
   type OfflineOrder,
@@ -35,10 +37,23 @@ export async function refreshMasterDataSnapshot(
   userId: string,
 ): Promise<{ customersCount: number; productsCount: number }> {
   try {
-    const [custRes, prodRes] = await Promise.all([
-      apiClient.get<{ customers: Array<any> }>("/sales/customers"),
-      apiClient.get<{ products: Array<any> }>("/sales/products"),
+    const [custRes, firstProdRes] = await Promise.all([
+      apiClient.get<{ customers: Array<CachedCustomer> }>("/sales/customers"),
+      apiClient.get<{
+        products: Array<CachedProduct>;
+        pagination?: { limit: number; offset: number; count: number; total?: number };
+      }>("/sales/products?limit=100&offset=0"),
     ]);
+
+    const allRawProducts = [...firstProdRes.data.products];
+    const totalProducts = firstProdRes.data.pagination?.total ?? allRawProducts.length;
+    for (let offset = allRawProducts.length; offset < totalProducts; offset += 100) {
+      const nextRes = await apiClient.get<{ products: Array<CachedProduct> }>(
+        `/sales/products?limit=100&offset=${offset}`,
+      );
+      if (nextRes.data.products.length === 0) break;
+      allRawProducts.push(...nextRes.data.products);
+    }
 
     const now = new Date().toISOString();
 
@@ -54,7 +69,7 @@ export async function refreshMasterDataSnapshot(
       updatedAt: now,
     }));
 
-    const products: CachedProduct[] = prodRes.data.products.map((p) => ({
+    const products: CachedProduct[] = allRawProducts.map((p) => ({
       id: p.id,
       sku: p.sku,
       name: p.name,
@@ -127,11 +142,14 @@ export async function queueOfflineOrder(
     attempts: 0,
   };
 
+  // Ensure browser storage persistence permission is requested (F-087)
+  void requestPersistentStorage();
+
   await offlineDb.outbox.put(order);
   notifyListeners();
 
   // If online, immediately try to sync outbox
-  if (typeof navigator !== "undefined" && navigator.onLine) {
+  if (typeof navigator !== "undefined" && navigator.onLine !== false) {
     void processOutbox(userId);
   }
 
@@ -141,7 +159,7 @@ export async function queueOfflineOrder(
 export async function processOutbox(
   userId: string,
 ): Promise<{ processed: number; succeeded: number; conflicts: number }> {
-  if (typeof navigator !== "undefined" && !navigator.onLine) {
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
     return { processed: 0, succeeded: 0, conflicts: 0 };
   }
 
@@ -192,6 +210,35 @@ async function executeSyncLoop(
     for (const order of pendingOrders) {
       processed += 1;
 
+      // 1. Client-side structural pre-flight validation (F-082)
+      // If order payload is malformed or corrupt, quarantine immediately to prevent head-of-line blocking
+      if (
+        !order ||
+        !order.customerId ||
+        !order.idempotencyKey ||
+        !Array.isArray(order.items) ||
+        order.items.length === 0 ||
+        order.items.some(
+          (it) =>
+            !it ||
+            !it.productVariantId ||
+            typeof it.quantity !== "number" ||
+            isNaN(it.quantity) ||
+            it.quantity <= 0,
+        )
+      ) {
+        conflicts += 1;
+        await offlineDb.outbox.update(order.id, {
+          status: "conflict",
+          lastErrorCode: "CLIENT_VALIDATION_ERROR",
+          lastErrorMessage:
+            "Corrupt or malformed outbox payload: missing customer or valid item lines",
+          updatedAt: new Date().toISOString(),
+        });
+        notifyListeners();
+        continue;
+      }
+
       // Mark status as syncing
       await offlineDb.outbox.update(order.id, {
         status: "syncing",
@@ -205,6 +252,7 @@ async function executeSyncLoop(
           customerId: order.customerId,
           notes: order.notes,
           idempotencyKey: order.idempotencyKey,
+          pricedAt: order.pricedAt,
           lines: order.items.map((it) => ({
             productVariantId: it.productVariantId,
             quantity: it.quantity,
@@ -214,6 +262,28 @@ async function executeSyncLoop(
 
         const response = await apiClient.post("/sales/orders", payload);
         const serverData = response.data.order || response.data;
+        const shortages: Array<{ productVariantId: string; shortage: number }> =
+          response.data.shortages || [];
+        const activeShortages = shortages.filter((s) => s.shortage > 0);
+
+        // Explicit Conflict Queue triage for insufficient stock at sync time (F-083, REQ-052, OD-09)
+        if (activeShortages.length > 0) {
+          conflicts += 1;
+          const totalShortage = activeShortages.reduce(
+            (sum, s) => sum + s.shortage,
+            0,
+          );
+          await offlineDb.outbox.update(order.id, {
+            status: "conflict",
+            serverOrderId: serverData.id,
+            serverOrderNumber: serverData.orderNumber,
+            lastErrorCode: "STOCK_INSUFFICIENT",
+            lastErrorMessage: `Stock insufficient: shortage of ${totalShortage} units detected at synchronization time`,
+            updatedAt: new Date().toISOString(),
+          });
+          notifyListeners();
+          continue;
+        }
 
         await offlineDb.outbox.update(order.id, {
           status: "synced",
@@ -226,13 +296,10 @@ async function executeSyncLoop(
 
         succeeded += 1;
         notifyListeners();
-      } catch (err: any) {
-        const status = err.response?.status;
-        const errorMessage =
-          err.response?.data?.error ||
-          err.response?.data?.message ||
-          err.message ||
-          "Failed to sync order";
+      } catch (err: unknown) {
+        const isAxios = axios.isAxiosError(err);
+        const status = isAxios ? err.response?.status : undefined;
+        const errorMessage = extractErrorMessage(err, "Failed to sync order");
 
         // If duplicate conflict error occurred (e.g. another concurrent tab landed the order),
         // resolve cleanly as synced
@@ -253,10 +320,35 @@ async function executeSyncLoop(
           continue;
         }
 
+        // Check if error is an uncaught client runtime exception rather than a network/HTTP response (F-082)
+        const errObj =
+          typeof err === "object" && err !== null
+            ? (err as { response?: unknown; name?: string })
+            : undefined;
+        const isClientException =
+          !errObj?.response &&
+          (err instanceof TypeError ||
+            err instanceof ReferenceError ||
+            err instanceof SyntaxError ||
+            errObj?.name === "TypeError");
+
+        if (isClientException) {
+          conflicts += 1;
+          await offlineDb.outbox.update(order.id, {
+            status: "conflict",
+            lastErrorCode: "CLIENT_CORRUPTION_ERROR",
+            lastErrorMessage: errorMessage,
+            updatedAt: new Date().toISOString(),
+          });
+          notifyListeners();
+          continue;
+        }
+
         if (
           status === 400 ||
           status === 403 ||
           status === 404 ||
+          status === 409 ||
           status === 422
         ) {
           // Permanent validation or authorization conflict
@@ -268,6 +360,7 @@ async function executeSyncLoop(
             updatedAt: new Date().toISOString(),
           });
           notifyListeners();
+          continue;
         } else {
           // Network error or 5xx server transient issue
           await offlineDb.outbox.update(order.id, {
@@ -337,3 +430,5 @@ export async function clearSyncedOrders(userId: string) {
 export function isOutboxSyncing(): boolean {
   return isSyncing;
 }
+
+export { requestPersistentStorage } from "./db";

@@ -1,10 +1,25 @@
 import { prisma } from "../../db/client.js";
-import { InvoiceStatus, PaymentMode, PaymentStatus } from "@prisma/client";
+import {
+  Prisma,
+  InvoiceStatus,
+  PaymentMode,
+  PaymentStatus,
+} from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
+import type { UserContext } from "@mill-ledger/shared";
+import { sequenceService } from "./sequence.service.js";
+import { auditService } from "../reporting/audit.service.js";
 
 export interface PaymentAllocationInput {
   salesInvoiceId: string;
   amount: number;
+}
+
+export interface BouncePaymentInput {
+  reason: string;
+  referenceNumber?: string;
+  bouncedAt?: Date;
+  idempotencyKey?: string;
 }
 
 export interface RecordPaymentInput {
@@ -23,7 +38,7 @@ export class PaymentService {
   /**
    * Record a customer payment receipt and allocate to invoices
    */
-  async recordPayment(input: RecordPaymentInput) {
+  async recordPayment(input: RecordPaymentInput, user?: UserContext) {
     if (!input.customerId) {
       throw new AppError("Customer ID is required", 400);
     }
@@ -31,10 +46,271 @@ export class PaymentService {
       throw new AppError("Payment amount must be greater than zero", 400);
     }
 
-    return await prisma.$transaction(async (tx) => {
-      // 1. Idempotency check
-      if (input.idempotencyKey) {
-        const existing = await tx.payment.findUnique({
+    try {
+      const payment = await prisma.$transaction(async (tx) => {
+        // 1. Idempotency check
+        if (input.idempotencyKey) {
+          const existing = await tx.payment.findUnique({
+            where: { idempotencyKey: input.idempotencyKey },
+            include: {
+              customer: true,
+              allocations: {
+                include: { salesInvoice: true },
+              },
+            },
+          });
+          if (existing) {
+            return existing;
+          }
+        }
+
+        // 2. Validate customer
+        const customer = await tx.customer.findUnique({
+          where: { id: input.customerId },
+        });
+        if (!customer) {
+          throw new AppError(`Customer ${input.customerId} not found`, 404);
+        }
+
+        const organizationId = customer.organizationId;
+
+        // 3. Generate receipt number: REC-YYYY-0001 via atomic sequence
+        const paymentNumber = await sequenceService.getNextPaymentNumber(
+          tx,
+          organizationId,
+        );
+
+        const paymentAmount = new Prisma.Decimal(input.amount.toString()).toDecimalPlaces(
+          2,
+          Prisma.Decimal.ROUND_HALF_UP,
+        );
+
+        const allocationsToCreate: Array<{
+          salesInvoiceId: string;
+          amount: Prisma.Decimal;
+        }> = [];
+        let unallocated = paymentAmount;
+
+        // 4. Handle allocations
+        if (input.allocations && input.allocations.length > 0) {
+          let totalAllocated = new Prisma.Decimal(0);
+          for (const a of input.allocations) {
+            totalAllocated = totalAllocated.plus(
+              new Prisma.Decimal(a.amount.toString()).toDecimalPlaces(
+                2,
+                Prisma.Decimal.ROUND_HALF_UP,
+              ),
+            );
+          }
+
+          if (totalAllocated.greaterThan(paymentAmount)) {
+            throw new AppError(
+              `Total allocated amount (₹${totalAllocated.toFixed(2)}) cannot exceed total payment amount (₹${paymentAmount.toFixed(2)})`,
+              400,
+            );
+          }
+
+          for (const alloc of input.allocations) {
+            const allocAmount = new Prisma.Decimal(
+              alloc.amount.toString(),
+            ).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+            if (allocAmount.lessThanOrEqualTo(0)) {
+              throw new AppError(
+                "Allocation amount must be greater than zero",
+                400,
+              );
+            }
+
+            const invoice = await tx.salesInvoice.findUnique({
+              where: { id: alloc.salesInvoiceId },
+            });
+
+            if (!invoice) {
+              throw new AppError(
+                `Invoice ${alloc.salesInvoiceId} not found`,
+                404,
+              );
+            }
+            if (invoice.customerId !== input.customerId) {
+              throw new AppError(
+                `Invoice ${invoice.invoiceNumber} does not belong to customer ${customer.name}`,
+                400,
+              );
+            }
+            if (
+              invoice.status !== InvoiceStatus.POSTED &&
+              invoice.status !== InvoiceStatus.PARTIALLY_PAID
+            ) {
+              throw new AppError(
+                `Cannot allocate payment to invoice ${invoice.invoiceNumber} in status ${invoice.status}`,
+                400,
+              );
+            }
+
+            const outstanding = new Prisma.Decimal(
+              invoice.outstandingAmount,
+            ).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+            if (allocAmount.greaterThan(outstanding)) {
+              throw new AppError(
+                `Allocation of ₹${allocAmount.toFixed(2)} exceeds invoice ${invoice.invoiceNumber} outstanding balance of ₹${outstanding.toFixed(2)}`,
+                400,
+              );
+            }
+
+            const newPaid = new Prisma.Decimal(invoice.paidAmount)
+              .plus(allocAmount)
+              .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+            const newOutstanding = Prisma.Decimal.max(
+              new Prisma.Decimal(0),
+              outstanding.minus(allocAmount).toDecimalPlaces(
+                2,
+                Prisma.Decimal.ROUND_HALF_UP,
+              ),
+            );
+            const newStatus = newOutstanding.lessThanOrEqualTo(0)
+              ? InvoiceStatus.PAID
+              : InvoiceStatus.PARTIALLY_PAID;
+
+            await tx.salesInvoice.update({
+              where: { id: invoice.id },
+              data: {
+                paidAmount: newPaid,
+                outstandingAmount: newOutstanding,
+                status: newStatus,
+              },
+            });
+
+            allocationsToCreate.push({
+              salesInvoiceId: invoice.id,
+              amount: allocAmount,
+            });
+          }
+
+          unallocated = Prisma.Decimal.max(
+            new Prisma.Decimal(0),
+            paymentAmount.minus(totalAllocated).toDecimalPlaces(
+              2,
+              Prisma.Decimal.ROUND_HALF_UP,
+            ),
+          );
+        } else {
+          // Auto allocate FIFO against customer open invoices
+          const openInvoices = await tx.salesInvoice.findMany({
+            where: {
+              organizationId,
+              customerId: input.customerId,
+              status: {
+                in: [InvoiceStatus.POSTED, InvoiceStatus.PARTIALLY_PAID],
+              },
+              outstandingAmount: { gt: 0 },
+            },
+            orderBy: { postedAt: "asc" },
+          });
+
+          let remaining = paymentAmount;
+          for (const inv of openInvoices) {
+            if (remaining.lessThanOrEqualTo(0)) break;
+            const invOutstanding = new Prisma.Decimal(
+              inv.outstandingAmount,
+            ).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+            const allocAmt = Prisma.Decimal.min(remaining, invOutstanding);
+
+            const newPaid = new Prisma.Decimal(inv.paidAmount)
+              .plus(allocAmt)
+              .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+            const newOutstanding = Prisma.Decimal.max(
+              new Prisma.Decimal(0),
+              invOutstanding.minus(allocAmt).toDecimalPlaces(
+                2,
+                Prisma.Decimal.ROUND_HALF_UP,
+              ),
+            );
+            const newStatus = newOutstanding.lessThanOrEqualTo(0)
+              ? InvoiceStatus.PAID
+              : InvoiceStatus.PARTIALLY_PAID;
+
+            await tx.salesInvoice.update({
+              where: { id: inv.id },
+              data: {
+                paidAmount: newPaid,
+                outstandingAmount: newOutstanding,
+                status: newStatus,
+              },
+            });
+
+            allocationsToCreate.push({
+              salesInvoiceId: inv.id,
+              amount: allocAmt,
+            });
+
+            remaining = remaining.minus(allocAmt).toDecimalPlaces(
+              2,
+              Prisma.Decimal.ROUND_HALF_UP,
+            );
+          }
+
+          unallocated = Prisma.Decimal.max(new Prisma.Decimal(0), remaining);
+        }
+
+        // 5. Create Payment record
+        const payment = await tx.payment.create({
+          data: {
+            organizationId,
+            paymentNumber,
+            customerId: input.customerId,
+            amount: paymentAmount,
+            unallocatedAmount: unallocated,
+            paymentMode: input.paymentMode || PaymentMode.BANK_TRANSFER,
+            referenceNumber: input.referenceNumber,
+            paymentDate: input.paymentDate || new Date(),
+            status: PaymentStatus.POSTED,
+            notes: input.notes,
+            idempotencyKey: input.idempotencyKey,
+            allocations: {
+              create: allocationsToCreate.map((a) => ({
+                salesInvoiceId: a.salesInvoiceId,
+                amount: a.amount,
+              })),
+            },
+          },
+          include: {
+            customer: true,
+            allocations: {
+              include: { salesInvoice: true },
+            },
+          },
+        });
+
+        return payment;
+      });
+
+      if (payment) {
+        await auditService.log({
+          organizationId: payment.organizationId,
+          userId: user?.id,
+          userEmail: user?.email,
+          action: "CREATE",
+          entity: "Payment",
+          entityId: payment.id,
+          details: {
+            paymentNumber: payment.paymentNumber,
+            customerId: payment.customerId,
+            amount: payment.amount,
+            unallocatedAmount: payment.unallocatedAmount,
+            paymentMode: payment.paymentMode,
+          },
+        });
+      }
+
+      return payment;
+    } catch (err: unknown) {
+      if (
+        input.idempotencyKey &&
+        typeof err === "object" &&
+        err !== null &&
+        (err as { code?: string }).code === "P2002"
+      ) {
+        const existing = await prisma.payment.findUnique({
           where: { idempotencyKey: input.idempotencyKey },
           include: {
             customer: true,
@@ -47,176 +323,117 @@ export class PaymentService {
           return existing;
         }
       }
+      throw err;
+    }
+  }
 
-      // 2. Validate customer
-      const customer = await tx.customer.findUnique({
-        where: { id: input.customerId },
+  /**
+   * Atomically reverse a customer payment (e.g. cheque bounce or chargeback),
+   * mark payment as BOUNCED or REVERSED, audit reverse reason and timestamp,
+   * and restore outstanding balances on all allocated invoices.
+   */
+  async processPaymentReversal(
+    paymentId: string,
+    input: BouncePaymentInput,
+    targetStatus: PaymentStatus = PaymentStatus.BOUNCED,
+    user?: UserContext,
+  ) {
+    if (!input.reason || input.reason.trim() === "") {
+      throw new AppError("Reversal reason is required", 400);
+    }
+
+    return await prisma.$transaction(async (tx) => {
+      const payment = await tx.payment.findUnique({
+        where: { id: paymentId },
+        include: {
+          customer: true,
+          allocations: {
+            include: { salesInvoice: true },
+          },
+        },
       });
-      if (!customer) {
-        throw new AppError(`Customer ${input.customerId} not found`, 404);
+
+      if (!payment) {
+        throw new AppError(`Payment ${paymentId} not found`, 404);
       }
 
-      const organizationId = customer.organizationId;
-
-      // 3. Generate receipt number: REC-YYYY-0001
-      const currentYear = new Date().getFullYear();
-      const count = await tx.payment.count({
-        where: { organizationId },
-      });
-      const paymentNumber = `REC-${currentYear}-${(count + 1).toString().padStart(4, "0")}`;
-
-      const allocationsToCreate: Array<{
-        salesInvoiceId: string;
-        amount: number;
-      }> = [];
-      let unallocated = input.amount;
-
-      // 4. Handle allocations
-      if (input.allocations && input.allocations.length > 0) {
-        const totalAllocated = input.allocations.reduce(
-          (sum, a) => sum + Number(a.amount),
-          0,
+      // Idempotency check: if already bounced/reversed
+      if (
+        payment.status === PaymentStatus.BOUNCED ||
+        payment.status === PaymentStatus.REVERSED
+      ) {
+        if (
+          input.idempotencyKey &&
+          payment.reversalReference === input.idempotencyKey
+        ) {
+          return payment;
+        }
+        throw new AppError(
+          `Payment ${payment.paymentNumber} has already been ${payment.status.toLowerCase()}`,
+          400,
         );
-        if (totalAllocated > input.amount) {
-          throw new AppError(
-            `Total allocated amount (₹${totalAllocated}) cannot exceed total payment amount (₹${input.amount})`,
-            400,
-          );
+      }
+
+      if (payment.status !== PaymentStatus.POSTED) {
+        throw new AppError(
+          `Cannot reverse payment in status ${payment.status}`,
+          400,
+        );
+      }
+
+      const reversalDate = input.bouncedAt || new Date();
+
+      // Reverse each active allocation and restore invoice outstanding balance
+      for (const alloc of payment.allocations) {
+        if (alloc.isReversed) {
+          continue;
         }
 
-        for (const alloc of input.allocations) {
-          const allocAmount = Number(alloc.amount);
-          if (allocAmount <= 0) {
-            throw new AppError(
-              "Allocation amount must be greater than zero",
-              400,
-            );
-          }
+        const invoice = await tx.salesInvoice.findUnique({
+          where: { id: alloc.salesInvoiceId },
+        });
 
-          const invoice = await tx.salesInvoice.findUnique({
-            where: { id: alloc.salesInvoiceId },
-          });
+        if (invoice) {
+          const allocAmount = new Prisma.Decimal(alloc.amount);
+          const currentPaid = new Prisma.Decimal(invoice.paidAmount);
+          const currentOutstanding = new Prisma.Decimal(
+            invoice.outstandingAmount,
+          );
 
-          if (!invoice) {
-            throw new AppError(
-              `Invoice ${alloc.salesInvoiceId} not found`,
-              404,
-            );
-          }
-          if (invoice.customerId !== input.customerId) {
-            throw new AppError(
-              `Invoice ${invoice.invoiceNumber} does not belong to customer ${customer.name}`,
-              400,
-            );
-          }
-          if (
-            invoice.status !== InvoiceStatus.POSTED &&
-            invoice.status !== InvoiceStatus.PARTIALLY_PAID
-          ) {
-            throw new AppError(
-              `Cannot allocate payment to invoice ${invoice.invoiceNumber} in status ${invoice.status}`,
-              400,
-            );
-          }
-
-          const outstanding = Number(invoice.outstandingAmount);
-          if (allocAmount > outstanding) {
-            throw new AppError(
-              `Allocation of ₹${allocAmount} exceeds invoice ${invoice.invoiceNumber} outstanding balance of ₹${outstanding}`,
-              400,
-            );
-          }
-
-          const newPaid = Number(invoice.paidAmount) + allocAmount;
-          const newOutstanding = outstanding - allocAmount;
-          const newStatus =
-            newOutstanding <= 0.001
-              ? InvoiceStatus.PAID
-              : InvoiceStatus.PARTIALLY_PAID;
+          const newPaid = Prisma.Decimal.max(0, currentPaid.minus(allocAmount));
+          const newOutstanding = currentOutstanding.plus(allocAmount);
+          const newStatus = newPaid.lessThanOrEqualTo(0.001)
+            ? InvoiceStatus.POSTED
+            : newOutstanding.greaterThan(0.001)
+              ? InvoiceStatus.PARTIALLY_PAID
+              : InvoiceStatus.PAID;
 
           await tx.salesInvoice.update({
             where: { id: invoice.id },
             data: {
               paidAmount: newPaid,
-              outstandingAmount: Math.max(0, newOutstanding),
+              outstandingAmount: newOutstanding,
               status: newStatus,
             },
           });
-
-          allocationsToCreate.push({
-            salesInvoiceId: invoice.id,
-            amount: allocAmount,
-          });
         }
 
-        unallocated = input.amount - totalAllocated;
-      } else {
-        // Auto allocate FIFO against customer open invoices
-        const openInvoices = await tx.salesInvoice.findMany({
-          where: {
-            organizationId,
-            customerId: input.customerId,
-            status: {
-              in: [InvoiceStatus.POSTED, InvoiceStatus.PARTIALLY_PAID],
-            },
-            outstandingAmount: { gt: 0 },
+        await tx.paymentAllocation.update({
+          where: { id: alloc.id },
+          data: {
+            isReversed: true,
+            reversedAt: reversalDate,
           },
-          orderBy: { postedAt: "asc" },
         });
-
-        let remaining = input.amount;
-        for (const inv of openInvoices) {
-          if (remaining <= 0) break;
-          const invOutstanding = Number(inv.outstandingAmount);
-          const allocAmt = Math.min(remaining, invOutstanding);
-
-          const newPaid = Number(inv.paidAmount) + allocAmt;
-          const newOutstanding = invOutstanding - allocAmt;
-          const newStatus =
-            newOutstanding <= 0.001
-              ? InvoiceStatus.PAID
-              : InvoiceStatus.PARTIALLY_PAID;
-
-          await tx.salesInvoice.update({
-            where: { id: inv.id },
-            data: {
-              paidAmount: newPaid,
-              outstandingAmount: Math.max(0, newOutstanding),
-              status: newStatus,
-            },
-          });
-
-          allocationsToCreate.push({
-            salesInvoiceId: inv.id,
-            amount: allocAmt,
-          });
-
-          remaining -= allocAmt;
-        }
-
-        unallocated = remaining;
       }
 
-      // 5. Create Payment record
-      const payment = await tx.payment.create({
+      const updatedPayment = await tx.payment.update({
+        where: { id: payment.id },
         data: {
-          organizationId,
-          paymentNumber,
-          customerId: input.customerId,
-          amount: input.amount,
-          unallocatedAmount: Math.max(0, unallocated),
-          paymentMode: input.paymentMode || PaymentMode.BANK_TRANSFER,
-          referenceNumber: input.referenceNumber,
-          paymentDate: input.paymentDate || new Date(),
-          status: PaymentStatus.POSTED,
-          notes: input.notes,
-          idempotencyKey: input.idempotencyKey,
-          allocations: {
-            create: allocationsToCreate.map((a) => ({
-              salesInvoiceId: a.salesInvoiceId,
-              amount: a.amount,
-            })),
-          },
+          status: targetStatus,
+          reversalReason: input.reason,
+          reversalReference: input.referenceNumber || input.idempotencyKey,
+          reversedAt: reversalDate,
         },
         include: {
           customer: true,
@@ -226,8 +443,61 @@ export class PaymentService {
         },
       });
 
-      return payment;
+      await tx.auditLog.create({
+        data: {
+          organizationId: payment.organizationId,
+          userId: user?.id,
+          userEmail: user?.email,
+          action:
+            targetStatus === PaymentStatus.BOUNCED
+              ? "PAYMENT_BOUNCED"
+              : "PAYMENT_REVERSED",
+          entity: "payment",
+          entityId: payment.id,
+          reason: input.reason,
+          details: JSON.stringify({
+            paymentNumber: payment.paymentNumber,
+            amount: Number(payment.amount),
+            reversalReference: input.referenceNumber || input.idempotencyKey,
+            reversedAt: reversalDate.toISOString(),
+          }),
+        },
+      });
+
+      return updatedPayment;
     });
+  }
+
+  /**
+   * Mark a payment as bounced (e.g. cheque/NACH dishonour) and restore invoice balances
+   */
+  async bouncePayment(
+    paymentId: string,
+    input: BouncePaymentInput,
+    user?: UserContext,
+  ) {
+    return await this.processPaymentReversal(
+      paymentId,
+      input,
+      PaymentStatus.BOUNCED,
+      user,
+    );
+  }
+
+  /**
+   * Reverse an online or electronic payment (e.g. chargeback or erroneous entry)
+   */
+  async reversePayment(
+    paymentId: string,
+    input: BouncePaymentInput,
+    user?: UserContext,
+  ) {
+    return await this.processPaymentReversal(
+      paymentId,
+      input,
+      PaymentStatus.REVERSED,
+      user,
+    );
   }
 
   /**
@@ -243,10 +513,23 @@ export class PaymentService {
   }
 
   /**
-   * List payments with customer and allocations
+   * List payments with customer and allocations (paginated - F-074)
    */
-  async getPayments(organizationId: string, customerId?: string) {
+  async getPayments(
+    organizationId: string,
+    customerId?: string,
+    options?: { limit?: number; offset?: number },
+  ) {
     const orgId = await this.resolveOrgId(organizationId);
+    const limit =
+      options?.limit !== undefined
+        ? Math.min(Math.max(Number(options.limit) || 50, 1), 100)
+        : 50;
+    const offset =
+      options?.offset !== undefined
+        ? Math.max(Number(options.offset) || 0, 0)
+        : undefined;
+
     return await prisma.payment.findMany({
       where: {
         organizationId: orgId,
@@ -259,6 +542,8 @@ export class PaymentService {
         },
       },
       orderBy: { paymentDate: "desc" },
+      take: limit,
+      skip: offset,
     });
   }
 
@@ -506,6 +791,259 @@ export class PaymentService {
         netOutstanding: outstanding,
         openInvoicesCount,
       };
+    });
+  }
+
+  /**
+   * Allocate unallocated cash from an existing POSTED payment to open invoices (IMP-018)
+   */
+  async allocateUnallocatedPayment(
+    paymentId: string,
+    allocations: PaymentAllocationInput[],
+    user?: UserContext,
+  ) {
+    if (!allocations || allocations.length === 0) {
+      throw new AppError("At least one allocation is required", 400);
+    }
+
+    return await prisma.$transaction(async (tx) => {
+      const payment = await tx.payment.findUnique({
+        where: { id: paymentId },
+        include: { customer: true },
+      });
+      if (!payment) {
+        throw new AppError(`Payment ${paymentId} not found`, 404);
+      }
+      if (payment.status !== PaymentStatus.POSTED) {
+        throw new AppError(
+          `Cannot allocate payment in status ${payment.status}`,
+          400,
+        );
+      }
+
+      const unallocated = new Prisma.Decimal(
+        payment.unallocatedAmount,
+      ).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+
+      let totalToAllocate = new Prisma.Decimal(0);
+      for (const a of allocations) {
+        const amt = new Prisma.Decimal(a.amount.toString()).toDecimalPlaces(
+          2,
+          Prisma.Decimal.ROUND_HALF_UP,
+        );
+        if (amt.lessThanOrEqualTo(0)) {
+          throw new AppError("Allocation amount must be greater than zero", 400);
+        }
+        totalToAllocate = totalToAllocate.plus(amt);
+      }
+
+      if (totalToAllocate.greaterThan(unallocated)) {
+        throw new AppError(
+          `Total allocation (₹${totalToAllocate.toFixed(2)}) exceeds unallocated balance (₹${unallocated.toFixed(2)})`,
+          400,
+        );
+      }
+
+      for (const alloc of allocations) {
+        const allocAmount = new Prisma.Decimal(
+          alloc.amount.toString(),
+        ).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+
+        const invoice = await tx.salesInvoice.findUnique({
+          where: { id: alloc.salesInvoiceId },
+        });
+        if (!invoice) {
+          throw new AppError(`Invoice ${alloc.salesInvoiceId} not found`, 404);
+        }
+        if (invoice.customerId !== payment.customerId) {
+          throw new AppError(
+            `Invoice ${invoice.invoiceNumber} does not belong to customer ${payment.customer.name}`,
+            400,
+          );
+        }
+        if (
+          invoice.status !== InvoiceStatus.POSTED &&
+          invoice.status !== InvoiceStatus.PARTIALLY_PAID
+        ) {
+          throw new AppError(
+            `Cannot allocate to invoice ${invoice.invoiceNumber} in status ${invoice.status}`,
+            400,
+          );
+        }
+
+        const outstanding = new Prisma.Decimal(
+          invoice.outstandingAmount,
+        ).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+        if (allocAmount.greaterThan(outstanding)) {
+          throw new AppError(
+            `Allocation (₹${allocAmount.toFixed(2)}) exceeds invoice ${invoice.invoiceNumber} outstanding (₹${outstanding.toFixed(2)})`,
+            400,
+          );
+        }
+
+        const newPaid = new Prisma.Decimal(invoice.paidAmount)
+          .plus(allocAmount)
+          .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+        const newOutstanding = Prisma.Decimal.max(
+          new Prisma.Decimal(0),
+          outstanding.minus(allocAmount).toDecimalPlaces(
+            2,
+            Prisma.Decimal.ROUND_HALF_UP,
+          ),
+        );
+        const newStatus = newOutstanding.lessThanOrEqualTo(0)
+          ? InvoiceStatus.PAID
+          : InvoiceStatus.PARTIALLY_PAID;
+
+        await tx.salesInvoice.update({
+          where: { id: invoice.id },
+          data: {
+            paidAmount: newPaid,
+            outstandingAmount: newOutstanding,
+            status: newStatus,
+          },
+        });
+
+        await tx.paymentAllocation.create({
+          data: {
+            paymentId: payment.id,
+            salesInvoiceId: invoice.id,
+            amount: allocAmount,
+          },
+        });
+      }
+
+      const nextUnallocated = Prisma.Decimal.max(
+        new Prisma.Decimal(0),
+        unallocated.minus(totalToAllocate).toDecimalPlaces(
+          2,
+          Prisma.Decimal.ROUND_HALF_UP,
+        ),
+      );
+
+      const updated = await tx.payment.update({
+        where: { id: payment.id },
+        data: { unallocatedAmount: nextUnallocated },
+        include: {
+          customer: true,
+          allocations: { include: { salesInvoice: true } },
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          organizationId: payment.organizationId,
+          userId: user?.id,
+          userEmail: user?.email,
+          action: "PAYMENT_ALLOCATED",
+          entity: "payment",
+          entityId: payment.id,
+          details: JSON.stringify({
+            paymentNumber: payment.paymentNumber,
+            allocatedAmount: totalToAllocate.toFixed(2),
+            remainingUnallocated: nextUnallocated.toFixed(2),
+          }),
+        },
+      });
+
+      return updated;
+    });
+  }
+
+  /**
+   * Reverse a single payment allocation without bouncing the entire payment (IMP-018)
+   */
+  async reversePaymentAllocation(
+    paymentId: string,
+    allocationId: string,
+    reason: string,
+    user?: UserContext,
+  ) {
+    if (!reason || reason.trim() === "") {
+      throw new AppError("Reversal reason is required", 400);
+    }
+
+    return await prisma.$transaction(async (tx) => {
+      const allocation = await tx.paymentAllocation.findUnique({
+        where: { id: allocationId },
+        include: { payment: true, salesInvoice: true },
+      });
+      if (!allocation || allocation.paymentId !== paymentId) {
+        throw new AppError("Payment allocation not found", 404);
+      }
+      if (allocation.isReversed) {
+        throw new AppError("Allocation has already been reversed", 400);
+      }
+      if (allocation.payment.status !== PaymentStatus.POSTED) {
+        throw new AppError("Can only adjust allocations on POSTED payments", 400);
+      }
+
+      const allocAmount = new Prisma.Decimal(allocation.amount).toDecimalPlaces(
+        2,
+        Prisma.Decimal.ROUND_HALF_UP,
+      );
+      const inv = allocation.salesInvoice;
+      const newPaid = Prisma.Decimal.max(
+        new Prisma.Decimal(0),
+        new Prisma.Decimal(inv.paidAmount).minus(allocAmount).toDecimalPlaces(
+          2,
+          Prisma.Decimal.ROUND_HALF_UP,
+        ),
+      );
+      const newOutstanding = new Prisma.Decimal(inv.outstandingAmount)
+        .plus(allocAmount)
+        .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+      const newStatus = newPaid.lessThanOrEqualTo(0)
+        ? InvoiceStatus.POSTED
+        : InvoiceStatus.PARTIALLY_PAID;
+
+      await tx.salesInvoice.update({
+        where: { id: inv.id },
+        data: {
+          paidAmount: newPaid,
+          outstandingAmount: newOutstanding,
+          status: newStatus,
+        },
+      });
+
+      await tx.paymentAllocation.update({
+        where: { id: allocation.id },
+        data: { isReversed: true, reversedAt: new Date() },
+      });
+
+      const nextUnallocated = new Prisma.Decimal(
+        allocation.payment.unallocatedAmount,
+      )
+        .plus(allocAmount)
+        .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
+
+      const updated = await tx.payment.update({
+        where: { id: paymentId },
+        data: { unallocatedAmount: nextUnallocated },
+        include: {
+          customer: true,
+          allocations: { include: { salesInvoice: true } },
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          organizationId: allocation.payment.organizationId,
+          userId: user?.id,
+          userEmail: user?.email,
+          action: "PAYMENT_ALLOCATION_REVERSED",
+          entity: "payment",
+          entityId: paymentId,
+          reason: reason.trim(),
+          details: JSON.stringify({
+            allocationId,
+            invoiceNumber: inv.invoiceNumber,
+            amount: allocAmount.toFixed(2),
+          }),
+        },
+      });
+
+      return updated;
     });
   }
 }

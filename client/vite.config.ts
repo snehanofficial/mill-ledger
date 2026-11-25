@@ -63,26 +63,31 @@ export default defineConfig({
     },
   },
   build: {
+    sourcemap: true,
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (
-            id.includes("node_modules/react/") ||
-            id.includes("node_modules/react-dom/") ||
-            id.includes("node_modules/react-router")
+            id.includes("/node_modules/react/") ||
+            id.includes("/node_modules/react-dom/") ||
+            id.includes("/node_modules/react-router") ||
+            id.includes("/node_modules/react-is/")
           ) {
             return "vendor-react";
           }
-          if (id.includes("node_modules/@tanstack/react-query")) {
+          if (id.includes("/node_modules/@tanstack/react-query/")) {
             return "vendor-query";
           }
-          if (id.includes("node_modules/lucide-react")) {
+          if (id.includes("/node_modules/lucide-react/")) {
             return "vendor-icons";
           }
+          if (id.includes("/node_modules/dexie/")) {
+            return "vendor-dexie";
+          }
           if (
-            id.includes("node_modules/@radix-ui") ||
-            id.includes("node_modules/cmdk")
+            id.includes("/node_modules/@radix-ui/") ||
+            id.includes("/node_modules/cmdk/")
           ) {
             return "vendor-ui";
           }

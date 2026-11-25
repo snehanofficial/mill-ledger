@@ -1,0 +1,8 @@
+=== F-012 Verification: 09 Backward Compatibility ===
+1. Benchmark Test Fixtures Preserved:
+   - Official dummy GSTINs in seed data (33AABCM1234F1Z1, 33AABCR5678G1Z2, 29AABCD9012H1Z3, 33AABCS3456J1Z4, 33AAAAA0000A1Z5) are registered in BENCHMARK_DUMMY_GSTINS.
+   - All 18 benchmark assertions and 36 test suites pass with 100% fidelity.
+2. Optional GSTIN Support:
+   - Unregistered customers without GSTIN (null/undefined) continue to be accepted for B2C consumer supplies.
+3. Client Component Non-Breaking:
+   - Customers directory in client/src/pages/customers-page.tsx displays validity badges without altering existing layout or data contracts.

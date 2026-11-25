@@ -1,4 +1,38 @@
-@import "@fontsource-variable/geist";
+/* Geist Latin Variable (strictly subsetted to Latin) */
+@font-face {
+  font-family: "Geist Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/geist/files/geist-latin-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+/* Noto Sans Tamil (strictly subsetted to Tamil) */
+@font-face {
+  font-family: "Noto Sans Tamil";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("@fontsource/noto-sans-tamil/files/noto-sans-tamil-tamil-400-normal.woff2")
+    format("woff2");
+  unicode-range: U+0964-0965, U+0B82-0BFA, U+200C-200D, U+20B9, U+25CC;
+}
+
+@font-face {
+  font-family: "Noto Sans Tamil";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url("@fontsource/noto-sans-tamil/files/noto-sans-tamil-tamil-600-normal.woff2")
+    format("woff2");
+  unicode-range: U+0964-0965, U+0B82-0BFA, U+200C-200D, U+20B9, U+25CC;
+}
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -65,7 +99,84 @@
   --shadow-menu: 0 4px 16px rgba(0, 0, 0, 0.08);
   --shadow-modal: 0 16px 36px rgba(0, 0, 0, 0.16);
 
-  --font-sans: "Geist Variable", Inter, ui-sans-serif, system-ui, sans-serif;
+  /* Motion tokens from docs/design/milledger-design-system.json */
+  --ml-motion-instant: 0ms;
+  --ml-motion-press: 80ms;
+  --ml-motion-micro: 100ms;
+  --ml-motion-fast: 120ms;
+  --ml-motion-standard: 160ms;
+  --ml-motion-panel-enter: 220ms;
+  --ml-motion-overlay-enter: 240ms;
+  --ml-motion-overlay-exit: 140ms;
+  --ml-motion-toast-enter: 160ms;
+  --ml-motion-toast-exit: 120ms;
+  --ml-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ml-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --ml-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  --font-sans:
+    "Geist Variable", "Noto Sans Tamil", Inter, ui-sans-serif, system-ui,
+    sans-serif;
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+.dark {
+  color-scheme: dark;
+  --background: #09090b;
+  --foreground: #f4f4f5;
+  --card: #121215;
+  --card-foreground: #f4f4f5;
+  --popover: #121215;
+  --popover-foreground: #f4f4f5;
+  --primary: #1d8a6c;
+  --primary-foreground: #ffffff;
+  --primary-hover: #229d7c;
+  --primary-pressed: #176b54;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+  --selection: #13392f;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --destructive-hover: #dc2626;
+  --destructive-pressed: #b91c1c;
+  --danger-bg: #450a0a;
+  --border: #27272a;
+  --input: #3f3f46;
+  --control-border: #3f3f46;
+  --ring: #1d8a6c;
+  --surface: #121215;
+  --surface-muted: #18181b;
+  --surface-sunken: #09090b;
+
+  --success: #22c55e;
+  --success-bg: #052e16;
+  --success-border: #14532d;
+  --warning: #f59e0b;
+  --warning-bg: #451a03;
+  --warning-border: #78350f;
+  --info: #3b82f6;
+  --info-bg: #172554;
+  --info-border: #1e40af;
+  --neutral: #a1a1aa;
+  --neutral-bg: #27272a;
+  --neutral-border: #3f3f46;
+
+  --sidebar: #0e0e11;
+  --sidebar-foreground: #f4f4f5;
+  --sidebar-primary: #1d8a6c;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #27272a;
+  --sidebar-ring: #1d8a6c;
+
+  --shadow-menu: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-modal: 0 16px 36px rgba(0, 0, 0, 0.6);
 }
 
 @theme inline {
@@ -122,6 +233,12 @@
   --color-neutral: var(--neutral);
   --color-neutral-bg: var(--neutral-bg);
   --color-neutral-border: var(--neutral-border);
+
+  --default-transition-duration: var(--ml-motion-micro);
+  --default-transition-timing-function: var(--ml-ease-standard);
+  --ease-standard: var(--ml-ease-standard);
+  --ease-enter: var(--ml-ease-enter);
+  --ease-exit: var(--ml-ease-exit);
 }
 
 @utility rounded-control {
@@ -187,6 +304,16 @@
   scrollbar-color: var(--border) transparent;
 }
 
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border);
+  }
+}
+
 @supports not (scrollbar-color: auto) {
   * {
     scrollbar-width: auto;
@@ -216,7 +343,6 @@ html {
   color: var(--foreground);
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
-  scrollbar-gutter: stable;
 }
 
 body {
@@ -224,7 +350,6 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background: var(--background);
-  scrollbar-gutter: stable;
 }
 
 button,
@@ -236,8 +361,10 @@ summary,
 }
 
 button:disabled,
-[aria-disabled="true"] {
-  cursor: not-allowed;
+[aria-disabled="true"],
+button:disabled:hover,
+[aria-disabled="true"]:hover {
+  cursor: not-allowed !important;
 }
 
 button,
@@ -255,25 +382,30 @@ select {
   overflow: hidden;
 }
 [data-radix-collapsible-content][data-state="open"] {
-  animation: collapsible-open 160ms cubic-bezier(0.2, 0, 0, 1);
+  animation: collapsible-open var(--ml-motion-standard) var(--ml-ease-standard);
 }
 [data-radix-collapsible-content][data-state="closed"] {
-  animation: collapsible-close 120ms cubic-bezier(0.4, 0, 1, 1);
+  animation: collapsible-close var(--ml-motion-fast) var(--ml-ease-exit);
 }
+/* F-063: GPU-composited accordion transitions avoiding layout-thrashing height mutation */
 @keyframes collapsible-open {
   from {
-    height: 0;
+    opacity: 0;
+    transform: translateY(-4px);
   }
   to {
-    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 @keyframes collapsible-close {
   from {
-    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+    transform: translateY(0);
   }
   to {
-    height: 0;
+    opacity: 0;
+    transform: translateY(-4px);
   }
 }
 
@@ -289,4 +421,35 @@ select {
   [data-radix-collapsible-content] {
     animation: none;
   }
+}
+
+/* F-062: In-app motion pause controls (WCAG 2.2 SC 2.2.2 Pause, Stop, Hide) */
+html[data-reduce-motion="true"],
+html.motion-paused {
+  & *,
+  & *::before,
+  & *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  & [data-radix-collapsible-content] {
+    animation: none !important;
+  }
+  & .animate-pulse,
+  & .animate-spin {
+    animation: none !important;
+  }
+}
+
+/* F-062: Finite pulse utility that auto-stops after <= 5 seconds (2 iterations * 2s = 4s) */
+.animate-pulse-finite {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) 2 forwards;
+}
+
+/* F-055: Touch target sizing utility (WCAG 2.2 SC 2.5.8 & Apple HIG) */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
 }

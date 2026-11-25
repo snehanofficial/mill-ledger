@@ -1,0 +1,4 @@
+=== F-020 Verification: 08 Concurrency Safety ===
+1. Price threshold checks execute within the Prisma transaction tx boundary in both createSalesOrder and approveSalesOrder.
+2. Database SELECT FOR UPDATE row locking established in F-007 on involved inventory items guarantees that concurrent approval requests cannot interleave or evaluate stale stock balances.
+3. Order creation idempotency key deduplication (F-015) ensures that duplicate discount order requests safely return the existing order without repeating price evaluations or duplicate reservation allocations.

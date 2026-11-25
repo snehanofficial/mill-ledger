@@ -1,0 +1,260 @@
+diff --git a/client/src/pages/reports-page.tsx b/client/src/pages/reports-page.tsx
+index e03c8ae..f1d923e 100644
+--- a/client/src/pages/reports-page.tsx
++++ b/client/src/pages/reports-page.tsx
+@@ -1,6 +1,7 @@
+ import { useState } from "react";
+ import { useQuery } from "@tanstack/react-query";
+ import { apiClient } from "@/lib/api-client";
++import { useCurrentUser } from "@/hooks/use-current-user";
+ import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
+@@ -19,9 +20,63 @@ import {
+   AlertTriangleIcon,
+   CheckCircle2Icon,
+ } from "lucide-react";
++import type { Role } from "@mill-ledger/shared";
++
++interface ReportTabItem {
++  id: string;
++  label: string;
++  roles: Role[];
++}
++
++const REPORT_TABS: ReportTabItem[] = [
++  {
++    id: "sales",
++    label: "Sales register",
++    roles: ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
++  },
++  {
++    id: "gst",
++    label: "GST outward summary",
++    roles: ["ADMIN", "ACCOUNTANT", "OWNER"],
++  },
++  {
++    id: "stock",
++    label: "Stock valuation",
++    roles: ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
++  },
++  {
++    id: "production",
++    label: "Production & variances",
++    roles: ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
++  },
++  {
++    id: "receivables",
++    label: "Receivables & ageing",
++    roles: ["ADMIN", "ACCOUNTANT", "OWNER"],
++  },
++  {
++    id: "audit",
++    label: "Audit logs",
++    roles: ["ADMIN", "ACCOUNTANT", "OWNER"],
++  },
++];
+ 
+ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+-  const [activeTab, setActiveTab] = useState(defaultTab);
++  const { user } = useCurrentUser();
++  const allowedTabs = REPORT_TABS.filter((t) =>
++    user ? t.roles.includes(user.role) : true,
++  );
++
++  const isDefaultAllowed = allowedTabs.some((t) => t.id === defaultTab);
++  const initialTab = isDefaultAllowed
++    ? defaultTab
++    : allowedTabs[0]?.id || "sales";
++
++  const [activeTab, setActiveTab] = useState(initialTab);
++  const effectiveTab = allowedTabs.some((t) => t.id === activeTab)
++    ? activeTab
++    : allowedTabs[0]?.id || "sales";
++
+   const [exporting, setExporting] = useState(false);
+   const [auditSearch, setAuditSearch] = useState("");
+   const [auditActionFilter, setAuditActionFilter] = useState("ALL");
+@@ -37,7 +92,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       const res = await apiClient.get("/reports/sales?organizationId=MILL");
+       return res.data;
+     },
+-    enabled: activeTab === "sales",
++    enabled: effectiveTab === "sales",
+   });
+ 
+   // 2. GST Outward Summary
+@@ -47,7 +102,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       const res = await apiClient.get("/reports/gst?organizationId=MILL");
+       return res.data;
+     },
+-    enabled: activeTab === "gst",
++    enabled: effectiveTab === "gst",
+   });
+ 
+   // 3. Stock Valuation Report
+@@ -57,7 +112,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       const res = await apiClient.get("/reports/stock?organizationId=MILL");
+       return res.data;
+     },
+-    enabled: activeTab === "stock",
++    enabled: effectiveTab === "stock",
+   });
+ 
+   // 4. Production Report
+@@ -69,7 +124,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       );
+       return res.data;
+     },
+-    enabled: activeTab === "production",
++    enabled: effectiveTab === "production",
+   });
+ 
+   // 5. Receivables Report
+@@ -81,7 +136,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       );
+       return res.data;
+     },
+-    enabled: activeTab === "receivables",
++    enabled: effectiveTab === "receivables",
+   });
+ 
+   // 6. Audit Report
+@@ -91,7 +146,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       const res = await apiClient.get("/reports/audit?organizationId=MILL");
+       return res.data;
+     },
+-    enabled: activeTab === "audit",
++    enabled: effectiveTab === "audit",
+   });
+ 
+   const filteredAuditLogs = (auditData?.logs || []).filter((log: any) => {
+@@ -113,7 +168,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+     try {
+       setExporting(true);
+       const res = await apiClient.get(
+-        `/reports/${activeTab}/export?format=csv&organizationId=MILL`,
++        `/reports/${effectiveTab}/export?format=csv&organizationId=MILL`,
+         {
+           responseType: "blob",
+         },
+@@ -123,7 +178,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       link.href = url;
+       link.setAttribute(
+         "download",
+-        `${activeTab}-report-${new Date().toISOString().slice(0, 10)}.csv`,
++        `${effectiveTab}-report-${new Date().toISOString().slice(0, 10)}.csv`,
+       );
+       document.body.appendChild(link);
+       link.click();
+@@ -156,14 +211,14 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+             variant="outline"
+             size="sm"
+             onClick={() => {
+-              if (activeTab === "sales") refetchSales();
+-              if (activeTab === "gst") refetchGST();
+-              if (activeTab === "stock") refetchStock();
+-              if (activeTab === "production") refetchProd();
+-              if (activeTab === "receivables") refetchRec();
+-              if (activeTab === "audit") refetchAudit();
++              if (effectiveTab === "sales") refetchSales();
++              if (effectiveTab === "gst") refetchGST();
++              if (effectiveTab === "stock") refetchStock();
++              if (effectiveTab === "production") refetchProd();
++              if (effectiveTab === "receivables") refetchRec();
++              if (effectiveTab === "audit") refetchAudit();
+             }}
+-            className="gap-2"
++            className="gap-2 cursor-pointer"
+           >
+             <RefreshCwIcon className="h-4 w-4" />
+             Refresh
+@@ -172,7 +227,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+             size="sm"
+             onClick={handleExportCSV}
+             disabled={exporting}
+-            className="gap-2"
++            className="gap-2 cursor-pointer"
+           >
+             <DownloadIcon className="h-4 w-4" />
+             {exporting ? "Exporting..." : "Export CSV"}
+@@ -182,20 +237,14 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+ 
+       {/* Navigation Tabs */}
+       <div className="flex flex-wrap border-b border-border">
+-        {[
+-          { id: "sales", label: "Sales register" },
+-          { id: "gst", label: "GST outward summary" },
+-          { id: "stock", label: "Stock valuation" },
+-          { id: "production", label: "Production & variances" },
+-          { id: "receivables", label: "Receivables & ageing" },
+-          { id: "audit", label: "Audit logs" },
+-        ].map((tab) => (
++        {allowedTabs.map((tab) => (
+           <button
+             key={tab.id}
++            data-testid={`report-tab-${tab.id}`}
+             onClick={() => setActiveTab(tab.id)}
+-            className={`border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+-              activeTab === tab.id
+-                ? "border-primary text-foreground"
++            className={`border-b-2 px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
++              effectiveTab === tab.id
++                ? "border-primary text-foreground font-semibold"
+                 : "border-transparent text-muted-foreground hover:text-foreground"
+             }`}
+           >
+@@ -205,7 +254,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       </div>
+ 
+       {/* Tab 1: Sales Register */}
+-      {activeTab === "sales" && (
++      {effectiveTab === "sales" && (
+         <div className="rounded-xl border bg-card shadow-xs">
+           <div className="flex flex-col gap-2 border-b p-4 sm:flex-row sm:items-center sm:justify-between">
+             <div>
+@@ -297,7 +346,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       )}
+ 
+       {/* Tab 2: GST Outward Summary */}
+-      {activeTab === "gst" && (
++      {effectiveTab === "gst" && (
+         <div className="flex flex-col gap-6">
+           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+             <div className="rounded-xl border bg-card p-4 shadow-xs">
+@@ -402,7 +451,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       )}
+ 
+       {/* Tab 3: Stock Valuation */}
+-      {activeTab === "stock" && (
++      {effectiveTab === "stock" && (
+         <div className="rounded-xl border bg-card shadow-xs">
+           <div className="flex items-center justify-between border-b p-4">
+             <div>
+@@ -487,7 +536,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       )}
+ 
+       {/* Tab 4: Production Report */}
+-      {activeTab === "production" && (
++      {effectiveTab === "production" && (
+         <div className="rounded-xl border bg-card shadow-xs">
+           <div className="flex items-center justify-between border-b p-4">
+             <div>
+@@ -567,7 +616,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       )}
+ 
+       {/* Tab 5: Receivables and Ageing */}
+-      {activeTab === "receivables" && (
++      {effectiveTab === "receivables" && (
+         <div className="rounded-xl border bg-card shadow-xs">
+           <div className="flex items-center justify-between border-b p-4">
+             <div>
+@@ -647,7 +696,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       )}
+ 
+       {/* Tab 6: Audit Logs */}
+-      {activeTab === "audit" && (
++      {effectiveTab === "audit" && (
+         <div className="rounded-xl border bg-card shadow-xs">
+           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b p-4">
+             <div>

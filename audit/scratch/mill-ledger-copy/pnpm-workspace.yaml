@@ -1,0 +1,21 @@
+packages:
+  - "client"
+  - "server"
+  - "shared"
+
+overrides:
+  tinypool: ">=2.1.2"
+  glob: ">=14.0.2"
+  minimatch: ">=11.0.1"
+
+allowBuilds:
+  "@prisma/engines": true
+  esbuild: true
+  prisma: true
+
+onlyBuiltDependencies:
+  - "@oxlint/binding-linux-x64-gnu"
+  - "@prisma/engines"
+  - "@rolldown/binding-linux-x64-gnu"
+  - "esbuild"
+  - "prisma"

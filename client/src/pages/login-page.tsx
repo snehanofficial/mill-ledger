@@ -10,6 +10,7 @@ import {
 } from "@/hooks/use-current-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardHeader,
@@ -19,13 +20,16 @@ import {
 } from "@/components/ui/card";
 import { Alert } from "@/components/ui/alert";
 import { useLanguage } from "@/lib/i18n";
+import { getDefaultRouteForRole } from "@/lib/role-routing";
 import {
   LockIcon,
   MailIcon,
-  ShieldCheckIcon,
   EyeIcon,
   EyeOffIcon,
 } from "lucide-react";
+import { BrandLogo } from "@/components/ui/brand-logo";
+
+const CURRENT_YEAR = new Date().getFullYear();
 
 interface SeedAccount {
   label: string;
@@ -84,6 +88,10 @@ export function LoginPage() {
   const queryClient = useQueryClient();
   const { language, setLanguage } = useLanguage();
 
+  React.useEffect(() => {
+    document.title = "Sign In | MillLedger";
+  }, []);
+
   const { user, isLoading: isCheckingAuth } = useCurrentUser();
 
   const [email, setEmail] = useState("admin@millledger.local");
@@ -91,6 +99,9 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const isSessionExpired = Boolean(
+    (location.state as { sessionExpired?: boolean })?.sessionExpired,
+  );
 
   // Derive target return URL with open-redirect protection
   const rawFrom = (
@@ -98,8 +109,13 @@ export function LoginPage() {
   )?.from;
   const fromPath = rawFrom
     ? `${rawFrom.pathname}${rawFrom.search || ""}`
+    : null;
+  const userDefaultRoute = user
+    ? getDefaultRouteForRole(user.role)
     : "/dashboard";
-  const safeFrom = getSafeRedirectUrl(fromPath, "/dashboard");
+  const safeFrom = fromPath
+    ? getSafeRedirectUrl(fromPath, userDefaultRoute)
+    : userDefaultRoute;
 
   // If user is already authenticated, redirect to destination immediately ("vice versa if authenticated")
   if (user) {
@@ -138,14 +154,16 @@ export function LoginPage() {
         password,
       });
 
+      const shellUser = mapAuthUserToShellUser(authUser);
       // Update TanStack query cache with authenticated user
-      queryClient.setQueryData(
-        AUTH_SESSION_QUERY_KEY,
-        mapAuthUserToShellUser(authUser),
-      );
+      queryClient.setQueryData(AUTH_SESSION_QUERY_KEY, shellUser);
 
-      // Navigate to safe destination
-      navigate(safeFrom, { replace: true });
+      // Navigate to safe destination (respecting user role workspace if no explicit from route)
+      const targetDefault = getDefaultRouteForRole(shellUser.role);
+      const destination = fromPath
+        ? getSafeRedirectUrl(fromPath, targetDefault)
+        : targetDefault;
+      navigate(destination, { replace: true });
     } catch (err: unknown) {
       setIsSubmitting(false);
       if (err instanceof Error) {
@@ -175,7 +193,11 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+    <main
+      id="main-content"
+      role="main"
+      className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8"
+    >
       {/* Top utility row: language switch */}
       <div className="absolute top-4 right-4">
         <Button
@@ -184,20 +206,20 @@ export function LoginPage() {
           onClick={() => setLanguage(language === "en" ? "ta" : "en")}
           aria-label={
             language === "en"
-              ? "Switch language to Tamil"
-              : "ஆங்கிலத்திற்கு மாற்று"
+              ? "தமிழ் (Switch language to Tamil)"
+              : "English (ஆங்கிலத்திற்கு மாற்று)"
           }
         >
-          {language === "en" ? "தமிழ்" : "English"}
+          <span lang={language === "en" ? "ta" : "en"}>
+            {language === "en" ? "தமிழ்" : "English"}
+          </span>
         </Button>
       </div>
 
       <div className="w-full max-w-md space-y-6">
         {/* Brand Header */}
         <div className="text-center">
-          <div className="inline-flex size-12 items-center justify-center rounded-control bg-primary text-primary-foreground shadow-xs">
-            <ShieldCheckIcon className="size-6" aria-hidden="true" />
-          </div>
+          <BrandLogo size="lg" className="mx-auto shadow-xs" />
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-foreground">
             {language === "ta" ? "ஆலை ஏடு உள்நுழைவு" : "Sign in to MillLedger"}
           </h1>
@@ -236,13 +258,27 @@ export function LoginPage() {
                 </Alert>
               )}
 
+              {isSessionExpired && !errorMessage && (
+                <Alert
+                  variant="warning"
+                  role="status"
+                  title={
+                    language === "ta" ? "அமர்வு காலாவதியானது" : "Session Expired"
+                  }
+                >
+                  {language === "ta"
+                    ? "செயலற்ற தன்மை காரணமாக உங்கள் அமர்வு காலாவதியானது. உங்கள் வேலையைத் தொடர மீண்டும் உள்நுழையவும்."
+                    : "Your session expired due to inactivity. Please sign in to resume your work."}
+                </Alert>
+              )}
+
               <div className="space-y-1.5">
-                <label
+                <Label
                   htmlFor="email"
                   className="block text-sm font-medium text-foreground"
                 >
                   {language === "ta" ? "மின்னஞ்சல்" : "Email address"}
-                </label>
+                </Label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
                     <MailIcon className="size-4" aria-hidden="true" />
@@ -269,12 +305,12 @@ export function LoginPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label
+                <Label
                   htmlFor="password"
                   className="block text-sm font-medium text-foreground"
                 >
                   {language === "ta" ? "கடவுச்சொல்" : "Password"}
-                </label>
+                </Label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
                     <LockIcon className="size-4" aria-hidden="true" />
@@ -322,6 +358,12 @@ export function LoginPage() {
                 disabled={isSubmitting}
                 className="w-full text-base font-semibold"
                 aria-busy={isSubmitting}
+                onPointerEnter={() => {
+                  import("@/layouts/authenticated-layout");
+                }}
+                onFocus={() => {
+                  import("@/layouts/authenticated-layout");
+                }}
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
@@ -341,9 +383,13 @@ export function LoginPage() {
         {/* Demo Fast-Switch Cards */}
         <div className="rounded-control border border-border bg-card p-4 text-xs">
           <p className="font-semibold text-foreground">
-            {language === "ta"
-              ? "சோதனை கணக்குகள் (Demo Roles):"
-              : "Benchmark Demo Roles:"}
+            {language === "ta" ? (
+              <>
+                சோதனை கணக்குகள் (<span lang="en">Demo Roles</span>):
+              </>
+            ) : (
+              "Benchmark Demo Roles:"
+            )}
           </p>
           <div className="mt-2 grid grid-cols-2 gap-2">
             {SEED_ACCOUNTS.map((acc) => (
@@ -357,15 +403,47 @@ export function LoginPage() {
                     : "border-border bg-background hover:bg-muted text-foreground"
                 }`}
               >
-                <div className="font-medium">{acc.label}</div>
-                <div className="truncate text-muted-foreground text-[11px]">
+                <div className="font-medium" lang="en">
+                  {acc.label}
+                </div>
+                <div
+                  className="truncate text-muted-foreground text-[11px]"
+                  lang="en"
+                >
                   {acc.email}
                 </div>
               </button>
             ))}
           </div>
         </div>
+
+        {/* Semantic Footer Landmark with Navigational Links */}
+        <footer className="pt-2 text-center text-xs text-muted-foreground">
+          <p lang="en">© {CURRENT_YEAR} MillLedger ERP. All rights reserved.</p>
+          <div className="mt-2 flex justify-center gap-4">
+            <a
+              href="/auth/login"
+              className="hover:text-foreground hover:underline"
+            >
+              {language === "ta" ? "உதவி மையம்" : "Support"}
+            </a>
+            <span aria-hidden="true">•</span>
+            <a
+              href="/auth/login"
+              className="hover:text-foreground hover:underline"
+            >
+              {language === "ta" ? "தனியுரிமை கொள்கை" : "Privacy Policy"}
+            </a>
+            <span aria-hidden="true">•</span>
+            <a
+              href="/auth/login"
+              className="hover:text-foreground hover:underline"
+            >
+              {language === "ta" ? "விதிமுறைகள்" : "Terms"}
+            </a>
+          </div>
+        </footer>
       </div>
-    </div>
+    </main>
   );
 }

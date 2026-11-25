@@ -1,0 +1,179 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.109Z","requestId":"81673828-976a-403c-9ed5-3ca1f552c5c7","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":100,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.158Z","requestId":"5e80f2a1-9d15-4975-b5d6-702926446ce8","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":44,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"umPInL1XHqA6CnxGE2K8HXfaWkz6Fvyf","userRole":"SALESMAN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.244Z","requestId":"3db020fe-c417-4447-a8d4-493eca77b21a","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":82,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.271Z","requestId":"0415a971-61a1-4725-93ac-7306d38a2fbb","method":"POST","path":"/api/v1/sales/orders/cmwuivp4x000u28abhd59hkvh/approve","statusCode":200,"durationMs":26,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.315Z","requestId":"bc14bf8c-80af-43a3-86ad-5bee301c07dc","method":"POST","path":"/api/v1/finance/invoices","statusCode":201,"durationMs":35,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.345Z","requestId":"6e8954e4-898d-4442-8925-8de32ef25a87","method":"POST","path":"/api/v1/sales/dispatches","statusCode":201,"durationMs":28,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > handles financial correction via credit note without deleting posted invoice
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.432Z","requestId":"8d8c451b-8ac3-4fe2-8ffc-b05176f672d0","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > handles financial correction via credit note without deleting posted invoice
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.455Z","requestId":"04d257a7-0feb-47dd-8642-6831f32acb03","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":21,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > handles financial correction via credit note without deleting posted invoice
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.475Z","requestId":"cda50e69-314b-4f29-929d-b274054e474a","method":"POST","path":"/api/v1/sales/orders/cmwuivpda001628abw9s6vd7m/approve","statusCode":200,"durationMs":18,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > handles financial correction via credit note without deleting posted invoice
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.493Z","requestId":"95f36957-ed00-4af7-8995-152be44f6db3","method":"POST","path":"/api/v1/finance/invoices","statusCode":201,"durationMs":17,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > handles financial correction via credit note without deleting posted invoice
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.508Z","requestId":"ec6d9ac8-757e-4989-bd94-314bb3ce78d4","method":"POST","path":"/api/v1/finance/invoices/cmwuivped001b28ab7q4okhco/credit-note","statusCode":201,"durationMs":14,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > enforces role permissions: prevents unauthorized dispatch and invoicing while allowing accountant read access
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.587Z","requestId":"aec9be45-675f-4c37-a744-a48c94981598","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > enforces role permissions: prevents unauthorized dispatch and invoicing while allowing accountant read access
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.665Z","requestId":"dd12421c-1f2a-4543-a3a8-d50f541cd397","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > enforces role permissions: prevents unauthorized dispatch and invoicing while allowing accountant read access
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.693Z","requestId":"6a2ee58b-7f4d-4a08-9aea-66a25f02ab12","method":"GET","path":"/api/v1/finance/invoices","statusCode":200,"durationMs":14,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"3HuO7gMfcaM6g94TKeXhLF9oXJB6PVuZ","userRole":"ACCOUNTANT"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.776Z","requestId":"5993ef99-7b43-4e89-b929-7f6ed5a59058","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.855Z","requestId":"6cd0ea63-15a5-4147-be39-4779049d7a8f","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.932Z","requestId":"3fe5683d-94fc-4aea-98e1-178f9855c129","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.955Z","requestId":"5a942a8e-0b5c-4ea2-802e-9e1a5755fdf2","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":22,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"umPInL1XHqA6CnxGE2K8HXfaWkz6Fvyf","userRole":"SALESMAN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.973Z","requestId":"1e574b65-97a2-4c83-bd05-41c45e0ad71e","method":"POST","path":"/api/v1/sales/orders/cmwuivpr5001g28ab2pdsh40w/approve","statusCode":200,"durationMs":17,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:02.995Z","requestId":"217393f3-4665-4050-b6f9-6b91f730790c","method":"POST","path":"/api/v1/sales/dispatches","statusCode":201,"durationMs":21,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:03.013Z","requestId":"940e810a-d857-4c5e-bdfb-8d7b8dcfddcc","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":16,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"ncKiMiV8DuHnm8fEjO9ta3ay59Uj8r5c","userRole":"SALESMAN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:03.029Z","requestId":"08ea23a0-404a-4f9f-b27e-968d5a690e97","method":"POST","path":"/api/v1/sales/orders/cmwuivpst001p28ab9fmurnh7/approve","statusCode":200,"durationMs":15,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:03.044Z","requestId":"4f0b4e61-369c-4a48-b187-6cc5d9784c26","method":"POST","path":"/api/v1/sales/dispatches","statusCode":201,"durationMs":15,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:03.052Z","requestId":"41364cc7-5a3e-42f4-954a-caa0e598bc96","method":"GET","path":"/api/v1/sales/dispatches","statusCode":200,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:03.060Z","requestId":"9f0bf6d1-5667-4b9e-b19c-8ff527692d3c","method":"GET","path":"/api/v1/sales/dispatches","statusCode":200,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"umPInL1XHqA6CnxGE2K8HXfaWkz6Fvyf","userRole":"SALESMAN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:03.068Z","requestId":"2137d622-406c-4415-86f7-0cf01d21cb72","method":"GET","path":"/api/v1/sales/dispatches/cmwuivps5001l28abrbgyp9qm","statusCode":200,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"umPInL1XHqA6CnxGE2K8HXfaWkz6Fvyf","userRole":"SALESMAN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-24T09:59:03.078Z","requestId":"56185f56-f136-4c7b-a5cc-0903c384ff02","method":"GET","path":"/api/v1/sales/dispatches","statusCode":200,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"ncKiMiV8DuHnm8fEjO9ta3ay59Uj8r5c","userRole":"SALESMAN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-096: generates inter-state invoice for Karnataka delivery asserting 100% IGST allocation and 0 CGST/SGST
+{"level":"INFO","timestamp":"2026-11-24T09:59:03.167Z","requestId":"2d9febcc-974c-4e00-8551-109d63cda0ce","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":79,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-096: generates inter-state invoice for Karnataka delivery asserting 100% IGST allocation and 0 CGST/SGST
+{"level":"INFO","timestamp":"2026-11-24T09:59:03.244Z","requestId":"cd5f7ad5-4c26-4a1c-89c4-b78b6840dc38","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-096: generates inter-state invoice for Karnataka delivery asserting 100% IGST allocation and 0 CGST/SGST
+{"level":"INFO","timestamp":"2026-11-24T09:59:03.265Z","requestId":"de2b3019-084d-42a2-91da-cd1674c30133","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":20,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"ncKiMiV8DuHnm8fEjO9ta3ay59Uj8r5c","userRole":"SALESMAN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-096: generates inter-state invoice for Karnataka delivery asserting 100% IGST allocation and 0 CGST/SGST
+{"level":"INFO","timestamp":"2026-11-24T09:59:03.285Z","requestId":"ec7a887f-a303-444f-a9df-7ba59c124606","method":"POST","path":"/api/v1/sales/orders/cmwuivpzs001y28abpeg9tiyw/approve","statusCode":200,"durationMs":19,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-096: generates inter-state invoice for Karnataka delivery asserting 100% IGST allocation and 0 CGST/SGST
+{"level":"INFO","timestamp":"2026-11-24T09:59:03.302Z","requestId":"ccb0899b-01d9-4723-93cb-daf8aacb2353","method":"POST","path":"/api/v1/finance/invoices","statusCode":201,"durationMs":16,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+ ✓ server/src/invoice-dispatch.test.ts (5 tests) 1546ms
+   ✓ M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets  369ms
+   ✓ M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)  390ms
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.248Z","requestId":"91d1ae74-3e56-4d3a-b3b8-3ef5cc14f83f","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":99,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.298Z","requestId":"4fd4618f-5361-446c-b1db-e062b95a6ad4","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":44,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"umPInL1XHqA6CnxGE2K8HXfaWkz6Fvyf","userRole":"SALESMAN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.380Z","requestId":"c84b9bc1-7b63-409c-a74c-8f85f3ac0369","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.407Z","requestId":"e5dbf541-d3d6-4952-9133-590dee0bce6e","method":"POST","path":"/api/v1/sales/orders/cmwuivqsd000u33ab2v0cbm5n/approve","statusCode":200,"durationMs":26,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.443Z","requestId":"554a1038-3b88-4283-9d1d-42a87e001226","method":"POST","path":"/api/v1/finance/invoices","statusCode":201,"durationMs":34,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.471Z","requestId":"f044a98c-4f91-486c-a445-18771136f853","method":"POST","path":"/api/v1/sales/dispatches","statusCode":201,"durationMs":26,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.503Z","requestId":"80e02c9d-cbc1-4bb9-82e2-6f5466c08bd2","method":"POST","path":"/api/v1/payments","statusCode":201,"durationMs":23,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.522Z","requestId":"0dcfdef2-c37f-44dd-b19b-1c50d488d32d","method":"GET","path":"/api/v1/payments/ledger/cmwlwxp0w0009caablhch59cb","statusCode":200,"durationMs":16,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > validates payment allocation business rules: rejects over allocation and enforces permissions
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.611Z","requestId":"14496457-ad6b-45ce-8b78-e920abb25992","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":84,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > validates payment allocation business rules: rejects over allocation and enforces permissions
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.700Z","requestId":"d3b712ad-c4a7-4dc0-8aac-72f6f5089eed","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > validates payment allocation business rules: rejects over allocation and enforces permissions
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.782Z","requestId":"7c1a5e33-7b14-465c-845c-796750ea8a94","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > validates payment allocation business rules: rejects over allocation and enforces permissions
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.794Z","requestId":"034b74a6-45bf-4513-b805-979ed5c70aea","method":"GET","path":"/api/v1/payments","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"3HuO7gMfcaM6g94TKeXhLF9oXJB6PVuZ","userRole":"ACCOUNTANT"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > handles auto FIFO allocation and unallocated credit balance
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.872Z","requestId":"717de2d8-1af2-4562-a725-d44e756d1ce5","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > handles auto FIFO allocation and unallocated credit balance
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.890Z","requestId":"1216b0d8-b8dc-408c-b166-fd9a6754137c","method":"POST","path":"/api/v1/payments","statusCode":201,"durationMs":17,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > F-096: Payment allocation error guards and boundary validation > rejects allocation sum exceeding total payment amount with HTTP 400
+{"level":"INFO","timestamp":"2026-11-24T09:59:04.974Z","requestId":"2d7424b4-996c-4238-959e-7c0390cc1aa8","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":80,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > F-096: Payment allocation error guards and boundary validation > rejects allocation with zero or negative amount with HTTP 400
+{"level":"INFO","timestamp":"2026-11-24T09:59:05.061Z","requestId":"e0374fe0-e09f-4379-bd08-1aa0cf00cc0b","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > F-096: Payment allocation error guards and boundary validation > rejects allocation to a non-existent invoice ID with HTTP 404
+{"level":"INFO","timestamp":"2026-11-24T09:59:05.144Z","requestId":"aa797f81-c4b9-4f49-b762-5bbee1dfab99","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > F-096: Payment allocation error guards and boundary validation > rejects cross-customer payment allocation (IDOR protection) with HTTP 400
+{"level":"INFO","timestamp":"2026-11-24T09:59:05.232Z","requestId":"60f2daf7-91aa-47ae-804c-02d4a2922ebe","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > F-096: Payment allocation error guards and boundary validation > rejects allocation exceeding invoice outstanding balance with HTTP 400
+{"level":"INFO","timestamp":"2026-11-24T09:59:05.319Z","requestId":"2f872282-58df-4d99-9a6b-246969f877ac","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+ ✓ server/src/payments.test.ts (8 tests) 1418ms
+   ✓ M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding  399ms
+
+ Test Files  2 passed (2)
+      Tests  13 passed (13)
+   Start at  15:29:00
+   Duration  4.54s (transform 322ms, setup 0ms, collect 1.10s, tests 2.96s, environment 0ms, prepare 87ms)
+

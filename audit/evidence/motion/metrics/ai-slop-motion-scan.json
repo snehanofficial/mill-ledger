@@ -1,0 +1,64 @@
+{
+  "routesChecked": [
+    "/dashboard",
+    "/orders",
+    "/invoices",
+    "/stock",
+    "/production/today",
+    "/showcase",
+    "/auth/login"
+  ],
+  "findings": {
+    "/dashboard": {
+      "hasParallax": false,
+      "hasFloatingBlobs": false,
+      "hasGradientAnimation": false,
+      "hasBouncingIcons": false,
+      "hasCountUpTickers": false
+    },
+    "/orders": {
+      "hasParallax": false,
+      "hasFloatingBlobs": false,
+      "hasGradientAnimation": false,
+      "hasBouncingIcons": false,
+      "hasCountUpTickers": false
+    },
+    "/invoices": {
+      "hasParallax": false,
+      "hasFloatingBlobs": false,
+      "hasGradientAnimation": false,
+      "hasBouncingIcons": false,
+      "hasCountUpTickers": false
+    },
+    "/stock": {
+      "hasParallax": false,
+      "hasFloatingBlobs": false,
+      "hasGradientAnimation": false,
+      "hasBouncingIcons": false,
+      "hasCountUpTickers": false
+    },
+    "/production/today": {
+      "hasParallax": false,
+      "hasFloatingBlobs": false,
+      "hasGradientAnimation": false,
+      "hasBouncingIcons": false,
+      "hasCountUpTickers": false
+    },
+    "/showcase": {
+      "hasParallax": false,
+      "hasFloatingBlobs": false,
+      "hasGradientAnimation": false,
+      "hasBouncingIcons": false,
+      "hasCountUpTickers": false
+    },
+    "/auth/login": {
+      "hasParallax": false,
+      "hasFloatingBlobs": false,
+      "hasGradientAnimation": false,
+      "hasBouncingIcons": false,
+      "hasCountUpTickers": false
+    }
+  },
+  "anySlopFound": false,
+  "timestamp": "2026-11-19T17:27:06.625Z"
+}

@@ -20,11 +20,11 @@ RUN pnpm install --frozen-lockfile
 COPY shared/ ./shared/
 COPY client/ ./client/
 COPY server/ ./server/
-COPY tsconfig.json ./
 
 # Generate Prisma Client & Build all workspace packages
 RUN pnpm --filter @mill-ledger/server exec prisma generate && \
-    pnpm build
+    pnpm build && \
+    pnpm prune --prod --no-optional
 
 # ── Stage 2: Production Runtime ─────────────────────────────────
 FROM node:22-alpine AS runner

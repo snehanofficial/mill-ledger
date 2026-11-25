@@ -1,0 +1,3 @@
+ M client/src/pages/invoices-page.tsx
+ M client/src/pages/payments-page.tsx
+ M client/src/pages/purchases-page.tsx

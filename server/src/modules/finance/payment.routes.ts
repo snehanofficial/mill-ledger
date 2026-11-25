@@ -5,31 +5,12 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { paymentService } from "./payment.service.js";
-import { z } from "zod";
 import { AppError } from "../../middleware/error.middleware.js";
-import { PaymentMode } from "@prisma/client";
+import { recordPaymentSchema, bouncePaymentSchema } from "@mill-ledger/shared";
 
 export const paymentRouter = Router();
 
-const recordPaymentSchema = z.object({
-  customerId: z.string().min(1, "Customer ID is required"),
-  amount: z.number().positive("Amount must be greater than zero"),
-  paymentMode: z.nativeEnum(PaymentMode).optional(),
-  referenceNumber: z.string().optional(),
-  paymentDate: z.coerce.date().optional(),
-  notes: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-  allocations: z
-    .array(
-      z.object({
-        salesInvoiceId: z.string().min(1),
-        amount: z.number().positive(),
-      }),
-    )
-    .optional(),
-});
-
-// GET /api/v1/payments - List payments
+// GET /api/v1/payments - List payments (paginated - F-074)
 paymentRouter.get(
   "/",
   requireAuth,
@@ -38,8 +19,28 @@ paymentRouter.get(
     try {
       const orgId = (req.query.organizationId as string) || "MILL";
       const customerId = req.query.customerId as string | undefined;
-      const payments = await paymentService.getPayments(orgId, customerId);
-      res.json({ payments });
+      const limit =
+        req.query.limit !== undefined ? Number(req.query.limit) : undefined;
+      const offset =
+        req.query.offset !== undefined
+          ? Number(req.query.offset)
+          : req.query.page && req.query.limit
+            ? (Math.max(Number(req.query.page), 1) - 1) *
+              Number(req.query.limit)
+            : undefined;
+
+      const payments = await paymentService.getPayments(orgId, customerId, {
+        limit,
+        offset,
+      });
+      res.json({
+        payments,
+        pagination: {
+          limit: limit ?? 50,
+          offset: offset ?? 0,
+          count: payments.length,
+        },
+      });
     } catch (err) {
       next(err);
     }
@@ -114,19 +115,103 @@ paymentRouter.post(
     try {
       const parsed = recordPaymentSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid payment data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const orgId = (req.query.organizationId as string) || "MILL";
-      const payment = await paymentService.recordPayment({
-        ...parsed.data,
-        organizationId: orgId,
-      });
+      const payment = await paymentService.recordPayment(
+        {
+          ...parsed.data,
+          organizationId: orgId,
+        },
+        req.user,
+      );
 
       res.status(201).json(payment);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/payments/:id/bounce - Bounce payment and restore allocations
+paymentRouter.post(
+  "/:id/bounce",
+  requireAuth,
+  authorize("payment", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const paymentId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!paymentId) {
+        throw new AppError("Payment ID is required", 400);
+      }
+
+      const parsed = bouncePaymentSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw parsed.error;
+      }
+
+      const payment = await paymentService.bouncePayment(
+        paymentId,
+        parsed.data,
+        req.user,
+      );
+      res.json(payment);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/payments/:id/allocate - Allocate unallocated cash to open invoices (IMP-018)
+paymentRouter.post(
+  "/:id/allocate",
+  requireAuth,
+  authorize("payment", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const paymentId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!paymentId) {
+        throw new AppError("Payment ID is required", 400);
+      }
+      const payment = await paymentService.allocateUnallocatedPayment(
+        paymentId,
+        req.body?.allocations || [],
+        req.user,
+      );
+      res.json(payment);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/payments/:id/reverse-allocation - Reverse single allocation (IMP-018)
+paymentRouter.post(
+  "/:id/reverse-allocation",
+  requireAuth,
+  authorize("payment", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const paymentId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      const allocationId = req.body?.allocationId as string | undefined;
+      const reason = req.body?.reason as string | undefined;
+      if (!paymentId || !allocationId) {
+        throw new AppError("Payment ID and allocationId are required", 400);
+      }
+      const payment = await paymentService.reversePaymentAllocation(
+        paymentId,
+        allocationId,
+        reason || "",
+        req.user,
+      );
+      res.json(payment);
     } catch (err) {
       next(err);
     }

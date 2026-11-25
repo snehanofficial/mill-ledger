@@ -1,0 +1,19 @@
+{
+  "orderId": "ord-s1-1795112736643",
+  "idempotencyKey": "idem-s1-1795112736643",
+  "persistedInDb": true,
+  "offlineStatus": "queued",
+  "replay1": {
+    "processed": 0,
+    "succeeded": 0,
+    "conflicts": 0
+  },
+  "replay2": {
+    "processed": 0,
+    "succeeded": 0,
+    "conflicts": 0
+  },
+  "finalStatus": "synced",
+  "serverOrderId": "cmwnvrwh60000hkab0plq3n4f",
+  "serverOrderNumber": "SO-2026-6803"
+}

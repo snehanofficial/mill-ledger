@@ -73,6 +73,11 @@ export function useOutboxOrders(userId?: string) {
   );
 }
 
+const activeSyncIntervals = new Map<
+  string,
+  { count: number; intervalId: ReturnType<typeof setInterval> }
+>();
+
 export function useSyncManager(userId?: string) {
   const isOnline = useIsOnline();
   const [, setTick] = useState(0);
@@ -84,12 +89,35 @@ export function useSyncManager(userId?: string) {
     });
   }, []);
 
-  // When connection comes back online, automatically trigger sync and snapshot refresh
+  // Coordinate a single background sync + 5-min snapshot refresh per active userId across all hook consumers (F-077)
   useEffect(() => {
-    if (isOnline && userId) {
+    if (!isOnline || !userId) return;
+
+    const existing = activeSyncIntervals.get(userId);
+    if (existing) {
+      existing.count += 1;
+    } else {
       void processOutbox(userId);
       void refreshMasterDataSnapshot(userId);
+
+      const intervalId = setInterval(
+        () => {
+          void refreshMasterDataSnapshot(userId);
+        },
+        5 * 60 * 1000,
+      );
+      activeSyncIntervals.set(userId, { count: 1, intervalId });
     }
+
+    return () => {
+      const entry = activeSyncIntervals.get(userId);
+      if (!entry) return;
+      entry.count -= 1;
+      if (entry.count <= 0) {
+        clearInterval(entry.intervalId);
+        activeSyncIntervals.delete(userId);
+      }
+    };
   }, [isOnline, userId]);
 
   const outboxOrders = useOutboxOrders(userId);

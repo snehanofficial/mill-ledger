@@ -6,65 +6,19 @@ import {
 } from "../../middleware/auth.middleware.js";
 import { salesService } from "./sales.service.js";
 import { dispatchService } from "./dispatch.service.js";
-import { z } from "zod";
 import { AppError } from "../../middleware/error.middleware.js";
 import { OrderStatus } from "@prisma/client";
+import {
+  createCustomerSchema,
+  updateCustomerSchema,
+  createOrderSchema,
+  updateOrderSchema,
+  approveOrderSchema,
+  rejectOrderSchema,
+  createDispatchSchema,
+} from "@mill-ledger/shared";
 
 export const salesRouter = Router();
-
-const createOrderSchema = z.object({
-  organizationId: z.string().min(1).optional(),
-  customerId: z.string().min(1),
-  warehouseId: z.string().min(1).optional(),
-  orderNumber: z.string().min(1).optional(),
-  notes: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-  status: z.nativeEnum(OrderStatus).optional(),
-  lines: z
-    .array(
-      z.object({
-        productVariantId: z.string().min(1),
-        quantity: z.number().positive(),
-        unitPrice: z.number().min(0).optional(),
-      }),
-    )
-    .min(1),
-});
-
-const approveOrderSchema = z.object({
-  overrideReason: z.string().optional(),
-  lineOverrides: z
-    .array(
-      z.object({
-        lineId: z.string().min(1),
-        approvedQuantity: z.number().positive(),
-        approvedUnitPrice: z.number().min(0).optional(),
-      }),
-    )
-    .optional(),
-});
-
-const rejectOrderSchema = z.object({
-  reason: z.string().min(1, "Rejection reason is required"),
-});
-
-const createDispatchSchema = z.object({
-  salesOrderId: z.string().min(1),
-  warehouseId: z.string().optional(),
-  vehicleNumber: z.string().optional(),
-  driverName: z.string().optional(),
-  driverPhone: z.string().optional(),
-  notes: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-  lines: z
-    .array(
-      z.object({
-        salesOrderLineId: z.string().min(1),
-        quantity: z.number().positive().optional(),
-      }),
-    )
-    .optional(),
-});
 
 // GET /api/v1/sales/customers - List accessible customers (Salesman assigned or Admin all)
 salesRouter.get(
@@ -82,7 +36,203 @@ salesRouter.get(
   },
 );
 
-// GET /api/v1/sales/products - Product snapshot and price list for offline cache
+// POST /api/v1/sales/customers - Create a customer with validated GSTIN
+salesRouter.post(
+  "/customers",
+  requireAuth,
+  authorize("customer", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const parsed = createCustomerSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw parsed.error;
+      }
+
+      const customer = await salesService.createCustomer(
+        parsed.data,
+        req.user!,
+      );
+      res.status(201).json({ status: "created", customer });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /api/v1/sales/salesmen - List active salesmen for assignment
+salesRouter.get(
+  "/salesmen",
+  requireAuth,
+  authorize("customer", "update"),
+  async (_req: AuthenticatedRequest, res, next) => {
+    try {
+      const salesmen = await salesService.listSalesmen();
+      res.json({ salesmen });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /api/v1/sales/customers/:id - Customer detail (ABAC enforced)
+salesRouter.get(
+  "/customers/:id",
+  requireAuth,
+  authorize("customer", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const customerId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!customerId) {
+        throw new AppError("Customer ID is required", 400);
+      }
+      const customer = await salesService.getCustomerById(customerId, req.user!);
+      res.json({ customer });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/sales/customers/:id/assignments - Assign salesman
+salesRouter.post(
+  "/customers/:id/assignments",
+  requireAuth,
+  authorize("customer", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const customerId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      const salesmanId = req.body?.salesmanId as string | undefined;
+      if (!customerId || !salesmanId) {
+        throw new AppError("Customer ID and salesmanId are required", 400);
+      }
+      const assignment = await salesService.assignSalesman(
+        customerId,
+        salesmanId,
+        req.user!,
+      );
+      res.status(201).json({ status: "assigned", assignment });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// DELETE /api/v1/sales/customers/:id/assignments/:salesmanId - Unassign salesman
+salesRouter.delete(
+  "/customers/:id/assignments/:salesmanId",
+  requireAuth,
+  authorize("customer", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const customerId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      const salesmanId = Array.isArray(req.params.salesmanId)
+        ? req.params.salesmanId[0]
+        : req.params.salesmanId;
+      if (!customerId || !salesmanId) {
+        throw new AppError("Customer ID and salesmanId are required", 400);
+      }
+      const result = await salesService.unassignSalesman(
+        customerId,
+        salesmanId,
+        req.user!,
+      );
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// PUT /api/v1/sales/customers/:id - Update a customer with validated GSTIN
+salesRouter.put(
+  "/customers/:id",
+  requireAuth,
+  authorize("customer", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const customerId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!customerId) {
+        throw new AppError("Customer ID is required", 400);
+      }
+
+      const parsed = updateCustomerSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw parsed.error;
+      }
+
+      const customer = await salesService.updateCustomer(
+        customerId,
+        parsed.data,
+        req.user!,
+      );
+      res.json({ status: "updated", customer });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /api/v1/sales/customers/:id/data-export - DPDP Act Section 11 Data Subject Export
+salesRouter.get(
+  "/customers/:id/data-export",
+  requireAuth,
+  authorize("customer", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const customerId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!customerId) {
+        throw new AppError("Customer ID is required", 400);
+      }
+
+      const exportData = await salesService.exportCustomerData(
+        customerId,
+        req.user!,
+      );
+      res.json({ status: "success", data: exportData });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/sales/customers/:id/anonymize - DPDP Act Section 12 Data Subject Erasure
+salesRouter.post(
+  "/customers/:id/anonymize",
+  requireAuth,
+  authorize("customer", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const customerId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!customerId) {
+        throw new AppError("Customer ID is required", 400);
+      }
+
+      const { reason } = req.body || {};
+      const customer = await salesService.anonymizeCustomer(
+        customerId,
+        req.user!,
+        reason,
+      );
+      res.json({ status: "anonymized", customer });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /api/v1/sales/products - Paginated product snapshot and price list
 salesRouter.get(
   "/products",
   requireAuth,
@@ -90,15 +240,36 @@ salesRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = (req.query.organizationId as string) || "MILL";
-      const products = await salesService.getProducts(orgId);
-      res.json({ products });
+      const limit =
+        req.query.limit !== undefined ? Number(req.query.limit) : undefined;
+      const effectiveLimit =
+        limit !== undefined && Number.isFinite(limit)
+          ? Math.min(Math.max(Math.floor(limit), 1), 100)
+          : 50;
+      const offset =
+        req.query.offset !== undefined
+          ? Number(req.query.offset)
+          : req.query.page !== undefined
+            ? (Math.max(Number(req.query.page) || 1, 1) - 1) * effectiveLimit
+            : undefined;
+
+      const result = await salesService.getProducts(orgId, { limit, offset });
+      res.json({
+        products: result.products,
+        pagination: {
+          limit: result.limit,
+          offset: result.offset,
+          count: result.products.length,
+          total: result.total,
+        },
+      });
     } catch (err) {
       next(err);
     }
   },
 );
 
-// GET /api/v1/sales/orders - List orders (ABAC enforced)
+// GET /api/v1/sales/orders - List orders (ABAC enforced, paginated, batched - F-070, F-074)
 salesRouter.get(
   "/orders",
   requireAuth,
@@ -107,12 +278,30 @@ salesRouter.get(
     try {
       const orgId = (req.query.organizationId as string) || "MILL";
       const status = req.query.status as OrderStatus | undefined;
+      const limit =
+        req.query.limit !== undefined ? Number(req.query.limit) : undefined;
+      const offset =
+        req.query.offset !== undefined
+          ? Number(req.query.offset)
+          : req.query.page && req.query.limit
+            ? (Math.max(Number(req.query.page), 1) - 1) *
+              Number(req.query.limit)
+            : undefined;
+
       const orders = await salesService.getSalesOrders(
         orgId,
         req.user!,
         status,
+        { limit, offset },
       );
-      res.json({ orders });
+      res.json({
+        orders,
+        pagination: {
+          limit: limit ?? 50,
+          offset: offset ?? 0,
+          count: orders.length,
+        },
+      });
     } catch (err) {
       next(err);
     }
@@ -150,10 +339,7 @@ salesRouter.post(
     try {
       const parsed = createOrderSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid order data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const result = await salesService.createSalesOrder(
@@ -186,9 +372,14 @@ salesRouter.put(
         await salesService.getSalesOrderById(orderId, req.user);
       }
 
+      const parsed = updateOrderSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw parsed.error;
+      }
+
       const updated = await salesService.updateDraftOrder(
         orderId,
-        req.body,
+        parsed.data,
         req.user!,
       );
       res.json({ status: "updated", order: updated });
@@ -214,10 +405,7 @@ salesRouter.post(
 
       const parsed = approveOrderSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid approval data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const approved = await salesService.approveSalesOrder(
@@ -248,10 +436,7 @@ salesRouter.post(
 
       const parsed = rejectOrderSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid rejection data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const rejected = await salesService.rejectSalesOrder(
@@ -260,6 +445,24 @@ salesRouter.post(
         req.user!,
       );
       res.status(200).json(rejected);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/sales/reservations/expire-stale - Sweep and expire timed-out reservations (F-027)
+salesRouter.post(
+  "/reservations/expire-stale",
+  requireAuth,
+  authorize("order", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const refTime = req.body?.referenceTime
+        ? new Date(req.body.referenceTime)
+        : new Date();
+      const result = await salesService.expireStaleReservations(refTime);
+      res.json({ status: "success", ...result });
     } catch (err) {
       next(err);
     }
@@ -275,13 +478,13 @@ salesRouter.post(
     try {
       const parsed = createDispatchSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid dispatch data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
-      const dispatch = await dispatchService.postDispatch(parsed.data);
+      const dispatch = await dispatchService.postDispatch(
+        parsed.data,
+        req.user,
+      );
       res.status(201).json(dispatch);
     } catch (err) {
       next(err);
@@ -289,16 +492,61 @@ salesRouter.post(
   },
 );
 
-// GET /api/v1/sales/dispatches - List dispatches
+// GET /api/v1/sales/dispatches - List dispatches (ABAC scoped per OD-03)
 salesRouter.get(
   "/dispatches",
   requireAuth,
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
-      const dispatches = await dispatchService.getDispatches(orgId);
+      const orgId =
+        req.user?.organizationId ||
+        (req.query.organizationId as string) ||
+        "MILL";
+      const dispatches = await dispatchService.getDispatches(orgId, req.user);
       res.json({ dispatches });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /api/v1/sales/dispatches/:id - Get single dispatch by ID (ABAC scoped per OD-03)
+salesRouter.get(
+  "/dispatches/:id",
+  requireAuth,
+  authorize("order", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const dispatchId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!dispatchId) {
+        throw new AppError("Dispatch ID is required", 400);
+      }
+      const dispatch = await dispatchService.getDispatchById(
+        dispatchId,
+        req.user,
+      );
+      res.json({ dispatch });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/sales/returns - Record sales return against posted dispatch (IMP-014)
+salesRouter.post(
+  "/returns",
+  requireAuth,
+  authorize("order", "dispatch"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const result = await dispatchService.recordSalesReturn(
+        req.body,
+        req.user,
+      );
+      res.status(201).json(result);
     } catch (err) {
       next(err);
     }

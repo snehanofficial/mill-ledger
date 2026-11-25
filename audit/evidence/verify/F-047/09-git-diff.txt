@@ -1,0 +1,1193 @@
+diff --git a/client/src/components/ui/table.tsx b/client/src/components/ui/table.tsx
+index fb2f538..a7e91b8 100644
+--- a/client/src/components/ui/table.tsx
++++ b/client/src/components/ui/table.tsx
+@@ -24,7 +24,10 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
+   return (
+     <thead
+       data-slot="table-header"
+-      className={cn("border-b border-border bg-muted/50", className)}
++      className={cn(
++        "sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur-xs",
++        className,
++      )}
+       {...props}
+     />
+   );
+@@ -79,7 +82,7 @@ function TableHead({
+       data-slot="table-head"
+       scope={scope}
+       className={cn(
+-        "h-10 px-4 text-left align-middle text-xs font-semibold text-muted-foreground whitespace-nowrap",
++        "h-10 px-4 text-left align-middle text-xs font-semibold text-muted-foreground whitespace-nowrap bg-background/95",
+         className,
+       )}
+       {...props}
+diff --git a/client/src/pages/dispatch-page.tsx b/client/src/pages/dispatch-page.tsx
+index 921948c..41a2048 100644
+--- a/client/src/pages/dispatch-page.tsx
++++ b/client/src/pages/dispatch-page.tsx
+@@ -344,112 +344,194 @@ export function DispatchPage() {
+             </p>
+           </div>
+         ) : (
+-          <div className="overflow-x-auto">
+-            <Table>
+-              <TableHeader>
+-                <TableRow>
+-                  <TableHead>{t("Dispatch number")}</TableHead>
+-                  <TableHead>{t("Date and time")}</TableHead>
+-                  <TableHead>{t("Sales order")}</TableHead>
+-                  <TableHead>{t("Customer")}</TableHead>
+-                  <TableHead>{t("Vehicle and driver")}</TableHead>
+-                  <TableHead>{t("Dispatched items")}</TableHead>
+-                  <TableHead>{t("Invoice link")}</TableHead>
+-                  <TableHead className="text-right">{t("Status")}</TableHead>
+-                </TableRow>
+-              </TableHeader>
+-              <TableBody>
+-                {filteredDispatches.length === 0 && dispatches.length > 0 && (
+-                  <TableRow>
+-                    <TableCell
+-                      colSpan={8}
+-                      className="py-8 text-center text-sm text-muted-foreground"
+-                    >
+-                      {t("No dispatches match the search query.")}
+-                    </TableCell>
+-                  </TableRow>
+-                )}
+-                {filteredDispatches.map((disp) => (
+-                  <TableRow key={disp.id}>
+-                    <TableCell className="font-mono text-sm font-semibold text-foreground">
++          <>
++            {/* Mobile Card Layout (<md viewports per F-047) */}
++            <div
++              className="divide-y divide-border md:hidden"
++              data-slot="mobile-cards"
++            >
++              {filteredDispatches.length === 0 && dispatches.length > 0 && (
++                <div className="p-8 text-center text-sm text-muted-foreground">
++                  {t("No dispatches match the search query.")}
++                </div>
++              )}
++              {filteredDispatches.map((disp) => (
++                <div key={disp.id} className="p-4 space-y-2.5">
++                  <div className="flex items-center justify-between">
++                    <span className="font-mono text-sm font-semibold text-foreground">
+                       {disp.dispatchNumber}
+-                    </TableCell>
+-                    <TableCell className="text-xs text-muted-foreground">
++                    </span>
++                    <Badge
++                      variant={disp.status === "POSTED" ? "success" : "default"}
++                    >
++                      {disp.status}
++                    </Badge>
++                  </div>
++                  <div className="flex justify-between items-baseline text-xs">
++                    <div>
++                      <span className="font-medium text-foreground">
++                        {disp.salesOrder?.customer?.name ?? "Unknown"}
++                      </span>
++                      <span className="ml-1 text-muted-foreground">
++                        ({disp.salesOrder?.customer?.city})
++                      </span>
++                    </div>
++                    <span className="text-muted-foreground font-mono text-2xs">
+                       {formatDateTime(disp.dispatchedAt)}
+-                    </TableCell>
+-                    <TableCell>
+-                      <span className="font-mono text-xs font-medium">
+-                        {disp.salesOrder?.orderNumber ?? "N/A"}
++                    </span>
++                  </div>
++                  <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
++                    <div>
++                      <span className="text-muted-foreground text-2xs uppercase">
++                        Order & Invoice
+                       </span>
+-                    </TableCell>
+-                    <TableCell>
+-                      <div className="flex flex-col">
+-                        <span className="text-sm font-medium">
+-                          {disp.salesOrder?.customer?.name ?? "Unknown"}
+-                        </span>
+-                        <span className="text-xs text-muted-foreground">
+-                          {disp.salesOrder?.customer?.city},{" "}
+-                          {disp.salesOrder?.customer?.state}
++                      <p className="font-mono font-medium text-foreground">
++                        SO: {disp.salesOrder?.orderNumber ?? "N/A"}
++                      </p>
++                      {disp.salesInvoice ? (
++                        <p className="font-mono text-2xs text-emerald-600 dark:text-emerald-400">
++                          INV: {disp.salesInvoice.invoiceNumber}
++                        </p>
++                      ) : (
++                        <p className="text-2xs text-muted-foreground">Direct dispatch</p>
++                      )}
++                    </div>
++                    <div className="text-right">
++                      <span className="text-muted-foreground text-2xs uppercase">
++                        Vehicle / Driver
++                      </span>
++                      <p className="font-mono font-medium text-foreground">
++                        {disp.vehicleNumber || "None"}
++                      </p>
++                      {disp.driverName && (
++                        <p className="text-2xs text-muted-foreground">
++                          {disp.driverName}
++                        </p>
++                      )}
++                    </div>
++                  </div>
++                  {disp.lines.length > 0 && (
++                    <div className="text-2xs text-muted-foreground pt-1">
++                      <span className="font-medium">Items: </span>
++                      {disp.lines.map((l) => (
++                        <span key={l.id} className="inline-block bg-muted px-2 py-0.5 rounded mr-1">
++                          {l.inventoryItem?.name} × {l.quantity}
+                         </span>
+-                      </div>
+-                    </TableCell>
+-                    <TableCell>
+-                      <div className="flex flex-col text-xs">
+-                        <span className="font-mono font-medium">
+-                          {disp.vehicleNumber || "No vehicle specified"}
++                      ))}
++                    </div>
++                  )}
++                </div>
++              ))}
++            </div>
++
++            {/* Desktop Table View (md+ viewports) */}
++            <div className="hidden md:block overflow-x-auto">
++              <Table>
++                <TableHeader>
++                  <TableRow>
++                    <TableHead>{t("Dispatch number")}</TableHead>
++                    <TableHead>{t("Date and time")}</TableHead>
++                    <TableHead>{t("Sales order")}</TableHead>
++                    <TableHead>{t("Customer")}</TableHead>
++                    <TableHead>{t("Vehicle and driver")}</TableHead>
++                    <TableHead>{t("Dispatched items")}</TableHead>
++                    <TableHead>{t("Invoice link")}</TableHead>
++                    <TableHead className="text-right">{t("Status")}</TableHead>
++                  </TableRow>
++                </TableHeader>
++                <TableBody>
++                  {filteredDispatches.length === 0 && dispatches.length > 0 && (
++                    <TableRow>
++                      <TableCell
++                        colSpan={8}
++                        className="py-8 text-center text-sm text-muted-foreground"
++                      >
++                        {t("No dispatches match the search query.")}
++                      </TableCell>
++                    </TableRow>
++                  )}
++                  {filteredDispatches.map((disp) => (
++                    <TableRow key={disp.id}>
++                      <TableCell className="font-mono text-sm font-semibold text-foreground">
++                        {disp.dispatchNumber}
++                      </TableCell>
++                      <TableCell className="text-xs text-muted-foreground">
++                        {formatDateTime(disp.dispatchedAt)}
++                      </TableCell>
++                      <TableCell>
++                        <span className="font-mono text-xs font-medium">
++                          {disp.salesOrder?.orderNumber ?? "N/A"}
+                         </span>
+-                        {disp.driverName && (
+-                          <span className="text-muted-foreground">
+-                            {disp.driverName}
+-                            {disp.driverPhone ? ` (${disp.driverPhone})` : ""}
++                      </TableCell>
++                      <TableCell>
++                        <div className="flex flex-col">
++                          <span className="text-sm font-medium">
++                            {disp.salesOrder?.customer?.name ?? "Unknown"}
+                           </span>
+-                        )}
+-                      </div>
+-                    </TableCell>
+-                    <TableCell>
+-                      <div className="flex flex-col gap-1">
+-                        {disp.lines.map((line) => (
+-                          <div
+-                            key={line.id}
+-                            className="flex items-center gap-1.5 text-xs"
+-                          >
+-                            <span className="font-medium">
+-                              {line.inventoryItem?.name || "Product"}
+-                            </span>
+-                            <span className="font-mono text-muted-foreground">
+-                              x {line.quantity}{" "}
+-                              {line.inventoryItem?.unitOfMeasure || "units"}
++                          <span className="text-xs text-muted-foreground">
++                            {disp.salesOrder?.customer?.city},{" "}
++                            {disp.salesOrder?.customer?.state}
++                          </span>
++                        </div>
++                      </TableCell>
++                      <TableCell>
++                        <div className="flex flex-col text-xs">
++                          <span className="font-mono font-medium">
++                            {disp.vehicleNumber || "No vehicle specified"}
++                          </span>
++                          {disp.driverName && (
++                            <span className="text-muted-foreground">
++                              {disp.driverName}
++                              {disp.driverPhone ? ` (${disp.driverPhone})` : ""}
+                             </span>
+-                          </div>
+-                        ))}
+-                      </div>
+-                    </TableCell>
+-                    <TableCell>
+-                      {disp.salesInvoice ? (
+-                        <div className="flex items-center gap-1 font-mono text-xs text-emerald-600 dark:text-emerald-400">
+-                          <FileTextIcon className="h-3 w-3" />
+-                          {disp.salesInvoice.invoiceNumber}
++                          )}
+                         </div>
+-                      ) : (
+-                        <span className="text-xs text-muted-foreground">
+-                          Direct dispatch
+-                        </span>
+-                      )}
+-                    </TableCell>
+-                    <TableCell className="text-right">
+-                      <Badge
+-                        variant={
+-                          disp.status === "POSTED" ? "success" : "default"
+-                        }
+-                      >
+-                        {disp.status}
+-                      </Badge>
+-                    </TableCell>
+-                  </TableRow>
+-                ))}
+-              </TableBody>
+-            </Table>
+-          </div>
++                      </TableCell>
++                      <TableCell>
++                        <div className="flex flex-col gap-1">
++                          {disp.lines.map((line) => (
++                            <div
++                              key={line.id}
++                              className="flex items-center gap-1.5 text-xs"
++                            >
++                              <span className="font-medium">
++                                {line.inventoryItem?.name || "Product"}
++                              </span>
++                              <span className="font-mono text-muted-foreground">
++                                x {line.quantity}{" "}
++                                {line.inventoryItem?.unitOfMeasure || "units"}
++                              </span>
++                            </div>
++                          ))}
++                        </div>
++                      </TableCell>
++                      <TableCell>
++                        {disp.salesInvoice ? (
++                          <div className="flex items-center gap-1 font-mono text-xs text-emerald-600 dark:text-emerald-400">
++                            <FileTextIcon className="h-3 w-3" />
++                            {disp.salesInvoice.invoiceNumber}
++                          </div>
++                        ) : (
++                          <span className="text-xs text-muted-foreground">
++                            Direct dispatch
++                          </span>
++                        )}
++                      </TableCell>
++                      <TableCell className="text-right">
++                        <Badge
++                          variant={
++                            disp.status === "POSTED" ? "success" : "default"
++                          }
++                        >
++                          {disp.status}
++                        </Badge>
++                      </TableCell>
++                    </TableRow>
++                  ))}
++                </TableBody>
++              </Table>
++            </div>
++          </>
+         )}
+       </div>
+ 
+diff --git a/client/src/pages/invoices-page.tsx b/client/src/pages/invoices-page.tsx
+index 8b102ee..f24579a 100644
+--- a/client/src/pages/invoices-page.tsx
++++ b/client/src/pages/invoices-page.tsx
+@@ -367,8 +367,108 @@ export function InvoicesPage() {
+             <p>No invoices posted yet.</p>
+           </div>
+         ) : (
+-          <div className="overflow-x-auto">
+-            <Table>
++          <>
++            {/* Mobile Card Layout (<md viewports per F-047) */}
++            <div
++              className="divide-y divide-border md:hidden"
++              data-slot="mobile-cards"
++            >
++              {filteredInvoices.length === 0 && invoices.length > 0 && (
++                <div className="p-8 text-center text-sm text-muted-foreground">
++                  {t("No invoices match the selected filters.")}
++                </div>
++              )}
++              {filteredInvoices.map((inv) => (
++                <div key={inv.id} className="p-4 space-y-2.5">
++                  <div className="flex items-center justify-between">
++                    <div className="flex items-center gap-2">
++                      <span className="font-mono text-sm font-semibold text-foreground">
++                        {inv.invoiceNumber}
++                      </span>
++                      <span className="font-mono text-2xs text-muted-foreground">
++                        ({inv.financialYear})
++                      </span>
++                    </div>
++                    <Badge
++                      variant={
++                        inv.status === "PAID"
++                          ? "success"
++                          : inv.status === "POSTED"
++                            ? "info"
++                            : inv.status === "CANCELLED_BY_CREDIT_NOTE"
++                              ? "danger"
++                              : "warning"
++                      }
++                    >
++                      {inv.status}
++                    </Badge>
++                  </div>
++
++                  <div className="flex justify-between items-baseline text-xs">
++                    <span className="font-medium text-foreground">
++                      {inv.customerNameSnapshot}
++                    </span>
++                    <span className="text-muted-foreground font-mono text-2xs">
++                      {inv.customerGstinSnapshot || "Unregistered"}
++                    </span>
++                  </div>
++
++                  <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
++                    <div>
++                      <span className="text-muted-foreground text-2xs uppercase">
++                        Total Amount
++                      </span>
++                      <p className="font-bold text-foreground">
++                        {formatINR(inv.totalAmount)}
++                      </p>
++                    </div>
++                    <div className="text-right">
++                      <span className="text-muted-foreground text-2xs uppercase">
++                        Outstanding
++                      </span>
++                      <p
++                        className={
++                          Number(inv.outstandingAmount) > 0
++                            ? "font-bold text-amber-600 dark:text-amber-400"
++                            : "font-medium text-emerald-600 dark:text-emerald-400"
++                        }
++                      >
++                        {formatINR(inv.outstandingAmount)}
++                      </p>
++                    </div>
++                  </div>
++
++                  <div className="flex items-center justify-end gap-2 pt-1">
++                    <Button
++                      variant="outline"
++                      size="sm"
++                      onClick={() => setSelectedInvoice(inv)}
++                      className="min-h-[44px] px-4 text-xs"
++                    >
++                      View Details
++                    </Button>
++                    {canIssueCreditNote && inv.status === "POSTED" && (
++                      <Button
++                        variant="ghost"
++                        size="sm"
++                        onClick={() => {
++                          setSelectedInvoice(inv);
++                          setCreditNoteAmount(Number(inv.outstandingAmount));
++                          setShowCreditNoteModal(true);
++                        }}
++                        className="min-h-[44px] px-3 text-xs text-amber-600 hover:bg-amber-500/10"
++                      >
++                        Credit Note
++                      </Button>
++                    )}
++                  </div>
++                </div>
++              ))}
++            </div>
++
++            {/* Desktop Table View (md+ viewports) */}
++            <div className="hidden md:block overflow-x-auto">
++              <Table>
+               <TableHeader>
+                 <TableRow>
+                   <TableHead>{t("Invoice number")}</TableHead>
+@@ -478,8 +578,9 @@ export function InvoicesPage() {
+               </TableBody>
+             </Table>
+           </div>
+-        )}
+-      </div>
++        </>
++      )}
++    </div>
+ 
+       {/* Invoice Snapshot Modal */}
+       {selectedInvoice && !showCreditNoteModal && (
+diff --git a/client/src/pages/orders-page.tsx b/client/src/pages/orders-page.tsx
+index 94f6be6..a4c5584 100644
+--- a/client/src/pages/orders-page.tsx
++++ b/client/src/pages/orders-page.tsx
+@@ -609,8 +609,226 @@ export function OrdersPage() {
+             )}
+           </div>
+         ) : (
+-          <div className="overflow-x-auto">
+-            <Table>
++          <>
++            {/* Mobile Card Layout (<md viewports per F-047) */}
++            <div
++              className="divide-y divide-border md:hidden"
++              data-slot="mobile-cards"
++            >
++              {/* Local outbox items shown on mobile */}
++              {(activeTab === "outbox"
++                ? outboxOrders
++                : outboxOrders.filter((o) => o.status !== "synced")
++              ).map((ord) => {
++                const qty = ord.items.reduce((s, it) => s + it.quantity, 0);
++                const taxable = ord.items.reduce(
++                  (s, it) => s + it.quantity * it.quotedUnitPrice,
++                  0,
++                );
++                const total = taxable * 1.05;
++                return (
++                  <div key={ord.id} className="p-4 bg-amber-500/5 space-y-2.5">
++                    <div className="flex items-center justify-between">
++                      <div className="flex items-center gap-1.5 font-mono text-sm font-semibold text-foreground">
++                        <DatabaseIcon className="size-3.5 text-amber-600 shrink-0" />
++                        <span>Local: {ord.id.slice(-6).toUpperCase()}</span>
++                      </div>
++                      <Badge
++                        variant="outline"
++                        className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 text-xs"
++                      >
++                        {ord.status === "queued" ? "Waiting to sync" : ord.status}
++                      </Badge>
++                    </div>
++
++                    <div className="flex justify-between items-baseline text-xs text-muted-foreground">
++                      <span className="font-medium text-foreground">
++                        {ord.customerName} ({ord.customerState})
++                      </span>
++                      <span>You (Outbox)</span>
++                    </div>
++
++                    <div className="grid grid-cols-2 gap-2 rounded-lg bg-card/60 p-2.5 border text-xs">
++                      <div>
++                        <span className="text-muted-foreground text-2xs uppercase">
++                          Ordered
++                        </span>
++                        <p className="font-medium text-foreground">
++                          {formatQuantity(qty, { unit: "pkts" })}
++                        </p>
++                      </div>
++                      <div className="text-right">
++                        <span className="text-muted-foreground text-2xs uppercase">
++                          Total
++                        </span>
++                        <p className="font-bold text-foreground">
++                          {formatINR(total)}
++                        </p>
++                      </div>
++                    </div>
++
++                    <div className="flex items-center justify-end gap-2 pt-1">
++                      {ord.status === "queued" && isOnline && (
++                        <Button
++                          variant="outline"
++                          size="sm"
++                          onClick={() => retryOrder(ord.id)}
++                          className="min-h-[44px] px-4 text-xs gap-1.5"
++                        >
++                          <RefreshCwIcon className="size-3.5" />
++                          Sync Now
++                        </Button>
++                      )}
++                      {ord.status !== "syncing" && (
++                        <Button
++                          variant="ghost"
++                          size="sm"
++                          onClick={() => removeOrder(ord.id)}
++                          className="min-h-[44px] px-3 text-xs text-muted-foreground hover:text-destructive"
++                          aria-label="Remove outbox order"
++                        >
++                          <Trash2Icon className="size-4" />
++                        </Button>
++                      )}
++                    </div>
++                  </div>
++                );
++              })}
++
++              {/* Server orders shown on mobile */}
++              {activeTab === "stream" &&
++                filteredOrders.length === 0 &&
++                orders.length > 0 && (
++                  <div className="p-8 text-center text-sm text-muted-foreground">
++                    {t("No orders match the selected filters.")}
++                  </div>
++                )}
++
++              {activeTab === "stream" &&
++                filteredOrders.map((o) => {
++                  const line = o.lines[0];
++                  const qty = Number(line?.quotedQuantity ?? 0);
++                  const shortage = o.totalShortage ?? 0;
++
++                  return (
++                    <div key={o.id} className="p-4 space-y-2.5">
++                      <div className="flex items-center justify-between">
++                        <span className="font-mono text-sm font-semibold text-foreground">
++                          {o.orderNumber}
++                        </span>
++                        <Badge
++                          variant={
++                            o.status === "APPROVED"
++                              ? "success"
++                              : o.status === "REJECTED"
++                                ? "danger"
++                                : o.status === "SUBMITTED"
++                                  ? "warning"
++                                  : "neutral"
++                          }
++                        >
++                          {o.status}
++                        </Badge>
++                      </div>
++
++                      <div className="flex justify-between items-baseline text-xs">
++                        <span className="font-medium text-foreground">
++                          {o.customer.name}
++                        </span>
++                        <span className="text-muted-foreground">
++                          {o.salesman.name}
++                        </span>
++                      </div>
++
++                      <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
++                        <div>
++                          <span className="text-muted-foreground text-2xs uppercase">
++                            Ordered
++                          </span>
++                          <p className="font-medium text-foreground">
++                            {formatQuantity(qty, { unit: "pkts" })}
++                          </p>
++                        </div>
++                        <div>
++                          <span className="text-muted-foreground text-2xs uppercase">
++                            Shortage
++                          </span>
++                          <p
++                            className={
++                              shortage > 0
++                                ? "font-semibold text-amber-600"
++                                : "text-muted-foreground"
++                            }
++                          >
++                            {shortage > 0 ? `${shortage} pkts` : "None"}
++                          </p>
++                        </div>
++                        <div className="text-right">
++                          <span className="text-muted-foreground text-2xs uppercase">
++                            Total
++                          </span>
++                          <p className="font-bold text-foreground">
++                            {formatINR(o.totalAmount)}
++                          </p>
++                        </div>
++                      </div>
++
++                      {/* Action buttons (min 44px tap target height) */}
++                      <div className="flex items-center justify-end gap-2 pt-1">
++                        {o.status === "SUBMITTED" && canApproveOrder ? (
++                          <>
++                            <Button
++                              variant="outline"
++                              size="sm"
++                              onClick={() => {
++                                setSelectedOrderForAction(o);
++                                setActionType("APPROVE");
++                              }}
++                              className="min-h-[44px] px-4 text-xs font-semibold text-emerald-600 hover:text-emerald-700"
++                            >
++                              Approve
++                            </Button>
++                            <Button
++                              variant="ghost"
++                              size="sm"
++                              onClick={() => {
++                                setSelectedOrderForAction(o);
++                                setActionType("REJECT");
++                              }}
++                              className="min-h-[44px] px-4 text-xs text-destructive hover:bg-destructive/10"
++                            >
++                              Reject
++                            </Button>
++                          </>
++                        ) : (
++                          o.status === "APPROVED" &&
++                          (o.invoices && o.invoices.length > 0 ? (
++                            <Badge variant="secondary" className="text-xs">
++                              Invoiced ({o.invoices[0].invoiceNumber})
++                            </Badge>
++                          ) : canCreateInvoice ? (
++                            <Button
++                              variant="outline"
++                              size="sm"
++                              onClick={() => createInvoiceMutation.mutate(o.id)}
++                              disabled={createInvoiceMutation.isPending}
++                              className="min-h-[44px] px-4 text-xs font-semibold text-primary hover:bg-primary/10 border-primary/30"
++                            >
++                              {createInvoiceMutation.isPending
++                                ? "Invoicing..."
++                                : "Invoice Order"}
++                            </Button>
++                          ) : null)
++                        )}
++                      </div>
++                    </div>
++                  );
++                })}
++            </div>
++
++            {/* Desktop Table View (md+ viewports) */}
++            <div className="hidden md:block overflow-x-auto">
++              <Table>
+               <TableHeader>
+                 <TableRow>
+                   <TableHead>{t("Order number")}</TableHead>
+@@ -905,8 +1123,9 @@ export function OrdersPage() {
+               </TableBody>
+             </Table>
+           </div>
+-        )}
+-      </div>
++        </>
++      )}
++    </div>
+ 
+       {/* New Order Modal */}
+       {showNewOrderModal && (
+diff --git a/client/src/pages/payments-page.tsx b/client/src/pages/payments-page.tsx
+index d794920..2179742 100644
+--- a/client/src/pages/payments-page.tsx
++++ b/client/src/pages/payments-page.tsx
+@@ -513,8 +513,93 @@ export function PaymentsPage() {
+               </p>
+             </div>
+           ) : (
+-            <div className="overflow-x-auto">
+-              <Table>
++            <>
++              {/* Mobile Card Layout (<md viewports per F-047) */}
++              <div
++                className="divide-y divide-border md:hidden"
++                data-slot="mobile-cards"
++              >
++                {filteredPayments.length === 0 && payments.length > 0 && (
++                  <div className="p-8 text-center text-sm text-muted-foreground">
++                    {t("No payments match the selected filters.")}
++                  </div>
++                )}
++                {filteredPayments.map((p) => (
++                  <div key={p.id} className="p-4 space-y-2.5">
++                    <div className="flex items-center justify-between">
++                      <span className="font-mono text-sm font-semibold text-foreground">
++                        {p.paymentNumber}
++                      </span>
++                      <Badge
++                        variant={p.status === "POSTED" ? "success" : "default"}
++                      >
++                        {p.status}
++                      </Badge>
++                    </div>
++                    <div className="flex justify-between items-baseline text-xs">
++                      <div>
++                        <span className="font-medium text-foreground">
++                          {p.customer?.name ?? "Customer"}
++                        </span>
++                        <span className="ml-1 font-mono text-2xs text-muted-foreground">
++                          ({p.customer?.code})
++                        </span>
++                      </div>
++                      <span className="text-muted-foreground font-mono text-2xs">
++                        {formatDate(p.paymentDate)}
++                      </span>
++                    </div>
++                    <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
++                      <div>
++                        <span className="text-muted-foreground text-2xs uppercase">
++                          Mode & Ref
++                        </span>
++                        <p className="font-medium text-foreground">
++                          {p.paymentMode.replace(/_/g, " ")}
++                          {p.referenceNumber && (
++                            <span className="block font-mono text-2xs text-muted-foreground">
++                              {p.referenceNumber}
++                            </span>
++                          )}
++                        </p>
++                      </div>
++                      <div className="text-right">
++                        <span className="text-muted-foreground text-2xs uppercase">
++                          Total Amount
++                        </span>
++                        <p className="font-bold text-foreground">
++                          {formatINR(p.amount)}
++                        </p>
++                      </div>
++                    </div>
++                    {Number(p.unallocatedAmount) > 0 && (
++                      <div className="flex justify-between items-center text-xs px-1">
++                        <span className="text-muted-foreground">Unallocated:</span>
++                        <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
++                          {formatINR(p.unallocatedAmount)}
++                        </span>
++                      </div>
++                    )}
++                    {p.allocations.length > 0 && (
++                      <div className="text-2xs text-muted-foreground pt-1">
++                        <span className="font-medium">Allocated: </span>
++                        {p.allocations.map((a) => (
++                          <span
++                            key={a.id}
++                            className="font-mono text-emerald-600 dark:text-emerald-400 mr-2"
++                          >
++                            {a.salesInvoice?.invoiceNumber}: {formatINR(a.amount)}
++                          </span>
++                        ))}
++                      </div>
++                    )}
++                  </div>
++                ))}
++              </div>
++
++              {/* Desktop Table View (md+ viewports) */}
++              <div className="hidden md:block overflow-x-auto">
++                <Table>
+                 <TableHeader>
+                   <TableRow>
+                     <TableHead>{t("Receipt number")}</TableHead>
+@@ -615,7 +700,8 @@ export function PaymentsPage() {
+                 </TableBody>
+               </Table>
+             </div>
+-          )}
++          </>
++        )}
+         </div>
+       )}
+ 
+@@ -652,8 +738,92 @@ export function PaymentsPage() {
+               <p className="font-medium text-foreground">No customer records</p>
+             </div>
+           ) : (
+-            <div className="overflow-x-auto">
+-              <Table>
++            <>
++              {/* Mobile Card Layout (<md viewports per F-047) */}
++              <div
++                className="divide-y divide-border md:hidden"
++                data-slot="mobile-cards"
++              >
++                {filteredReceivables.length === 0 && receivables.length > 0 && (
++                  <div className="p-8 text-center text-sm text-muted-foreground">
++                    {t("No customer receivables match the search query.")}
++                  </div>
++                )}
++                {filteredReceivables.map((r) => (
++                  <div key={r.customerId} className="p-4 space-y-2.5">
++                    <div className="flex items-center justify-between">
++                      <div>
++                        <p className="font-medium text-foreground">{r.customerName}</p>
++                        <span className="font-mono text-2xs text-muted-foreground">
++                          {r.customerCode} ({r.state})
++                        </span>
++                      </div>
++                      <Badge
++                        variant={r.openInvoicesCount > 0 ? "warning" : "secondary"}
++                      >
++                        {r.openInvoicesCount} open
++                      </Badge>
++                    </div>
++                    <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
++                      <div>
++                        <span className="text-muted-foreground text-2xs uppercase">
++                          Invoiced
++                        </span>
++                        <p className="font-mono font-medium">
++                          {formatINR(r.totalInvoiced)}
++                        </p>
++                      </div>
++                      <div className="text-right">
++                        <span className="text-muted-foreground text-2xs uppercase">
++                          Collections
++                        </span>
++                        <p className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
++                          {formatINR(r.totalPaid)}
++                        </p>
++                      </div>
++                      <div>
++                        <span className="text-muted-foreground text-2xs uppercase">
++                          Credit Notes
++                        </span>
++                        <p className="font-mono font-medium text-muted-foreground">
++                          {formatINR(r.totalCreditNotes)}
++                        </p>
++                      </div>
++                      <div className="text-right">
++                        <span className="text-muted-foreground text-2xs uppercase">
++                          Outstanding
++                        </span>
++                        <p
++                          className={`font-mono font-bold ${
++                            r.netOutstanding > 0
++                              ? "text-amber-600 dark:text-amber-400"
++                              : "text-emerald-600 dark:text-emerald-400"
++                          }`}
++                        >
++                          {formatINR(r.netOutstanding)}
++                        </p>
++                      </div>
++                    </div>
++                    <div className="flex items-center justify-end pt-1">
++                      <Button
++                        variant="outline"
++                        size="sm"
++                        onClick={() =>
++                          setSelectedCustomerIdForLedger(r.customerId)
++                        }
++                        className="min-h-[44px] w-full gap-1.5 text-xs justify-center"
++                      >
++                        <HistoryIcon className="h-4 w-4" />
++                        View ledger
++                      </Button>
++                    </div>
++                  </div>
++                ))}
++              </div>
++
++              {/* Desktop Table View (md+ viewports) */}
++              <div className="hidden md:block overflow-x-auto">
++                <Table>
+                 <TableHeader>
+                   <TableRow>
+                     <TableHead>{t("Customer")}</TableHead>
+@@ -737,7 +907,8 @@ export function PaymentsPage() {
+                 </TableBody>
+               </Table>
+             </div>
+-          )}
++          </>
++        )}
+         </div>
+       )}
+ 
+diff --git a/client/src/pages/stock-page.tsx b/client/src/pages/stock-page.tsx
+index 33f0fdd..2546609 100644
+--- a/client/src/pages/stock-page.tsx
++++ b/client/src/pages/stock-page.tsx
+@@ -241,30 +241,16 @@ export function StockPage() {
+             benchmark masters.
+           </div>
+         ) : (
+-          <Table>
+-            <TableHeader>
+-              <TableRow>
+-                <TableHead className="w-[120px]">{t("SKU")}</TableHead>
+-                <TableHead>{t("Item Name")}</TableHead>
+-                <TableHead className="w-[140px]">{t("Category")}</TableHead>
+-                <TableHead className="text-right">{t("On Hand")}</TableHead>
+-                <TableHead className="text-right">{t("Avg Unit Cost")}</TableHead>
+-                <TableHead className="text-right">{t("Total Value")}</TableHead>
+-                <TableHead className="w-[120px] text-center">
+-                  {t("Ledger Status")}
+-                </TableHead>
+-              </TableRow>
+-            </TableHeader>
+-            <TableBody>
++          <>
++            {/* Mobile Card Layout (<md viewports per F-047) */}
++            <div
++              className="divide-y divide-border md:hidden"
++              data-slot="mobile-cards"
++            >
+               {filteredBalances.length === 0 && balances.length > 0 && (
+-                <TableRow>
+-                  <TableCell
+-                    colSpan={7}
+-                    className="py-8 text-center text-sm text-muted-foreground"
+-                  >
+-                    {t("No items match the selected filters.")}
+-                  </TableCell>
+-                </TableRow>
++                <div className="p-8 text-center text-sm text-muted-foreground">
++                  {t("No items match the selected filters.")}
++                </div>
+               )}
+               {filteredBalances.map((item) => {
+                 const totalValue = item.onHand * item.weightedAverageCost;
+@@ -274,66 +260,184 @@ export function StockPage() {
+                 };
+ 
+                 return (
+-                  <TableRow key={item.id}>
+-                    <TableCell className="font-mono text-xs font-medium text-foreground">
+-                      {item.sku}
+-                    </TableCell>
+-                    <TableCell className="font-medium text-foreground">
+-                      {item.name}
+-                    </TableCell>
+-                    <TableCell>
+-                      <Badge
+-                        variant={categoryConfig.variant}
+-                        className="text-xs"
+-                      >
+-                        {categoryConfig.label}
+-                      </Badge>
+-                    </TableCell>
+-                    <TableCell className="text-right font-medium">
+-                      {formatQuantity(item.onHand)}{" "}
+-                      <span className="text-xs text-muted-foreground">
+-                        {item.baseUom.symbol}
+-                      </span>
+-                    </TableCell>
+-                    <TableCell className="text-right text-muted-foreground">
+-                      {formatINR(item.weightedAverageCost, {
+-                        maximumFractionDigits:
+-                          item.weightedAverageCost % 1 === 0 ? 2 : 3,
+-                      })}
+-                    </TableCell>
+-                    <TableCell className="text-right font-medium text-foreground">
+-                      {formatINR(totalValue)}
+-                    </TableCell>
+-                    <TableCell className="text-center">
+-                      {item.reconciled ? (
+-                        <span
+-                          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600"
+-                          title="Ledger sum equals on-hand balance"
+-                        >
+-                          <CheckCircleIcon
+-                            className="size-3.5"
+-                            aria-hidden="true"
+-                          />
+-                          Balanced
++                  <div key={item.id} className="p-4 space-y-2.5">
++                    <div className="flex items-center justify-between">
++                      <div className="flex items-center gap-2">
++                        <span className="font-mono text-xs font-semibold text-foreground">
++                          {item.sku}
+                         </span>
+-                      ) : (
+-                        <span
+-                          className="inline-flex items-center gap-1 text-xs font-medium text-amber-600"
+-                          title="Ledger variance detected"
++                        <Badge
++                          variant={categoryConfig.variant}
++                          className="text-2xs"
+                         >
+-                          <AlertTriangleIcon
+-                            className="size-3.5"
+-                            aria-hidden="true"
+-                          />
+-                          Variance
++                          {categoryConfig.label}
++                        </Badge>
++                      </div>
++                      <div>
++                        {item.reconciled ? (
++                          <span
++                            className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600"
++                            title="Ledger sum equals on-hand balance"
++                          >
++                            <CheckCircleIcon
++                              className="size-3.5"
++                              aria-hidden="true"
++                            />
++                            Balanced
++                          </span>
++                        ) : (
++                          <span
++                            className="inline-flex items-center gap-1 text-xs font-medium text-amber-600"
++                            title="Ledger variance detected"
++                          >
++                            <AlertTriangleIcon
++                              className="size-3.5"
++                              aria-hidden="true"
++                            />
++                            Variance
++                          </span>
++                        )}
++                      </div>
++                    </div>
++
++                    <p className="font-medium text-sm text-foreground">
++                      {item.name}
++                    </p>
++
++                    <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
++                      <div>
++                        <span className="text-muted-foreground text-2xs uppercase">
++                          On Hand
+                         </span>
+-                      )}
+-                    </TableCell>
+-                  </TableRow>
++                        <p className="font-semibold text-foreground">
++                          {formatQuantity(item.onHand)}{" "}
++                          <span className="text-2xs text-muted-foreground font-normal">
++                            {item.baseUom.symbol}
++                          </span>
++                        </p>
++                      </div>
++                      <div>
++                        <span className="text-muted-foreground text-2xs uppercase">
++                          Avg Unit Cost
++                        </span>
++                        <p className="font-medium text-muted-foreground">
++                          {formatINR(item.weightedAverageCost, {
++                            maximumFractionDigits:
++                              item.weightedAverageCost % 1 === 0 ? 2 : 3,
++                          })}
++                        </p>
++                      </div>
++                      <div className="text-right">
++                        <span className="text-muted-foreground text-2xs uppercase">
++                          Total Value
++                        </span>
++                        <p className="font-bold text-foreground">
++                          {formatINR(totalValue)}
++                        </p>
++                      </div>
++                    </div>
++                  </div>
+                 );
+               })}
+-            </TableBody>
+-          </Table>
++            </div>
++
++            {/* Desktop Table View (md+ viewports) */}
++            <div className="hidden md:block overflow-x-auto">
++              <Table>
++                <TableHeader>
++                  <TableRow>
++                    <TableHead className="w-[120px]">{t("SKU")}</TableHead>
++                    <TableHead>{t("Item Name")}</TableHead>
++                    <TableHead className="w-[140px]">{t("Category")}</TableHead>
++                    <TableHead className="text-right">{t("On Hand")}</TableHead>
++                    <TableHead className="text-right">{t("Avg Unit Cost")}</TableHead>
++                    <TableHead className="text-right">{t("Total Value")}</TableHead>
++                    <TableHead className="w-[120px] text-center">
++                      {t("Ledger Status")}
++                    </TableHead>
++                  </TableRow>
++                </TableHeader>
++                <TableBody>
++                  {filteredBalances.length === 0 && balances.length > 0 && (
++                    <TableRow>
++                      <TableCell
++                        colSpan={7}
++                        className="py-8 text-center text-sm text-muted-foreground"
++                      >
++                        {t("No items match the selected filters.")}
++                      </TableCell>
++                    </TableRow>
++                  )}
++                  {filteredBalances.map((item) => {
++                    const totalValue = item.onHand * item.weightedAverageCost;
++                    const categoryConfig = CATEGORY_LABELS[item.category] || {
++                      label: item.category,
++                      variant: "secondary",
++                    };
++
++                    return (
++                      <TableRow key={item.id}>
++                        <TableCell className="font-mono text-xs font-medium text-foreground">
++                          {item.sku}
++                        </TableCell>
++                        <TableCell className="font-medium text-foreground">
++                          {item.name}
++                        </TableCell>
++                        <TableCell>
++                          <Badge
++                            variant={categoryConfig.variant}
++                            className="text-xs"
++                          >
++                            {categoryConfig.label}
++                          </Badge>
++                        </TableCell>
++                        <TableCell className="text-right font-medium">
++                          {formatQuantity(item.onHand)}{" "}
++                          <span className="text-xs text-muted-foreground">
++                            {item.baseUom.symbol}
++                          </span>
++                        </TableCell>
++                        <TableCell className="text-right text-muted-foreground">
++                          {formatINR(item.weightedAverageCost, {
++                            maximumFractionDigits:
++                              item.weightedAverageCost % 1 === 0 ? 2 : 3,
++                          })}
++                        </TableCell>
++                        <TableCell className="text-right font-medium text-foreground">
++                          {formatINR(totalValue)}
++                        </TableCell>
++                        <TableCell className="text-center">
++                          {item.reconciled ? (
++                            <span
++                              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600"
++                              title="Ledger sum equals on-hand balance"
++                            >
++                              <CheckCircleIcon
++                                className="size-3.5"
++                                aria-hidden="true"
++                              />
++                              Balanced
++                            </span>
++                          ) : (
++                            <span
++                              className="inline-flex items-center gap-1 text-xs font-medium text-amber-600"
++                              title="Ledger variance detected"
++                            >
++                              <AlertTriangleIcon
++                                className="size-3.5"
++                                aria-hidden="true"
++                              />
++                              Variance
++                            </span>
++                          )}
++                        </TableCell>
++                      </TableRow>
++                    );
++                  })}
++                </TableBody>
++              </Table>
++            </div>
++          </>
+         )}
+       </div>
+     </div>

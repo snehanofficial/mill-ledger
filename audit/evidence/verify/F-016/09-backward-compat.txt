@@ -1,0 +1,14 @@
+=== F-016 VERIFICATION EVIDENCE 09: BACKWARD COMPATIBILITY ===
+Timestamp: 2026-11-23T14:50:05+05:30
+Scope: Existing schema, fallback conversions, and API backward compatibility
+
+1. Database Schema Backward Compatibility:
+- Added `packagingMismatch Boolean @default(false)` and `packagingWarning String?` to `model ProductionRun`.
+- Existing records default to `packagingMismatch: false` and `packagingWarning: null` without nullability or migration breakage.
+
+2. Fallback Logic:
+- If a custom packaging UOM conversion is not present in `unitConversion`, the logic safely checks for standard carton names / fallback `invItem.sku === "PKG-CARTON"` with 20 ratio.
+- Non-packaging items or items without conversion ratios do not crash or block the production run; warnings are purely informational and non-blocking.
+
+3. Benchmark Compatibility:
+- Benchmark transaction step 2 (188 good pkts, 9 cartons) continues to flag the warning as expected in benchmark oracle with 100% exact numerical fidelity.

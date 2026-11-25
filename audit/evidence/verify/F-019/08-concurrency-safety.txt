@@ -1,0 +1,15 @@
+=== F-019 VERIFICATION EVIDENCE 08: CONCURRENCY & ASYNC SAFETY ===
+Module: Frontend Route Navigation and Session Lifecycle
+Scope: Session verification, race handling, and unauthenticated redirects
+
+1. RACE AVOIDANCE DURING SESSION HYDRATION:
+   - <RoleGuard> inspects { isLoading } from useCurrentUser().
+   - While the auth session query is pending, <RoleGuard> returns null to prevent layout flash or prematurely triggering <ForbiddenPage /> before session resolution.
+   - Once session resolves, the user's role is deterministically evaluated.
+
+2. LOGOUT & CACHE PURGE:
+   - ForbiddenPage and AuthenticatedLayout perform queryClient.clear() during sign-out to guarantee that sensitive data in TanStack Query cache is purged from memory across role switches.
+   - Prevents stale authorized queries from leaking into an unauthorized session.
+
+3. REACT ROUTER V7 INTEGRATION:
+   - Compatible with asynchronous createBrowserRouter structure, Suspense lazy boundaries, and route handles.

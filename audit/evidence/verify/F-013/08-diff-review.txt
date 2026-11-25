@@ -1,0 +1,12 @@
+=== STEP 8: DIFF REVIEW FOR F-013 ===
+Files modified:
+- server/prisma/schema.prisma: Added BOUNCED and REVERSED to PaymentStatus, audit columns to Payment and PaymentAllocation, added DebitNote and DebitNoteLine models and relations.
+- server/src/modules/finance/payment.service.ts: Added BouncePaymentInput interface, bouncePayment, reversePayment, and processPaymentReversal with exact Decimal restoration and audit logs.
+- server/src/modules/finance/payment.routes.ts: Added POST /:id/bounce endpoint with schema validation and authorization.
+- server/src/modules/finance/finance.service.ts: Added IssueDebitNoteInput, issueDebitNote, and getDebitNotes methods with audit logging.
+- server/src/modules/finance/finance.routes.ts: Added POST and GET /api/v1/finance/debit-notes endpoints.
+- server/src/modules/reporting/reporting.service.ts: Excluded non-POSTED payments from totalCollected.
+- server/src/db/reset.ts: Cleaned up debitNoteLine and debitNote during operational resets.
+- server/src/payment-bounce.test.ts: Added 5 regression tests covering single-invoice bounce, multi-invoice FIFO bounce, unallocated overpayment bounce, idempotency duplicate prevention, and debit note issuance.
+
+All changes are strictly focused on F-013, follow exact Decimal math, preserve immutability and authorization rules.

@@ -1,0 +1,13 @@
+diff --git a/client/src/app.tsx b/client/src/app.tsx
+index 34e9c8f..d31cc1d 100644
+--- a/client/src/app.tsx
++++ b/client/src/app.tsx
+@@ -52,7 +52,7 @@ const ReportsAuditPage = lazy(() =>
+   import("@/pages/reports-page").then((m) => ({ default: m.ReportsAuditPage })),
+ );
+ const NewOrderPage = lazy(() =>
+-  import("@/pages/placeholder-pages").then((m) => ({ default: m.NewOrderPage })),
++  import("@/pages/new-order-page").then((m) => ({ default: m.NewOrderPage })),
+ );
+ const PurchasesPage = lazy(() =>
+   import("@/pages/purchases-page").then((m) => ({ default: m.PurchasesPage })),

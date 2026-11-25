@@ -1,0 +1,35 @@
+======================================================================
+F-064 VERIFICATION SUMMARY: DISABLED BUTTONS POINTER EVENTS AND CURSOR AFFORDANCE
+======================================================================
+Date: 2026-11-24
+Severity: P2 | Tier: T7 | Cluster: CLUSTER-11
+Status: VERIFIED-PASS
+
+1. Root Cause:
+`client/src/components/ui/button.tsx:8` applied the Tailwind utility class `disabled:pointer-events-none`.
+This completely intercepted mouse pointer events on disabled buttons, preventing the browser from
+computing and displaying the declared `cursor: not-allowed` style (defined in `index.css:298-301`)
+and preventing tooltips or inspection affordances from activating on hover or focus.
+
+2. Implementation Summary:
+- `client/src/components/ui/button.tsx`:
+  * Removed `disabled:pointer-events-none` from `buttonVariants`.
+  * Added `disabled:cursor-not-allowed` and `aria-disabled:cursor-not-allowed`.
+  * Added `disabled:active:scale-100` and `aria-disabled:active:scale-100` to prevent active compression on click.
+- `client/src/pages/new-order-page.tsx`:
+  * Replaced `disabled:pointer-events-none` with `disabled:cursor-not-allowed` on quantity decrease stepper button.
+- `client/src/index.css`:
+  * Enhanced `button:disabled`, `[aria-disabled="true"]`, and hover pseudoclasses to enforce `cursor: not-allowed !important;`.
+- Verified 0 remaining occurrences of `disabled:pointer-events-none` on buttons across the entire client codebase.
+
+3. Verification Evidence:
+- 01-git-status.txt: Working tree clean, targeted files staged
+- 02-regression-test.txt: audit/tests/f-064-regression.test.ts (4/4 passed)
+- 03-typecheck.txt: TypeScript typecheck passed across shared, client, and server workspaces
+- 04-lint.txt: 0 errors, 0 warnings across 196 files
+- 05-build.txt: Production build passed (53 PWA precache entries)
+- 06-invariants.txt: 10/10 SQL database invariants passed (0 rows)
+- 07-benchmark.txt: 18/18 CDI benchmark oracle assertions passed (100% exact numerical match)
+- 08-test-suite.txt: 39/39 test files passed (241/241 tests)
+- 09-diff.txt: Clean diff verifying targeted changes in code commit 80d261f
+======================================================================

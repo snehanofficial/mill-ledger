@@ -5,12 +5,24 @@
  * Public auth routes (login) must NOT be nested under this.
  */
 
-import { Suspense, useEffect } from "react";
-import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { Suspense, useCallback, useEffect, useRef } from "react";
+import {
+  Outlet,
+  Navigate,
+  useNavigate,
+  useLocation,
+  useMatches,
+} from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { AuthenticatedShell } from "@/components/shell/authenticated-shell";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { authClient } from "@/lib/auth-client";
+import { offlineDb } from "@/offline/db";
+import { saveActiveFormDraft } from "@/lib/form-draft";
+import { useSessionTimeout } from "@/hooks/use-session-timeout";
+import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
+import { SessionTimeoutModal } from "@/components/shell/session-timeout-modal";
+import type { RouteHandle } from "@/components/shell/use-breadcrumbs";
 
 function RouteLoadingFallback() {
   return (
@@ -23,19 +35,94 @@ function RouteLoadingFallback() {
   );
 }
 
+function SessionTimeoutGuard({
+  onTimeout,
+  onSignOut,
+}: {
+  onTimeout: () => void;
+  onSignOut: () => Promise<void>;
+}) {
+  const { isWarningOpen, secondsRemaining, extendSession } = useSessionTimeout({
+    onTimeout,
+  });
+
+  return (
+    <SessionTimeoutModal
+      isOpen={isWarningOpen}
+      secondsRemaining={secondsRemaining}
+      onExtend={extendSession}
+      onSignOut={onSignOut}
+    />
+  );
+}
+
 export function AuthenticatedLayout() {
   const { user, isLoading } = useCurrentUser();
   const navigate = useNavigate();
   const location = useLocation();
+  const locationRef = useRef(location);
+  useEffect(() => {
+    locationRef.current = location;
+  }, [location]);
+  const matches = useMatches();
   const queryClient = useQueryClient();
+
+  const lastWithHandle = [...matches]
+    .reverse()
+    .find(
+      (m) =>
+        (m.handle as RouteHandle | undefined)?.breadcrumb !== undefined,
+    );
+
+  let label = "Overview";
+  if (lastWithHandle) {
+    const handle = lastWithHandle.handle as RouteHandle;
+    const resolvedLabel =
+      typeof handle.breadcrumb === "function"
+        ? handle.breadcrumb(lastWithHandle.data)
+        : handle.breadcrumb;
+    if (resolvedLabel) {
+      label = resolvedLabel;
+    }
+  }
+
+  const routeAnnouncement = `${label} view loaded`;
+
+  // Master Rulebook Phase 9 & F-069: Manage scroll restoration and container reset
+  useScrollRestoration("main-content");
+
+  // WCAG 2.2 SC 2.4.2, SC 4.1.3 & SC 2.4.3: Dynamically update title and manage focus
+  useEffect(() => {
+    document.title = `${label} | MillLedger`;
+
+    // Reset keyboard focus to primary main landmark upon client-side SPA navigation
+    const main = document.getElementById("main-content");
+    if (main) {
+      main.focus({ preventScroll: true });
+    }
+  }, [label, location.pathname]);
+
+  // WCAG 2.2 SC 2.2.1 & SC 3.3.7: Proactive idle session warning and draft preservation
+  const handleSessionTimeout = useCallback(() => {
+    const currentLocation = locationRef.current;
+    saveActiveFormDraft(currentLocation.pathname);
+    queryClient.clear();
+    navigate("/auth/login", {
+      replace: true,
+      state: { from: currentLocation, sessionExpired: true },
+    });
+  }, [navigate, queryClient]);
 
   // Listen for unauthorized session expiration across active API queries
   useEffect(() => {
     const handleUnauthorized = () => {
+      const currentLocation = locationRef.current;
+      // WCAG 2.2 SC 3.3.7: Serialize in-progress form inputs before redirect
+      saveActiveFormDraft(currentLocation.pathname);
       queryClient.clear();
       navigate("/auth/login", {
         replace: true,
-        state: { from: location },
+        state: { from: currentLocation, sessionExpired: true },
       });
     };
 
@@ -43,7 +130,37 @@ export function AuthenticatedLayout() {
     return () => {
       window.removeEventListener("millledger:unauthorized", handleUnauthorized);
     };
-  }, [navigate, queryClient, location]);
+  }, [navigate, queryClient]);
+
+  // REQ-062 & Owner Decision 2: Keep authenticated ERP pages noindex, nofollow
+  useEffect(() => {
+    let meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    const created = !meta;
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "robots";
+      document.head.appendChild(meta);
+    }
+    const previousContent = meta.content;
+    meta.content = "noindex, nofollow";
+
+    return () => {
+      if (created) {
+        meta?.remove();
+      } else if (previousContent) {
+        meta!.content = previousContent;
+      }
+    };
+  }, []);
+
+  // Sync active user ID for user-scoped storage (F-086)
+  useEffect(() => {
+    if (user?.id) {
+      try {
+        localStorage.setItem("mill_ledger_active_user", user.id);
+      } catch {}
+    }
+  }, [user?.id]);
 
   // Show loading shell to prevent layout shift during initial session verification
   if (isLoading) {
@@ -61,18 +178,39 @@ export function AuthenticatedLayout() {
     } catch (err) {
       console.warn("Sign out error:", err);
     } finally {
-      // OWASP: Purge all cached sensitive domain and session state from client memory
+      // OWASP ASVS 8.3.1 & 3.5.3: Purge all cached sensitive enterprise data, customer PII, and offline outbox
+      try {
+        localStorage.removeItem("mill_ledger_active_user");
+        await offlineDb.purgeOnSignOut();
+      } catch (dbErr) {
+        console.warn("Failed to purge offline database on logout:", dbErr);
+      }
       queryClient.clear();
       navigate("/auth/login", { replace: true });
     }
   };
 
   return (
-    <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>
-      <Suspense fallback={<RouteLoadingFallback />}>
-        <Outlet />
-      </Suspense>
-    </AuthenticatedShell>
+    <>
+      <div
+        id="route-announcer"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {routeAnnouncement}
+      </div>
+      <SessionTimeoutGuard
+        onTimeout={handleSessionTimeout}
+        onSignOut={handleSignOut}
+      />
+      <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>
+        <Suspense fallback={<RouteLoadingFallback />}>
+          <Outlet />
+        </Suspense>
+      </AuthenticatedShell>
+    </>
   );
 }
 

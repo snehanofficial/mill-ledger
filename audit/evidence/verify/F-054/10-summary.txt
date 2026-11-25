@@ -1,0 +1,35 @@
+======================================================================
+F-054 VERIFICATION SUMMARY: LABEL IN NAME MISMATCH (WCAG 2.5.3)
+======================================================================
+Date: 2026-11-24
+Severity: P2 | Tier: T7 | Cluster: CLUSTER-10
+Status: VERIFIED-PASS
+
+1. Root Cause:
+On `/auth/login`, the language switcher button visually rendered "தமிழ்" (when English)
+and "English" (when Tamil), but its `aria-label` was hardcoded to "Switch language to Tamil"
+and "ஆங்கிலத்திற்கு மாற்று" respectively. The visible text was completely absent from
+the accessible name, causing Lighthouse `label-content-name-mismatch` failures and
+breaking voice navigation / speech control users (WCAG 2.2 SC 2.5.3 Level A).
+
+2. Implementation Summary:
+- Modified `client/src/pages/login-page.tsx`:
+  * Updated `aria-label` to "தமிழ் (Switch language to Tamil)" when language is "en"
+  * Updated `aria-label` to "English (ஆங்கிலத்திற்கு மாற்று)" when language is "ta"
+- Satisfied WCAG 2.2 SC 2.5.3 Level A requirement: the accessible name begins with
+  and contains the exact visible label text.
+- Verified authenticated shell language button already conforms to WCAG 2.5.3:
+  * "தமிழ் - Switch language to Tamil" (matches "தமிழ்")
+  * "EN - Switch language to English" (matches "EN")
+
+3. Verification Evidence:
+- 01-git-status.txt: Working tree clean, targeted files staged
+- 02-regression-test.txt: audit/tests/f-054-regression.test.ts (3/3 passed)
+- 03-typecheck.txt: TypeScript typecheck passed across client, server, and shared
+- 04-lint.txt: 0 errors, 0 warnings across 195 files
+- 05-build.txt: Production build passed (53 PWA precache entries)
+- 06-invariants.txt: 10/10 SQL database invariants passed (0 rows)
+- 07-benchmark.txt: 18/18 CDI benchmark oracle assertions passed (100% exact numerical match)
+- 08-test-suite.txt: 39/39 test files passed (241/241 tests)
+- 09-diff.txt: Clean diff verifying targeted changes
+======================================================================

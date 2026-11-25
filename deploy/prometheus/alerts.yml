@@ -1,0 +1,57 @@
+groups:
+  - name: mill_ledger_alerts
+    rules:
+      # Alert for High HTTP 5xx Error Rate
+      - alert: HighHttp5xxRate
+        expr: sum(rate(http_requests_total{status_code=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+          tier: api
+        annotations:
+          summary: "High HTTP 5xx error rate detected (> 5%)"
+          description: "HTTP 5xx error rate has exceeded 5% over the last 5 minutes on route {{ $labels.route }}."
+
+      # Alert for High HTTP Latency (p95 > 1s)
+      - alert: HighHttpLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          tier: api
+        annotations:
+          summary: "High HTTP p95 latency detected (> 1000ms)"
+          description: "95th percentile latency exceeds 1.0 second over 5 minutes."
+
+      # Alert for Database Connection Pool Saturation
+      - alert: DatabasePoolSaturation
+        expr: db_pool_active_connections > 18
+        for: 2m
+        labels:
+          severity: critical
+          tier: database
+        annotations:
+          summary: "Database connection pool near exhaustion (> 90%)"
+          description: "Active database pool connections exceeded 18 of max 20 for more than 2 minutes."
+
+      # Alert for Service Availability
+      - alert: MillLedgerApiDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          tier: infrastructure
+        annotations:
+          summary: "MillLedger API instance is down"
+          description: "MillLedger API health check failed to respond for over 1 minute."
+
+      # Alert for Production Run Yield Variance
+      - alert: ProductionYieldVarianceAnomaly
+        expr: production_yield_variance_percent > 10
+        for: 15m
+        labels:
+          severity: warning
+          tier: manufacturing
+        annotations:
+          summary: "High production run yield variance (> 10%)"
+          description: "Production batch yield variance exceeded statutory tolerance limit."

@@ -4,7 +4,7 @@ MillLedger is an enterprise resource planning and shop floor ledger application 
 
 ## Stack Justification
 
-The application is built as a TypeScript modular monolog with React 19 and Vite 6 on the client, and Express 5, Better Auth, Prisma 7, and PostgreSQL on the server.
+The application is built as a TypeScript modular monolith with React 19 and Vite 6 on the client, and Express 5, Better Auth, Prisma 7, and PostgreSQL on the server.
 
 - **PostgreSQL and Prisma 7**: Food production and inventory ledgering demand ACID transactional integrity and arbitrary precision decimal arithmetic. PostgreSQL enforces foreign keys, row locks, and ledger immutability.
 - **Express 5 and Better Auth**: Express 5 provides clean async routing without monkey patching. Better Auth handles secure cookie sessions with role and attribute access controls.
@@ -27,7 +27,7 @@ pnpm install
 
 # 2. Configure environment
 # Copy server environment template and verify DATABASE_URL
-cp server/.env.example server/.env
+cp .env.example server/.env
 
 # 3. Run database migrations and seed benchmark data
 pnpm --filter @mill-ledger/server prisma migrate deploy
@@ -37,7 +37,7 @@ pnpm --filter @mill-ledger/server prisma db seed
 pnpm dev
 ```
 
-The frontend runs at `http://localhost:5173` and the backend API runs at `http://localhost:3000`.
+The frontend runs at `http://localhost:5173` and the backend API runs at `http://localhost:4000`.
 
 ### Benchmark Acceptance Runner
 
@@ -106,10 +106,10 @@ The automated benchmark runner (`server/src/scripts/run-benchmark.ts`) executes 
 
 ### Core Must Haves
 
-- Master records: raw materials, packaging, finished goods, suppliers, customers, and BOM recipes.
+- Master records: raw materials, packaging, finished goods, suppliers, customers, and BOM recipes (read-only master catalogs in UI; programmatic seed/API support).
 - Stock movements: purchase receipts, production consumption, production output, and dispatch. Direct stock overwrites are strictly disallowed.
 - Production run recording: yields, damaged items, labor and utility costs, and batch costing.
-- Order to cash workflow: mobile sales order creation, admin stock verification, ATP checking, invoice posting, and dispatch.
+- Order to cash workflow: mobile sales order creation, admin stock verification, ATP checking, backend invoice posting and dispatch, and payment allocation.
 - FIFO payment allocation against posted invoices.
 
 ### Expected Features
@@ -118,12 +118,12 @@ The automated benchmark runner (`server/src/scripts/run-benchmark.ts`) executes 
 - Strict stock reservation preventing double selling.
 - Indian GST statutory calculation: CGST, SGST, IGST with inter state and intra state logic.
 - Costing and valuation: moving weighted average cost recalculated atomically upon purchase receipt.
-- Reporting suite: sales register, GST outward summary, purchase register, stock valuation report, production costing analysis, collections register, customer receivables ageing, owner dashboard, and CSV exports.
+- Reporting suite: sales register, GST outward summary, stock valuation report, production costing analysis, collections register, customer receivables ageing, owner dashboard, and CSV exports.
 
 ### Stretch Goals Delivered
 
 - **Offline Order Capture with Sync Engine**: Dexie IndexedDB client side queue with idempotent server replay, conflict detection, and retry mechanics.
-- **Tamil Language Interface**: Full bilingual support toggled on the application shell for floor staff and operators.
+- **Tamil Language Interface**: Bilingual navigation and outbox sync toggled on the application shell for floor staff and operators.
 - **Non blocking Packaging Mismatch Warning**: Real time notification when carton pack size capacity (9 cartons × 20 = 180 packets) differs from production good output (188 packets).
 
 ## Documented Assumptions and Notes

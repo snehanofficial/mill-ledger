@@ -1,0 +1,24 @@
+=== STEP 7: REGRESSION RADIUS FOR F-013 ===
+1. Full test suite execution:
+   Command: pnpm vitest run
+   Result: 28 / 28 test files passed (138 / 138 tests passed).
+
+2. CDI Benchmark suite:
+   Command: pnpm --filter @mill-ledger/server exec tsx src/scripts/run-benchmark.ts
+   Result: All 18 / 18 benchmark assertions matched 100%.
+
+3. SQL Invariants check:
+   Command: PGPASSWORD=postgres psql -U postgres -d mill_ledger -h localhost -f audit/scripts/invariants.sql
+   Result: 10 / 10 invariants hold with 0 violations.
+
+4. Typecheck:
+   Command: pnpm typecheck
+   Result: Clean, 0 type errors across shared, client, and server.
+
+5. Lint:
+   Command: pnpm lint
+   Result: 0 errors.
+
+6. Build:
+   Command: pnpm build
+   Result: Clean build for client (Vite PWA) and server (tsc).

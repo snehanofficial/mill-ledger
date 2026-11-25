@@ -1,0 +1,41 @@
+{
+  "dashboard": {
+    "title": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+    "metaRobots": null,
+    "h1Count": 1,
+    "h1Texts": [
+      "Overview"
+    ],
+    "landmarks": {
+      "main": true,
+      "header": true,
+      "nav": true
+    }
+  },
+  "routes": {
+    "orders": {
+      "title": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+      "metaRobots": null,
+      "h1Count": 1,
+      "h1Text": "Orders"
+    },
+    "stock": {
+      "title": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+      "metaRobots": null,
+      "h1Count": 1,
+      "h1Text": "Inventory & Stock Ledger"
+    },
+    "reports-sales": {
+      "title": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+      "metaRobots": null,
+      "h1Count": 1,
+      "h1Text": "Reports & Audit"
+    }
+  },
+  "authenticated404": {
+    "url": "http://127.0.0.1:4173/non-existent-route-within-auth",
+    "title": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+    "h1": "404 - Page Not Found",
+    "bodyTextSnippet": "Skip to main content\nM\nMillLedger\nProduction unit\nOverview\nOPERATIONS\nOrders\nInvoices\nDispatch\nPayments\nINVENTORY\nStock\nPurchases\nProduction\nCUSTOMERS\nCustomers\nREPORTING\nReports\nExports\nSETTINGS\nSettings\nCollapse to icons\n⌘B\nFA\nFactory Admin\nadmin@millledger.local\nSkip to main content\nதமிழ்\nLive\nSe"
+  }
+}

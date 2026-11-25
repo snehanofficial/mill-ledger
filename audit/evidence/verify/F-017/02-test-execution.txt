@@ -1,0 +1,19 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations
+M2 benchmark master data seed successfully completed.
+
+(node:22300) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/orders.test.ts (4 tests) 1131ms
+   ✓ M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > executes benchmark transactions 4, 5, and 6: salesman order creation, tax calculation, atomic reservation, and exact shortage 32  395ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  15:11:58
+   Duration  1.96s (transform 215ms, setup 0ms, collect 581ms, tests 1.13s, environment 0ms, prepare 45ms)
+

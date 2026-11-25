@@ -1,0 +1,7 @@
+=== F-021 Verification: 01 Fresh Environment ===
+Date: Mon Nov 23 17:03:00 IST 2026
+OS: Linux (Node.js v22, TypeScript 5.8, pnpm 12)
+Branch: remediation/main
+Head Commit: 34763fd chore(tracker): mark F-020 VERIFIED with complete evidence
+Database: Isolated local PostgreSQL (postgresql://postgres:postgres@localhost:5432/mill_ledger)
+Status: Working tree clean of unrelated changes; target files server/src/modules/inventory/purchase.routes.ts (new), server/src/modules/inventory/inventory.routes.ts, server/src/app.ts, and server/src/purchases.test.ts modified for F-021.

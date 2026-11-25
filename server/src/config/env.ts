@@ -1,6 +1,13 @@
 import { config } from "dotenv";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Load .env from root or server directory
+config({ path: path.resolve(__dirname, "../../../.env") });
+config({ path: path.resolve(__dirname, "../../.env") });
 config();
 
 export const DEV_DEFAULT_SECRET = "mill-ledger-development-secret-123456";
@@ -12,11 +19,9 @@ export const envSchema = z
       .default("development"),
     PORT: z.coerce.number().default(4000),
     DATABASE_URL: z
-      .string()
-      .url()
-      .default(
-        "postgresql://postgres:postgres@localhost:5432/mill_ledger?schema=public",
-      ),
+      .string({ message: "DATABASE_URL is required" })
+      .min(1, "DATABASE_URL is required")
+      .url("DATABASE_URL must be a valid URL"),
     BETTER_AUTH_SECRET: z.string().min(16).default(DEV_DEFAULT_SECRET),
     BETTER_AUTH_URL: z.string().url().default("http://localhost:4000"),
     CORS_ORIGIN: z.string().default("http://localhost:5173"),
@@ -50,6 +55,18 @@ export const envSchema = z
           path: ["CORS_ORIGIN"],
           message:
             "CORS_ORIGIN must be explicitly configured with non-local production origin(s) in production",
+        });
+      }
+
+      if (
+        data.DATABASE_URL.includes("localhost") ||
+        data.DATABASE_URL.includes("127.0.0.1")
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["DATABASE_URL"],
+          message:
+            "DATABASE_URL must be explicitly configured with a non-localhost production database in production",
         });
       }
     }

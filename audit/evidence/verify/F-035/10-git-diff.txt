@@ -1,0 +1,281 @@
+diff --git a/client/src/pages/reports-page.tsx b/client/src/pages/reports-page.tsx
+index a2e09b4..e03c8ae 100644
+--- a/client/src/pages/reports-page.tsx
++++ b/client/src/pages/reports-page.tsx
+@@ -4,6 +4,7 @@ import { apiClient } from "@/lib/api-client";
+ import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
++import { Input } from "@/components/ui/input";
+ import {
+   Table,
+   TableBody,
+@@ -22,6 +23,8 @@ import {
+ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+   const [activeTab, setActiveTab] = useState(defaultTab);
+   const [exporting, setExporting] = useState(false);
++  const [auditSearch, setAuditSearch] = useState("");
++  const [auditActionFilter, setAuditActionFilter] = useState("ALL");
+ 
+   // 1. Sales Report
+   const {
+@@ -91,6 +94,21 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+     enabled: activeTab === "audit",
+   });
+ 
++  const filteredAuditLogs = (auditData?.logs || []).filter((log: any) => {
++    if (auditActionFilter !== "ALL" && log.action !== auditActionFilter) {
++      return false;
++    }
++    if (auditSearch.trim()) {
++      const q = auditSearch.toLowerCase();
++      const matchEmail = (log.userEmail || "").toLowerCase().includes(q);
++      const matchEntity = (log.entity || "").toLowerCase().includes(q);
++      const matchAction = (log.action || "").toLowerCase().includes(q);
++      const matchDetails = (log.details || "").toLowerCase().includes(q);
++      return matchEmail || matchEntity || matchAction || matchDetails;
++    }
++    return true;
++  });
++
+   const handleExportCSV = async () => {
+     try {
+       setExporting(true);
+@@ -631,7 +649,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+       {/* Tab 6: Audit Logs */}
+       {activeTab === "audit" && (
+         <div className="rounded-xl border bg-card shadow-xs">
+-          <div className="flex items-center justify-between border-b p-4">
++          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b p-4">
+             <div>
+               <h2 className="text-base font-semibold text-foreground">
+                 System Audit Trail
+@@ -641,6 +659,28 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+                 request metadata
+               </p>
+             </div>
++            <div className="flex flex-wrap items-center gap-2">
++              <Input
++                placeholder="Search actor, entity, details..."
++                value={auditSearch}
++                onChange={(e) => setAuditSearch(e.target.value)}
++                className="h-8 w-56 text-xs"
++              />
++              <select
++                value={auditActionFilter}
++                onChange={(e) => setAuditActionFilter(e.target.value)}
++                className="h-8 rounded-control border border-input bg-background px-2 text-xs text-foreground shadow-xs outline-none"
++              >
++                <option value="ALL">All Actions</option>
++                <option value="CREATE">CREATE</option>
++                <option value="UPDATE">UPDATE</option>
++                <option value="DELETE">DELETE</option>
++                <option value="APPROVE">APPROVE</option>
++                <option value="POST">POST</option>
++                <option value="REVERSE">REVERSE</option>
++                <option value="EXPORT">EXPORT</option>
++              </select>
++            </div>
+           </div>
+ 
+           <div className="overflow-x-auto">
+@@ -655,17 +695,19 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+                 </TableRow>
+               </TableHeader>
+               <TableBody>
+-                {(auditData?.logs || []).length === 0 ? (
++                {filteredAuditLogs.length === 0 ? (
+                   <TableRow>
+                     <TableCell
+                       colSpan={5}
+                       className="text-center text-xs text-muted-foreground py-8"
+                     >
+-                      No audit events recorded yet
++                      {auditSearch || auditActionFilter !== "ALL"
++                        ? "No matching audit events found"
++                        : "No audit events recorded yet"}
+                     </TableCell>
+                   </TableRow>
+                 ) : (
+-                  auditData?.logs.map((log: any) => (
++                  filteredAuditLogs.map((log: any) => (
+                     <TableRow key={log.id}>
+                       <TableCell className="text-xs font-mono text-muted-foreground">
+                         {formatDateTime(log.timestamp)}
+diff --git a/server/src/app.ts b/server/src/app.ts
+index 50091d2..d636428 100644
+--- a/server/src/app.ts
++++ b/server/src/app.ts
+@@ -16,13 +16,15 @@ import { reportingRouter } from "./modules/reporting/reporting.routes.js";
+ import { errorHandler } from "./middleware/error.middleware.js";
+ import { isAllowedOrigin } from "./lib/origins.js";
+ import { requestIdMiddleware } from "./middleware/request-id.middleware.js";
++import { requestLogger } from "./middleware/request-logger.middleware.js";
+ import { createRateLimiter } from "./middleware/rate-limit.middleware.js";
+ 
+ export function createApp() {
+   const app = express();
+ 
+-  // Request correlation ID
++  // Request correlation ID and structured logger
+   app.use(requestIdMiddleware);
++  app.use(requestLogger);
+ 
+   app.use(helmet());
+   app.use(
+diff --git a/server/src/modules/auth/user.routes.ts b/server/src/modules/auth/user.routes.ts
+index a62f5e1..1c862c9 100644
+--- a/server/src/modules/auth/user.routes.ts
++++ b/server/src/modules/auth/user.routes.ts
+@@ -5,6 +5,7 @@ import {
+   type AuthenticatedRequest,
+ } from "../../middleware/auth.middleware.js";
+ import { userService } from "./user.service.js";
++import { auditService } from "../reporting/audit.service.js";
+ 
+ export const userRouter = Router();
+ 
+@@ -61,6 +62,18 @@ userRouter.post(
+         role,
+         organizationId: organizationId || req.user?.organizationId,
+       });
++
++      await auditService.log({
++        organizationId: user.organizationId || req.user?.organizationId,
++        userId: req.user?.id,
++        userEmail: req.user?.email,
++        action: "CREATE",
++        entity: "User",
++        entityId: user.id,
++        details: { email: user.email, role: user.role, name: user.name },
++        requestId: req.id,
++      });
++
+       res.status(201).json({ user });
+     } catch (err) {
+       next(err);
+@@ -82,6 +95,18 @@ userRouter.put(
+         isActive,
+         organizationId,
+       });
++
++      await auditService.log({
++        organizationId: user.organizationId || req.user?.organizationId,
++        userId: req.user?.id,
++        userEmail: req.user?.email,
++        action: "UPDATE",
++        entity: "User",
++        entityId: user.id,
++        details: { role: user.role, isActive: user.isActive, name: user.name },
++        requestId: req.id,
++      });
++
+       res.json({ user });
+     } catch (err) {
+       next(err);
+@@ -103,6 +128,18 @@ userRouter.patch(
+         isActive,
+         organizationId,
+       });
++
++      await auditService.log({
++        organizationId: user.organizationId || req.user?.organizationId,
++        userId: req.user?.id,
++        userEmail: req.user?.email,
++        action: "UPDATE",
++        entity: "User",
++        entityId: user.id,
++        details: { role: user.role, isActive: user.isActive, name: user.name },
++        requestId: req.id,
++      });
++
+       res.json({ user });
+     } catch (err) {
+       next(err);
+@@ -118,6 +155,18 @@ userRouter.delete(
+     try {
+       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+       const result = await userService.deleteUser(id);
++
++      await auditService.log({
++        organizationId: req.user?.organizationId,
++        userId: req.user?.id,
++        userEmail: req.user?.email,
++        action: "DELETE",
++        entity: "User",
++        entityId: id,
++        details: { deletedUserId: id },
++        requestId: req.id,
++      });
++
+       res.json(result);
+     } catch (err) {
+       next(err);
+diff --git a/server/src/modules/reporting/reporting.routes.ts b/server/src/modules/reporting/reporting.routes.ts
+index 9e9a747..29f09df 100644
+--- a/server/src/modules/reporting/reporting.routes.ts
++++ b/server/src/modules/reporting/reporting.routes.ts
+@@ -160,6 +160,9 @@ reportingRouter.get(
+           case "receivables":
+             data = await reportingService.getReceivablesReport(params);
+             break;
++          case "audit":
++            data = await reportingService.getAuditReport(params);
++            break;
+           default:
+             throw new AppError(`Unknown report type: ${reportType}`, 400);
+         }
+diff --git a/server/src/modules/reporting/reporting.service.ts b/server/src/modules/reporting/reporting.service.ts
+index 1643748..ef81432 100644
+--- a/server/src/modules/reporting/reporting.service.ts
++++ b/server/src/modules/reporting/reporting.service.ts
+@@ -954,6 +954,39 @@ export class ReportingService {
+     };
+   }
+ 
++  /**
++   * 8b. System Audit Trail Report
++   */
++  async getAuditReport(params: ReportFilterParams) {
++    const orgId = await this.resolveOrgId(params.organizationId);
++    const logs = await auditService.getLogs({
++      organizationId: orgId,
++      startDate: params.startDate,
++      endDate: params.endDate,
++      limit: 1000,
++    });
++
++    const rows = logs.map((log) => ({
++      timestamp: log.timestamp.toISOString(),
++      userEmail: log.userEmail || "System",
++      action: log.action,
++      entity: log.entity,
++      entityId: log.entityId || "",
++      requestId: log.requestId || "",
++      ipAddress: log.ipAddress || "",
++      details: log.details || "",
++    }));
++
++    return {
++      reportTitle: "System Audit Trail",
++      generatedAt: new Date().toISOString(),
++      rows,
++      summary: {
++        totalRecords: rows.length,
++      },
++    };
++  }
++
+   /**
+    * Neutralize potential formula injection characters for CSV export per CWE-1236 & OWASP
+    */
+@@ -1002,6 +1035,9 @@ export class ReportingService {
+       case "receivables":
+         reportData = await this.getReceivablesReport(params);
+         break;
++      case "audit":
++        reportData = await this.getAuditReport(params);
++        break;
+       default:
+         throw new AppError(`Unknown report type: ${reportType}`, 400);
+     }

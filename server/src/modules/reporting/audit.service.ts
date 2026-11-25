@@ -1,4 +1,5 @@
 import { prisma } from "../../db/client.js";
+import type { Prisma } from "@prisma/client";
 
 export interface LogAuditInput {
   organizationId?: string;
@@ -15,13 +16,13 @@ export interface LogAuditInput {
 
 export class AuditService {
   private async resolveOrgId(orgIdOrCode?: string): Promise<string> {
-    if (!orgIdOrCode) return "MILL";
+    const target = orgIdOrCode || "MILL";
     const org = await prisma.organization.findFirst({
       where: {
-        OR: [{ id: orgIdOrCode }, { code: orgIdOrCode }],
+        OR: [{ id: target }, { code: target }],
       },
     });
-    return org ? org.id : orgIdOrCode;
+    return org ? org.id : target;
   }
 
   /**
@@ -68,7 +69,7 @@ export class AuditService {
   }) {
     const orgId = await this.resolveOrgId(params.organizationId);
 
-    const where: any = {
+    const where: Prisma.AuditLogWhereInput = {
       organizationId: orgId,
     };
 

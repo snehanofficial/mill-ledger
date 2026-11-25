@@ -1,0 +1,21 @@
+=== STEP 8: DIFF REVIEW FOR F-007 (COMMIT 7c81a65) ===
+Timestamp: 2026-11-23T04:40:00+05:30
+Target Commit: 7c81a65d49ae7d10d3b028e13cea071e7e0fd22e
+Parent Commit: 3d39b25f4b595b11116260df935ec61ea30c006d
+
+1. Modified Files:
+   - server/src/modules/sales/sales.service.ts (24 lines added, 4 removed)
+   - server/src/sales-concurrency.test.ts (170 lines added)
+
+2. Scope and Hygiene Analysis:
+   - Scope Creep: None. Modification is strictly isolated to sales order approval concurrency control: acquires row-level locks on `inventory_item` using `SELECT id, "currentStock" FROM "inventory_item" WHERE id = ${itemId} FOR UPDATE` in deterministic sorted order (`involvedItemIds.sort()`), preventing deadlocks and concurrent overselling. Replaces non-locking `tx.inventoryItem.findUnique` with values from `lockedItems`.
+   - Leftover Debug Code: None. Zero `console.log` statements in service code.
+   - Swallowed Errors: None. All validation errors properly throw `AppError` (HTTP 400).
+   - Type Safety: Full TypeScript adherence; uses typed `Array<{ id: string; currentStock: unknown }>` and type predicates.
+   - Disabled Lint Rules: None. Zero lint suppressions.
+   - Commented-out Code: None.
+   - Hardcoded Magic Numbers: None.
+   - TODOs / Placeholders: None.
+   - Untranslated Strings: N/A (server error messages).
+
+3. Verdict: DIFF CLEAN AND ACCEPTED.

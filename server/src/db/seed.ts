@@ -67,6 +67,14 @@ const SEED_USERS: SeedUser[] = [
 ];
 
 export async function seedUsers() {
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.ALLOW_PRODUCTION_SEED !== "true"
+  ) {
+    throw new Error(
+      "Seeding is strictly disabled in production environments. Set ALLOW_PRODUCTION_SEED=true to override.",
+    );
+  }
   console.log("Seeding test users for M1...");
 
   const org = await prisma.organization.upsert({
@@ -81,6 +89,12 @@ export async function seedUsers() {
   });
 
   for (const user of SEED_USERS) {
+    if (process.env.NODE_ENV === "production" && user.role === "ADMIN") {
+      console.warn(
+        "Skipping default admin user creation in production environment per OD-02. Use pnpm admin:bootstrap.",
+      );
+      continue;
+    }
     const existing = await prisma.user.findUnique({
       where: { email: user.email },
     });
@@ -120,6 +134,14 @@ export async function seedUsers() {
 }
 
 export async function seedBenchmarkMasters() {
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.ALLOW_PRODUCTION_SEED !== "true"
+  ) {
+    throw new Error(
+      "Seeding is strictly disabled in production environments. Set ALLOW_PRODUCTION_SEED=true to override.",
+    );
+  }
   console.log("Seeding benchmark master data and opening stock (M2)...");
 
   // 1. Organization
@@ -449,6 +471,9 @@ export async function seedBenchmarkMasters() {
       packSize: 0.2,
       uomId: uoms["PACKET"],
       inventoryItemId: inventoryItems["FG-MURUKKU-200G"],
+      imageUrl: "/products/murukku.svg",
+      thumbnailUrl: "/products/murukku.svg",
+      thumbHash: "1QcSHQRnh493V4dIh4eXh1h4h4h4",
     },
     create: {
       productId: product.id,
@@ -457,6 +482,9 @@ export async function seedBenchmarkMasters() {
       packSize: 0.2,
       uomId: uoms["PACKET"],
       inventoryItemId: inventoryItems["FG-MURUKKU-200G"],
+      imageUrl: "/products/murukku.svg",
+      thumbnailUrl: "/products/murukku.svg",
+      thumbHash: "1QcSHQRnh493V4dIh4eXh1h4h4h4",
     },
   });
 
@@ -562,37 +590,78 @@ export async function seedBenchmarkMasters() {
     },
   });
 
-  // 11. Tax Rate (5% GST: CGST 2.5%, SGST 2.5%, IGST 5.0%)
+  // 11. Statutory Tax Rates (5%, 12%, 18%, 0% GST Slabs)
   const taxDate = new Date("2026-01-01T00:00:00Z");
-  await prisma.taxRate.upsert({
-    where: {
-      organizationId_hsnCode_effectiveFrom: {
-        organizationId: org.id,
-        hsnCode: "21069099",
-        effectiveFrom: taxDate,
-      },
-    },
-    update: {
-      rate: 5.0,
-      cgstRate: 2.5,
-      sgstRate: 2.5,
-      igstRate: 5.0,
-    },
-    create: {
-      organizationId: org.id,
+  const statutorySlabs = [
+    {
       hsnCode: "21069099",
       rate: 5.0,
       cgstRate: 2.5,
       sgstRate: 2.5,
       igstRate: 5.0,
-      effectiveFrom: taxDate,
     },
-  });
+    {
+      hsnCode: "21069098",
+      rate: 18.0,
+      cgstRate: 9.0,
+      sgstRate: 9.0,
+      igstRate: 18.0,
+    },
+    {
+      hsnCode: "21069097",
+      rate: 12.0,
+      cgstRate: 6.0,
+      sgstRate: 6.0,
+      igstRate: 12.0,
+    },
+    {
+      hsnCode: "21069090",
+      rate: 0.0,
+      cgstRate: 0.0,
+      sgstRate: 0.0,
+      igstRate: 0.0,
+    },
+  ];
+
+  for (const slab of statutorySlabs) {
+    await prisma.taxRate.upsert({
+      where: {
+        organizationId_hsnCode_effectiveFrom: {
+          organizationId: org.id,
+          hsnCode: slab.hsnCode,
+          effectiveFrom: taxDate,
+        },
+      },
+      update: {
+        rate: slab.rate,
+        cgstRate: slab.cgstRate,
+        sgstRate: slab.sgstRate,
+        igstRate: slab.igstRate,
+      },
+      create: {
+        organizationId: org.id,
+        hsnCode: slab.hsnCode,
+        rate: slab.rate,
+        cgstRate: slab.cgstRate,
+        sgstRate: slab.sgstRate,
+        igstRate: slab.igstRate,
+        effectiveFrom: taxDate,
+      },
+    });
+  }
 
   console.log("M2 benchmark master data seed successfully completed.");
 }
 
 export async function runFullSeed() {
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.ALLOW_PRODUCTION_SEED !== "true"
+  ) {
+    throw new Error(
+      "Seeding is strictly disabled in production environments. Set ALLOW_PRODUCTION_SEED=true to override.",
+    );
+  }
   await seedUsers();
   await seedBenchmarkMasters();
 }

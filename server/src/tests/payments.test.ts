@@ -1,0 +1,727 @@
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { createApp } from "../app.js";
+import { createServer, type Server } from "node:http";
+import { prisma } from "../db/client.js";
+import { resetOperationalData } from "../db/reset.js";
+import { seedBenchmarkMasters } from "../db/seed.js";
+import { inventoryService } from "../modules/inventory/inventory.service.js";
+
+describe("M7: Payments, customer ledger, allocations, and costing", () => {
+  let server: Server;
+  let baseUrl: string;
+
+  beforeAll(async () => {
+    // 1. Reset all operational data in correct order
+    await resetOperationalData();
+    await seedBenchmarkMasters();
+
+    const app = createApp();
+    server = createServer(app);
+    await new Promise<void>((resolve) => server.listen(0, resolve));
+    const address = server.address();
+    const port = typeof address === "object" && address ? address.port : 0;
+    baseUrl = `http://127.0.0.1:${port}`;
+  });
+
+  afterAll(async () => {
+    await new Promise<void>((resolve, reject) => {
+      server.close((err) => (err ? reject(err) : resolve()));
+    });
+  });
+
+  async function loginAndGetCookie(
+    email: string,
+    password: string,
+  ): Promise<string> {
+    const res = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    return res.headers.get("set-cookie") ?? "";
+  }
+
+  it("executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding", async () => {
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { code: "MILL" },
+    });
+    const warehouse = await prisma.warehouse.findFirstOrThrow({
+      where: { code: "WH-1" },
+    });
+    const retailerA = await prisma.customer.findFirstOrThrow({
+      where: { code: "CUST-RET-A" },
+    });
+    const murukkuVariant = await prisma.productVariant.findFirstOrThrow({
+      where: { sku: "VAR-MURUKKU-200G" },
+    });
+    const finishedGoodsItem = await prisma.inventoryItem.findFirstOrThrow({
+      where: { sku: "FG-MURUKKU-200G" },
+    });
+
+    // Establish benchmark stock after run: 238 packets (50 opening + 188 output)
+    await prisma.inventoryItem.update({
+      where: { id: finishedGoodsItem.id },
+      data: { currentStock: 238 },
+    });
+    await prisma.stockMovement.create({
+      data: {
+        inventoryItemId: finishedGoodsItem.id,
+        warehouseId: warehouse.id,
+        movementType: "PRODUCTION_OUTPUT",
+        quantity: 188,
+        unitCost: 31.143617,
+        totalCost: 5855,
+        notes: "M4 benchmark run output",
+      },
+    });
+
+    // Salesman 1 submits Retailer A order for 150 packets
+    const salesman1Cookie = await loginAndGetCookie(
+      "salesman1@millledger.local",
+      "SalesmanPassword123!",
+    );
+
+    const orderRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        organizationId: org.id,
+        customerId: retailerA.id,
+        warehouseId: warehouse.id,
+        orderNumber: "SO-BENCHMARK-TX7",
+        lines: [
+          {
+            productVariantId: murukkuVariant.id,
+            quantity: 150,
+            unitPrice: 50.0,
+          },
+        ],
+      }),
+    });
+    expect(orderRes.status).toBe(201);
+    const orderData = (await orderRes.json()) as { order: { id: string } };
+    const orderId = orderData.order.id;
+
+    // Admin approves order
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+    const approveRes = await fetch(
+      `${baseUrl}/api/v1/sales/orders/${orderId}/approve`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({}),
+      },
+    );
+    expect(approveRes.status).toBe(200);
+
+    // Admin posts invoice (₹7,875 total)
+    const invoiceRes = await fetch(`${baseUrl}/api/v1/finance/invoices`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: adminCookie,
+      },
+      body: JSON.stringify({
+        salesOrderId: orderId,
+        notes: "Benchmark Transaction 5 invoice",
+      }),
+    });
+    expect(invoiceRes.status).toBe(201);
+    const invoice = (await invoiceRes.json()) as {
+      id: string;
+      totalAmount: number;
+      outstandingAmount: number;
+    };
+    expect(Number(invoice.totalAmount)).toBe(7875);
+    expect(Number(invoice.outstandingAmount)).toBe(7875);
+
+    // Admin dispatches stock (238 -> 88)
+    const dispatchRes = await fetch(`${baseUrl}/api/v1/sales/dispatches`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: adminCookie,
+      },
+      body: JSON.stringify({
+        salesOrderId: orderId,
+        vehicleNumber: "TN-38-BZ-4321",
+        driverName: "Murugan",
+      }),
+    });
+    expect(dispatchRes.status).toBe(201);
+
+    const postDispatchBal = await inventoryService.getInventoryBalances(
+      org.id,
+      warehouse.id,
+    );
+    const fgPost = postDispatchBal.find((b) => b.sku === "FG-MURUKKU-200G");
+    expect(fgPost?.onHand).toBe(88);
+    expect(fgPost?.reserved).toBe(0);
+
+    // 7. Benchmark Transaction 7: Allocate ₹4,000 payment to Retailer A
+    const paymentRes = await fetch(`${baseUrl}/api/v1/payments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: adminCookie,
+      },
+      body: JSON.stringify({
+        customerId: retailerA.id,
+        amount: 4000,
+        paymentMode: "BANK_TRANSFER",
+        referenceNumber: "NEFT-12345678",
+        allocations: [
+          {
+            salesInvoiceId: invoice.id,
+            amount: 4000,
+          },
+        ],
+      }),
+    });
+
+    expect(paymentRes.status).toBe(201);
+    const payment = (await paymentRes.json()) as {
+      paymentNumber: string;
+      amount: number;
+      unallocatedAmount: number;
+      allocations: Array<{ amount: number }>;
+    };
+
+    expect(payment.paymentNumber).toMatch(/^REC-\d{4}-\d{4}$/);
+    expect(Number(payment.amount)).toBe(4000);
+    expect(Number(payment.unallocatedAmount)).toBe(0);
+    expect(payment.allocations).toHaveLength(1);
+    expect(Number(payment.allocations[0].amount)).toBe(4000);
+
+    // Verify invoice is partially paid with ₹3,875 outstanding
+    const updatedInvoice = await prisma.salesInvoice.findUniqueOrThrow({
+      where: { id: invoice.id },
+    });
+    expect(updatedInvoice.status).toBe("PARTIALLY_PAID");
+    expect(Number(updatedInvoice.paidAmount)).toBe(4000);
+    expect(Number(updatedInvoice.outstandingAmount)).toBe(3875);
+
+    // 8. Verify Customer Ledger and Net Outstanding
+    const ledgerRes = await fetch(
+      `${baseUrl}/api/v1/payments/ledger/${retailerA.id}`,
+      {
+        headers: {
+          Cookie: adminCookie,
+        },
+      },
+    );
+    expect(ledgerRes.status).toBe(200);
+    const ledger = await ledgerRes.json();
+
+    expect(ledger.summary.totalInvoiced).toBe(7875);
+    expect(ledger.summary.totalPaid).toBe(4000);
+    expect(ledger.summary.netOutstanding).toBe(3875);
+
+    // Verify chronological entries
+    expect(ledger.ledgerEntries.length).toBeGreaterThanOrEqual(2);
+    const invoiceEntry = ledger.ledgerEntries.find(
+      (e: any) => e.documentType === "INVOICE",
+    );
+    const paymentEntry = ledger.ledgerEntries.find(
+      (e: any) => e.documentType === "PAYMENT",
+    );
+    expect(invoiceEntry).toBeDefined();
+    expect(invoiceEntry.debit).toBe(7875);
+    expect(paymentEntry).toBeDefined();
+    expect(paymentEntry.credit).toBe(4000);
+  });
+
+  it("validates payment allocation business rules: rejects over allocation and enforces permissions", async () => {
+    const retailerA = await prisma.customer.findFirstOrThrow({
+      where: { code: "CUST-RET-A" },
+    });
+    const openInvoice = await prisma.salesInvoice.findFirstOrThrow({
+      where: { customerId: retailerA.id, status: "PARTIALLY_PAID" },
+    });
+
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+
+    // 1. Attempting to allocate ₹5,000 to an invoice with ₹3,875 outstanding must be rejected with 400
+    const overAllocRes = await fetch(`${baseUrl}/api/v1/payments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: adminCookie,
+      },
+      body: JSON.stringify({
+        customerId: retailerA.id,
+        amount: 5000,
+        allocations: [
+          {
+            salesInvoiceId: openInvoice.id,
+            amount: 5000,
+          },
+        ],
+      }),
+    });
+    expect(overAllocRes.status).toBe(400);
+
+    // 2. Salesman cannot record payment (403 Forbidden)
+    const salesman1Cookie = await loginAndGetCookie(
+      "salesman1@millledger.local",
+      "SalesmanPassword123!",
+    );
+    const salesmanRes = await fetch(`${baseUrl}/api/v1/payments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        customerId: retailerA.id,
+        amount: 1000,
+      }),
+    });
+    expect(salesmanRes.status).toBe(403);
+
+    // 3. Accountant has read-only access (403 on POST, 200 on GET)
+    const accountantCookie = await loginAndGetCookie(
+      "accountant@millledger.local",
+      "AccountantPassword123!",
+    );
+    const acctPostRes = await fetch(`${baseUrl}/api/v1/payments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: accountantCookie,
+      },
+      body: JSON.stringify({
+        customerId: retailerA.id,
+        amount: 1000,
+      }),
+    });
+    expect(acctPostRes.status).toBe(403);
+
+    const acctGetRes = await fetch(`${baseUrl}/api/v1/payments`, {
+      headers: {
+        Cookie: accountantCookie,
+      },
+    });
+    expect(acctGetRes.status).toBe(200);
+  });
+
+  it("handles auto FIFO allocation and unallocated credit balance", async () => {
+    const retailerA = await prisma.customer.findFirstOrThrow({
+      where: { code: "CUST-RET-A" },
+    });
+    const openInvoice = await prisma.salesInvoice.findFirstOrThrow({
+      where: { customerId: retailerA.id, status: "PARTIALLY_PAID" },
+    });
+    expect(Number(openInvoice.outstandingAmount)).toBe(3875);
+
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+
+    // Pay ₹4,875 with auto FIFO allocation: ₹3,875 clears the invoice, ₹1,000 remains unallocated
+    const fifoPayRes = await fetch(`${baseUrl}/api/v1/payments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: adminCookie,
+      },
+      body: JSON.stringify({
+        customerId: retailerA.id,
+        amount: 4875,
+        paymentMode: "UPI",
+        referenceNumber: "UPI-987654321",
+      }),
+    });
+    expect(fifoPayRes.status).toBe(201);
+    const fifoPay = (await fifoPayRes.json()) as {
+      amount: number;
+      unallocatedAmount: number;
+      allocations: Array<{ amount: number }>;
+    };
+
+    expect(Number(fifoPay.amount)).toBe(4875);
+    expect(Number(fifoPay.unallocatedAmount)).toBe(1000);
+    expect(fifoPay.allocations).toHaveLength(1);
+    expect(Number(fifoPay.allocations[0].amount)).toBe(3875);
+
+    // Invoice is now fully PAID
+    const clearedInvoice = await prisma.salesInvoice.findUniqueOrThrow({
+      where: { id: openInvoice.id },
+    });
+    expect(clearedInvoice.status).toBe("PAID");
+    expect(Number(clearedInvoice.paidAmount)).toBe(7875);
+    expect(Number(clearedInvoice.outstandingAmount)).toBe(0);
+  });
+
+  describe("F-096: Payment allocation error guards and boundary validation", () => {
+    it("rejects allocation sum exceeding total payment amount with HTTP 400", async () => {
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const invoice = await prisma.salesInvoice.findFirstOrThrow();
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: retailerA.id,
+          amount: 500,
+          allocations: [
+            {
+              salesInvoiceId: invoice.id,
+              amount: 600, // 600 > 500
+            },
+          ],
+        }),
+      });
+      expect(res.status).toBe(400);
+      const data = (await res.json()) as { message: string };
+      expect(data.message).toMatch(/cannot exceed total payment amount/i);
+    });
+
+    it("rejects allocation with zero or negative amount with HTTP 400", async () => {
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const invoice = await prisma.salesInvoice.findFirstOrThrow();
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: retailerA.id,
+          amount: 500,
+          allocations: [
+            {
+              salesInvoiceId: invoice.id,
+              amount: -50, // negative allocation
+            },
+          ],
+        }),
+      });
+      expect(res.status).toBe(400);
+      const data = (await res.json()) as { message: string };
+      expect(data.message).toMatch(/greater than zero|positive/i);
+    });
+
+    it("rejects allocation to a non-existent invoice ID with HTTP 404", async () => {
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: retailerA.id,
+          amount: 500,
+          allocations: [
+            {
+              salesInvoiceId: "cmw_non_existent_invoice_999",
+              amount: 500,
+            },
+          ],
+        }),
+      });
+      expect(res.status).toBe(404);
+      const data = (await res.json()) as { message: string };
+      expect(data.message).toMatch(/not found/i);
+    });
+
+    it("rejects cross-customer payment allocation (IDOR protection) with HTTP 400", async () => {
+      const distB = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-DIST-B" },
+      });
+      // Invoice belongs to Retailer A
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const retailerAInvoice = await prisma.salesInvoice.findFirstOrThrow({
+        where: { customerId: retailerA.id },
+      });
+
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      // Attempt to allocate payment recorded for Distributor B against Retailer A's invoice
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: distB.id,
+          amount: 500,
+          allocations: [
+            {
+              salesInvoiceId: retailerAInvoice.id,
+              amount: 500,
+            },
+          ],
+        }),
+      });
+      expect(res.status).toBe(400);
+      const data = (await res.json()) as { message: string };
+      expect(data.message).toMatch(/does not belong to customer/i);
+    });
+
+    it("rejects allocation exceeding invoice outstanding balance with HTTP 400", async () => {
+      // Find an invoice and get its current outstanding balance
+      const invoice = await prisma.salesInvoice.findFirstOrThrow({
+        where: { status: "PAID" },
+      });
+      expect(Number(invoice.outstandingAmount)).toBe(0);
+
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: invoice.customerId,
+          amount: 500,
+          allocations: [
+            {
+              salesInvoiceId: invoice.id,
+              amount: 500,
+            },
+          ],
+        }),
+      });
+      // Outstanding balance is 0 or status is PAID (cannot allocate)
+      expect(res.status).toBe(400);
+      const data = (await res.json()) as { message: string };
+      expect(data.message).toMatch(/cannot allocate payment to invoice|exceeds invoice .* outstanding balance/i);
+    });
+
+    it("handles exact decimal paise allocations without floating-point drift", async () => {
+      const org = await prisma.organization.findUniqueOrThrow({
+        where: { code: "MILL" },
+      });
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      // Create two small invoices with paise amounts (100.10 and 200.20)
+      const inv1 = await prisma.salesInvoice.create({
+        data: {
+          organizationId: org.id,
+          invoiceNumber: `INV-DEC-1-${Date.now()}`,
+          financialYear: "2026-27",
+          customerId: retailerA.id,
+          customerNameSnapshot: retailerA.name,
+          deliveryStateSnapshot: retailerA.state,
+          status: "POSTED",
+          taxableAmount: 100.1,
+          cgstAmount: 0,
+          sgstAmount: 0,
+          igstAmount: 0,
+          totalTaxAmount: 0,
+          totalAmount: 100.1,
+          paidAmount: 0,
+          outstandingAmount: 100.1,
+        },
+      });
+      const inv2 = await prisma.salesInvoice.create({
+        data: {
+          organizationId: org.id,
+          invoiceNumber: `INV-DEC-2-${Date.now()}`,
+          financialYear: "2026-27",
+          customerId: retailerA.id,
+          customerNameSnapshot: retailerA.name,
+          deliveryStateSnapshot: retailerA.state,
+          status: "POSTED",
+          taxableAmount: 200.2,
+          cgstAmount: 0,
+          sgstAmount: 0,
+          igstAmount: 0,
+          totalTaxAmount: 0,
+          totalAmount: 200.2,
+          paidAmount: 0,
+          outstandingAmount: 200.2,
+        },
+      });
+
+      // 100.10 + 200.20 = 300.30 (classic IEEE-754 float trap: 100.1 + 200.2 = 300.29999999999995)
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: retailerA.id,
+          amount: 300.3,
+          allocations: [
+            { salesInvoiceId: inv1.id, amount: 100.1 },
+            { salesInvoiceId: inv2.id, amount: 200.2 },
+          ],
+        }),
+      });
+      expect(res.status).toBe(201);
+      const body = (await res.json()) as {
+        unallocatedAmount: string | number;
+        paymentNumber: string;
+      };
+      expect(Number(body.unallocatedAmount)).toBe(0);
+      expect(body.paymentNumber).toMatch(/^REC-\d{4}-\d{4}$/);
+
+      const [updatedInv1, updatedInv2] = await Promise.all([
+        prisma.salesInvoice.findUniqueOrThrow({ where: { id: inv1.id } }),
+        prisma.salesInvoice.findUniqueOrThrow({ where: { id: inv2.id } }),
+      ]);
+      expect(updatedInv1.status).toBe("PAID");
+      expect(Number(updatedInv1.outstandingAmount)).toBe(0);
+      expect(updatedInv2.status).toBe("PAID");
+      expect(Number(updatedInv2.outstandingAmount)).toBe(0);
+    });
+
+    it("IMP-018: allocates unallocated advance cash to a later invoice and reverses allocation cleanly", async () => {
+      const org = await prisma.organization.findUniqueOrThrow({
+        where: { code: "MILL" },
+      });
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      // Record advance payment (with no open invoices matching explicit/FIFO or over-payment)
+      const advRes = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: retailerA.id,
+          amount: 500,
+          notes: "Advance cash for IMP-018",
+        }),
+      });
+      expect(advRes.status).toBe(201);
+      const advPayment = (await advRes.json()) as {
+        id: string;
+        unallocatedAmount: string | number;
+      };
+      expect(Number(advPayment.unallocatedAmount)).toBe(500);
+
+      // Later invoice is posted
+      const laterInv = await prisma.salesInvoice.create({
+        data: {
+          organizationId: org.id,
+          invoiceNumber: `INV-ADV-${Date.now()}`,
+          financialYear: "2026-27",
+          customerId: retailerA.id,
+          customerNameSnapshot: retailerA.name,
+          deliveryStateSnapshot: retailerA.state,
+          status: "POSTED",
+          taxableAmount: 500,
+          cgstAmount: 0,
+          sgstAmount: 0,
+          igstAmount: 0,
+          totalTaxAmount: 0,
+          totalAmount: 500,
+          paidAmount: 0,
+          outstandingAmount: 500,
+        },
+      });
+
+      // Allocate unallocated cash
+      const allocRes = await fetch(
+        `${baseUrl}/api/v1/payments/${advPayment.id}/allocate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: adminCookie,
+          },
+          body: JSON.stringify({
+            allocations: [{ salesInvoiceId: laterInv.id, amount: 500 }],
+          }),
+        },
+      );
+      expect(allocRes.status).toBe(200);
+      const allocated = (await allocRes.json()) as {
+        unallocatedAmount: string | number;
+        allocations: Array<{ id: string }>;
+      };
+      expect(Number(allocated.unallocatedAmount)).toBe(0);
+
+      const invAfter = await prisma.salesInvoice.findUniqueOrThrow({
+        where: { id: laterInv.id },
+      });
+      expect(invAfter.status).toBe("PAID");
+
+      // Reverse that single allocation
+      const revRes = await fetch(
+        `${baseUrl}/api/v1/payments/${advPayment.id}/reverse-allocation`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: adminCookie,
+          },
+          body: JSON.stringify({
+            allocationId: allocated.allocations[0].id,
+            reason: "Applied to wrong invoice",
+          }),
+        },
+      );
+      expect(revRes.status).toBe(200);
+      const revPayment = (await revRes.json()) as {
+        unallocatedAmount: string | number;
+      };
+      expect(Number(revPayment.unallocatedAmount)).toBe(500);
+    });
+  });
+});

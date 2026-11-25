@@ -1,0 +1,909 @@
+=== RUNNING 10 ITERATIONS OF PARALLEL APPROVE & DISPATCH (30 PARALLEL REQS) ===
+
+--- Concurrency Test Iteration 1 ---
+(node:46621) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Approvals: 11 succeeded, 19 rejected.
+Total Reserved: 110 units (Expected <= 50). Available stock was 50.
+🚨 CRITICAL RACE CONDITION DETECTED! Stock oversold: 110 > 50! Approved orders: 11
+Attempting parallel dispatches on 11 approved orders...
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+Dispatches: 2 succeeded, 9 failed.
+Ending currentStock: 30 (Must be >= 0).
+
+--- Concurrency Test Iteration 2 ---
+Approvals: 10 succeeded, 20 rejected.
+Total Reserved: 100 units (Expected <= 50). Available stock was 50.
+🚨 CRITICAL RACE CONDITION DETECTED! Stock oversold: 100 > 50! Approved orders: 10
+Attempting parallel dispatches on 10 approved orders...
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+Dispatches: 1 succeeded, 9 failed.
+Ending currentStock: 40 (Must be >= 0).
+
+--- Concurrency Test Iteration 3 ---
+Approvals: 10 succeeded, 20 rejected.
+Total Reserved: 100 units (Expected <= 50). Available stock was 50.
+🚨 CRITICAL RACE CONDITION DETECTED! Stock oversold: 100 > 50! Approved orders: 10
+Attempting parallel dispatches on 10 approved orders...
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+Dispatches: 1 succeeded, 9 failed.
+Ending currentStock: 40 (Must be >= 0).
+
+--- Concurrency Test Iteration 4 ---
+Approvals: 10 succeeded, 20 rejected.
+Total Reserved: 100 units (Expected <= 50). Available stock was 50.
+🚨 CRITICAL RACE CONDITION DETECTED! Stock oversold: 100 > 50! Approved orders: 10
+Attempting parallel dispatches on 10 approved orders...
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+Dispatches: 1 succeeded, 9 failed.
+Ending currentStock: 40 (Must be >= 0).
+
+--- Concurrency Test Iteration 5 ---
+Approvals: 10 succeeded, 20 rejected.
+Total Reserved: 100 units (Expected <= 50). Available stock was 50.
+🚨 CRITICAL RACE CONDITION DETECTED! Stock oversold: 100 > 50! Approved orders: 10
+Attempting parallel dispatches on 10 approved orders...
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+Dispatches: 1 succeeded, 9 failed.
+Ending currentStock: 40 (Must be >= 0).
+
+--- Concurrency Test Iteration 6 ---
+Approvals: 10 succeeded, 20 rejected.
+Total Reserved: 100 units (Expected <= 50). Available stock was 50.
+🚨 CRITICAL RACE CONDITION DETECTED! Stock oversold: 100 > 50! Approved orders: 10
+Attempting parallel dispatches on 10 approved orders...
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+Dispatches: 1 succeeded, 9 failed.
+Ending currentStock: 40 (Must be >= 0).
+
+--- Concurrency Test Iteration 7 ---
+Approvals: 10 succeeded, 20 rejected.
+Total Reserved: 100 units (Expected <= 50). Available stock was 50.
+🚨 CRITICAL RACE CONDITION DETECTED! Stock oversold: 100 > 50! Approved orders: 10
+Attempting parallel dispatches on 10 approved orders...
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+Dispatches: 1 succeeded, 9 failed.
+Ending currentStock: 40 (Must be >= 0).
+
+--- Concurrency Test Iteration 8 ---
+Approvals: 10 succeeded, 20 rejected.
+Total Reserved: 100 units (Expected <= 50). Available stock was 50.
+🚨 CRITICAL RACE CONDITION DETECTED! Stock oversold: 100 > 50! Approved orders: 10
+Attempting parallel dispatches on 10 approved orders...
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+Dispatches: 1 succeeded, 9 failed.
+Ending currentStock: 40 (Must be >= 0).
+
+--- Concurrency Test Iteration 9 ---
+Approvals: 10 succeeded, 20 rejected.
+Total Reserved: 100 units (Expected <= 50). Available stock was 50.
+🚨 CRITICAL RACE CONDITION DETECTED! Stock oversold: 100 > 50! Approved orders: 10
+Attempting parallel dispatches on 10 approved orders...
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+Dispatches: 1 succeeded, 9 failed.
+Ending currentStock: 40 (Must be >= 0).
+
+--- Concurrency Test Iteration 10 ---
+Approvals: 10 succeeded, 20 rejected.
+Total Reserved: 100 units (Expected <= 50). Available stock was 50.
+🚨 CRITICAL RACE CONDITION DETECTED! Stock oversold: 100 > 50! Approved orders: 10
+Attempting parallel dispatches on 10 approved orders...
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+prisma:error 
+Invalid `tx.dispatch.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/dispatch.service.ts:91:42
+
+  88 const linkedInvoiceId = order.invoices[0]?.id;
+  89 
+  90 // Create Dispatch header
+→ 91 const dispatch = await tx.dispatch.create(
+Unique constraint failed on the constraint: `dispatch_organizationId_dispatchNumber_key`
+Dispatches: 1 succeeded, 9 failed.
+Ending currentStock: 40 (Must be >= 0).
+
+=== CONCURRENCY SUMMARY (10 ITERATIONS) ===
+┌─────────┬───────────┬───────────────┬───────────────┬───────────────┬──────────┬─────────────────┬─────────────┬───────────┐
+│ (index) │ iteration │ approvedCount │ rejectedCount │ totalReserved │ oversold │ dispatchedCount │ endingStock │ deadlocks │
+├─────────┼───────────┼───────────────┼───────────────┼───────────────┼──────────┼─────────────────┼─────────────┼───────────┤
+│ 0       │ 1         │ 11            │ 19            │ 110           │ true     │ 2               │ 30          │ false     │
+│ 1       │ 2         │ 10            │ 20            │ 100           │ true     │ 1               │ 40          │ false     │
+│ 2       │ 3         │ 10            │ 20            │ 100           │ true     │ 1               │ 40          │ false     │
+│ 3       │ 4         │ 10            │ 20            │ 100           │ true     │ 1               │ 40          │ false     │
+│ 4       │ 5         │ 10            │ 20            │ 100           │ true     │ 1               │ 40          │ false     │
+│ 5       │ 6         │ 10            │ 20            │ 100           │ true     │ 1               │ 40          │ false     │
+│ 6       │ 7         │ 10            │ 20            │ 100           │ true     │ 1               │ 40          │ false     │
+│ 7       │ 8         │ 10            │ 20            │ 100           │ true     │ 1               │ 40          │ false     │
+│ 8       │ 9         │ 10            │ 20            │ 100           │ true     │ 1               │ 40          │ false     │
+│ 9       │ 10        │ 10            │ 20            │ 100           │ true     │ 1               │ 40          │ false     │
+└─────────┴───────────┴───────────────┴───────────────┴───────────────┴──────────┴─────────────────┴─────────────┴───────────┘

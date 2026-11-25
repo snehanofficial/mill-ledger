@@ -1,0 +1,53 @@
+diff --git a/client/src/app.tsx b/client/src/app.tsx
+index 230e14d..ba47760 100644
+--- a/client/src/app.tsx
++++ b/client/src/app.tsx
+@@ -347,11 +347,18 @@ const router = createBrowserRouter([
+           </RoleGuard>
+         ),
+       },
+-
+-      // Catch-all within authenticated area
+-      { path: "*", element: <NotFoundPage /> },
+     ],
+   },
++
++  // ── Root catch-all for unknown routes (prevents unauthenticated redirect hijacking) ──
++  {
++    path: "*",
++    element: (
++      <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
++        <NotFoundPage />
++      </Suspense>
++    ),
++  },
+ ]);
+ 
+ const queryClient = new QueryClient({
+diff --git a/client/src/pages/placeholder-pages.tsx b/client/src/pages/placeholder-pages.tsx
+index 0ee35aa..8c4e763 100644
+--- a/client/src/pages/placeholder-pages.tsx
++++ b/client/src/pages/placeholder-pages.tsx
+@@ -281,13 +281,21 @@ export function LoginPage() {
+ 
+ export function NotFoundPage() {
+   return (
+-    <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
++    <div className="flex min-h-[60vh] flex-1 flex-col items-center justify-center p-8 text-center">
+       <h1 className="text-2xl font-bold text-foreground">
+         404 - Page Not Found
+       </h1>
+       <p className="mt-2 text-sm text-muted-foreground">
+         The requested operational route does not exist.
+       </p>
++      <div className="mt-6">
++        <a
++          href="/"
++          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
++        >
++          Return Home
++        </a>
++      </div>
+     </div>
+   );
+ }

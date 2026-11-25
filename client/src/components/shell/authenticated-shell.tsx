@@ -22,12 +22,15 @@
 
 import {
   Fragment,
+  memo,
   type ReactNode,
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import {
   BellIcon,
   ChevronRightIcon,
@@ -45,9 +48,22 @@ import {
   HomeIcon,
   PackageIcon,
   ShoppingCartIcon,
+  UsersIcon,
+  BookOpenIcon,
+  HelpCircleIcon,
+  SunIcon,
+  MoonIcon,
+  PauseIcon,
+  PlayIcon,
+  InfoIcon,
+  Trash2Icon,
 } from "lucide-react";
 
 import { useLanguage } from "@/lib/i18n";
+import { useNotifications } from "@/lib/notifications-store";
+import { getPrefetchProps, prefetchIdleRoutes } from "@/lib/route-prefetch";
+import { useTheme } from "@/hooks/use-theme";
+import { useMotion } from "@/hooks/use-motion";
 
 import { cn } from "@/lib/utils";
 import {
@@ -107,6 +123,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { HelpGuideModal } from "@/components/help/help-guide-modal";
 
 import {
   type NavSection,
@@ -114,6 +131,7 @@ import {
   getNavSections,
   getAllLinks,
 } from "./nav-config";
+import { getDefaultRouteForRole } from "@/lib/role-routing";
 import { useBreadcrumbs } from "./use-breadcrumbs";
 import { type SyncState } from "./use-connection-status";
 import { useSyncManager } from "@/offline/use-offline";
@@ -142,6 +160,22 @@ interface ShellProps {
 function isActiveHref(href: string, pathname: string): boolean {
   if (href === pathname) return true;
   return href !== "/" && pathname.startsWith(`${href.replace(/\/$/, "")}/`);
+}
+
+function getActiveChildHref(
+  items: { href: string }[],
+  pathname: string,
+): string | undefined {
+  let bestHref: string | undefined;
+  for (const child of items) {
+    if (
+      isActiveHref(child.href, pathname) &&
+      (!bestHref || child.href.length > bestHref.length)
+    ) {
+      bestHref = child.href;
+    }
+  }
+  return bestHref;
 }
 
 function getInitials(name: string): string {
@@ -240,7 +274,7 @@ function SyncIndicator({
 }
 
 // ─── BrandMark ────────────────────────────────────────────────────────────────
-// DashboardBlocks brandmark: Pine square with "M" lettermark.
+// Standardized MillLedger brandmark using the custom emblem in /favicon.svg.
 
 function BrandMark({
   children,
@@ -249,17 +283,21 @@ function BrandMark({
   children?: ReactNode;
   className?: string;
 }) {
-  return (
-    <span
-      className={cn(
-        "bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg font-semibold text-sm",
-        className,
-      )}
-      aria-hidden
-    >
-      {children ?? "M"}
-    </span>
-  );
+  if (children) {
+    return (
+      <span
+        className={cn(
+          "bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg font-semibold text-sm",
+          className,
+        )}
+        aria-hidden
+      >
+        {children}
+      </span>
+    );
+  }
+
+  return <BrandLogo size="md" className={className} />;
 }
 
 // ─── AppBrand ─────────────────────────────────────────────────────────────────
@@ -293,8 +331,9 @@ function AppBrand({
             to={href}
             onClick={closeMobile}
             aria-label={`${name} ${description ? description + " - " : ""}Home`}
+            {...getPrefetchProps(href)}
           >
-            <BrandMark>{logo ?? "M"}</BrandMark>
+            <BrandMark>{logo}</BrandMark>
             <div className="grid flex-1 min-w-0 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
               <span className="truncate font-semibold text-foreground">
                 {name}
@@ -321,14 +360,17 @@ interface NavItemProps {
 
 function AppNavItem({ item, pathname }: NavItemProps) {
   const { state, isMobile, setOpenMobile } = useSidebar();
+  const { t } = useLanguage();
   const isCollapsed = state === "collapsed" && !isMobile;
 
   const closeOnMobile = useCallback(() => {
     if (isMobile) setOpenMobile(false);
   }, [isMobile, setOpenMobile]);
 
-  const childActive =
-    item.items?.some((c) => isActiveHref(c.href, pathname)) ?? false;
+  const activeChildHref = item.items
+    ? getActiveChildHref(item.items, pathname)
+    : undefined;
+  const childActive = activeChildHref !== undefined;
   const [expanded, setExpanded] = useState(childActive);
   const [prevChildActive, setPrevChildActive] = useState(childActive);
 
@@ -339,6 +381,8 @@ function AppNavItem({ item, pathname }: NavItemProps) {
     }
   }
 
+  const translatedLabel = t(item.label, item.label);
+
   // No subitems: render as link with directed tooltip in collapsed mode
   if (!item.items?.length) {
     const active = item.href !== undefined && isActiveHref(item.href, pathname);
@@ -347,17 +391,18 @@ function AppNavItem({ item, pathname }: NavItemProps) {
         <SidebarMenuButton
           asChild
           isActive={active}
-          tooltip={isCollapsed ? item.label : undefined}
+          tooltip={isCollapsed ? translatedLabel : undefined}
         >
           <Link
             to={item.href ?? "#"}
-            aria-label={item.label}
+            aria-label={translatedLabel}
             aria-current={item.href === pathname ? "page" : undefined}
             onClick={closeOnMobile}
+            {...getPrefetchProps(item.href)}
           >
             {item.icon}
             <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate">
-              {item.label}
+              {translatedLabel}
             </span>
           </Link>
         </SidebarMenuButton>
@@ -368,7 +413,71 @@ function AppNavItem({ item, pathname }: NavItemProps) {
     );
   }
 
-  // Has subitems: render as collapsible group with directed tooltip
+  // Collapsed icon rail: expose nested items via a flyout dropdown menu
+  if (isCollapsed) {
+    return (
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              isActive={childActive}
+              tooltip={translatedLabel}
+              aria-label={translatedLabel}
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              {item.icon}
+              <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate">
+                {translatedLabel}
+              </span>
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="right"
+            align="start"
+            sideOffset={8}
+            className="min-w-48 rounded-lg"
+          >
+            <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+              {translatedLabel}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {item.items.map((child) => {
+              const childLabel = t(child.label, child.label);
+              const isChildActive = activeChildHref === child.href;
+              return (
+                <DropdownMenuItem
+                  key={child.href}
+                  asChild
+                  className={cn(
+                    "cursor-pointer",
+                    isChildActive &&
+                      "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
+                  )}
+                >
+                  <Link
+                    to={child.href}
+                    aria-label={childLabel}
+                    aria-current={child.href === pathname ? "page" : undefined}
+                    onClick={closeOnMobile}
+                    {...getPrefetchProps(child.href)}
+                  >
+                    {child.icon && (
+                      <span className="shrink-0">{child.icon}</span>
+                    )}
+                    <span className="min-w-0 flex-1 truncate">
+                      {childLabel}
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    );
+  }
+
+  // Expanded mode: render as collapsible group
   return (
     <Collapsible
       open={expanded}
@@ -379,43 +488,49 @@ function AppNavItem({ item, pathname }: NavItemProps) {
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
-            tooltip={isCollapsed ? item.label : undefined}
-            aria-label={item.label}
+            tooltip={isCollapsed ? translatedLabel : undefined}
+            aria-label={translatedLabel}
           >
             {item.icon}
             <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate">
-              {item.label}
+              {translatedLabel}
             </span>
             <ChevronRightIcon
-              className="ml-auto size-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden transition-transform duration-200 group-data-open/collapsible:rotate-90"
+              className="ml-auto size-4 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden transition-transform duration-(--ml-motion-standard) ease-standard group-data-open/collapsible:rotate-90"
               aria-hidden
             />
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub>
-            {item.items.map((child) => (
-              <SidebarMenuSubItem key={child.href}>
-                <SidebarMenuSubButton
-                  asChild
-                  isActive={isActiveHref(child.href, pathname)}
-                >
-                  <Link
-                    to={child.href}
-                    aria-label={child.label}
-                    aria-current={child.href === pathname ? "page" : undefined}
-                    onClick={closeOnMobile}
+            {item.items.map((child) => {
+              const childLabel = t(child.label, child.label);
+              return (
+                <SidebarMenuSubItem key={child.href}>
+                  <SidebarMenuSubButton
+                    asChild
+                    isActive={activeChildHref === child.href}
                   >
-                    {child.icon && (
-                      <span className="shrink-0">{child.icon}</span>
-                    )}
-                    <span className="min-w-0 flex-1 truncate">
-                      {child.label}
-                    </span>
-                  </Link>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
-            ))}
+                    <Link
+                      to={child.href}
+                      aria-label={childLabel}
+                      aria-current={
+                        child.href === pathname ? "page" : undefined
+                      }
+                      onClick={closeOnMobile}
+                      {...getPrefetchProps(child.href)}
+                    >
+                      {child.icon && (
+                        <span className="shrink-0">{child.icon}</span>
+                      )}
+                      <span className="min-w-0 flex-1 truncate">
+                        {childLabel}
+                      </span>
+                    </Link>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              );
+            })}
           </SidebarMenuSub>
         </CollapsibleContent>
       </SidebarMenuItem>
@@ -425,19 +540,22 @@ function AppNavItem({ item, pathname }: NavItemProps) {
 
 // ─── AppNav ───────────────────────────────────────────────────────────────────
 
-function AppNav({
+const AppNav = memo(function AppNav({
   sections,
   pathname,
 }: {
   sections: NavSection[];
   pathname: string;
 }) {
+  const { t } = useLanguage();
   return (
     <>
       {sections.map((section, index) => (
         <SidebarGroup key={section.label ?? index}>
           {section.label && (
-            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+            <SidebarGroupLabel>
+              {t(section.label, section.label)}
+            </SidebarGroupLabel>
           )}
           <SidebarMenu>
             {section.items.map((item) => (
@@ -448,13 +566,14 @@ function AppNav({
       ))}
     </>
   );
-}
+});
 
 // ─── SidebarCollapseToggle ───────────────────────────────────────────────────
 // Explicit option to collapse the sidebar to icons only or expand back
 
 function SidebarCollapseToggle() {
   const { state, isMobile, toggleSidebar } = useSidebar();
+  const { t } = useLanguage();
   if (isMobile) return null;
   const isCollapsed = state === "collapsed";
 
@@ -464,8 +583,16 @@ function SidebarCollapseToggle() {
         <SidebarMenuButton
           size="default"
           onClick={toggleSidebar}
-          tooltip={isCollapsed ? "Expand sidebar (Ctrl+B)" : undefined}
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse to icons ⌘B"}
+          tooltip={
+            isCollapsed
+              ? t("Expand sidebar (Ctrl+B)", "Expand sidebar (Ctrl+B)")
+              : undefined
+          }
+          aria-label={
+            isCollapsed
+              ? t("Expand sidebar", "Expand sidebar")
+              : t("Collapse to icons ⌘B", "Collapse to icons ⌘B")
+          }
           className="text-muted-foreground hover:text-foreground h-8 px-2"
         >
           {isCollapsed ? (
@@ -477,7 +604,7 @@ function SidebarCollapseToggle() {
             <>
               <PanelLeftCloseIcon className="size-4 shrink-0" aria-hidden />
               <span className="group-data-[collapsible=icon]:hidden min-w-0 flex-1 truncate text-xs font-normal">
-                Collapse to icons
+                {t("Collapse to icons", "Collapse to icons")}
               </span>
               <Kbd className="group-data-[collapsible=icon]:hidden ml-auto">
                 ⌘B
@@ -496,11 +623,19 @@ function SidebarCollapseToggle() {
 interface SidebarUserMenuProps {
   user: ShellUser;
   onSignOut?: () => void;
+  onOpenHelp?: () => void;
 }
 
-function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
+function SidebarUserMenu({
+  user,
+  onSignOut,
+  onOpenHelp,
+}: SidebarUserMenuProps) {
   const navigate = useNavigate();
   const { isMobile, setOpenMobile, state } = useSidebar();
+  const { t } = useLanguage();
+  const { resolvedTheme, toggleTheme } = useTheme();
+  const { isMotionPaused, toggleMotion } = useMotion();
   const isCollapsed = state === "collapsed" && !isMobile;
 
   return (
@@ -571,7 +706,58 @@ function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
                 className="mr-2 size-4 text-muted-foreground"
                 aria-hidden
               />
-              Account settings
+              {t("Account settings", "Account settings")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                if (isMobile) setOpenMobile(false);
+                onOpenHelp?.();
+              }}
+              className="cursor-pointer"
+            >
+              <BookOpenIcon
+                className="mr-2 size-4 text-muted-foreground"
+                aria-hidden
+              />
+              {t("Documentation & Guide", "Documentation & Guide")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer">
+              {resolvedTheme === "dark" ? (
+                <>
+                  <SunIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Light mode", "Light mode")}
+                </>
+              ) : (
+                <>
+                  <MoonIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Dark mode", "Dark mode")}
+                </>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleMotion} className="cursor-pointer">
+              {isMotionPaused ? (
+                <>
+                  <PlayIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Resume animations", "Resume animations")}
+                </>
+              ) : (
+                <>
+                  <PauseIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Pause animations", "Pause animations")}
+                </>
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -579,7 +765,7 @@ function SidebarUserMenu({ user, onSignOut }: SidebarUserMenuProps) {
               className="cursor-pointer text-destructive focus:text-destructive"
             >
               <LogOutIcon className="mr-2 size-4" aria-hidden />
-              Sign out
+              {t("Sign out", "Sign out")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -674,7 +860,10 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
       >
         <DialogTitle className="sr-only">Search pages</DialogTitle>
         <Command>
-          <CommandInput placeholder="Search pages and actions..." />
+          <CommandInput
+            placeholder="Search pages and actions..."
+            aria-label="Search pages and actions"
+          />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             {sections.map((section) => {
@@ -718,6 +907,7 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
 // DashboardBlocks SearchButton with ⌘K badge and responsive behavior
 
 function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
+  const { t } = useLanguage();
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
@@ -735,12 +925,14 @@ function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
         variant="outline"
         size="sm"
         onClick={onOpen}
-        aria-label="Search (Ctrl+K)"
+        aria-label={t("Search (Ctrl+K)", "Search (Ctrl+K)")}
         aria-keyshortcuts="Meta+K Control+K"
         className="hidden sm:flex w-52 justify-start text-muted-foreground hover:text-foreground h-9 px-3"
       >
         <SearchIcon className="mr-2 size-4 shrink-0" aria-hidden />
-        <span className="flex-1 text-left truncate font-normal">Search</span>
+        <span className="flex-1 text-left truncate font-normal">
+          {t("Search", "Search")}
+        </span>
         <Kbd className="ml-auto">⌘K</Kbd>
       </Button>
 
@@ -748,7 +940,7 @@ function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
         variant="ghost"
         size="icon"
         onClick={onOpen}
-        aria-label="Search"
+        aria-label={t("Search", "Search")}
         className="sm:hidden size-9"
       >
         <SearchIcon className="size-4 shrink-0" aria-hidden />
@@ -762,6 +954,7 @@ function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
 function ShellBreadcrumbs({ role }: { role: UserRole }) {
   const allLinks = getAllLinks(role);
   const crumbs = useBreadcrumbs(allLinks);
+  const { t } = useLanguage();
 
   if (!crumbs.length) return null;
 
@@ -770,6 +963,7 @@ function ShellBreadcrumbs({ role }: { role: UserRole }) {
       <BreadcrumbList className="flex-nowrap">
         {crumbs.map((crumb, index) => {
           const isLast = index === crumbs.length - 1;
+          const translatedCrumb = t(crumb.label, crumb.label);
           return (
             <Fragment key={`${crumb.label}-${index}`}>
               <BreadcrumbItem
@@ -780,20 +974,24 @@ function ShellBreadcrumbs({ role }: { role: UserRole }) {
               >
                 {isLast ? (
                   <BreadcrumbPage className="truncate">
-                    {crumb.label}
+                    {translatedCrumb}
                   </BreadcrumbPage>
                 ) : crumb.href ? (
                   <BreadcrumbLink asChild className="truncate">
-                    <Link to={crumb.href} className="truncate">
-                      {crumb.label}
+                    <Link
+                      to={crumb.href}
+                      className="truncate"
+                      {...getPrefetchProps(crumb.href)}
+                    >
+                      {translatedCrumb}
                     </Link>
                   </BreadcrumbLink>
                 ) : (
                   <span
                     className="truncate text-muted-foreground"
-                    title={crumb.label}
+                    title={translatedCrumb}
                   >
-                    {crumb.label}
+                    {translatedCrumb}
                   </span>
                 )}
               </BreadcrumbItem>
@@ -817,6 +1015,7 @@ interface StickyHeaderProps {
   onSearchOpen: () => void;
   onNotificationsClick: () => void;
   onSignOut?: () => void;
+  onOpenHelp?: () => void;
   syncState: SyncState;
   onOpenOutbox?: () => void;
   pendingCount?: number;
@@ -828,12 +1027,15 @@ function StickyHeader({
   onSearchOpen,
   onNotificationsClick,
   onSignOut,
+  onOpenHelp,
   syncState,
   onOpenOutbox,
   pendingCount,
 }: StickyHeaderProps) {
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
+  const { resolvedTheme, toggleTheme } = useTheme();
+  const { isMotionPaused, toggleMotion } = useMotion();
 
   return (
     <header
@@ -842,14 +1044,6 @@ function StickyHeader({
         "bg-background px-4 [html:has(&)]:scroll-pt-16",
       )}
     >
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-4 focus:z-50 focus:rounded-control focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground focus:shadow-md focus:outline-none"
-      >
-        {language === "ta"
-          ? "முதன்மை பகுதிக்குச் செல்லவும்"
-          : "Skip to main content"}
-      </a>
       {/* Mobile: hamburger button */}
       {isMobile ? (
         <Button
@@ -876,7 +1070,7 @@ function StickyHeader({
 
       {/* Right-side tools: language, sync, search, notifications, account menu */}
       <div className="flex shrink-0 items-center gap-2">
-        {/* Language switch toggle */}
+        {/* Language switch toggle (WCAG 2.2 SC 3.1.2 Level AA / F-060) */}
         <Button
           variant="ghost"
           size="sm"
@@ -888,7 +1082,61 @@ function StickyHeader({
           }
           className="h-8 px-2 text-xs font-semibold cursor-pointer text-muted-foreground hover:text-foreground"
         >
-          {language === "en" ? "தமிழ்" : "EN"}
+          <span lang={language === "en" ? "ta" : "en"}>
+            {language === "en" ? "தமிழ்" : "EN"}
+          </span>
+        </Button>
+
+        {/* Theme switch toggle (F-050) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          aria-label={
+            resolvedTheme === "dark"
+              ? t("Switch to light mode", "Switch to light mode")
+              : t("Switch to dark mode", "Switch to dark mode")
+          }
+          title={
+            resolvedTheme === "dark"
+              ? t("Switch to light mode", "Switch to light mode")
+              : t("Switch to dark mode", "Switch to dark mode")
+          }
+          className="size-8 text-muted-foreground hover:text-foreground cursor-pointer"
+        >
+          {resolvedTheme === "dark" ? (
+            <SunIcon className="size-4" aria-hidden="true" />
+          ) : (
+            <MoonIcon className="size-4" aria-hidden="true" />
+          )}
+        </Button>
+
+        {/* Motion pause/resume toggle (F-062: WCAG 2.2 SC 2.2.2 Pause, Stop, Hide) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          data-pause-motion
+          onClick={toggleMotion}
+          aria-label={
+            isMotionPaused
+              ? t("Resume animations", "Resume animations")
+              : t("Pause animations", "Pause animations")
+          }
+          title={
+            isMotionPaused
+              ? t("Resume animations", "Resume animations")
+              : t(
+                  "Pause animations (WCAG 2.2.2)",
+                  "Pause animations (WCAG 2.2.2)",
+                )
+          }
+          className="size-8 text-muted-foreground hover:text-foreground cursor-pointer"
+        >
+          {isMotionPaused ? (
+            <PlayIcon className="size-4" aria-hidden="true" />
+          ) : (
+            <PauseIcon className="size-4" aria-hidden="true" />
+          )}
         </Button>
 
         {/* Sync status: fixed-width area to prevent layout shift */}
@@ -906,6 +1154,18 @@ function StickyHeader({
           count={notificationCount}
           onClick={onNotificationsClick}
         />
+
+        {/* Documentation & Help Guide Trigger (F-049) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onOpenHelp}
+          aria-label={t("Help and Documentation", "Help and Documentation")}
+          title={t("Help and Documentation", "Help and Documentation")}
+          className="size-8 text-muted-foreground hover:text-foreground cursor-pointer"
+        >
+          <HelpCircleIcon className="size-4" aria-hidden="true" />
+        </Button>
 
         {/* Top-right user avatar menu */}
         <DropdownMenu>
@@ -953,6 +1213,51 @@ function StickyHeader({
               />
               Account settings
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={onOpenHelp} className="cursor-pointer">
+              <BookOpenIcon
+                className="mr-2 size-4 text-muted-foreground"
+                aria-hidden
+              />
+              Documentation & Guide
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer">
+              {resolvedTheme === "dark" ? (
+                <>
+                  <SunIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Light mode", "Light mode")}
+                </>
+              ) : (
+                <>
+                  <MoonIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Dark mode", "Dark mode")}
+                </>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleMotion} className="cursor-pointer">
+              {isMotionPaused ? (
+                <>
+                  <PlayIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Resume animations", "Resume animations")}
+                </>
+              ) : (
+                <>
+                  <PauseIcon
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("Pause animations", "Pause animations")}
+                </>
+              )}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={onSignOut}
@@ -971,33 +1276,90 @@ function StickyHeader({
 // ─── MobileBottomNav ─────────────────────────────────────────────────────────
 // Accessible touch-first navigation bar on mobile viewports (<768px)
 
-function MobileBottomNav() {
+function MobileBottomNav({ role }: { role: UserRole }) {
   const location = useLocation();
   const { t } = useLanguage();
   const { setOpenMobile } = useSidebar();
 
-  const navItems = [
-    {
-      label: t("nav.home", "Home"),
-      href: "/dashboard",
-      icon: HomeIcon,
-    },
-    {
-      label: t("nav.orders", "Orders"),
-      href: "/orders",
-      icon: ShoppingCartIcon,
-    },
-    {
-      label: t("nav.stock", "Stock"),
-      href: "/stock",
-      icon: PackageIcon,
-    },
-    {
-      label: t("nav.more", "More"),
-      action: () => setOpenMobile(true),
-      icon: MenuIcon,
-    },
-  ];
+  const homeHref = getDefaultRouteForRole(role);
+
+  let navItems: Array<{
+    label: string;
+    href?: string;
+    icon: typeof HomeIcon;
+    action?: () => void;
+  }> = [];
+
+  if (role === "SALESMAN") {
+    navItems = [
+      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      {
+        label: t("nav.orders", "Orders"),
+        href: "/orders",
+        icon: ShoppingCartIcon,
+      },
+      {
+        label: t("nav.customers", "Customers"),
+        href: "/customers",
+        icon: UsersIcon,
+      },
+      {
+        label: t("nav.more", "More"),
+        action: () => setOpenMobile(true),
+        icon: MenuIcon,
+      },
+    ];
+  } else if (role === "PRODUCTION") {
+    navItems = [
+      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      { label: t("nav.stock", "Stock"), href: "/stock", icon: PackageIcon },
+      {
+        label: t("nav.production", "Production"),
+        href: "/production/today",
+        icon: PackageIcon,
+      },
+      {
+        label: t("nav.more", "More"),
+        action: () => setOpenMobile(true),
+        icon: MenuIcon,
+      },
+    ];
+  } else if (role === "ACCOUNTANT") {
+    navItems = [
+      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      {
+        label: t("nav.orders", "Orders"),
+        href: "/orders",
+        icon: ShoppingCartIcon,
+      },
+      {
+        label: t("nav.payments", "Payments"),
+        href: "/payments",
+        icon: PackageIcon,
+      },
+      {
+        label: t("nav.more", "More"),
+        action: () => setOpenMobile(true),
+        icon: MenuIcon,
+      },
+    ];
+  } else {
+    // ADMIN / OWNER
+    navItems = [
+      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      {
+        label: t("nav.orders", "Orders"),
+        href: "/orders",
+        icon: ShoppingCartIcon,
+      },
+      { label: t("nav.stock", "Stock"), href: "/stock", icon: PackageIcon },
+      {
+        label: t("nav.more", "More"),
+        action: () => setOpenMobile(true),
+        icon: MenuIcon,
+      },
+    ];
+  }
 
   return (
     <nav
@@ -1034,6 +1396,7 @@ function MobileBottomNav() {
                 : "text-muted-foreground hover:text-foreground",
             )}
             aria-current={isActive ? "page" : undefined}
+            {...getPrefetchProps(item.href)}
           >
             <Icon className="size-5" aria-hidden />
             <span className="text-2xs">{item.label}</span>
@@ -1058,6 +1421,15 @@ export function AuthenticatedShell({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [outboxOpen, setOutboxOpen] = useState(false);
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const { language } = useLanguage();
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    clearNotifications,
+  } = useNotifications();
 
   const syncManager = useSyncManager(user.id);
   const { syncState, isOnline, pendingCount, conflictCount } = syncManager;
@@ -1070,12 +1442,21 @@ export function AuthenticatedShell({
     }
   };
 
-  const sections = getNavSections(user.role);
+  const sections = useMemo(() => getNavSections(user.role), [user.role]);
+  const handleOpenSearch = useCallback(() => setSearchOpen(true), []);
+  const handleOpenNotifications = useCallback(() => setNotificationsOpen(true), []);
+  const handleOpenOutbox = useCallback(() => setOutboxOpen(true), []);
+  const handleOpenHelp = useCallback(() => setShowHelpModal(true), []);
+
+  // Intent-based and idle route prefetching (F-076)
+  useEffect(() => {
+    prefetchIdleRoutes();
+  }, []);
 
   return (
-    <TooltipProvider delayDuration={100}>
+    <TooltipProvider delayDuration={0}>
       <SidebarProvider userId={user.id}>
-        {/* Skip-to-main for keyboard accessibility */}
+        {/* Skip-to-main for keyboard accessibility (WCAG 2.2 SC 2.4.1) */}
         <a
           href="#main-content"
           className={cn(
@@ -1085,14 +1466,16 @@ export function AuthenticatedShell({
             "focus:shadow-lg focus:outline-none",
           )}
         >
-          Skip to main content
+          {language === "ta"
+            ? "முதன்மை பகுதிக்குச் செல்லவும்"
+            : "Skip to main content"}
         </a>
 
         {/* Desktop & mobile sidebar */}
         <Sidebar collapsible="icon">
           <SidebarHeader>
             <AppBrand
-              href="/dashboard"
+              href={getDefaultRouteForRole(user.role)}
               name="MillLedger"
               description="Production unit"
             />
@@ -1104,7 +1487,11 @@ export function AuthenticatedShell({
 
           <SidebarFooter>
             <SidebarCollapseToggle />
-            <SidebarUserMenu user={user} onSignOut={handleSafeSignOut} />
+            <SidebarUserMenu
+              user={user}
+              onSignOut={handleSafeSignOut}
+              onOpenHelp={handleOpenHelp}
+            />
           </SidebarFooter>
           <SidebarRail />
         </Sidebar>
@@ -1112,12 +1499,13 @@ export function AuthenticatedShell({
         <SidebarInset className="min-w-0">
           <StickyHeader
             user={user}
-            notificationCount={notificationCount}
-            onSearchOpen={() => setSearchOpen(true)}
-            onNotificationsClick={() => setNotificationsOpen(true)}
+            notificationCount={unreadCount || notificationCount}
+            onSearchOpen={handleOpenSearch}
+            onNotificationsClick={handleOpenNotifications}
             onSignOut={handleSafeSignOut}
+            onOpenHelp={handleOpenHelp}
             syncState={syncState}
-            onOpenOutbox={() => setOutboxOpen(true)}
+            onOpenOutbox={handleOpenOutbox}
             pendingCount={pendingCount}
           />
 
@@ -1159,7 +1547,7 @@ export function AuthenticatedShell({
                     size="sm"
                     onClick={syncManager.syncNow}
                     disabled={syncManager.syncing}
-                    className="h-7 text-xs font-medium cursor-pointer"
+                    className="h-8 min-h-[32px] px-2.5 text-xs font-medium cursor-pointer sm:h-7 sm:min-h-[28px] sm:px-2"
                   >
                     Sync now
                   </Button>
@@ -1168,7 +1556,7 @@ export function AuthenticatedShell({
                   variant="outline"
                   size="sm"
                   onClick={() => setOutboxOpen(true)}
-                  className="h-7 text-xs cursor-pointer"
+                  className="h-8 min-h-[32px] px-2.5 text-xs cursor-pointer sm:h-7 sm:min-h-[28px] sm:px-2"
                 >
                   View outbox
                 </Button>
@@ -1186,27 +1574,32 @@ export function AuthenticatedShell({
         </SidebarInset>
 
         {/* Mobile bottom navigation bar for small touch viewports */}
-        <MobileBottomNav />
+        <MobileBottomNav role={user.role} />
 
         {/* Global Toast Notifications */}
         <Toaster />
 
         {/* Global search palette */}
-        <GlobalSearch
-          open={searchOpen}
-          onOpenChange={setSearchOpen}
-          sections={sections}
-        />
+        {searchOpen && (
+          <GlobalSearch
+            open={searchOpen}
+            onOpenChange={setSearchOpen}
+            sections={sections}
+          />
+        )}
 
         {/* Device Outbox Sheet */}
-        <DeviceOutboxSheet
-          open={outboxOpen}
-          onOpenChange={setOutboxOpen}
-          userId={user.id}
-        />
+        {outboxOpen && (
+          <DeviceOutboxSheet
+            open={outboxOpen}
+            onOpenChange={setOutboxOpen}
+            userId={user.id}
+          />
+        )}
 
         {/* Confirm Logout Dialog if unsynced orders exist */}
-        <Dialog open={confirmLogoutOpen} onOpenChange={setConfirmLogoutOpen}>
+        {confirmLogoutOpen && (
+          <Dialog open={confirmLogoutOpen} onOpenChange={setConfirmLogoutOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogTitle>Pending orders stored locally</DialogTitle>
             <p className="text-sm text-muted-foreground mt-2">
@@ -1235,29 +1628,140 @@ export function AuthenticatedShell({
             </div>
           </DialogContent>
         </Dialog>
+        )}
 
-        {/* Notifications sheet */}
+        {/* Notifications sheet (F-065) */}
+        {notificationsOpen && (
         <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-          <SheetContent side="right" className="w-80 p-0">
-            <div className="flex h-14 items-center border-b border-border px-5">
-              <h2 className="text-sm font-semibold">Notifications</h2>
-            </div>
-            <div className="flex flex-1 items-center justify-center p-8 text-center">
-              <div>
+          <SheetContent
+            side="right"
+            className="flex w-84 max-w-full flex-col p-0"
+          >
+            <div className="flex h-14 items-center justify-between border-b border-border px-5">
+              <div className="flex items-center gap-2">
                 <BellIcon
-                  className="mx-auto mb-3 size-8 text-muted-foreground"
-                  aria-hidden
+                  className="size-4 text-foreground"
+                  aria-hidden="true"
                 />
-                <p className="text-sm font-medium text-foreground">
-                  No notifications
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Activity and system events will appear here.
-                </p>
+                <h2 className="text-sm font-semibold">Notifications</h2>
+                {unreadCount > 0 && (
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-2xs font-bold text-primary">
+                    {unreadCount}
+                  </span>
+                )}
               </div>
+              <div className="flex items-center gap-1">
+                {unreadCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={markAllAsRead}
+                    className="h-8 min-h-[32px] px-2.5 text-xs text-muted-foreground hover:text-foreground sm:h-7 sm:min-h-[28px] sm:px-2"
+                  >
+                    Mark all read
+                  </Button>
+                )}
+                {notifications.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={clearNotifications}
+                    aria-label="Clear all notifications"
+                    title="Clear all notifications"
+                    className="size-8 min-h-8 min-w-8 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2Icon className="size-3.5" aria-hidden="true" />
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {notifications.length === 0 ? (
+                <div className="flex h-64 flex-col items-center justify-center text-center">
+                  <BellIcon
+                    className="mb-3 size-8 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                  <p className="text-sm font-medium text-foreground">
+                    No notifications
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Activity and system events will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => markAsRead(n.id)}
+                      className={cn(
+                        "group relative flex flex-col gap-1 rounded-lg border p-3 text-left transition-colors cursor-pointer",
+                        n.read
+                          ? "border-border/60 bg-card/60 opacity-80"
+                          : "border-primary/30 bg-card shadow-xs",
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {n.type === "success" && (
+                            <CheckCircleIcon className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                          )}
+                          {n.type === "error" && (
+                            <AlertCircleIcon className="size-4 shrink-0 text-destructive" />
+                          )}
+                          {n.type === "warning" && (
+                            <AlertCircleIcon className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                          )}
+                          {n.type === "info" && (
+                            <InfoIcon className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                          )}
+                          <span
+                            className={cn(
+                              "text-xs font-semibold leading-tight",
+                              n.read
+                                ? "text-muted-foreground"
+                                : "text-foreground",
+                            )}
+                          >
+                            {n.title}
+                          </span>
+                        </div>
+                        {!n.read && (
+                          <span
+                            className="size-2 shrink-0 rounded-full bg-primary"
+                            title="Unread"
+                          />
+                        )}
+                      </div>
+                      {n.description && (
+                        <p className="text-2xs text-muted-foreground pl-6">
+                          {n.description}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between pl-6 pt-1 text-3xs text-muted-foreground">
+                        <span>
+                          {new Date(n.timestamp).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                        <span className="capitalize">{n.type}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </SheetContent>
         </Sheet>
+        )}
+
+        {/* Operational Documentation & Guide Modal (F-049) */}
+        {showHelpModal && (
+          <HelpGuideModal open={showHelpModal} onOpenChange={setShowHelpModal} />
+        )}
       </SidebarProvider>
     </TooltipProvider>
   );

@@ -248,11 +248,18 @@ test.describe("MillLedger Application Shell", () => {
     expect(overflow).toBeLessThanOrEqual(0);
   });
 
+  // Remediated under tracked finding F-001: Duplicate Skip-to-Main-Content Links Resolved
   test("keyboard accessibility: skip-to-main content link and focus", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/dashboard");
+
+    // Strictly assert there is exactly 1 skip link in the DOM (WCAG 2.2 SC 2.4.1)
+    const skipLinks = page.getByRole("link", {
+      name: /Skip to main content|முதன்மை பகுதி/,
+    });
+    await expect(skipLinks).toHaveCount(1);
 
     const skipLink = page.getByRole("link", { name: "Skip to main content" });
     await skipLink.focus();

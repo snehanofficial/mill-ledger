@@ -1,0 +1,11 @@
+Pre-fix reproduction for F-042:
+====================================================================
+Finding: F-042 (Ordering Interface Missing Required Product Tiles, Visual Images, and Accessible Quantity Steppers)
+Severity: P1 | Tier: T5 | Cluster: CLUSTER-08
+Standards: NN/g H6, Apple HIG adapted (44x44px touch targets), WCAG 2.2 SC 2.5.8, Phase 7 Spec Check 6
+
+Observation:
+1. Navigating to `/orders/new` mounted `PlaceholderPage` ("New Order Workspace - Module in Progress") from `client/src/pages/placeholder-pages.tsx:15-48`.
+2. The only order creation surface was an embedded modal dialog in `client/src/pages/orders-page.tsx:842-885` using a plain desktop HTML `<select>` tag and `<input type="number">`.
+3. There were zero visual product cards/tiles, zero product thumbnail images, and zero touch-friendly quantity steppers (stepper buttons were non-existent, violating the minimum 44x44px requirement).
+4. Salesmen on mobile viewports (320px–390px) suffered high error rates when choosing products without visual packaging confirmation or thumb-accessible steppers.

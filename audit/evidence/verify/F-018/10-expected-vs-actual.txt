@@ -1,0 +1,21 @@
+=== F-018 VERIFICATION EVIDENCE 10: EXPECTED VS ACTUAL ===
+Finding ID: F-018
+Title: `GET /api/v1/sales/dispatches` is accessible to salesmen and leaks company-wide customer orders, invoices, and dispatch records
+Severity: P1
+Category: Authorization / BOLA / Information Disclosure
+Status: VERIFIED-PASS
+
+[Item 1: Scoped Dispatch Listing per Owner Decision OD-03]
+- EXPECTED (OD-03 Option B, REQ-053): Salesmen must only see dispatches associated with their own submitted sales orders (`salesOrder.salesmanId === user.id`). Admin and dispatcher roles retain full organization-wide visibility.
+- ACTUAL: `dispatchService.getDispatches(organizationId, user)` applies `where.salesOrder = { salesmanId: user.id }` when `user.role === "SALESMAN"`. Verified via automated tests in `server/src/invoice-dispatch.test.ts`.
+- DELTA: None.
+
+[Item 2: Single Record Dispatch IDOR Protection]
+- EXPECTED (OD-03 Requirement 3): Enforce the same authorization rules on individual dispatch details (`GET /dispatches/:id`), returning 404/denied if requested by an unauthorized salesman.
+- ACTUAL: Added `GET /api/v1/sales/dispatches/:id` with `dispatchService.getDispatchById(dispatchId, user)`. When Salesman 1 requests Salesman 2's dispatch ID, HTTP 404 is returned.
+- DELTA: None.
+
+[Item 3: Invariants and Test Suite Integrity]
+- EXPECTED: 100% pass across full test suite (31 files), 18 benchmark assertions, and 10 SQL database invariants.
+- ACTUAL: 31/31 test files pass (152 tests), 18/18 benchmark oracle checks pass, 10/10 SQL database invariants return 0 violating rows.
+- DELTA: None.

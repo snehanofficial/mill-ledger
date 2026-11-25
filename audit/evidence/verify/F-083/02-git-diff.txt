@@ -1,0 +1,41 @@
+diff --git a/client/src/offline/sync-engine.ts b/client/src/offline/sync-engine.ts
+index 17f2af8..936476f 100644
+--- a/client/src/offline/sync-engine.ts
++++ b/client/src/offline/sync-engine.ts
+@@ -243,6 +243,28 @@ async function executeSyncLoop(
+ 
+         const response = await apiClient.post("/sales/orders", payload);
+         const serverData = response.data.order || response.data;
++        const shortages: Array<{ productVariantId: string; shortage: number }> =
++          response.data.shortages || [];
++        const activeShortages = shortages.filter((s) => s.shortage > 0);
++
++        // Explicit Conflict Queue triage for insufficient stock at sync time (F-083, REQ-052, OD-09)
++        if (activeShortages.length > 0) {
++          conflicts += 1;
++          const totalShortage = activeShortages.reduce(
++            (sum, s) => sum + s.shortage,
++            0,
++          );
++          await offlineDb.outbox.update(order.id, {
++            status: "conflict",
++            serverOrderId: serverData.id,
++            serverOrderNumber: serverData.orderNumber,
++            lastErrorCode: "STOCK_INSUFFICIENT",
++            lastErrorMessage: `Stock insufficient: shortage of ${totalShortage} units detected at synchronization time`,
++            updatedAt: new Date().toISOString(),
++          });
++          notifyListeners();
++          continue;
++        }
+ 
+         await offlineDb.outbox.update(order.id, {
+           status: "synced",
+@@ -306,6 +328,7 @@ async function executeSyncLoop(
+           status === 400 ||
+           status === 403 ||
+           status === 404 ||
++          status === 409 ||
+           status === 422
+         ) {
+           // Permanent validation or authorization conflict

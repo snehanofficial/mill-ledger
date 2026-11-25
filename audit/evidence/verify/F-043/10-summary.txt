@@ -1,0 +1,40 @@
+F-043 Verification Summary:
+---------------------------
+Finding: F-043: Pervasive Tamil Localization Failure Across Internal Business Routes Despite Language Selector
+Severity: P1
+Tier: T5
+Cluster: CLUSTER-08
+
+Root Cause:
+`client/src/lib/i18n.tsx` contained an incomplete dictionary of only 30 basic terms. The translation helper was neither imported nor wired into any of the 11 core operational pages or primary sidebar/header navigation components, causing over 95% of the UI to remain strictly in English even when Tamil ("தமிழ்") was selected.
+
+Remediation:
+1. Expanded `client/src/lib/i18n.tsx` with 180+ authentic domain translations covering all ERP navigation routes, operational statuses, action buttons, table column headers, commodity/packaging entities, and KPIs.
+2. Built a fast reverse-lookup index in `translate()` allowing both namespaced keys (e.g. `nav.orders`) and exact English labels (e.g. `Order number`) to resolve cleanly to regional Tamil unicode.
+3. Connected `useLanguage()` and `t()` into navigation shell elements: `AppNav`, `AppNavItem`, `ShellBreadcrumbs`, `SidebarUserMenu`, `HeaderSearchButton`, and `SidebarCollapseToggle`.
+4. Connected `useLanguage()` and `t()` into all 11 core operational pages:
+   - `dashboard-page.tsx`
+   - `orders-page.tsx`
+   - `production-page.tsx`
+   - `stock-page.tsx`
+   - `invoices-page.tsx`
+   - `dispatch-page.tsx`
+   - `payments-page.tsx`
+   - `customers-page.tsx`
+   - `purchases-page.tsx`
+   - `suppliers-page.tsx`
+   - `reports-page.tsx`
+   - `new-order-page.tsx`
+5. Verified bilingual parity and translation integrity with `audit/tests/f-043-regression.test.ts` and `client/src/lib/i18n.test.ts`.
+
+Verification:
+- Regression test: `audit/tests/f-043-regression.test.ts` (5/5 passed).
+- Unit tests: `client/src/lib/i18n.test.ts` (5/5 passed).
+- Typecheck: 0 errors across all 3 workspaces.
+- Lint: 0 warnings, 0 errors.
+- Build: Client & server built cleanly with PWA service worker.
+- Test suite: 39 test files passed, 241 tests passed.
+- Benchmark: 18/18 CDI benchmark assertions passed (100% exact numerical match).
+- SQL Invariants: All 10 PostgreSQL invariants passed with 0 rows violated.
+
+Status: VERIFIED

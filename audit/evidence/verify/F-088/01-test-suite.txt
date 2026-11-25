@@ -1,0 +1,1187 @@
+$ vitest run --exclude '**/e2e/**'
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+ ✓ server/src/financial-year-tz.test.ts (6 tests) 2053ms
+   ✓ F-011: Financial Year Timezone Invariance (IST / Asia/Kolkata) > deterministically classifies April 1 morning in sub-processes running under TZ=UTC and TZ=America/New_York  2038ms
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > executes benchmark transactions 4, 5, and 6: salesman order creation, tax calculation, atomic reservation, and exact shortage 32
+{"level":"INFO","timestamp":"2026-11-23T21:44:08.730Z","requestId":"62170e24-1dc5-414a-a4d7-bf16a39336bd","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":98,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+(node:281157) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > executes benchmark transactions 4, 5, and 6: salesman order creation, tax calculation, atomic reservation, and exact shortage 32
+{"level":"INFO","timestamp":"2026-11-23T21:44:08.777Z","requestId":"80ad08de-407b-4820-a54f-29855879c171","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":41,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > executes benchmark transactions 4, 5, and 6: salesman order creation, tax calculation, atomic reservation, and exact shortage 32
+{"level":"INFO","timestamp":"2026-11-23T21:44:08.858Z","requestId":"f9e5b1ac-49c3-48fb-b3ce-48ae3b7f4093","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > executes benchmark transactions 4, 5, and 6: salesman order creation, tax calculation, atomic reservation, and exact shortage 32
+{"level":"INFO","timestamp":"2026-11-23T21:44:08.886Z","requestId":"0241709c-b1ec-4489-a649-a40b041bb60f","method":"POST","path":"/api/v1/sales/orders/cmwtsmmgt000uxxab1xxtrbf9/approve","statusCode":200,"durationMs":26,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > executes benchmark transactions 4, 5, and 6: salesman order creation, tax calculation, atomic reservation, and exact shortage 32
+{"level":"INFO","timestamp":"2026-11-23T21:44:08.969Z","requestId":"9ead24eb-9956-42d1-af5e-eb665ee5dcda","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > executes benchmark transactions 4, 5, and 6: salesman order creation, tax calculation, atomic reservation, and exact shortage 32
+{"level":"INFO","timestamp":"2026-11-23T21:44:08.991Z","requestId":"2ab605f9-2502-489b-9271-aed30f1cd006","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":21,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"ncKiMiV8DuHnm8fEjO9ta3ay59Uj8r5c","userRole":"SALESMAN"}
+
+stderr | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > executes benchmark transactions 4, 5, and 6: salesman order creation, tax calculation, atomic reservation, and exact shortage 32
+{"level":"WARN","timestamp":"2026-11-23T21:44:09.002Z","requestId":"875d74a6-4f18-402f-ba06-c01958288de3","method":"POST","path":"/api/v1/sales/orders/cmwtsmmmu000zxxab87ghqrvr/approve","statusCode":400,"durationMs":9,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > enforces ABAC boundaries: salesman customer assignments and cross-salesman visibility
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.081Z","requestId":"4ffebb6c-f3ac-48f6-b44c-a9f0f9eff835","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > enforces ABAC boundaries: salesman customer assignments and cross-salesman visibility
+{"level":"WARN","timestamp":"2026-11-23T21:44:09.089Z","requestId":"b4949f89-6ea4-4a82-8efd-226281aa90aa","method":"POST","path":"/api/v1/sales/orders","statusCode":403,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > enforces ABAC boundaries: salesman customer assignments and cross-salesman visibility
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.109Z","requestId":"f0e1b601-f6d9-452a-94e5-6946a5698113","method":"GET","path":"/api/v1/sales/orders","statusCode":200,"durationMs":18,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > enforces ABAC boundaries: salesman customer assignments and cross-salesman visibility
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.197Z","requestId":"55558cca-709d-43cb-b3a6-957975a46a15","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":85,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > enforces ABAC boundaries: salesman customer assignments and cross-salesman visibility
+{"level":"WARN","timestamp":"2026-11-23T21:44:09.203Z","requestId":"7b598261-bfa2-44cb-96ee-6225a9442e0c","method":"POST","path":"/api/v1/sales/orders/any-id/approve","statusCode":403,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"3HuO7gMfcaM6g94TKeXhLF9oXJB6PVuZ","userRole":"ACCOUNTANT"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > handles order rejection and cancels active reservations
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.284Z","requestId":"299caa49-b176-417a-9d18-cc76b1c545c2","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > handles order rejection and cancels active reservations
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.307Z","requestId":"4a6f0bfb-e125-44d2-a392-e4cd3359b237","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":22,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > handles order rejection and cancels active reservations
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.327Z","requestId":"aca650f5-cf87-40e6-9af1-5d16f14fe5c6","method":"POST","path":"/api/v1/sales/orders/cmwtsmmvl0012xxab1tmqoaku/approve","statusCode":200,"durationMs":18,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > handles order rejection and cancels active reservations
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.342Z","requestId":"fa64312c-9107-40b5-a3d1-a333aec746de","method":"POST","path":"/api/v1/sales/orders/cmwtsmmvl0012xxab1tmqoaku/reject","statusCode":200,"durationMs":14,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-017: blocks mass assignment of status in sales order creation payload (OWASP API3:2023)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.422Z","requestId":"89d1293c-0503-43d4-b49f-4b188b41bb7b","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-017: blocks mass assignment of status in sales order creation payload (OWASP API3:2023)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.499Z","requestId":"b9d70a4c-bcdd-44dd-b873-aa02ee3f1951","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-017: blocks mass assignment of status in sales order creation payload (OWASP API3:2023)
+{"level":"WARN","timestamp":"2026-11-23T21:44:09.504Z","requestId":"96f2510b-75da-4107-9b03-6fe4196159db","method":"POST","path":"/api/v1/sales/orders","statusCode":400,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-017: blocks mass assignment of status in sales order creation payload (OWASP API3:2023)
+{"level":"WARN","timestamp":"2026-11-23T21:44:09.507Z","requestId":"c0d40541-1cc2-420e-87f1-bc22de4a97b7","method":"POST","path":"/api/v1/sales/orders","statusCode":400,"durationMs":2,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stderr | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-017: blocks mass assignment of status in sales order creation payload (OWASP API3:2023)
+{"level":"WARN","timestamp":"2026-11-23T21:44:09.511Z","requestId":"cd64e79c-3f5a-4c20-a584-500715f127c6","method":"POST","path":"/api/v1/sales/orders","statusCode":400,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-017: blocks mass assignment of status in sales order creation payload (OWASP API3:2023)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.532Z","requestId":"0b4e4017-5c15-4fa3-8c33-53296e9981ee","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":20,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-017: blocks mass assignment of status in sales order creation payload (OWASP API3:2023)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.552Z","requestId":"9959c9e1-ff53-4d6a-977e-3ced6459f667","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":18,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.632Z","requestId":"63c13851-fa4f-4fd6-a771-4f251ff905e5","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.710Z","requestId":"03c47abe-e0be-4701-9375-461104afccb5","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)
+{"level":"WARN","timestamp":"2026-11-23T21:44:09.719Z","requestId":"e1b70835-75cb-4192-b89e-7b92a51dd2f3","method":"POST","path":"/api/v1/sales/orders","statusCode":422,"durationMs":8,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)
+{"level":"WARN","timestamp":"2026-11-23T21:44:09.728Z","requestId":"b45d5eec-a705-4983-a759-2865def9792c","method":"POST","path":"/api/v1/sales/orders","statusCode":422,"durationMs":8,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.746Z","requestId":"a76ba177-ca18-416c-b0f2-60f7f0d44051","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":17,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.764Z","requestId":"1142ccdc-0fba-413b-9bea-8965c236f12f","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":17,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)
+{"level":"WARN","timestamp":"2026-11-23T21:44:09.777Z","requestId":"25eafc30-b3d5-4801-9c91-16dcd76632b5","method":"POST","path":"/api/v1/sales/orders/cmwtsmn8b001hxxab72mraeui/approve","statusCode":400,"durationMs":12,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.794Z","requestId":"d8986d8f-5224-447a-8d09-df2250747eb0","method":"POST","path":"/api/v1/sales/orders/cmwtsmn8b001hxxab72mraeui/approve","statusCode":200,"durationMs":16,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.808Z","requestId":"c7fb1223-37c6-4a44-9998-f54a2cf9bd3a","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":13,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)
+{"level":"WARN","timestamp":"2026-11-23T21:44:09.815Z","requestId":"77c0fa5b-c466-40e8-bf4c-1244fc79774d","method":"POST","path":"/api/v1/sales/orders/cmwtsmn9m001nxxabtqln09cn/approve","statusCode":422,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.829Z","requestId":"e64fde03-a7df-493b-bc50-73241847b53b","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":13,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-020: enforces threshold discount guard and manager approval bounds (OD-07 & REQ-024)
+{"level":"WARN","timestamp":"2026-11-23T21:44:09.833Z","requestId":"aa7241b1-9466-49a5-9249-8864e932d76b","method":"PUT","path":"/api/v1/sales/orders/cmwtsmna7001qxxab8zwlkxyq","statusCode":400,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-027: enforces stock reservation TTL expiration and releases locked inventory back to available stock (OWASP A04:2021 & ASVS 13.2.2)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.911Z","requestId":"5a0fb749-fcd0-4b3e-8059-8fcdeb9276e7","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-027: enforces stock reservation TTL expiration and releases locked inventory back to available stock (OWASP A04:2021 & ASVS 13.2.2)
+{"level":"INFO","timestamp":"2026-11-23T21:44:09.987Z","requestId":"98dddec1-1f4d-46be-81dd-4b6820efbb31","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-027: enforces stock reservation TTL expiration and releases locked inventory back to available stock (OWASP A04:2021 & ASVS 13.2.2)
+{"level":"INFO","timestamp":"2026-11-23T21:44:10.008Z","requestId":"137bd409-1612-4749-a9dd-2e30d10b0bf8","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":17,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-027: enforces stock reservation TTL expiration and releases locked inventory back to available stock (OWASP A04:2021 & ASVS 13.2.2)
+{"level":"INFO","timestamp":"2026-11-23T21:44:10.023Z","requestId":"4df450d7-7d2c-4440-9b25-0c450cef2f10","method":"POST","path":"/api/v1/sales/orders/cmwtsmnf4001txxabbfgmfq7n/approve","statusCode":200,"durationMs":14,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-027: enforces stock reservation TTL expiration and releases locked inventory back to available stock (OWASP A04:2021 & ASVS 13.2.2)
+{"level":"INFO","timestamp":"2026-11-23T21:44:10.030Z","requestId":"02302ab7-4488-4bbd-ac23-15a05ae275b0","method":"POST","path":"/api/v1/sales/reservations/expire-stale","statusCode":200,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > F-027: enforces stock reservation TTL expiration and releases locked inventory back to available stock (OWASP A04:2021 & ASVS 13.2.2)
+{"level":"INFO","timestamp":"2026-11-23T21:44:10.039Z","requestId":"4545828b-3b62-4655-9b1a-90694e0f5f37","method":"POST","path":"/api/v1/sales/reservations/expire-stale","statusCode":200,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+ ✓ server/src/orders.test.ts (6 tests) 1673ms
+   ✓ M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > executes benchmark transactions 4, 5, and 6: salesman order creation, tax calculation, atomic reservation, and exact shortage 32  408ms
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets
+{"level":"INFO","timestamp":"2026-11-23T21:44:10.983Z","requestId":"e23147da-8e71-4537-8774-0b50f27fc1a0","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":97,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+(node:281182) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.032Z","requestId":"2cac5c02-6642-42ec-93ee-73a2da6f2f2b","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":43,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.113Z","requestId":"c25b0840-d48d-4610-9875-4b7e8f3849a4","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.141Z","requestId":"75ef3851-eedb-4dca-b322-bacad0643032","method":"POST","path":"/api/v1/sales/orders/cmwtsmo7f000uymab21k3suiv/approve","statusCode":200,"durationMs":27,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.184Z","requestId":"91f8241e-3208-44d7-8747-0dc3f8007478","method":"POST","path":"/api/v1/finance/invoices","statusCode":201,"durationMs":35,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.215Z","requestId":"2fc3ed80-1cc7-4d1e-a983-dacbced38e36","method":"POST","path":"/api/v1/sales/dispatches","statusCode":201,"durationMs":28,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > handles financial correction via credit note without deleting posted invoice
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.300Z","requestId":"48f7493b-a3b4-4c8b-922a-25eb8102d682","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > handles financial correction via credit note without deleting posted invoice
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.320Z","requestId":"4909a9a6-f637-4189-b297-bbc2258e2d01","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":18,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > handles financial correction via credit note without deleting posted invoice
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.341Z","requestId":"a529af82-ed0d-4ba1-98a2-bfe5a990c610","method":"POST","path":"/api/v1/sales/orders/cmwtsmofk0016ymabhryzqji7/approve","statusCode":200,"durationMs":17,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > handles financial correction via credit note without deleting posted invoice
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.358Z","requestId":"159f6d3a-1cc6-4492-8b19-093e1b8edc1b","method":"POST","path":"/api/v1/finance/invoices","statusCode":201,"durationMs":15,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > handles financial correction via credit note without deleting posted invoice
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.374Z","requestId":"7e62b7ce-0fa4-43ee-8017-0441c1d66e3f","method":"POST","path":"/api/v1/finance/invoices/cmwtsmogn001bymabeyt031p7/credit-note","statusCode":201,"durationMs":15,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > enforces role permissions: prevents unauthorized dispatch and invoicing while allowing accountant read access
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.455Z","requestId":"24118301-d36e-42de-8c97-ced2bed3aa22","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > enforces role permissions: prevents unauthorized dispatch and invoicing while allowing accountant read access
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.532Z","requestId":"81e87138-4366-4f0f-80c8-c43313fce9b8","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > enforces role permissions: prevents unauthorized dispatch and invoicing while allowing accountant read access
+{"level":"WARN","timestamp":"2026-11-23T21:44:11.538Z","requestId":"2313a291-6abe-4421-815b-3b87876e36cf","method":"POST","path":"/api/v1/finance/invoices","statusCode":403,"durationMs":5,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > enforces role permissions: prevents unauthorized dispatch and invoicing while allowing accountant read access
+{"level":"WARN","timestamp":"2026-11-23T21:44:11.542Z","requestId":"012a456e-005a-4b3b-8c14-ecd4d8da83de","method":"POST","path":"/api/v1/sales/dispatches","statusCode":403,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > enforces role permissions: prevents unauthorized dispatch and invoicing while allowing accountant read access
+{"level":"WARN","timestamp":"2026-11-23T21:44:11.545Z","requestId":"fc7b77cb-1491-4f99-b50f-3572ee69fb34","method":"POST","path":"/api/v1/finance/invoices","statusCode":403,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"3HuO7gMfcaM6g94TKeXhLF9oXJB6PVuZ","userRole":"ACCOUNTANT"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > enforces role permissions: prevents unauthorized dispatch and invoicing while allowing accountant read access
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.559Z","requestId":"cb9c3b94-7416-4517-bd0b-34dbccaab3ec","method":"GET","path":"/api/v1/finance/invoices","statusCode":200,"durationMs":14,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"3HuO7gMfcaM6g94TKeXhLF9oXJB6PVuZ","userRole":"ACCOUNTANT"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.642Z","requestId":"a9be0e23-045d-4870-a65a-58699e882261","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.723Z","requestId":"684a7558-3864-428a-8a1f-c29c6900158d","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":80,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.801Z","requestId":"0ccc38c7-624a-433f-bf71-fe8ceb19114f","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.826Z","requestId":"7545b91b-23d1-43e1-b509-b21885d0ded4","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":24,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.847Z","requestId":"e0f78311-bfc4-48bf-b62d-2287314d6230","method":"POST","path":"/api/v1/sales/orders/cmwtsmoti001gymabxv54ywiy/approve","statusCode":200,"durationMs":19,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.872Z","requestId":"279cdeef-ec47-4dcb-98e1-203850e8042a","method":"POST","path":"/api/v1/sales/dispatches","statusCode":201,"durationMs":24,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.892Z","requestId":"338fa565-65c6-4338-8689-22e34469f56c","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":18,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"ncKiMiV8DuHnm8fEjO9ta3ay59Uj8r5c","userRole":"SALESMAN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.908Z","requestId":"8b455b7e-2cd2-4629-825c-41763333f4fa","method":"POST","path":"/api/v1/sales/orders/cmwtsmovg001pymabihbq4r8s/approve","statusCode":200,"durationMs":15,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.925Z","requestId":"3ef5105a-0e7c-4067-b6f5-5e58ef601a50","method":"POST","path":"/api/v1/sales/dispatches","statusCode":201,"durationMs":16,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.932Z","requestId":"19a48266-f706-4ab2-9c1a-abf1f8c30bd6","method":"GET","path":"/api/v1/sales/dispatches","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.940Z","requestId":"1b04527b-a6ff-4346-8b57-8bc309a93c97","method":"GET","path":"/api/v1/sales/dispatches","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.948Z","requestId":"634ab781-85ef-4ccd-976b-a86a2c8b5f7e","method":"GET","path":"/api/v1/sales/dispatches/cmwtsmoun001lymab39xl8dyq","statusCode":200,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"WARN","timestamp":"2026-11-23T21:44:11.953Z","requestId":"0c959426-2106-4648-a543-edfcb8aabb44","method":"GET","path":"/api/v1/sales/dispatches/cmwtsmowb001uymaby6kjzvsp","statusCode":404,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"INFO","timestamp":"2026-11-23T21:44:11.958Z","requestId":"90cce5b2-a16d-48f6-b38a-5a7b51f80650","method":"GET","path":"/api/v1/sales/dispatches","statusCode":200,"durationMs":5,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"ncKiMiV8DuHnm8fEjO9ta3ay59Uj8r5c","userRole":"SALESMAN"}
+
+stderr | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)
+{"level":"WARN","timestamp":"2026-11-23T21:44:11.962Z","requestId":"2579e666-1101-4da2-8cc8-83393597ff81","method":"GET","path":"/api/v1/sales/dispatches/cmwtsmoun001lymab39xl8dyq","statusCode":404,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"ncKiMiV8DuHnm8fEjO9ta3ay59Uj8r5c","userRole":"SALESMAN"}
+
+ ✓ server/src/invoice-dispatch.test.ts (4 tests) 1320ms
+   ✓ M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets  360ms
+   ✓ M6: Invoice generation, physical dispatch, reservation release, and credit note > F-018: restricts GET /api/v1/sales/dispatches so salesmen only see dispatches for their own orders (OD-03)  403ms
+stderr | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > rejects unauthenticated requests to /api/v1/users with 401
+{"level":"WARN","timestamp":"2026-11-23T21:44:12.593Z","requestId":"7bf5a141-0529-42d1-a906-5b4db89f9104","method":"GET","path":"/api/v1/users","statusCode":401,"durationMs":10,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > rejects non-admin role (SALESMAN) attempting to list users with 403 Forbidden
+{"level":"INFO","timestamp":"2026-11-23T21:44:12.791Z","requestId":"6ba1491e-4dc1-4b96-a644-ad69187b5d6b","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":188,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > rejects non-admin role (SALESMAN) attempting to list users with 403 Forbidden
+{"level":"WARN","timestamp":"2026-11-23T21:44:12.803Z","requestId":"ab20d741-d018-4db5-9dcf-0917096ed810","method":"GET","path":"/api/v1/users","statusCode":403,"durationMs":10,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > allows ADMIN to list users via /api/v1/users and /api/v1/admin/users
+{"level":"INFO","timestamp":"2026-11-23T21:44:12.885Z","requestId":"17b0616f-3404-4d90-be18-5e6ee2943c29","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":79,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > allows ADMIN to list users via /api/v1/users and /api/v1/admin/users
+{"level":"INFO","timestamp":"2026-11-23T21:44:12.894Z","requestId":"e280bb2c-35e9-4095-b516-c049b3b79351","method":"GET","path":"/api/v1/users","statusCode":200,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > allows ADMIN to list users via /api/v1/users and /api/v1/admin/users
+{"level":"INFO","timestamp":"2026-11-23T21:44:12.903Z","requestId":"1027841b-15e9-4f9f-ab8f-c52b2323a6bd","method":"GET","path":"/api/v1/admin/users","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > rejects SALESMAN attempting to create a user with 403 Forbidden
+{"level":"INFO","timestamp":"2026-11-23T21:44:12.981Z","requestId":"7f3976ee-3647-4a86-ad3d-0f6ea34d73ea","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > rejects SALESMAN attempting to create a user with 403 Forbidden
+{"level":"WARN","timestamp":"2026-11-23T21:44:12.992Z","requestId":"243a532e-cca2-455d-81a9-0a1da4a04c70","method":"POST","path":"/api/v1/users","statusCode":403,"durationMs":8,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > allows ADMIN to create a new user and provisions credentials properly
+{"level":"INFO","timestamp":"2026-11-23T21:44:13.071Z","requestId":"0b3543b8-6574-4942-a2f7-52ffe9d70221","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > allows ADMIN to create a new user and provisions credentials properly
+{"level":"INFO","timestamp":"2026-11-23T21:44:13.177Z","requestId":"401eda51-bf79-4682-ac9d-636582192e3b","method":"POST","path":"/api/v1/users","statusCode":201,"durationMs":104,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > allows ADMIN to create a new user and provisions credentials properly
+{"level":"INFO","timestamp":"2026-11-23T21:44:13.254Z","requestId":"1cf075ec-7009-41c8-8a8f-a6ad727a4be0","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > prevents demoting or deactivating the last remaining administrator (OD-02 Last-Admin Safeguard)
+{"level":"INFO","timestamp":"2026-11-23T21:44:13.332Z","requestId":"edd1e5ad-bdbe-4a08-88b5-53c9ef391e93","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > prevents demoting or deactivating the last remaining administrator (OD-02 Last-Admin Safeguard)
+{"level":"WARN","timestamp":"2026-11-23T21:44:13.343Z","requestId":"740017de-9b69-4c9d-b9bd-2df1a91feb23","method":"PUT","path":"/api/v1/users/HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","statusCode":400,"durationMs":8,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stderr | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > prevents demoting or deactivating the last remaining administrator (OD-02 Last-Admin Safeguard)
+{"level":"WARN","timestamp":"2026-11-23T21:44:13.349Z","requestId":"4105e1e8-d4ca-45c0-8e84-d9e8b2e474be","method":"PUT","path":"/api/v1/users/HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","statusCode":400,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stderr | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > prevents demoting or deactivating the last remaining administrator (OD-02 Last-Admin Safeguard)
+{"level":"WARN","timestamp":"2026-11-23T21:44:13.354Z","requestId":"3df3e9bb-31be-4a0d-9fdf-730e291fbb64","method":"DELETE","path":"/api/v1/users/HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","statusCode":400,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > allows demoting or deleting an admin when multiple active admins exist
+{"level":"INFO","timestamp":"2026-11-23T21:44:13.431Z","requestId":"0603891e-a8f1-4471-9fb3-b751773f4ae2","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > allows demoting or deleting an admin when multiple active admins exist
+{"level":"INFO","timestamp":"2026-11-23T21:44:13.518Z","requestId":"b8adf7f2-5eb3-4fe1-bbe4-40e12e3250f6","method":"POST","path":"/api/v1/users","statusCode":201,"durationMs":86,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > allows demoting or deleting an admin when multiple active admins exist
+{"level":"INFO","timestamp":"2026-11-23T21:44:13.531Z","requestId":"9584f98a-c84c-4f45-97c5-26f8b87c0d23","method":"PUT","path":"/api/v1/users/jaJ90quM7vWBRRiRJsrdUkMVGpSbRdWH","statusCode":200,"durationMs":12,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > allows demoting or deleting an admin when multiple active admins exist
+{"level":"INFO","timestamp":"2026-11-23T21:44:13.544Z","requestId":"16494549-49e1-4705-9a07-5edec8aff2f6","method":"DELETE","path":"/api/v1/users/jaJ90quM7vWBRRiRJsrdUkMVGpSbRdWH","statusCode":200,"durationMs":12,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > protects operational referential integrity: blocks deleting a user with sales records
+{"level":"INFO","timestamp":"2026-11-23T21:44:13.622Z","requestId":"aae7c552-aeb2-4614-a50c-c536f46f40c2","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > protects operational referential integrity: blocks deleting a user with sales records
+{"level":"WARN","timestamp":"2026-11-23T21:44:13.628Z","requestId":"55d2b71c-7493-467e-b157-49a94cb03c8e","method":"DELETE","path":"/api/v1/users/4vajJq6VITOesWw14GQPUuZUFI7mf05F","statusCode":400,"durationMs":5,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > verifies admin:bootstrap refuses execution if an active admin already exists (OD-02)
+==========================================
+   MillLedger Administrator Bootstrap     
+==========================================
+
+stderr | server/src/user-management.test.ts > F-023: User and Role Management APIs and Admin Safeguards > verifies admin:bootstrap refuses execution if an active admin already exists (OD-02)
+Initial administrator already exists. Bootstrap aborted.
+
+ ✓ server/src/user-management.test.ts (9 tests) 1072ms
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.578Z","requestId":"0fb5dfbe-2c47-414d-8e5b-03601303898b","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":99,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.661Z","requestId":"c60c662e-a619-4025-b15e-23c252c5b30e","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.699Z","requestId":"9f2c8aa0-7812-4b56-a34d-27aeb85093fe","method":"POST","path":"/api/v1/inventory/purchase-receipts","statusCode":201,"durationMs":36,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+(node:281216) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.757Z","requestId":"408fc3ac-16b4-4c74-b45a-e3507907ae08","method":"POST","path":"/api/v1/production-runs","statusCode":201,"durationMs":56,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.790Z","requestId":"c5850818-3973-4cf5-ac5d-ef4f8721440a","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":31,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.815Z","requestId":"3477faa5-75ae-4c67-85a3-922784fe6ef4","method":"POST","path":"/api/v1/sales/orders/cmwtsmr3v001azkab0g68v9n5/approve","statusCode":200,"durationMs":22,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.846Z","requestId":"44dfa62d-1e45-44f2-8c94-de6eaded3033","method":"POST","path":"/api/v1/finance/invoices","statusCode":201,"durationMs":29,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.871Z","requestId":"34dda2d2-e460-478c-85db-acd2632a3b42","method":"POST","path":"/api/v1/sales/dispatches","statusCode":201,"durationMs":23,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.898Z","requestId":"6ab41d22-ef68-4668-9b6d-71ebcec7ac48","method":"POST","path":"/api/v1/payments","statusCode":201,"durationMs":25,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.918Z","requestId":"82bdab0b-73f3-40e1-950a-89c3b8f7b1a5","method":"GET","path":"/api/v1/reports/sales","statusCode":200,"durationMs":18,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.932Z","requestId":"b28437d5-6a57-416f-8d89-672a19b743a2","method":"GET","path":"/api/v1/reports/gst","statusCode":200,"durationMs":11,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.942Z","requestId":"9b8ae971-3a48-4fee-87cf-c9ea58ca1a25","method":"GET","path":"/api/v1/reports/purchase","statusCode":200,"durationMs":8,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.954Z","requestId":"225f7baf-086c-4c6f-9618-837cbbc3fb90","method":"GET","path":"/api/v1/reports/stock","statusCode":200,"durationMs":10,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.963Z","requestId":"33ca7bef-15e0-4422-8f0e-d1fa046e5918","method":"GET","path":"/api/v1/reports/production","statusCode":200,"durationMs":8,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.971Z","requestId":"31a6174f-c05b-4eb8-907f-86f63e915eb8","method":"GET","path":"/api/v1/reports/collections","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:14.982Z","requestId":"c9f9d18b-cb04-4ec2-b20c-1e8b842daee2","method":"GET","path":"/api/v1/reports/receivables","statusCode":200,"durationMs":10,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:15.005Z","requestId":"69f37648-d794-4995-80af-c5bd05133dca","method":"GET","path":"/api/v1/reports/dashboard","statusCode":200,"durationMs":20,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:15.019Z","requestId":"d3c5cdd9-aad7-48d8-87c1-c29b343449db","method":"GET","path":"/api/v1/dashboard?organizationId=MILL","statusCode":200,"durationMs":13,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:15.032Z","requestId":"8ec14d8b-59b2-4b4c-ba35-65e76b77cdb5","method":"GET","path":"/api/v1/reports/sales/export?format=csv","statusCode":200,"durationMs":12,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T21:44:15.039Z","requestId":"1842e71e-8f16-4967-adc3-4533a166efa3","method":"GET","path":"/api/v1/reports/audit","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"INFO","timestamp":"2026-11-23T21:44:15.122Z","requestId":"417c5610-f69a-446f-ba77-57d11e730614","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":81,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"INFO","timestamp":"2026-11-23T21:44:15.202Z","requestId":"d0198d6d-b65d-4d86-8336-c83761dc15db","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":79,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"WARN","timestamp":"2026-11-23T21:44:15.206Z","requestId":"eadc4d0f-cd2e-4992-9198-8382e2efd821","method":"GET","path":"/api/v1/reports/purchase","statusCode":403,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"WARN","timestamp":"2026-11-23T21:44:15.209Z","requestId":"3f2a1e33-9583-4002-816b-fa5b77ddfb76","method":"GET","path":"/api/v1/reports/audit","statusCode":403,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"INFO","timestamp":"2026-11-23T21:44:15.216Z","requestId":"9cd0725f-f57f-44ab-a469-a183de2eaec4","method":"GET","path":"/api/v1/reports/sales","statusCode":200,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"WARN","timestamp":"2026-11-23T21:44:15.220Z","requestId":"06bcb009-3c80-471f-8a95-181a8e18ae6d","method":"GET","path":"/api/v1/reports/sales","statusCode":403,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"rN7LdbOCSnelfTBvhCFUStihezOPU3MM","userRole":"PRODUCTION"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"INFO","timestamp":"2026-11-23T21:44:15.227Z","requestId":"42fe5095-1c4e-4097-a49a-e61e403c0e21","method":"GET","path":"/api/v1/reports/production","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"rN7LdbOCSnelfTBvhCFUStihezOPU3MM","userRole":"PRODUCTION"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"INFO","timestamp":"2026-11-23T21:44:15.235Z","requestId":"ef8e97da-ee59-434f-b839-4fd1de2c11a5","method":"GET","path":"/api/v1/reports/receivables","statusCode":200,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"INFO","timestamp":"2026-11-23T21:44:15.241Z","requestId":"e58e7d1f-3d06-47d7-9ace-f886654a59bf","method":"GET","path":"/api/v1/reports/receivables?salesmanId=spoofed-id","statusCode":200,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+ ✓ server/src/reports.test.ts (2 tests) 1012ms
+   ✓ M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard  585ms
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.179Z","requestId":"138ca6a2-6055-4081-8b53-f50dc58966f9","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":98,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+(node:281234) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.228Z","requestId":"0fe1f418-644e-468c-a02d-239b1deea990","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":43,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.308Z","requestId":"5fc6774f-b4bb-45af-83fe-c326711d32f9","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.336Z","requestId":"e8241356-28af-43a1-a165-3f0e19eba889","method":"POST","path":"/api/v1/sales/orders/cmwtsms7r000u02ab9ugno0co/approve","statusCode":200,"durationMs":26,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.370Z","requestId":"aa8ac09a-83cf-4ce0-948d-64697558272f","method":"POST","path":"/api/v1/finance/invoices","statusCode":201,"durationMs":32,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.398Z","requestId":"44ce56cc-dcc5-4dd1-b3b5-9fd4a98d5937","method":"POST","path":"/api/v1/sales/dispatches","statusCode":201,"durationMs":25,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.427Z","requestId":"3d715f51-9b5e-43f3-addb-f9c483bcb5aa","method":"POST","path":"/api/v1/payments","statusCode":201,"durationMs":21,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.445Z","requestId":"96e181b1-a480-4402-bd10-99612acc92a5","method":"GET","path":"/api/v1/payments/ledger/cmwlwxp0w0009caablhch59cb","statusCode":200,"durationMs":15,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > validates payment allocation business rules: rejects over allocation and enforces permissions
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.527Z","requestId":"d6666a66-6816-4a44-9739-37d9d437c870","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > validates payment allocation business rules: rejects over allocation and enforces permissions
+{"level":"WARN","timestamp":"2026-11-23T21:44:16.537Z","requestId":"47b3f313-4417-4d02-bdba-48b030c8b94d","method":"POST","path":"/api/v1/payments","statusCode":400,"durationMs":8,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > validates payment allocation business rules: rejects over allocation and enforces permissions
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.616Z","requestId":"782fbace-429e-4d0b-91f2-276b9d1882a9","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > validates payment allocation business rules: rejects over allocation and enforces permissions
+{"level":"WARN","timestamp":"2026-11-23T21:44:16.620Z","requestId":"ba8ff303-66ba-48e4-8250-50cd65f312c6","method":"POST","path":"/api/v1/payments","statusCode":403,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > validates payment allocation business rules: rejects over allocation and enforces permissions
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.697Z","requestId":"6bbf805d-990e-4a53-9c56-b8bafa997e84","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > validates payment allocation business rules: rejects over allocation and enforces permissions
+{"level":"WARN","timestamp":"2026-11-23T21:44:16.702Z","requestId":"00550dfc-a6de-4ee8-94b2-9c03edf7d8b2","method":"POST","path":"/api/v1/payments","statusCode":403,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"3HuO7gMfcaM6g94TKeXhLF9oXJB6PVuZ","userRole":"ACCOUNTANT"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > validates payment allocation business rules: rejects over allocation and enforces permissions
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.709Z","requestId":"1c487aa3-e74d-40e4-9dde-d832a630efc8","method":"GET","path":"/api/v1/payments","statusCode":200,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"3HuO7gMfcaM6g94TKeXhLF9oXJB6PVuZ","userRole":"ACCOUNTANT"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > handles auto FIFO allocation and unallocated credit balance
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.787Z","requestId":"f0b04105-c626-4e2a-b866-6ae3012c08ba","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing > handles auto FIFO allocation and unallocated credit balance
+{"level":"INFO","timestamp":"2026-11-23T21:44:16.804Z","requestId":"fa608ef2-d72d-43d5-8133-bf986eb1a4b8","method":"POST","path":"/api/v1/payments","statusCode":201,"durationMs":16,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+ ✓ server/src/payments.test.ts (3 tests) 971ms
+   ✓ M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding  390ms
+stderr | server/src/auth.integration.test.ts > Better Auth and permission integration > Authentication behavior (401) > returns 401 Unauthorized when requesting /api/v1/me without a session cookie
+{"level":"WARN","timestamp":"2026-11-23T21:44:17.424Z","requestId":"ae0239dc-972a-4f7c-9260-9a0ce1a1eb5c","method":"GET","path":"/api/v1/me","statusCode":401,"durationMs":11,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth.integration.test.ts > Better Auth and permission integration > Authentication behavior (401) > rejects login with invalid password
+2026-11-23T21:44:17.608Z WARN [Better Auth]: Invalid password
+
+stderr | server/src/auth.integration.test.ts > Better Auth and permission integration > Authentication behavior (401) > rejects login with invalid password
+{"level":"WARN","timestamp":"2026-11-23T21:44:17.614Z","requestId":"bf82ea65-c46e-4c02-a4b4-28d752478179","method":"POST","path":"/api/auth/sign-in/email","statusCode":401,"durationMs":178,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/auth.integration.test.ts > Better Auth and permission integration > Authentication behavior (401) > logs in successfully with valid credentials and sets session cookie
+{"level":"INFO","timestamp":"2026-11-23T21:44:17.705Z","requestId":"01e3155c-b355-40c2-baab-a293a3c29393","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":88,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/auth.integration.test.ts > Better Auth and permission integration > Authentication behavior (401) > logs in successfully with valid credentials and sets session cookie
+{"level":"INFO","timestamp":"2026-11-23T21:44:17.713Z","requestId":"c03b6c08-4842-4499-b8c8-2c0b483b108d","method":"GET","path":"/api/v1/me","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/auth.integration.test.ts > Better Auth and permission integration > Authentication behavior (401) > accepts cross-origin sign-in from trusted CORS origin (MLD-001)
+{"level":"INFO","timestamp":"2026-11-23T21:44:17.793Z","requestId":"bf3a9ed0-62df-4696-8790-1d49fe4a3a41","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/auth.integration.test.ts > Better Auth and permission integration > Authentication behavior (401) > accepts cross-origin sign-in from LAN IP origin in dev/test environment
+{"level":"INFO","timestamp":"2026-11-23T21:44:17.876Z","requestId":"bd00fdb4-d73e-40a1-a64d-7da09814e086","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":81,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/auth.integration.test.ts > Better Auth and permission integration > Auditor write prevention (403) > prevents ACCOUNTANT role from calling write endpoints
+{"level":"INFO","timestamp":"2026-11-23T21:44:17.958Z","requestId":"ea2cdf39-4086-4846-9dc4-8c6c6659e9d2","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth.integration.test.ts > Better Auth and permission integration > Auditor write prevention (403) > prevents ACCOUNTANT role from calling write endpoints
+{"level":"WARN","timestamp":"2026-11-23T21:44:17.969Z","requestId":"1084eb6c-9fe7-4038-b7ce-fa136873a8fb","method":"POST","path":"/api/v1/sales/orders","statusCode":403,"durationMs":9,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"3HuO7gMfcaM6g94TKeXhLF9oXJB6PVuZ","userRole":"ACCOUNTANT"}
+
+stdout | server/src/auth.integration.test.ts > Better Auth and permission integration > Cross-salesman access isolation (403) > denies salesman when updating another salesman's order
+{"level":"INFO","timestamp":"2026-11-23T21:44:18.049Z","requestId":"d6f1f913-c624-4d17-a484-0b8ba00e617f","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth.integration.test.ts > Better Auth and permission integration > Cross-salesman access isolation (403) > denies salesman when updating another salesman's order
+{"level":"WARN","timestamp":"2026-11-23T21:44:18.090Z","requestId":"86017c53-7ac9-4bf8-8251-7cc87a8a6004","method":"PUT","path":"/api/v1/sales/orders/cmwtsmtnd00010mabx7ltozz2","statusCode":403,"durationMs":15,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/auth.integration.test.ts > Better Auth and permission integration > Cross-salesman access isolation (403) > denies salesman when updating another salesman's order
+{"level":"INFO","timestamp":"2026-11-23T21:44:18.112Z","requestId":"ddfc752b-dc04-41a0-a439-2c5e2063d981","method":"PUT","path":"/api/v1/sales/orders/cmwtsmtn600000mabe7duhe4o","statusCode":200,"durationMs":20,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/auth.integration.test.ts > Better Auth and permission integration > Cross-salesman access isolation (403) > rejects inactive users with HTTP 403 Forbidden even with valid session (MLD-006)
+{"level":"INFO","timestamp":"2026-11-23T21:44:18.189Z","requestId":"446764fa-8637-46c2-9d2f-7ebb03e4e799","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/auth.integration.test.ts > Better Auth and permission integration > Cross-salesman access isolation (403) > rejects inactive users with HTTP 403 Forbidden even with valid session (MLD-006)
+{"level":"INFO","timestamp":"2026-11-23T21:44:18.193Z","requestId":"5667636d-422d-4ff0-8ffd-b7378a552d0b","method":"GET","path":"/api/v1/me","statusCode":200,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"rN7LdbOCSnelfTBvhCFUStihezOPU3MM","userRole":"PRODUCTION"}
+
+stderr | server/src/auth.integration.test.ts > Better Auth and permission integration > Cross-salesman access isolation (403) > rejects inactive users with HTTP 403 Forbidden even with valid session (MLD-006)
+{"level":"WARN","timestamp":"2026-11-23T21:44:18.199Z","requestId":"e9eaef78-bc94-4776-b0c1-4e1bb446c310","method":"GET","path":"/api/v1/me","statusCode":403,"durationMs":2,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/auth.integration.test.ts > Better Auth and permission integration > Multi-tenant isolation & BOLA prevention (MLD-002) > rejects cross-tenant data access with HTTP 403 Forbidden when user requests a foreign organization
+{"level":"INFO","timestamp":"2026-11-23T21:44:18.278Z","requestId":"b014d068-542f-4b3d-aaa7-52b4ecd11160","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/auth.integration.test.ts > Better Auth and permission integration > Multi-tenant isolation & BOLA prevention (MLD-002) > rejects cross-tenant data access with HTTP 403 Forbidden when user requests a foreign organization
+{"level":"INFO","timestamp":"2026-11-23T21:44:18.314Z","requestId":"4c452580-6823-4b6b-8ea4-89656c5c4d84","method":"GET","path":"/api/v1/dashboard?organizationId=MILL","statusCode":200,"durationMs":35,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stderr | server/src/auth.integration.test.ts > Better Auth and permission integration > Multi-tenant isolation & BOLA prevention (MLD-002) > rejects cross-tenant data access with HTTP 403 Forbidden when user requests a foreign organization
+{"level":"WARN","timestamp":"2026-11-23T21:44:18.319Z","requestId":"78eb0ad7-14c8-48ab-ad8f-bd44ba4c134f","method":"GET","path":"/api/v1/dashboard?organizationId=COMPETING_MILL_XYZ","statusCode":403,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+ ✓ server/src/auth.integration.test.ts (9 tests) 922ms
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > verifies salesman customer scoping for offline snapshots
+{"level":"INFO","timestamp":"2026-11-23T21:44:19.248Z","requestId":"beace8fe-083f-4f8e-9e6a-19041c65cc38","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":102,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > verifies salesman customer scoping for offline snapshots
+{"level":"INFO","timestamp":"2026-11-23T21:44:19.332Z","requestId":"a81fc006-ebfc-413e-9d68-ab44dbc16d95","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > verifies salesman customer scoping for offline snapshots
+{"level":"INFO","timestamp":"2026-11-23T21:44:19.411Z","requestId":"66d84793-580a-416c-896a-3e714d9caf73","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > verifies salesman customer scoping for offline snapshots
+{"level":"INFO","timestamp":"2026-11-23T21:44:19.425Z","requestId":"ae4a3dd4-7d35-4da3-b722-60afc8c0a2e7","method":"GET","path":"/api/v1/sales/customers","statusCode":200,"durationMs":12,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > verifies salesman customer scoping for offline snapshots
+{"level":"INFO","timestamp":"2026-11-23T21:44:19.432Z","requestId":"17d50c36-8cdb-4aa8-9aae-318b94c2f93a","method":"GET","path":"/api/v1/sales/customers","statusCode":200,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"ncKiMiV8DuHnm8fEjO9ta3ay59Uj8r5c","userRole":"SALESMAN"}
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > verifies salesman customer scoping for offline snapshots
+{"level":"INFO","timestamp":"2026-11-23T21:44:19.442Z","requestId":"9ff0c8cf-d7bb-413f-9545-88338d75202e","method":"GET","path":"/api/v1/sales/customers","statusCode":200,"durationMs":8,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > verifies product and price snapshot endpoint for offline cache
+{"level":"INFO","timestamp":"2026-11-23T21:44:19.522Z","requestId":"cf1e7a3f-1520-4c6a-90cc-ed6c8a031cad","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > verifies product and price snapshot endpoint for offline cache
+{"level":"INFO","timestamp":"2026-11-23T21:44:19.564Z","requestId":"8795be9f-cbf9-4d44-b033-684941ae7c18","method":"GET","path":"/api/v1/sales/products","statusCode":200,"durationMs":40,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > verifies exactly once order creation with idempotency key replay
+{"level":"INFO","timestamp":"2026-11-23T21:44:19.650Z","requestId":"4a6fa5ec-6c06-46a5-8b80-022cdf20eeb2","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+(node:281273) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > verifies exactly once order creation with idempotency key replay
+{"level":"INFO","timestamp":"2026-11-23T21:44:19.689Z","requestId":"af430f78-ee95-40b0-89c8-4674cfc7b934","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":38,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > verifies exactly once order creation with idempotency key replay
+{"level":"INFO","timestamp":"2026-11-23T21:44:19.700Z","requestId":"6346c79a-ab84-48ce-b133-13f754117ff6","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":9,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > detects and rejects sync conflict when salesman attempts order for unassigned customer
+{"level":"INFO","timestamp":"2026-11-23T21:44:19.780Z","requestId":"1a85df0a-4a95-44c0-a4a7-8337c2f6f459","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification > detects and rejects sync conflict when salesman attempts order for unassigned customer
+{"level":"WARN","timestamp":"2026-11-23T21:44:19.788Z","requestId":"6f45ee71-4bdf-4c98-a5d1-f9172e219841","method":"POST","path":"/api/v1/sales/orders","statusCode":403,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+ ✓ server/src/offline-sync.test.ts (5 tests) 903ms
+   ✓ M9: Offline synchronization and idempotency verification > verifies salesman customer scoping for offline snapshots  313ms
+stdout | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Password Reset Endpoint (/api/auth/forget-password) > returns HTTP 200 for valid email (previously returned 404)
+[Better Auth] Password reset link generated for admin@millledger.local: http://localhost:4000/api/auth/reset-password/53Iciz9Lir6Yzyxsu4fmnRoP?callbackURL=
+
+stdout | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Password Reset Endpoint (/api/auth/forget-password) > returns HTTP 200 for valid email (previously returned 404)
+{"level":"INFO","timestamp":"2026-11-23T21:44:20.523Z","requestId":"e9fb0931-8eb9-4993-b676-a97687dbcff7","method":"POST","path":"/api/auth/forget-password","statusCode":200,"durationMs":114,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Password Reset Endpoint (/api/auth/forget-password) > returns HTTP 200 without leaking account existence for non-existent email (anti-enumeration)
+2026-11-23T21:44:20.545Z WARN [Better Auth]: Reset Password: User not found
+
+stdout | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Password Reset Endpoint (/api/auth/forget-password) > returns HTTP 200 without leaking account existence for non-existent email (anti-enumeration)
+{"level":"INFO","timestamp":"2026-11-23T21:44:20.546Z","requestId":"e12b3ec8-de0e-4fe3-bcf5-c5fe0c52268c","method":"POST","path":"/api/auth/forget-password","statusCode":200,"durationMs":14,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+2026-11-23T21:44:20.628Z WARN [Better Auth]: Invalid password
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+{"level":"WARN","timestamp":"2026-11-23T21:44:20.634Z","requestId":"ff1c7aa2-763a-43b2-ad67-335fcb7720c1","method":"POST","path":"/api/auth/sign-in/email","statusCode":401,"durationMs":86,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+2026-11-23T21:44:20.709Z WARN [Better Auth]: Invalid password
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+{"level":"WARN","timestamp":"2026-11-23T21:44:20.711Z","requestId":"0a1aa79b-f984-46e1-a359-82c2d1540ab9","method":"POST","path":"/api/auth/sign-in/email","statusCode":401,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+2026-11-23T21:44:20.785Z WARN [Better Auth]: Invalid password
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+{"level":"WARN","timestamp":"2026-11-23T21:44:20.786Z","requestId":"792e6588-00a6-43ff-87b0-0a0e36a235c8","method":"POST","path":"/api/auth/sign-in/email","statusCode":401,"durationMs":74,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+2026-11-23T21:44:20.863Z WARN [Better Auth]: Invalid password
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+{"level":"WARN","timestamp":"2026-11-23T21:44:20.865Z","requestId":"91bb03c0-d62d-4981-827b-02c656587049","method":"POST","path":"/api/auth/sign-in/email","statusCode":401,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+2026-11-23T21:44:20.938Z WARN [Better Auth]: Invalid password
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+[Better Auth Lockout] Account salesman1@millledger.local locked after 5 failed attempts.
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+{"level":"WARN","timestamp":"2026-11-23T21:44:20.949Z","requestId":"6114f1a4-6bc4-42db-a396-38c8999cc520","method":"POST","path":"/api/auth/sign-in/email","statusCode":401,"durationMs":82,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+{"level":"WARN","timestamp":"2026-11-23T21:44:20.954Z","requestId":"807378ad-064d-486e-8bc9-f08e7f65196e","method":"POST","path":"/api/auth/sign-in/email","statusCode":403,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+{"level":"WARN","timestamp":"2026-11-23T21:44:20.958Z","requestId":"7737a931-8a8f-41bf-8880-5afa75aa9dcf","method":"POST","path":"/api/auth/sign-in/email","statusCode":403,"durationMs":2,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins
+{"level":"INFO","timestamp":"2026-11-23T21:44:21.038Z","requestId":"70326b61-ebcf-41b5-b1b9-5cbe304ab39c","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > resets failed attempt counter upon successful login before reaching threshold
+2026-11-23T21:44:21.112Z WARN [Better Auth]: Invalid password
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > resets failed attempt counter upon successful login before reaching threshold
+{"level":"WARN","timestamp":"2026-11-23T21:44:21.114Z","requestId":"4b25cadf-bf06-406f-b8fd-aeba3a9018d3","method":"POST","path":"/api/auth/sign-in/email","statusCode":401,"durationMs":73,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > resets failed attempt counter upon successful login before reaching threshold
+2026-11-23T21:44:21.187Z WARN [Better Auth]: Invalid password
+
+stderr | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > resets failed attempt counter upon successful login before reaching threshold
+{"level":"WARN","timestamp":"2026-11-23T21:44:21.188Z","requestId":"6d1b19b2-7311-4a0a-98ea-18bc068a023f","method":"POST","path":"/api/auth/sign-in/email","statusCode":401,"durationMs":73,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/auth-lockout.test.ts > F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > resets failed attempt counter upon successful login before reaching threshold
+{"level":"INFO","timestamp":"2026-11-23T21:44:21.267Z","requestId":"4d889d08-e6b2-439c-8a02-1ec14f9c7f29","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+ ✓ server/src/auth-lockout.test.ts (4 tests) 882ms
+   ✓ F-024: Password Reset Endpoint and Account Lockout Policy > Account Lockout Policy on Successive Failed Logins > locks the account after 5 consecutive failed attempts and blocks subsequent logins  493ms
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals > executes benchmark transactions 1, 2, and 3: purchases flour, posts production run, and verifies exact costs and balances
+{"level":"INFO","timestamp":"2026-11-23T21:44:22.242Z","requestId":"892f7129-cead-4498-92b0-1a518e53467b","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":98,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+(node:281320) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals > executes benchmark transactions 1, 2, and 3: purchases flour, posts production run, and verifies exact costs and balances
+{"level":"INFO","timestamp":"2026-11-23T21:44:22.316Z","requestId":"f54869e5-39fb-4fc0-9da5-33f3f21c0e26","method":"POST","path":"/api/v1/production-runs","statusCode":201,"durationMs":68,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"rN7LdbOCSnelfTBvhCFUStihezOPU3MM","userRole":"PRODUCTION"}
+
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals > enforces role permissions: blocks unauthorized posting and permits read-only access for accountants
+{"level":"INFO","timestamp":"2026-11-23T21:44:22.414Z","requestId":"79383abd-32fb-4868-8a85-f5b4483b7a0e","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":81,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals > enforces role permissions: blocks unauthorized posting and permits read-only access for accountants
+{"level":"WARN","timestamp":"2026-11-23T21:44:22.420Z","requestId":"522a8efe-f6fa-4516-980c-7fa7c3b34b3f","method":"POST","path":"/api/v1/production-runs","statusCode":403,"durationMs":5,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals > enforces role permissions: blocks unauthorized posting and permits read-only access for accountants
+{"level":"INFO","timestamp":"2026-11-23T21:44:22.497Z","requestId":"f0d9fcb5-0a35-41c0-831f-d755a25f2068","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals > enforces role permissions: blocks unauthorized posting and permits read-only access for accountants
+{"level":"WARN","timestamp":"2026-11-23T21:44:22.503Z","requestId":"8da0583b-a832-4635-9016-9f598bde6c87","method":"POST","path":"/api/v1/production-runs","statusCode":403,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"3HuO7gMfcaM6g94TKeXhLF9oXJB6PVuZ","userRole":"ACCOUNTANT"}
+
+stderr | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals > enforces role permissions: blocks unauthorized posting and permits read-only access for accountants
+{"level":"WARN","timestamp":"2026-11-23T21:44:22.507Z","requestId":"052bcee0-084a-437c-a794-42306dc2a767","method":"GET","path":"/api/v1/production-runs?organizationId=cmwlwxp060000caabs9fkydcd","statusCode":403,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"3HuO7gMfcaM6g94TKeXhLF9oXJB6PVuZ","userRole":"ACCOUNTANT"}
+
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals > enforces role permissions: blocks unauthorized posting and permits read-only access for accountants
+{"level":"INFO","timestamp":"2026-11-23T21:44:22.585Z","requestId":"4eea2c2e-cc2a-4715-b942-104e7a5ccb36","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals > enforces role permissions: blocks unauthorized posting and permits read-only access for accountants
+{"level":"INFO","timestamp":"2026-11-23T21:44:22.600Z","requestId":"fd1dff37-d9f8-47a3-ba45-a0fc4619a557","method":"GET","path":"/api/v1/production-runs?organizationId=cmwlwxp060000caabs9fkydcd","statusCode":200,"durationMs":14,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"zxvrdy3TCASmZvJ9Xpsr7JeD0hF8ZYcT","userRole":"OWNER"}
+
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals > handles production run reversal: restores stock balances and marks run as REVERSED
+{"level":"INFO","timestamp":"2026-11-23T21:44:22.688Z","requestId":"72ab43e6-8c2f-485a-99ca-fc9aaebca1f0","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":81,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals > handles production run reversal: restores stock balances and marks run as REVERSED
+{"level":"INFO","timestamp":"2026-11-23T21:44:22.714Z","requestId":"861fe226-4bf9-4d27-9705-b70b74dd318b","method":"POST","path":"/api/v1/production-runs","statusCode":201,"durationMs":25,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals > handles production run reversal: restores stock balances and marks run as REVERSED
+{"level":"INFO","timestamp":"2026-11-23T21:44:22.739Z","requestId":"444ca93b-b354-497e-9b9c-311966362716","method":"POST","path":"/api/v1/production-runs/cmwtsmx7t001a2gab6wc65uet/reverse","statusCode":200,"durationMs":23,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+ ✓ server/src/production.test.ts (3 tests) 879ms
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > executes benchmark transaction 1: purchase 60 kg flour at ₹45/kg and reconciles ledger
+{"level":"INFO","timestamp":"2026-11-23T21:44:23.673Z","requestId":"001765fa-dda8-48fe-bf69-3bd419e81393","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":97,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > executes benchmark transaction 1: purchase 60 kg flour at ₹45/kg and reconciles ledger
+{"level":"INFO","timestamp":"2026-11-23T21:44:23.717Z","requestId":"b8fad812-c3e4-4c05-9e9d-1552584a51ca","method":"POST","path":"/api/v1/inventory/purchase-receipts","statusCode":201,"durationMs":37,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > executes benchmark transaction 1: purchase 60 kg flour at ₹45/kg and reconciles ledger
+{"level":"INFO","timestamp":"2026-11-23T21:44:23.736Z","requestId":"0994b892-edf5-4c58-b567-a2518503922b","method":"GET","path":"/api/v1/inventory/balances?organizationId=cmwlwxp060000caabs9fkydcd","statusCode":200,"durationMs":13,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > executes benchmark transaction 1: purchase 60 kg flour at ₹45/kg and reconciles ledger
+{"level":"INFO","timestamp":"2026-11-23T21:44:23.744Z","requestId":"b2150e2a-c2d2-451a-b9a4-17cb428353ef","method":"GET","path":"/api/v1/inventory/items/cmwlwxp1c000ecaabebpgx1c6/ledger","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > enforces idempotency: duplicate purchase receipt submission does not double count stock
+{"level":"INFO","timestamp":"2026-11-23T21:44:23.830Z","requestId":"e34d3c22-d348-43e3-92f2-53a08bd8a8d5","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":81,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > enforces idempotency: duplicate purchase receipt submission does not double count stock
+{"level":"INFO","timestamp":"2026-11-23T21:44:23.841Z","requestId":"2873b474-aae5-42e4-bb12-a796ba6a9ffb","method":"POST","path":"/api/v1/inventory/purchase-receipts","statusCode":201,"durationMs":9,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > prevents salesman from posting purchase receipts (role denial)
+{"level":"INFO","timestamp":"2026-11-23T21:44:23.927Z","requestId":"e60712f4-efc6-42a8-8146-d43901cdd952","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > prevents salesman from posting purchase receipts (role denial)
+{"level":"WARN","timestamp":"2026-11-23T21:44:23.934Z","requestId":"aca8c568-36ce-495e-9a3b-d5f380854030","method":"POST","path":"/api/v1/inventory/purchase-receipts","statusCode":403,"durationMs":5,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > F-021: prevents exposure of item movement ledger under /api/v1/purchase-receipts and enforces purchase permission scoping (OWASP A01:2021 & API5:2023)
+{"level":"INFO","timestamp":"2026-11-23T21:44:24.014Z","requestId":"bfada0ed-a60b-4c4e-ab66-b294812dbc07","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":78,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > F-021: prevents exposure of item movement ledger under /api/v1/purchase-receipts and enforces purchase permission scoping (OWASP A01:2021 & API5:2023)
+{"level":"INFO","timestamp":"2026-11-23T21:44:24.092Z","requestId":"99eb4aea-117f-406c-bb79-3ca0a4bac2ac","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":76,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > F-021: prevents exposure of item movement ledger under /api/v1/purchase-receipts and enforces purchase permission scoping (OWASP A01:2021 & API5:2023)
+{"level":"WARN","timestamp":"2026-11-23T21:44:24.096Z","requestId":"69eb7d3e-02ae-4742-8e4e-5ac043559072","method":"GET","path":"/api/v1/purchase-receipts/items/cmwlwxp1c000ecaabebpgx1c6/ledger","statusCode":403,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > F-021: prevents exposure of item movement ledger under /api/v1/purchase-receipts and enforces purchase permission scoping (OWASP A01:2021 & API5:2023)
+{"level":"WARN","timestamp":"2026-11-23T21:44:24.100Z","requestId":"8739a31b-30de-4cfe-a412-888705540a50","method":"GET","path":"/api/v1/purchase-receipts","statusCode":403,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > F-021: prevents exposure of item movement ledger under /api/v1/purchase-receipts and enforces purchase permission scoping (OWASP A01:2021 & API5:2023)
+{"level":"WARN","timestamp":"2026-11-23T21:44:24.104Z","requestId":"f289d8cb-5ee1-4807-9413-c5590716530c","method":"POST","path":"/api/v1/purchase-receipts","statusCode":403,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stderr | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > F-021: prevents exposure of item movement ledger under /api/v1/purchase-receipts and enforces purchase permission scoping (OWASP A01:2021 & API5:2023)
+{"level":"WARN","timestamp":"2026-11-23T21:44:24.108Z","requestId":"a90d7b3a-4476-4c29-8cb8-f8a4fad955c0","method":"GET","path":"/api/v1/purchase-receipts/items/cmwlwxp1c000ecaabebpgx1c6/ledger","statusCode":404,"durationMs":3,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > F-021: prevents exposure of item movement ledger under /api/v1/purchase-receipts and enforces purchase permission scoping (OWASP A01:2021 & API5:2023)
+{"level":"INFO","timestamp":"2026-11-23T21:44:24.124Z","requestId":"9a6aeb7d-6462-4273-930e-483d3b829fc3","method":"GET","path":"/api/v1/purchase-receipts","statusCode":200,"durationMs":16,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration > F-021: prevents exposure of item movement ledger under /api/v1/purchase-receipts and enforces purchase permission scoping (OWASP A01:2021 & API5:2023)
+{"level":"INFO","timestamp":"2026-11-23T21:44:24.131Z","requestId":"b15bd24d-6d98-4eaa-aa16-c1a6e76d76ed","method":"GET","path":"/api/v1/inventory/items/cmwlwxp1c000ecaabebpgx1c6/ledger","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+ ✓ server/src/purchases.test.ts (4 tests) 795ms
+ ✓ server/src/db/seed.test.ts (4 tests) 715ms
+   ✓ F-004 / F-101: Production Guard on Seed Script > invoking prisma/seed.ts directly exits with code 1 in production mode  711ms
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales order submissions with the same idempotency key without P2002 error
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales order submissions with the same idempotency key without P2002 error
+M2 benchmark master data seed successfully completed.
+
+(node:281399) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales order submissions with the same idempotency key without P2002 error
+prisma:error 
+Invalid `tx.salesOrder.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/sales.service.ts:459:41
+
+  456 }
+  457 
+  458 // Create Sales Order header
+→ 459 const order = await tx.salesOrder.create(
+Unique constraint failed on the constraint: `sales_order_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales order submissions with the same idempotency key without P2002 error
+prisma:error 
+Invalid `tx.salesOrder.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/sales.service.ts:459:41
+
+  456 }
+  457 
+  458 // Create Sales Order header
+→ 459 const order = await tx.salesOrder.create(
+Unique constraint failed on the constraint: `sales_order_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales order submissions with the same idempotency key without P2002 error
+prisma:error 
+Invalid `tx.salesOrder.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/sales.service.ts:459:41
+
+  456 }
+  457 
+  458 // Create Sales Order header
+→ 459 const order = await tx.salesOrder.create(
+Unique constraint failed on the constraint: `sales_order_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales order submissions with the same idempotency key without P2002 error
+prisma:error 
+Invalid `tx.salesOrder.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/sales/sales.service.ts:459:41
+
+  456 }
+  457 
+  458 // Create Sales Order header
+→ 459 const order = await tx.salesOrder.create(
+Unique constraint failed on the constraint: `sales_order_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales invoice creation requests with the same idempotency key
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales invoice creation requests with the same idempotency key
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales invoice creation requests with the same idempotency key
+prisma:error 
+Invalid `tx.salesInvoice.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/finance/finance.service.ts:233:45
+
+  230 const totalAmount = Number((taxableAmount + totalTaxAmount).toFixed(2));
+  231 
+  232 // Create immutable posted invoice
+→ 233 const invoice = await tx.salesInvoice.create(
+Unique constraint failed on the constraint: `sales_invoice_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales invoice creation requests with the same idempotency key
+prisma:error 
+Invalid `tx.salesInvoice.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/finance/finance.service.ts:233:45
+
+  230 const totalAmount = Number((taxableAmount + totalTaxAmount).toFixed(2));
+  231 
+  232 // Create immutable posted invoice
+→ 233 const invoice = await tx.salesInvoice.create(
+Unique constraint failed on the constraint: `sales_invoice_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales invoice creation requests with the same idempotency key
+prisma:error 
+Invalid `tx.salesInvoice.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/finance/finance.service.ts:233:45
+
+  230 const totalAmount = Number((taxableAmount + totalTaxAmount).toFixed(2));
+  231 
+  232 // Create immutable posted invoice
+→ 233 const invoice = await tx.salesInvoice.create(
+Unique constraint failed on the constraint: `sales_invoice_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent sales invoice creation requests with the same idempotency key
+prisma:error 
+Invalid `tx.salesInvoice.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/finance/finance.service.ts:233:45
+
+  230 const totalAmount = Number((taxableAmount + totalTaxAmount).toFixed(2));
+  231 
+  232 // Create immutable posted invoice
+→ 233 const invoice = await tx.salesInvoice.create(
+Unique constraint failed on the constraint: `sales_invoice_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent payment records with the same idempotency key
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent payment records with the same idempotency key
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent payment records with the same idempotency key
+prisma:error 
+Invalid `tx.payment.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/finance/payment.service.ts:211:40
+
+  208 }
+  209 
+  210 // 5. Create Payment record
+→ 211 const payment = await tx.payment.create(
+Unique constraint failed on the constraint: `payment_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent payment records with the same idempotency key
+prisma:error 
+Invalid `tx.payment.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/finance/payment.service.ts:211:40
+
+  208 }
+  209 
+  210 // 5. Create Payment record
+→ 211 const payment = await tx.payment.create(
+Unique constraint failed on the constraint: `payment_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent payment records with the same idempotency key
+prisma:error 
+Invalid `tx.payment.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/finance/payment.service.ts:211:40
+
+  208 }
+  209 
+  210 // 5. Create Payment record
+→ 211 const payment = await tx.payment.create(
+Unique constraint failed on the constraint: `payment_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles 5 concurrent payment records with the same idempotency key
+prisma:error 
+Invalid `tx.payment.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/finance/payment.service.ts:211:40
+
+  208 }
+  209 
+  210 // 5. Create Payment record
+→ 211 const payment = await tx.payment.create(
+Unique constraint failed on the constraint: `payment_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles concurrent purchase receipt posts with the same idempotency key
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles concurrent purchase receipt posts with the same idempotency key
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles concurrent purchase receipt posts with the same idempotency key
+prisma:error 
+Invalid `tx.purchaseReceipt.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/inventory/inventory.service.ts:103:48
+
+  100 }
+  101 
+  102 // Create purchase receipt header
+→ 103 const receipt = await tx.purchaseReceipt.create(
+Unique constraint failed on the constraint: `purchase_receipt_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles concurrent purchase receipt posts with the same idempotency key
+prisma:error 
+Invalid `tx.purchaseReceipt.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/inventory/inventory.service.ts:103:48
+
+  100 }
+  101 
+  102 // Create purchase receipt header
+→ 103 const receipt = await tx.purchaseReceipt.create(
+Unique constraint failed on the constraint: `purchase_receipt_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles concurrent production run creations with the same idempotency key
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles concurrent production run creations with the same idempotency key
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles concurrent production run creations with the same idempotency key
+prisma:error 
+Invalid `tx.productionRun.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/production/production.service.ts:119:42
+
+  116   }
+  117 }
+  118 
+→ 119 const run = await tx.productionRun.create(
+Unique constraint failed on the constraint: `production_run_idempotencyKey_key`
+
+stdout | server/src/concurrency-idempotency.test.ts > F-015 Regression: Concurrent Idempotency Race Condition Resolution > handles concurrent production run creations with the same idempotency key
+prisma:error 
+Invalid `tx.productionRun.create()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/modules/production/production.service.ts:119:42
+
+  116   }
+  117 }
+  118 
+→ 119 const run = await tx.productionRun.create(
+Unique constraint failed on the constraint: `production_run_idempotencyKey_key`
+
+ ✓ server/src/concurrency-idempotency.test.ts (5 tests) 656ms
+stdout | server/src/payment-bounce.test.ts > F-013 Regression: Payment Bounce, Reversals and Supplier Debit Notes > atomically bounces a fully paid invoice, restoring outstanding balance and POSTED status
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/payment-bounce.test.ts > F-013 Regression: Payment Bounce, Reversals and Supplier Debit Notes > atomically bounces a fully paid invoice, restoring outstanding balance and POSTED status
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/payment-bounce.test.ts > F-013 Regression: Payment Bounce, Reversals and Supplier Debit Notes > correctly reverses multi-invoice partial FIFO allocations and restores respective invoice balances
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/payment-bounce.test.ts > F-013 Regression: Payment Bounce, Reversals and Supplier Debit Notes > correctly reverses multi-invoice partial FIFO allocations and restores respective invoice balances
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/payment-bounce.test.ts > F-013 Regression: Payment Bounce, Reversals and Supplier Debit Notes > handles unallocated overpayment bounce and restores ledger correctly
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/payment-bounce.test.ts > F-013 Regression: Payment Bounce, Reversals and Supplier Debit Notes > handles unallocated overpayment bounce and restores ledger correctly
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/payment-bounce.test.ts > F-013 Regression: Payment Bounce, Reversals and Supplier Debit Notes > enforces idempotency and prevents duplicate bounces
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/payment-bounce.test.ts > F-013 Regression: Payment Bounce, Reversals and Supplier Debit Notes > enforces idempotency and prevents duplicate bounces
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/payment-bounce.test.ts > F-013 Regression: Payment Bounce, Reversals and Supplier Debit Notes > creates and retrieves dedicated supplier debit notes with line items
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/payment-bounce.test.ts > F-013 Regression: Payment Bounce, Reversals and Supplier Debit Notes > creates and retrieves dedicated supplier debit notes with line items
+M2 benchmark master data seed successfully completed.
+
+(node:281420) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/payment-bounce.test.ts (5 tests) 559ms
+stdout | server/src/dispatch-concurrency.test.ts > F-008: Concurrency race condition in dispatch sequence generation
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/dispatch-concurrency.test.ts > F-008: Concurrency race condition in dispatch sequence generation
+M2 benchmark master data seed successfully completed.
+
+(node:281434) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/dispatch-concurrency.test.ts (1 test) 571ms
+   ✓ F-008: Concurrency race condition in dispatch sequence generation > handles 10 concurrent dispatches without unique constraint collisions  353ms
+stdout | server/src/sales-concurrency.test.ts > F-007: Concurrency race condition in sales order approval (ATP stock overselling)
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/sales-concurrency.test.ts > F-007: Concurrency race condition in sales order approval (ATP stock overselling)
+M2 benchmark master data seed successfully completed.
+
+(node:281462) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/sales-concurrency.test.ts (1 test) 513ms
+stdout | server/src/tax-rate-effective-date.test.ts > F-014: Dynamic Statutory TaxRate Master Resolution and Effective Date Scheduling
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/tax-rate-effective-date.test.ts > F-014: Dynamic Statutory TaxRate Master Resolution and Effective Date Scheduling
+M2 benchmark master data seed successfully completed.
+
+(node:281483) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/tax-rate-effective-date.test.ts (4 tests) 371ms
+stdout | server/src/inventory-concurrency.test.ts > MLD-011: Inventory atomic concurrency and non-negative constraints
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/inventory-concurrency.test.ts > MLD-011: Inventory atomic concurrency and non-negative constraints
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/inventory-concurrency.test.ts > MLD-011: Inventory atomic concurrency and non-negative constraints > enforces database CHECK constraint chk_current_stock_non_negative on direct reduction past 0
+prisma:error 
+Invalid `prisma.inventoryItem.update()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/inventory-concurrency.test.ts:108:28
+
+  105 it("enforces database CHECK constraint chk_current_stock_non_negative on direct reduction past 0", async () => {
+  106   // Attempting to decrement currentStock below zero must violate the PostgreSQL check constraint
+  107   await expect(
+→ 108     prisma.inventoryItem.update(
+Database error. Code: `23514`. Message: `new row for relation "inventory_item" violates check constraint "chk_current_stock_non_negative"`
+
+ ✓ server/src/inventory-concurrency.test.ts (3 tests) 362ms
+stdout | server/src/invoice-rounding.test.ts > F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGST Act)
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/invoice-rounding.test.ts > F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGST Act)
+M2 benchmark master data seed successfully completed.
+
+(node:281527) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/invoice-rounding.test.ts (4 tests) 342ms
+(node:281540) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/packaging-capacity.test.ts (3 tests) 322ms
+stdout | server/src/dashboard-revenue.test.ts > F-036 Regression Test: Dashboard Sales Revenue Line-less Invoice Reconciliation
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/dashboard-revenue.test.ts > F-036 Regression Test: Dashboard Sales Revenue Line-less Invoice Reconciliation
+M2 benchmark master data seed successfully completed.
+
+(node:281556) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/dashboard-revenue.test.ts (2 tests) 333ms
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: UPDATE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: DELETE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice financial and identification fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoices cannot be deleted (status: POSTED)`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice status cannot be downgraded from POSTED to DRAFT`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice snapshot fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+ ✓ server/src/db-immutability.test.ts (8 tests) 272ms
+stdout | server/src/sequence-concurrency.test.ts > MLD-012: Atomic document sequence generation and concurrency
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/sequence-concurrency.test.ts > MLD-012: Atomic document sequence generation and concurrency
+M2 benchmark master data seed successfully completed.
+
+ ✓ server/src/sequence-concurrency.test.ts (2 tests) 248ms
+stdout | server/src/masters.test.ts > M2: Masters, BOM, and opening stock verification
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/masters.test.ts > M2: Masters, BOM, and opening stock verification
+M2 benchmark master data seed successfully completed.
+
+ ✓ server/src/masters.test.ts (7 tests) 232ms
+stdout | server/src/app.test.ts > Express application HTTP integration > Health check endpoints > returns 200 OK from /api/v1/health
+{"level":"INFO","timestamp":"2026-11-23T21:44:36.312Z","requestId":"45ed5521-6292-4a30-a61b-42ce5c9838f7","method":"GET","path":"/api/v1/health","statusCode":200,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/app.test.ts > Express application HTTP integration > Health check endpoints > returns 200 OK from legacy /api/health alias
+{"level":"INFO","timestamp":"2026-11-23T21:44:36.322Z","requestId":"68ee332b-2647-4ada-9faa-fcee310a67c2","method":"GET","path":"/api/health","statusCode":200,"durationMs":1,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/app.test.ts > Express application HTTP integration > Security headers > sets helmet security headers on responses
+{"level":"INFO","timestamp":"2026-11-23T21:44:36.325Z","requestId":"30c8caed-1af8-4fe3-b626-6fcda4860163","method":"GET","path":"/api/v1/health","statusCode":200,"durationMs":1,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/app.test.ts > Express application HTTP integration > Security headers > allows request origin and credentials in dev/test environment for LAN/local origins
+{"level":"INFO","timestamp":"2026-11-23T21:44:36.327Z","requestId":"306610ba-381e-4811-969e-655b44c7e932","method":"GET","path":"/api/v1/health","statusCode":200,"durationMs":0,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/app.test.ts > Express application HTTP integration > Security headers > rejects unauthorized external origins without CORS allow headers per OWASP
+{"level":"INFO","timestamp":"2026-11-23T21:44:36.329Z","requestId":"cbd6e2e2-a609-40c4-bfe4-882ff62ca6d7","method":"GET","path":"/api/v1/health","statusCode":200,"durationMs":1,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/app.test.ts > Express application HTTP integration > F-025 Middleware pipeline & error handling > returns JSON 404 envelope on unmapped routes
+{"level":"WARN","timestamp":"2026-11-23T21:44:36.331Z","requestId":"eb8f84ec-b73e-4ea5-bb3f-f2188dd0093f","method":"GET","path":"/api/v1/does-not-exist","statusCode":404,"durationMs":0,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/app.test.ts > Express application HTTP integration > F-025 Middleware pipeline & error handling > assigns X-Request-Id header when none is provided
+{"level":"INFO","timestamp":"2026-11-23T21:44:36.334Z","requestId":"3e0a1a94-3f5b-4faa-868e-1014270a0741","method":"GET","path":"/api/v1/health","statusCode":200,"durationMs":1,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/app.test.ts > Express application HTTP integration > F-025 Middleware pipeline & error handling > preserves client-provided X-Request-Id correlation header
+{"level":"INFO","timestamp":"2026-11-23T21:44:36.335Z","requestId":"client-correlation-abc-123","method":"GET","path":"/api/v1/health","statusCode":200,"durationMs":0,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/app.test.ts > Express application HTTP integration > F-025 Middleware pipeline & error handling > attaches rate limiting headers on /api/v1 requests
+{"level":"INFO","timestamp":"2026-11-23T21:44:36.337Z","requestId":"e1e6dc33-fb46-49b9-a505-71b19bb76d42","method":"GET","path":"/api/v1/health","statusCode":200,"durationMs":0,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | server/src/app.test.ts > Express application HTTP integration > F-025 Middleware pipeline & error handling > returns HTTP 413 Payload Too Large on oversized request bodies
+{"level":"WARN","timestamp":"2026-11-23T21:44:36.346Z","requestId":"960fa872-b9f4-4a66-9d45-08a7e6f07949","method":"POST","path":"/api/v1/sales/orders","statusCode":413,"durationMs":2,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+ ✓ server/src/app.test.ts (10 tests) 54ms
+ ✓ client/src/lib/formatters.test.ts (16 tests) 20ms
+ ✓ shared/src/schemas.test.ts (13 tests) 15ms
+ ✓ client/src/lib/auth-client.test.ts (10 tests) 14ms
+stderr | server/src/middleware/error.middleware.test.ts > F-034 Error Envelope Middleware > sanitizes unhandled 500 errors and never leaks stack or internals (CWE-209)
+Unhandled Server Error: [Error at Object.<anonymous> (/var/www/internal/server.ts:123:45)]
+
+ ✓ server/src/middleware/error.middleware.test.ts (8 tests) 10ms
+ ✓ client/src/offline/db.test.ts (2 tests) 9ms
+ ✓ client/src/lib/role-routing.test.ts (31 tests) 6ms
+ ✓ client/src/lib/utils.test.ts (1 test) 6ms
+ ✓ server/src/config/env.test.ts (9 tests) 5ms
+ ✓ server/src/middleware/auth.middleware.test.ts (4 tests) 5ms
+ ✓ server/src/policies/rbac.test.ts (6 tests) 4ms
+ ✓ server/src/supply-chain.test.ts (4 tests) 4ms
+ ✓ server/src/policies/abac.test.ts (13 tests) 4ms
+ ✓ server/src/lib/origins.test.ts (5 tests) 4ms
+ ✓ client/src/lib/i18n.test.ts (3 tests) 3ms
+
+ Test Files  39 passed (39)
+      Tests  239 passed (239)
+   Start at  03:14:05
+   Duration  35.55s (transform 593ms, setup 0ms, collect 8.81s, tests 18.14s, environment 5ms, prepare 1.68s)
+

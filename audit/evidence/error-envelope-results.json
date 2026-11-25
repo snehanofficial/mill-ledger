@@ -1,0 +1,129 @@
+[
+  {
+    "scenario": "Zod Validation Failure",
+    "expectedStatus": 400,
+    "actualStatus": 400,
+    "responseShape": {
+      "code": "VALIDATION_ERROR",
+      "message": "Required, Required",
+      "error": "Required, Required",
+      "fieldErrors": {
+        "customerId": [
+          "Required"
+        ],
+        "lines": [
+          "Required"
+        ]
+      },
+      "details": {
+        "formErrors": [],
+        "fieldErrors": {
+          "customerId": [
+            "Required"
+          ],
+          "lines": [
+            "Required"
+          ]
+        }
+      },
+      "requestId": "13351270-af44-4143-9f30-058fe6525d4f"
+    },
+    "hasCode": true,
+    "hasMessage": true,
+    "hasFieldErrors": true,
+    "hasRequestId": true,
+    "leaksPrismaOrStack": false,
+    "status": "VERIFIED-PASS",
+    "notes": "Schema failure returns { error: 'Invalid order data: ...' } string rather than standard envelope with fieldErrors and requestId"
+  },
+  {
+    "scenario": "Operational Domain Error (AppError)",
+    "expectedStatus": 404,
+    "actualStatus": 404,
+    "responseShape": {
+      "code": "NOT_FOUND",
+      "message": "Order non-existent-order-id-12345 not found",
+      "error": "Order non-existent-order-id-12345 not found",
+      "requestId": "6771a448-a9e3-4d36-82c6-e1c08085640b"
+    },
+    "hasCode": true,
+    "hasMessage": true,
+    "hasFieldErrors": false,
+    "hasRequestId": true,
+    "leaksPrismaOrStack": false,
+    "status": "VERIFIED-PASS",
+    "notes": "AppError returns { error: 'Order ... not found' } without error code or requestId"
+  },
+  {
+    "scenario": "Foreign Key Constraint (P2003)",
+    "expectedStatus": 400,
+    "actualStatus": 400,
+    "responseShape": {
+      "code": "FOREIGN_KEY_VIOLATION",
+      "message": "Referenced record does not exist",
+      "error": "Referenced record does not exist",
+      "requestId": "34d2e38d-ccf9-4d8d-a94e-7ae36575e2ac"
+    },
+    "hasCode": true,
+    "hasMessage": true,
+    "hasFieldErrors": false,
+    "hasRequestId": true,
+    "leaksPrismaOrStack": false,
+    "status": "VERIFIED-PASS",
+    "notes": "Unhandled P2003 crashes with HTTP 500 and leaks internal Prisma foreign key schema details"
+  },
+  {
+    "scenario": "Unique Constraint Collision (P2002)",
+    "expectedStatus": 409,
+    "actualStatus": 409,
+    "responseShape": {
+      "code": "UNIQUE_CONSTRAINT_VIOLATION",
+      "message": "Conflict: unique constraint violation",
+      "error": "Conflict: unique constraint violation",
+      "requestId": "972e4401-958e-48dd-b2fb-80b426b01446"
+    },
+    "hasCode": true,
+    "hasMessage": true,
+    "hasFieldErrors": false,
+    "hasRequestId": true,
+    "leaksPrismaOrStack": false,
+    "status": "VERIFIED-PASS",
+    "notes": "Returns { error: 'Conflict: unique constraint violation' } without specific collision field or standard envelope"
+  },
+  {
+    "scenario": "HTTP 404 Not Found Route",
+    "expectedStatus": 404,
+    "actualStatus": 404,
+    "responseShape": {
+      "code": "NOT_FOUND",
+      "message": "Route not found",
+      "error": "Not Found",
+      "requestId": "6deb0c12-4aa5-445a-8400-eb5a325ce4fb"
+    },
+    "hasCode": true,
+    "hasMessage": true,
+    "hasFieldErrors": false,
+    "hasRequestId": true,
+    "leaksPrismaOrStack": false,
+    "status": "VERIFIED-PASS",
+    "notes": "Express default HTML 404 returned instead of standard JSON envelope"
+  },
+  {
+    "scenario": "HTTP 413 Payload Too Large",
+    "expectedStatus": 413,
+    "actualStatus": 413,
+    "responseShape": {
+      "code": "PAYLOAD_TOO_LARGE",
+      "message": "Request entity too large",
+      "error": "Payload Too Large",
+      "requestId": "4cd99bca-2bea-4384-bfb3-d28325b27b47"
+    },
+    "hasCode": true,
+    "hasMessage": true,
+    "hasFieldErrors": false,
+    "hasRequestId": true,
+    "leaksPrismaOrStack": false,
+    "status": "VERIFIED-PASS",
+    "notes": "body-parser PayloadTooLargeError crashes errorHandler with HTTP 500 instead of 413"
+  }
+]

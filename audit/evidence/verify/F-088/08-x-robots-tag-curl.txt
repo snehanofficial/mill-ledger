@@ -1,0 +1,16 @@
+{"level":"INFO","timestamp":"2026-11-23T21:43:54.416Z","requestId":"219035e0-cce4-49d5-8513-a2f5f9d564a7","method":"GET","path":"/api/v1/health","statusCode":200,"durationMs":5,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+=== /api/v1/health ===
+Status: 200
+X-Robots-Tag: noindex, nofollow
+{"level":"INFO","timestamp":"2026-11-23T21:43:54.424Z","requestId":"c5288b95-f798-4f48-a1e1-7f3cb4756ba9","method":"GET","path":"/api/health","statusCode":200,"durationMs":0,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+=== /api/health ===
+Status: 200
+X-Robots-Tag: noindex, nofollow
+{"level":"WARN","timestamp":"2026-11-23T21:43:54.433Z","requestId":"4d9df1d6-a62d-44e7-916b-a8976823fac3","method":"GET","path":"/api/v1/sales/orders","statusCode":401,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+=== /api/v1/sales/orders ===
+Status: 401
+X-Robots-Tag: noindex, nofollow
+{"level":"WARN","timestamp":"2026-11-23T21:43:54.436Z","requestId":"e085229f-3ba6-4181-8be9-2f2da96a019c","method":"GET","path":"/api/v1/unknown","statusCode":404,"durationMs":1,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+=== /api/v1/unknown ===
+Status: 404
+X-Robots-Tag: noindex, nofollow

@@ -1,0 +1,892 @@
+diff --git a/client/src/components/shell/authenticated-shell.tsx b/client/src/components/shell/authenticated-shell.tsx
+index fa4fb6b..f6b4e65 100644
+--- a/client/src/components/shell/authenticated-shell.tsx
++++ b/client/src/components/shell/authenticated-shell.tsx
+@@ -732,7 +732,10 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
+       >
+         <DialogTitle className="sr-only">Search pages</DialogTitle>
+         <Command>
+-          <CommandInput placeholder="Search pages and actions..." />
++          <CommandInput
++            placeholder="Search pages and actions..."
++            aria-label="Search pages and actions"
++          />
+           <CommandList>
+             <CommandEmpty>No results found.</CommandEmpty>
+             {sections.map((section) => {
+diff --git a/client/src/pages/dispatch-page.tsx b/client/src/pages/dispatch-page.tsx
+index 7a58fa8..65a2a9a 100644
+--- a/client/src/pages/dispatch-page.tsx
++++ b/client/src/pages/dispatch-page.tsx
+@@ -576,7 +576,10 @@ export function DispatchPage() {
+               )}
+ 
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-foreground">
++                <label
++                  htmlFor="dispatch-order-select"
++                  className="text-xs font-semibold text-foreground"
++                >
+                   Select approved sales order *
+                 </label>
+                 {eligibleOrders.length === 0 ? (
+@@ -586,6 +589,7 @@ export function DispatchPage() {
+                   </div>
+                 ) : (
+                   <select
++                    id="dispatch-order-select"
+                     value={selectedOrderId}
+                     onChange={(e) => setSelectedOrderId(e.target.value)}
+                     className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
+@@ -612,10 +616,14 @@ export function DispatchPage() {
+ 
+               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-foreground">
++                  <label
++                    htmlFor="dispatch-vehicle-input"
++                    className="text-xs font-semibold text-foreground"
++                  >
+                     Vehicle number
+                   </label>
+                   <Input
++                    id="dispatch-vehicle-input"
+                     placeholder="e.g. TN 38 AB 1234"
+                     value={vehicleNumber}
+                     onChange={(e) => setVehicleNumber(e.target.value)}
+@@ -624,10 +632,14 @@ export function DispatchPage() {
+                 </div>
+ 
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-foreground">
++                  <label
++                    htmlFor="dispatch-driver-name-input"
++                    className="text-xs font-semibold text-foreground"
++                  >
+                     Driver name
+                   </label>
+                   <Input
++                    id="dispatch-driver-name-input"
+                     placeholder="e.g. Ravi Kumar"
+                     value={driverName}
+                     onChange={(e) => setDriverName(e.target.value)}
+@@ -637,10 +649,14 @@ export function DispatchPage() {
+               </div>
+ 
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-foreground">
++                <label
++                  htmlFor="dispatch-driver-phone-input"
++                  className="text-xs font-semibold text-foreground"
++                >
+                   Driver phone number
+                 </label>
+                 <Input
++                  id="dispatch-driver-phone-input"
+                   placeholder="e.g. 9876543210"
+                   value={driverPhone}
+                   onChange={(e) => setDriverPhone(e.target.value)}
+@@ -649,10 +665,14 @@ export function DispatchPage() {
+               </div>
+ 
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-foreground">
++                <label
++                  htmlFor="dispatch-notes-input"
++                  className="text-xs font-semibold text-foreground"
++                >
+                   Dispatch notes
+                 </label>
+                 <Input
++                  id="dispatch-notes-input"
+                   placeholder="e.g. Dispatched via standard carrier"
+                   value={notes}
+                   onChange={(e) => setNotes(e.target.value)}
+diff --git a/client/src/pages/invoices-page.tsx b/client/src/pages/invoices-page.tsx
+index dfac825..ff33bdf 100644
+--- a/client/src/pages/invoices-page.tsx
++++ b/client/src/pages/invoices-page.tsx
+@@ -788,10 +788,14 @@ export function InvoicesPage() {
+ 
+             <div className="mt-2 flex flex-col gap-4">
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
++                <label
++                  htmlFor="credit-note-reason"
++                  className="text-xs font-semibold text-muted-foreground"
++                >
+                   Reason for credit note
+                 </label>
+                 <input
++                  id="credit-note-reason"
+                   type="text"
+                   value={creditNoteReason}
+                   onChange={(e) => setCreditNoteReason(e.target.value)}
+@@ -800,10 +804,14 @@ export function InvoicesPage() {
+               </div>
+ 
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
++                <label
++                  htmlFor="credit-note-amount"
++                  className="text-xs font-semibold text-muted-foreground"
++                >
+                   Adjustment amount (₹)
+                 </label>
+                 <input
++                  id="credit-note-amount"
+                   type="number"
+                   value={creditNoteAmount}
+                   onChange={(e) => setCreditNoteAmount(Number(e.target.value))}
+@@ -878,7 +886,10 @@ export function InvoicesPage() {
+ 
+           <div className="mt-2 flex flex-col gap-4">
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
++                <label
++                  htmlFor="invoice-order-select"
++                  className="text-xs font-semibold text-muted-foreground"
++                >
+                   Approved Sales Order *
+                 </label>
+                 {isLoadingApprovedOrders ? (
+@@ -891,6 +902,7 @@ export function InvoicesPage() {
+                   </div>
+                 ) : (
+                   <select
++                    id="invoice-order-select"
+                     value={selectedOrderIdForInvoice}
+                     onChange={(e) =>
+                       setSelectedOrderIdForInvoice(e.target.value)
+@@ -909,10 +921,14 @@ export function InvoicesPage() {
+               </div>
+ 
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
++                <label
++                  htmlFor="invoice-notes-input"
++                  className="text-xs font-semibold text-muted-foreground"
++                >
+                   Invoice Notes (Optional)
+                 </label>
+                 <input
++                  id="invoice-notes-input"
+                   type="text"
+                   placeholder="e.g. Standard 30 days payment term"
+                   value={invoiceNotes}
+diff --git a/client/src/pages/orders-page.tsx b/client/src/pages/orders-page.tsx
+index 00b1c70..a9e5cdf 100644
+--- a/client/src/pages/orders-page.tsx
++++ b/client/src/pages/orders-page.tsx
+@@ -1162,10 +1162,14 @@ export function OrdersPage() {
+ 
+               {/* Customer selection */}
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
++                <label
++                  htmlFor="order-customer-select"
++                  className="text-xs font-semibold text-muted-foreground"
++                >
+                   Customer
+                 </label>
+                 <select
++                  id="order-customer-select"
+                   value={selectedCustomerId}
+                   onChange={(e) => setSelectedCustomerId(e.target.value)}
+                   className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+@@ -1189,10 +1193,14 @@ export function OrdersPage() {
+               {/* Product and Quantity */}
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="order-product-select"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Product item
+                   </label>
+                   <select
++                    id="order-product-select"
+                     value={selectedProductId}
+                     onChange={(e) => setSelectedProductId(e.target.value)}
+                     className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+@@ -1209,10 +1217,14 @@ export function OrdersPage() {
+                 </div>
+ 
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="order-quantity-input"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Order quantity (pkts)
+                   </label>
+                   <input
++                    id="order-quantity-input"
+                     type="number"
+                     value={orderQuantity}
+                     onChange={(e) => setOrderQuantity(Number(e.target.value))}
+@@ -1236,10 +1248,14 @@ export function OrdersPage() {
+               )}
+ 
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
++                <label
++                  htmlFor="order-notes-input"
++                  className="text-xs font-semibold text-muted-foreground"
++                >
+                   Order notes
+                 </label>
+                 <input
++                  id="order-notes-input"
+                   type="text"
+                   value={orderNotes}
+                   onChange={(e) => setOrderNotes(e.target.value)}
+diff --git a/client/src/pages/payments-page.tsx b/client/src/pages/payments-page.tsx
+index a3fcc68..58c302c 100644
+--- a/client/src/pages/payments-page.tsx
++++ b/client/src/pages/payments-page.tsx
+@@ -1103,10 +1103,14 @@ export function PaymentsPage() {
+ 
+               {/* Customer selection */}
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-foreground">
++                <label
++                  htmlFor="payment-customer-select"
++                  className="text-xs font-semibold text-foreground"
++                >
+                   Select customer *
+                 </label>
+                 <select
++                  id="payment-customer-select"
+                   value={selectedCustomerId}
+                   onChange={(e) => {
+                     setSelectedCustomerId(e.target.value);
+@@ -1128,10 +1132,14 @@ export function PaymentsPage() {
+               {/* Amount and Payment Mode */}
+               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-foreground">
++                  <label
++                    htmlFor="payment-amount-input"
++                    className="text-xs font-semibold text-foreground"
++                  >
+                     Receipt amount (₹) *
+                   </label>
+                   <Input
++                    id="payment-amount-input"
+                     type="number"
+                     step="0.01"
+                     min="0.01"
+@@ -1144,10 +1152,14 @@ export function PaymentsPage() {
+                 </div>
+ 
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-foreground">
++                  <label
++                    htmlFor="payment-mode-select"
++                    className="text-xs font-semibold text-foreground"
++                  >
+                     Payment mode *
+                   </label>
+                   <select
++                    id="payment-mode-select"
+                     value={paymentMode}
+                     onChange={(e) => setPaymentMode(e.target.value)}
+                     className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
+@@ -1166,10 +1178,14 @@ export function PaymentsPage() {
+               {/* Reference and Notes */}
+               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-foreground">
++                  <label
++                    htmlFor="payment-reference-input"
++                    className="text-xs font-semibold text-foreground"
++                  >
+                     Reference number
+                   </label>
+                   <Input
++                    id="payment-reference-input"
+                     placeholder="e.g. UTR or Cheque no"
+                     value={referenceNumber}
+                     onChange={(e) => setReferenceNumber(e.target.value)}
+@@ -1178,10 +1194,14 @@ export function PaymentsPage() {
+                 </div>
+ 
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-foreground">
++                  <label
++                    htmlFor="payment-notes-input"
++                    className="text-xs font-semibold text-foreground"
++                  >
+                     Notes
+                   </label>
+                   <Input
++                    id="payment-notes-input"
+                     placeholder="e.g. On account settlement"
+                     value={notes}
+                     onChange={(e) => setNotes(e.target.value)}
+@@ -1198,8 +1218,12 @@ export function PaymentsPage() {
+                       <span className="text-xs font-semibold text-foreground">
+                         Invoice allocation strategy
+                       </span>
+-                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
++                      <label
++                        htmlFor="payment-custom-allocation-toggle"
++                        className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer"
++                      >
+                         <input
++                          id="payment-custom-allocation-toggle"
+                           type="checkbox"
+                           checked={useManualAllocation}
+                           onChange={(e) =>
+@@ -1243,6 +1267,8 @@ export function PaymentsPage() {
+                               </span>
+                             </div>
+                             <Input
++                              id={`allocation-${inv.id}`}
++                              aria-label={`Allocation amount for invoice ${inv.invoiceNumber}`}
+                               type="number"
+                               step="0.01"
+                               placeholder="₹"
+diff --git a/client/src/pages/production-page.tsx b/client/src/pages/production-page.tsx
+index 5a2334b..ed35578 100644
+--- a/client/src/pages/production-page.tsx
++++ b/client/src/pages/production-page.tsx
+@@ -571,11 +571,15 @@ export function ProductionPage() {
+             {/* Recipe BOM selection (MLD-010) */}
+               <div className="flex flex-col gap-1.5">
+                 <DomainTooltip term="BOM">
+-                  <label className="text-xs font-semibold text-muted-foreground cursor-help">
++                  <label
++                    htmlFor="production-recipe-select"
++                    className="text-xs font-semibold text-muted-foreground cursor-help"
++                  >
+                     Bill of Materials (BOM) Recipe
+                   </label>
+                 </DomainTooltip>
+                 <select
++                  id="production-recipe-select"
+                   value={selectedRecipeId}
+                   onChange={(e) => setSelectedRecipeId(e.target.value)}
+                   className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+@@ -594,10 +598,14 @@ export function ProductionPage() {
+               {/* Output inputs */}
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="production-good-qty-input"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Good packets produced
+                   </label>
+                   <input
++                    id="production-good-qty-input"
+                     type="number"
+                     value={actualGoodQty}
+                     onChange={(e) => setActualGoodQty(Number(e.target.value))}
+@@ -625,10 +633,14 @@ export function ProductionPage() {
+                 </div>
+ 
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="production-damaged-pouches-input"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Damaged pouches
+                   </label>
+                   <input
++                    id="production-damaged-pouches-input"
+                     type="number"
+                     value={damagedPouches}
+                     onChange={(e) => setDamagedPouches(Number(e.target.value))}
+@@ -643,10 +655,14 @@ export function ProductionPage() {
+               {/* Material consumption inputs */}
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="production-oil-consumed-input"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Cooking oil consumed (L)
+                   </label>
+                   <input
++                    id="production-oil-consumed-input"
+                     type="number"
+                     step="0.1"
+                     value={oilConsumed}
+@@ -675,10 +691,14 @@ export function ProductionPage() {
+                 </div>
+ 
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="production-cartons-consumed-input"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Cartons used (pieces)
+                   </label>
+                   <input
++                    id="production-cartons-consumed-input"
+                     type="number"
+                     value={cartonsConsumed}
+                     onChange={(e) => setCartonsConsumed(Number(e.target.value))}
+@@ -704,10 +724,14 @@ export function ProductionPage() {
+               {/* Additional Costs */}
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="production-labor-cost-input"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Direct labour cost (₹)
+                   </label>
+                   <input
++                    id="production-labor-cost-input"
+                     type="number"
+                     value={laborCost}
+                     onChange={(e) => setLaborCost(Number(e.target.value))}
+@@ -716,10 +740,14 @@ export function ProductionPage() {
+                 </div>
+ 
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="production-utility-cost-input"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Gas and power cost (₹)
+                   </label>
+                   <input
++                    id="production-utility-cost-input"
+                     type="number"
+                     value={utilityCost}
+                     onChange={(e) => setUtilityCost(Number(e.target.value))}
+@@ -729,10 +757,14 @@ export function ProductionPage() {
+               </div>
+ 
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
++                <label
++                  htmlFor="production-notes-input"
++                  className="text-xs font-semibold text-muted-foreground"
++                >
+                   Notes
+                 </label>
+                 <input
++                  id="production-notes-input"
+                   type="text"
+                   value={notes}
+                   onChange={(e) => setNotes(e.target.value)}
+@@ -824,7 +856,10 @@ export function ProductionPage() {
+             </DialogHeader>
+ 
+             <div className="mt-2 flex flex-col gap-2">
+-              <label className="text-xs font-semibold text-muted-foreground">
++              <label
++                htmlFor="reversal-reason-input"
++                className="text-xs font-semibold text-muted-foreground"
++              >
+                 Reversal reason
+               </label>
+               <input
+diff --git a/client/src/pages/purchases-page.tsx b/client/src/pages/purchases-page.tsx
+index 6591af4..6dd3b02 100644
+--- a/client/src/pages/purchases-page.tsx
++++ b/client/src/pages/purchases-page.tsx
+@@ -380,7 +380,10 @@ export function PurchasesPage() {
+               {/* Supplier Selection */}
+               <div className="flex flex-col gap-1.5">
+                 <div className="flex items-center justify-between">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="purchase-supplier-select"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Supplier / Mandi Vendor
+                   </label>
+                   <Link
+@@ -391,6 +394,7 @@ export function PurchasesPage() {
+                   </Link>
+                 </div>
+                 <select
++                  id="purchase-supplier-select"
+                   value={selectedSupplierId}
+                   onChange={(e) => setSelectedSupplierId(e.target.value)}
+                   className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+@@ -409,10 +413,14 @@ export function PurchasesPage() {
+               {/* Receipt Number & Invoice */}
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="purchase-receipt-number-input"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Receipt #
+                   </label>
+                   <input
++                    id="purchase-receipt-number-input"
+                     type="text"
+                     value={receiptNumber}
+                     onChange={(e) => setReceiptNumber(e.target.value)}
+@@ -420,10 +428,14 @@ export function PurchasesPage() {
+                   />
+                 </div>
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="purchase-supplier-invoice-input"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Supplier Invoice #
+                   </label>
+                   <input
++                    id="purchase-supplier-invoice-input"
+                     type="text"
+                     value={supplierInvoiceNumber}
+                     onChange={(e) => setSupplierInvoiceNumber(e.target.value)}
+@@ -434,10 +446,14 @@ export function PurchasesPage() {
+ 
+               {/* Item selection */}
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
++                <label
++                  htmlFor="purchase-item-select"
++                  className="text-xs font-semibold text-muted-foreground"
++                >
+                   Raw Material Item
+                 </label>
+                 <select
++                  id="purchase-item-select"
+                   value={selectedItemId}
+                   onChange={(e) => setSelectedItemId(e.target.value)}
+                   className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+@@ -456,10 +472,14 @@ export function PurchasesPage() {
+               {/* Quantity and Rate */}
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="purchase-quantity-input"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Quantity received
+                   </label>
+                   <input
++                    id="purchase-quantity-input"
+                     type="number"
+                     step="0.01"
+                     min="0.01"
+@@ -469,10 +489,14 @@ export function PurchasesPage() {
+                   />
+                 </div>
+                 <div className="flex flex-col gap-1.5">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="purchase-unit-price-input"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Unit Purchase Rate (₹)
+                   </label>
+                   <input
++                    id="purchase-unit-price-input"
+                     type="number"
+                     step="0.01"
+                     min="0"
+@@ -495,10 +519,14 @@ export function PurchasesPage() {
+ 
+               {/* Notes */}
+               <div className="flex flex-col gap-1.5">
+-                <label className="text-xs font-semibold text-muted-foreground">
++                <label
++                  htmlFor="purchase-notes-input"
++                  className="text-xs font-semibold text-muted-foreground"
++                >
+                   Notes / Vehicle Details
+                 </label>
+                 <input
++                  id="purchase-notes-input"
+                   type="text"
+                   value={notes}
+                   onChange={(e) => setNotes(e.target.value)}
+diff --git a/client/src/pages/reports-page.tsx b/client/src/pages/reports-page.tsx
+index 12c84cd..4484b29 100644
+--- a/client/src/pages/reports-page.tsx
++++ b/client/src/pages/reports-page.tsx
+@@ -725,6 +725,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+             <div className="flex flex-wrap items-center gap-2">
+               <Input
+                 placeholder="Search actor, entity, details..."
++                aria-label="Search audit events by actor, entity, details"
+                 value={auditSearch}
+                 onChange={(e) => setAuditSearch(e.target.value)}
+                 className="h-8 w-56 text-xs"
+@@ -732,6 +733,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+               <select
+                 value={auditActionFilter}
+                 onChange={(e) => setAuditActionFilter(e.target.value)}
++                aria-label="Filter audit events by action"
+                 className="h-8 rounded-control border border-input bg-background px-2 text-xs text-foreground shadow-xs outline-none"
+               >
+                 <option value="ALL">All Actions</option>
+diff --git a/client/src/pages/settings-page.tsx b/client/src/pages/settings-page.tsx
+index fb403ab..840699e 100644
+--- a/client/src/pages/settings-page.tsx
++++ b/client/src/pages/settings-page.tsx
+@@ -450,10 +450,14 @@ export function SettingsPage() {
+ 
+           <form onSubmit={handleCreateUser} className="mt-2 flex flex-col gap-4">
+             <div className="flex flex-col gap-1.5">
+-              <label className="text-xs font-semibold text-muted-foreground">
++              <label
++                htmlFor="settings-user-name"
++                className="text-xs font-semibold text-muted-foreground"
++              >
+                 Full Name
+               </label>
+               <input
++                id="settings-user-name"
+                 type="text"
+                 required
+                 value={newUserName}
+@@ -464,10 +468,14 @@ export function SettingsPage() {
+             </div>
+ 
+             <div className="flex flex-col gap-1.5">
+-              <label className="text-xs font-semibold text-muted-foreground">
++              <label
++                htmlFor="settings-user-email"
++                className="text-xs font-semibold text-muted-foreground"
++              >
+                 Email Address
+               </label>
+               <input
++                id="settings-user-email"
+                 type="email"
+                 required
+                 value={newUserEmail}
+@@ -478,10 +486,14 @@ export function SettingsPage() {
+             </div>
+ 
+             <div className="flex flex-col gap-1.5">
+-              <label className="text-xs font-semibold text-muted-foreground">
++              <label
++                htmlFor="settings-user-password"
++                className="text-xs font-semibold text-muted-foreground"
++              >
+                 Password
+               </label>
+               <input
++                id="settings-user-password"
+                 type="password"
+                 required
+                 value={newUserPassword}
+@@ -492,10 +504,14 @@ export function SettingsPage() {
+             </div>
+ 
+             <div className="flex flex-col gap-1.5">
+-              <label className="text-xs font-semibold text-muted-foreground">
++              <label
++                htmlFor="settings-user-role"
++                className="text-xs font-semibold text-muted-foreground"
++              >
+                 Role Assignment
+               </label>
+               <select
++                id="settings-user-role"
+                 value={newUserRole}
+                 onChange={(e) => setNewUserRole(e.target.value as Role)}
+                 className="rounded-md border bg-background px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+diff --git a/client/src/pages/suppliers-page.tsx b/client/src/pages/suppliers-page.tsx
+index 5ca6447..98f5c8e 100644
+--- a/client/src/pages/suppliers-page.tsx
++++ b/client/src/pages/suppliers-page.tsx
+@@ -274,6 +274,7 @@ export function SuppliersPage() {
+           <input
+             type="text"
+             placeholder="Search suppliers by name, code, state, GSTIN..."
++            aria-label="Search suppliers by name, code, state, GSTIN"
+             value={searchQuery}
+             onChange={(e) => setSearchQuery(e.target.value)}
+             className="w-full rounded-md border bg-background pl-9 pr-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+@@ -442,10 +443,14 @@ export function SuppliersPage() {
+             className="mt-2 flex flex-col gap-3"
+           >
+               <div className="flex flex-col gap-1">
+-                <label className="text-xs font-semibold text-muted-foreground">
++                <label
++                  htmlFor="supplier-new-code"
++                  className="text-xs font-semibold text-muted-foreground"
++                >
+                   Vendor Code *
+                 </label>
+                 <input
++                  id="supplier-new-code"
+                   type="text"
+                   required
+                   placeholder="e.g. SUP-MANDI-02"
+@@ -456,10 +461,14 @@ export function SuppliersPage() {
+               </div>
+ 
+               <div className="flex flex-col gap-1">
+-                <label className="text-xs font-semibold text-muted-foreground">
++                <label
++                  htmlFor="supplier-new-name"
++                  className="text-xs font-semibold text-muted-foreground"
++                >
+                   Supplier / Vendor Name *
+                 </label>
+                 <input
++                  id="supplier-new-name"
+                   type="text"
+                   required
+                   placeholder="e.g. Thanjavur Agro Mandi"
+@@ -471,10 +480,14 @@ export function SuppliersPage() {
+ 
+               <div className="grid grid-cols-2 gap-3">
+                 <div className="flex flex-col gap-1">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="supplier-new-state"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     State *
+                   </label>
+                   <input
++                    id="supplier-new-state"
+                     type="text"
+                     required
+                     value={state}
+@@ -483,10 +496,14 @@ export function SuppliersPage() {
+                   />
+                 </div>
+                 <div className="flex flex-col gap-1">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="supplier-new-phone"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Phone (Optional)
+                   </label>
+                   <input
++                    id="supplier-new-phone"
+                     type="text"
+                     placeholder="9876543210"
+                     value={phone}
+@@ -498,10 +515,14 @@ export function SuppliersPage() {
+ 
+               <div className="grid grid-cols-2 gap-3">
+                 <div className="flex flex-col gap-1">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="supplier-new-email"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Email (Optional)
+                   </label>
+                   <input
++                    id="supplier-new-email"
+                     type="email"
+                     placeholder="mandi@agro.in"
+                     value={email}
+@@ -510,10 +531,14 @@ export function SuppliersPage() {
+                   />
+                 </div>
+                 <div className="flex flex-col gap-1">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="supplier-new-gstin"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     GSTIN (Optional)
+                   </label>
+                   <input
++                    id="supplier-new-gstin"
+                     type="text"
+                     placeholder="33AAAAA0000A1Z5"
+                     value={gstin}
+@@ -594,10 +619,14 @@ export function SuppliersPage() {
+               className="mt-4 flex flex-col gap-3"
+             >
+               <div className="flex flex-col gap-1">
+-                <label className="text-xs font-semibold text-muted-foreground">
++                <label
++                  htmlFor="supplier-edit-name"
++                  className="text-xs font-semibold text-muted-foreground"
++                >
+                   Supplier Name *
+                 </label>
+                 <input
++                  id="supplier-edit-name"
+                   type="text"
+                   required
+                   value={name}
+@@ -608,10 +637,14 @@ export function SuppliersPage() {
+ 
+               <div className="grid grid-cols-2 gap-3">
+                 <div className="flex flex-col gap-1">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="supplier-edit-state"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     State *
+                   </label>
+                   <input
++                    id="supplier-edit-state"
+                     type="text"
+                     required
+                     value={state}
+@@ -620,10 +653,14 @@ export function SuppliersPage() {
+                   />
+                 </div>
+                 <div className="flex flex-col gap-1">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="supplier-edit-phone"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Phone
+                   </label>
+                   <input
++                    id="supplier-edit-phone"
+                     type="text"
+                     value={phone}
+                     onChange={(e) => setPhone(e.target.value)}
+@@ -634,10 +671,14 @@ export function SuppliersPage() {
+ 
+               <div className="grid grid-cols-2 gap-3">
+                 <div className="flex flex-col gap-1">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="supplier-edit-email"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     Email
+                   </label>
+                   <input
++                    id="supplier-edit-email"
+                     type="email"
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+@@ -645,10 +686,14 @@ export function SuppliersPage() {
+                   />
+                 </div>
+                 <div className="flex flex-col gap-1">
+-                  <label className="text-xs font-semibold text-muted-foreground">
++                  <label
++                    htmlFor="supplier-edit-gstin"
++                    className="text-xs font-semibold text-muted-foreground"
++                  >
+                     GSTIN
+                   </label>
+                   <input
++                    id="supplier-edit-gstin"
+                     type="text"
+                     value={gstin}
+                     onChange={(e) => setGstin(e.target.value)}

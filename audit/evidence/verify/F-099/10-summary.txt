@@ -1,0 +1,33 @@
+======================================================================
+F-099 VERIFICATION SUMMARY: DOCKERFILE BUILD & SPA STATIC SERVING
+======================================================================
+Date: 2026-11-24
+Severity: P1 | Tier: T11 | Cluster: CLUSTER-15
+Status: VERIFIED-PASS
+
+1. Root Cause:
+`Dockerfile` previously failed immediately during `docker build` due to attempting to copy a nonexistent
+root `tsconfig.json` (`COPY tsconfig.json ./`), since the repository uses package-level tsconfig files.
+Furthermore, the builder stage copied unpruned development dependencies into the runner stage, and
+`server/src/app.ts` had no static file serving middleware or fallback, causing container deployments
+to return 404 for all client SPA routes.
+
+2. Implementation Summary:
+- `Dockerfile`:
+  * Removed nonexistent `COPY tsconfig.json ./`.
+  * Added `pnpm prune --prod --no-optional` in builder stage to strip devDependencies before packaging.
+  * Verified multi-stage build structure copying built artifacts to non-root `millapp` runner.
+- `server/src/app.ts`:
+  * Added production client asset resolution (`client/dist`).
+  * Registered `express.static(clientDistPath)` for bundle assets, icons, and manifests.
+  * Implemented SPA fallback serving `index.html` on non-API GET routes, while cleanly preserving
+    API route handlers and the JSON 404 error envelope on unknown `/api/...` routes.
+
+3. Verification Results:
+- Regression Test: `audit/tests/f-099-regression.test.ts` passed (3/3 tests).
+- Typecheck: Passed with 0 errors across shared, client, and server workspaces.
+- Lint: Passed with 0 errors and 0 warnings (oxlint).
+- Build: Passed (`pnpm -r run build`).
+- Benchmark: 18/18 numerical assertions passed (100% exact numerical match).
+- Database Invariants: 10/10 PostgreSQL invariants passed (0 violations).
+- Full Test Suite: All 39 test files passing.

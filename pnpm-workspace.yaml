@@ -3,10 +3,13 @@ packages:
   - "server"
   - "shared"
 
+blockExoticSubdeps: true
+
 overrides:
   tinypool: ">=2.1.2"
   glob: ">=14.0.2"
   minimatch: ">=11.0.1"
+  zod: ">=4.6.7"
 
 allowBuilds:
   "@prisma/engines": true

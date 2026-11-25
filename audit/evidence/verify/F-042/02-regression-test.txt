@@ -1,0 +1,18 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | audit/tests/f-042-regression.test.ts > F-042 Regression Test: Dedicated Product Tile Ordering Interface & Stepper Touch Targets > POST /api/v1/sales/orders submits sales order successfully from salesman session
+{"level":"INFO","timestamp":"2026-11-23T22:43:58.580Z","requestId":"c4f0f379-1e06-41bc-bfaf-08bbd434f61e","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":192,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+(node:318088) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+stdout | audit/tests/f-042-regression.test.ts > F-042 Regression Test: Dedicated Product Tile Ordering Interface & Stepper Touch Targets > POST /api/v1/sales/orders submits sales order successfully from salesman session
+{"level":"INFO","timestamp":"2026-11-23T22:43:58.652Z","requestId":"afb7555a-d902-4f44-9b94-07be9546d5b8","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":62,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+ ✓ audit/tests/f-042-regression.test.ts (3 tests) 298ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  04:13:57
+   Duration  1.36s (transform 296ms, setup 0ms, collect 696ms, tests 298ms, environment 0ms, prepare 60ms)
+

@@ -1,0 +1,57 @@
+=== STEP 6: SIBLING SWEEP AUDIT FOR F-011 ===
+Timestamp: 2026-11-22T21:59:49+05:30
+--- 1. Searching for financial year / FY references across codebase ---
+server/src/db-immutability.test.ts:62:        financialYear: "2026-27",
+server/src/db-immutability.test.ts:91:        financialYear: "2026-27",
+server/src/db-immutability.test.ts:120:        financialYear: "2026-27",
+server/src/db-immutability.test.ts:150:        financialYear: "2026-27",
+server/src/db-immutability.test.ts:181:        financialYear: "2026-27",
+server/src/db-immutability.test.ts:230:        financialYear: "2026-27",
+server/src/financial-year-tz.test.ts:8:    const fy = financeService.getFinancialYear(april1stEarlyMorning);
+server/src/financial-year-tz.test.ts:15:    const fy = financeService.getFinancialYear(march31stLateEvening);
+server/src/financial-year-tz.test.ts:22:    expect(financeService.getFinancialYear(midnightNewFY)).toBe("2026-27");
+server/src/financial-year-tz.test.ts:26:    expect(financeService.getFinancialYear(secondBeforeMidnight)).toBe("2025-26");
+server/src/financial-year-tz.test.ts:31:    expect(financeService.getFinancialYear(new Date("2026-05-15T10:00:00+05:30"))).toBe("2026-27");
+server/src/financial-year-tz.test.ts:32:    expect(financeService.getFinancialYear(new Date("2026-12-31T10:00:00+05:30"))).toBe("2026-27");
+server/src/financial-year-tz.test.ts:33:    expect(financeService.getFinancialYear(new Date("2027-01-15T10:00:00+05:30"))).toBe("2026-27");
+server/src/financial-year-tz.test.ts:34:    expect(financeService.getFinancialYear(new Date("2027-03-31T20:00:00+05:30"))).toBe("2026-27");
+server/src/modules/finance/finance.service.ts:24:  getFinancialYear(date: Date = new Date()): string {
+server/src/modules/finance/finance.service.ts:88:      const fy = this.getFinancialYear();
+server/src/modules/finance/finance.service.ts:171:          financialYear: fy,
+server/src/modules/finance/sequence.service.ts:13:    financialYear: string,
+server/src/modules/finance/sequence.service.ts:20:        AND "financial_year" = ${financialYear}
+server/src/modules/finance/sequence.service.ts:31:          AND "financial_year" = ${financialYear}
+server/src/modules/finance/sequence.service.ts:40:        where: { organizationId, financialYear },
+server/src/modules/finance/sequence.service.ts:49:      VALUES (gen_random_uuid()::text, ${organizationId}, ${type}, ${financialYear}, ${initialVal}, NOW())
+server/src/modules/finance/sequence.service.ts:66:    financialYear: string,
+server/src/modules/finance/sequence.service.ts:72:      financialYear,
+server/src/modules/finance/sequence.service.ts:74:    return `INV-${financialYear}-${seq.toString().padStart(4, "0")}`;
+server/src/modules/reporting/reporting.service.ts:98:          financialYear: inv.financialYear,
+server/src/financial-year-tz.test.ts:8:    const fy = financeService.getFinancialYear(april1stEarlyMorning);
+server/src/financial-year-tz.test.ts:15:    const fy = financeService.getFinancialYear(march31stLateEvening);
+server/src/financial-year-tz.test.ts:22:    expect(financeService.getFinancialYear(midnightNewFY)).toBe("2026-27");
+server/src/financial-year-tz.test.ts:26:    expect(financeService.getFinancialYear(secondBeforeMidnight)).toBe("2025-26");
+server/src/financial-year-tz.test.ts:31:    expect(financeService.getFinancialYear(new Date("2026-05-15T10:00:00+05:30"))).toBe("2026-27");
+server/src/financial-year-tz.test.ts:32:    expect(financeService.getFinancialYear(new Date("2026-12-31T10:00:00+05:30"))).toBe("2026-27");
+server/src/financial-year-tz.test.ts:33:    expect(financeService.getFinancialYear(new Date("2027-01-15T10:00:00+05:30"))).toBe("2026-27");
+server/src/financial-year-tz.test.ts:34:    expect(financeService.getFinancialYear(new Date("2027-03-31T20:00:00+05:30"))).toBe("2026-27");
+server/src/modules/finance/finance.service.ts:24:  getFinancialYear(date: Date = new Date()): string {
+server/src/modules/finance/finance.service.ts:88:      const fy = this.getFinancialYear();
+--- 2. Searching for Date getters (getFullYear, getMonth, getDate) across server modules ---
+server/src/modules/finance/finance.service.ts:252:      const creditNoteNumber = `CN-${new Date().getFullYear()}-${(count + 1).toString().padStart(4, "0")}`;
+server/src/modules/finance/payment.service.ts:62:      const currentYear = new Date().getFullYear();
+server/src/modules/production/production.service.ts:396:        `RUN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
+server/src/modules/sales/dispatch.service.ts:86:      const dispatchNumber = `DSP-${new Date().getFullYear()}-${(count + 1).toString().padStart(4, "0")}`;
+server/src/modules/sales/sales.service.ts:171:        `SO-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
+--- 3. Searching for date formatting or timezone handling in shared & server ---
+server/src/financial-year-tz.test.ts:4:describe("F-011: Financial Year Timezone Invariance (IST / Asia/Kolkata)", () => {
+server/src/modules/finance/finance.service.ts:26:      timeZone: "Asia/Kolkata",
+server/src/financial-year-tz.test.ts:4:describe("F-011: Financial Year Timezone Invariance (IST / Asia/Kolkata)", () => {
+server/src/modules/finance/finance.service.ts:22:   * Helper to derive Indian financial year (e.g. 2025-26) from a date, strictly in IST (Asia/Kolkata)
+server/src/modules/finance/finance.service.ts:26:      timeZone: "Asia/Kolkata",
+--- 4. Comparison with fixer recorded hits ---
+Fixer queryUsed: grep -rn 'deleteMany' server/src/modules/ | head -n 20
+Fixer query was actually a template copy of deleteMany! Verifier independent search confirms:
+Only server/src/modules/finance/finance.service.ts computes financialYear string.
+Any other date handling uses ISO timestamps stored in PostgreSQL or formatters in shared/src/formatters.ts (which use Asia/Kolkata / en-IN).
+=== SIBLING SWEEP AUDIT COMPLETE ===

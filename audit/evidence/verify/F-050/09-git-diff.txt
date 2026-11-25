@@ -1,0 +1,277 @@
+commit b864575fee23cb2f0a922c71c2b28e56571a5698
+Author: Snehan S <snehankgs@gmail.com>
+Date:   Tue Nov 24 06:16:46 2026 +0530
+
+    fix(ui): implement complete dark mode infrastructure and theme switcher (F-050)
+
+diff --git a/client/src/components/shell/authenticated-shell.tsx b/client/src/components/shell/authenticated-shell.tsx
+index 42023ec..c6bb65a 100644
+--- a/client/src/components/shell/authenticated-shell.tsx
++++ b/client/src/components/shell/authenticated-shell.tsx
+@@ -48,9 +48,12 @@ import {
+   UsersIcon,
+   BookOpenIcon,
+   HelpCircleIcon,
++  SunIcon,
++  MoonIcon,
+ } from "lucide-react";
+ 
+ import { useLanguage } from "@/lib/i18n";
++import { useTheme } from "@/hooks/use-theme";
+ 
+ import { cn } from "@/lib/utils";
+ import {
+@@ -520,6 +523,7 @@ function SidebarUserMenu({
+   const navigate = useNavigate();
+   const { isMobile, setOpenMobile, state } = useSidebar();
+   const { t } = useLanguage();
++  const { resolvedTheme, toggleTheme } = useTheme();
+   const isCollapsed = state === "collapsed" && !isMobile;
+ 
+   return (
+@@ -605,6 +609,28 @@ function SidebarUserMenu({
+               />
+               {t("Documentation & Guide", "Documentation & Guide")}
+             </DropdownMenuItem>
++            <DropdownMenuItem
++              onClick={toggleTheme}
++              className="cursor-pointer"
++            >
++              {resolvedTheme === "dark" ? (
++                <>
++                  <SunIcon
++                    className="mr-2 size-4 text-muted-foreground"
++                    aria-hidden
++                  />
++                  {t("Light mode", "Light mode")}
++                </>
++              ) : (
++                <>
++                  <MoonIcon
++                    className="mr-2 size-4 text-muted-foreground"
++                    aria-hidden
++                  />
++                  {t("Dark mode", "Dark mode")}
++                </>
++              )}
++            </DropdownMenuItem>
+             <DropdownMenuSeparator />
+             <DropdownMenuItem
+               onClick={onSignOut}
+@@ -871,6 +897,7 @@ function StickyHeader({
+ }: StickyHeaderProps) {
+   const { isMobile, openMobile, setOpenMobile } = useSidebar();
+   const { language, setLanguage, t } = useLanguage();
++  const { resolvedTheme, toggleTheme } = useTheme();
+ 
+   return (
+     <header
+@@ -928,6 +955,30 @@ function StickyHeader({
+           {language === "en" ? "தமிழ்" : "EN"}
+         </Button>
+ 
++        {/* Theme switch toggle (F-050) */}
++        <Button
++          variant="ghost"
++          size="icon"
++          onClick={toggleTheme}
++          aria-label={
++            resolvedTheme === "dark"
++              ? t("Switch to light mode", "Switch to light mode")
++              : t("Switch to dark mode", "Switch to dark mode")
++          }
++          title={
++            resolvedTheme === "dark"
++              ? t("Switch to light mode", "Switch to light mode")
++              : t("Switch to dark mode", "Switch to dark mode")
++          }
++          className="size-8 text-muted-foreground hover:text-foreground cursor-pointer"
++        >
++          {resolvedTheme === "dark" ? (
++            <SunIcon className="size-4" aria-hidden="true" />
++          ) : (
++            <MoonIcon className="size-4" aria-hidden="true" />
++          )}
++        </Button>
++
+         {/* Sync status: fixed-width area to prevent layout shift */}
+         <div className="min-w-20 flex justify-end">
+           <SyncIndicator
+@@ -1012,6 +1063,28 @@ function StickyHeader({
+               />
+               Documentation & Guide
+             </DropdownMenuItem>
++            <DropdownMenuItem
++              onClick={toggleTheme}
++              className="cursor-pointer"
++            >
++              {resolvedTheme === "dark" ? (
++                <>
++                  <SunIcon
++                    className="mr-2 size-4 text-muted-foreground"
++                    aria-hidden
++                  />
++                  {t("Light mode", "Light mode")}
++                </>
++              ) : (
++                <>
++                  <MoonIcon
++                    className="mr-2 size-4 text-muted-foreground"
++                    aria-hidden
++                  />
++                  {t("Dark mode", "Dark mode")}
++                </>
++              )}
++            </DropdownMenuItem>
+             <DropdownMenuSeparator />
+             <DropdownMenuItem
+               onClick={onSignOut}
+diff --git a/client/src/hooks/use-theme.ts b/client/src/hooks/use-theme.ts
+new file mode 100644
+index 0000000..c96cf90
+--- /dev/null
++++ b/client/src/hooks/use-theme.ts
+@@ -0,0 +1,72 @@
++import { useState, useEffect, useCallback } from "react";
++
++export type Theme = "light" | "dark" | "system";
++
++const STORAGE_KEY = "mill-ledger-theme";
++
++function getSystemTheme(): "light" | "dark" {
++  if (typeof window === "undefined") return "light";
++  return window.matchMedia("(prefers-color-scheme: dark)").matches
++    ? "dark"
++    : "light";
++}
++
++export function useTheme() {
++  const [theme, setThemeState] = useState<Theme>(() => {
++    if (typeof window === "undefined") return "system";
++    return (localStorage.getItem(STORAGE_KEY) as Theme) || "system";
++  });
++
++  const applyTheme = useCallback((resolvedTheme: "light" | "dark") => {
++    const root = document.documentElement;
++    if (resolvedTheme === "dark") {
++      root.classList.add("dark");
++      root.style.colorScheme = "dark";
++    } else {
++      root.classList.remove("dark");
++      root.style.colorScheme = "light";
++    }
++  }, []);
++
++  const setTheme = useCallback(
++    (newTheme: Theme) => {
++      setThemeState(newTheme);
++      try {
++        localStorage.setItem(STORAGE_KEY, newTheme);
++      } catch {
++        // localStorage unavailable (sandboxed / incognito)
++      }
++      const resolved = newTheme === "system" ? getSystemTheme() : newTheme;
++      applyTheme(resolved);
++    },
++    [applyTheme],
++  );
++
++  const toggleTheme = useCallback(() => {
++    const currentResolved =
++      theme === "system"
++        ? getSystemTheme()
++        : theme;
++    const nextTheme: Theme = currentResolved === "dark" ? "light" : "dark";
++    setTheme(nextTheme);
++  }, [theme, setTheme]);
++
++  useEffect(() => {
++    const resolved = theme === "system" ? getSystemTheme() : theme;
++    applyTheme(resolved);
++
++    if (theme === "system") {
++      const media = window.matchMedia("(prefers-color-scheme: dark)");
++      const listener = (e: MediaQueryListEvent) => {
++        applyTheme(e.matches ? "dark" : "light");
++      };
++      media.addEventListener("change", listener);
++      return () => media.removeEventListener("change", listener);
++    }
++  }, [theme, applyTheme]);
++
++  const resolvedTheme: "light" | "dark" =
++    theme === "system" ? getSystemTheme() : theme;
++
++  return { theme, resolvedTheme, setTheme, toggleTheme };
++}
+diff --git a/client/src/index.css b/client/src/index.css
+index 56384dc..887eb8b 100644
+--- a/client/src/index.css
++++ b/client/src/index.css
+@@ -68,6 +68,66 @@
+   --font-sans: "Geist Variable", Inter, ui-sans-serif, system-ui, sans-serif;
+ }
+ 
++@variant dark (&:where(.dark, .dark *));
++
++.dark {
++  color-scheme: dark;
++  --background: #09090b;
++  --foreground: #f4f4f5;
++  --card: #121215;
++  --card-foreground: #f4f4f5;
++  --popover: #121215;
++  --popover-foreground: #f4f4f5;
++  --primary: #1d8a6c;
++  --primary-foreground: #ffffff;
++  --primary-hover: #229d7c;
++  --primary-pressed: #176b54;
++  --secondary: #27272a;
++  --secondary-foreground: #fafafa;
++  --muted: #27272a;
++  --muted-foreground: #a1a1aa;
++  --accent: #27272a;
++  --accent-foreground: #fafafa;
++  --selection: #13392f;
++  --destructive: #ef4444;
++  --destructive-foreground: #ffffff;
++  --destructive-hover: #dc2626;
++  --destructive-pressed: #b91c1c;
++  --danger-bg: #450a0a;
++  --border: #27272a;
++  --input: #3f3f46;
++  --control-border: #3f3f46;
++  --ring: #1d8a6c;
++  --surface: #121215;
++  --surface-muted: #18181b;
++  --surface-sunken: #09090b;
++
++  --success: #22c55e;
++  --success-bg: #052e16;
++  --success-border: #14532d;
++  --warning: #f59e0b;
++  --warning-bg: #451a03;
++  --warning-border: #78350f;
++  --info: #3b82f6;
++  --info-bg: #172554;
++  --info-border: #1e40af;
++  --neutral: #a1a1aa;
++  --neutral-bg: #27272a;
++  --neutral-border: #3f3f46;
++
++  --sidebar: #0e0e11;
++  --sidebar-foreground: #f4f4f5;
++  --sidebar-primary: #1d8a6c;
++  --sidebar-primary-foreground: #ffffff;
++  --sidebar-accent: #27272a;
++  --sidebar-accent-foreground: #fafafa;
++  --sidebar-border: #27272a;
++  --sidebar-ring: #1d8a6c;
++
++  --shadow-menu: 0 4px 16px rgba(0, 0, 0, 0.4);
++  --shadow-modal: 0 16px 36px rgba(0, 0, 0, 0.6);
++}
++
+ @theme inline {
+   --font-sans: var(--font-sans);
+   --color-background: var(--background);

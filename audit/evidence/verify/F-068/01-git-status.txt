@@ -1,0 +1,1 @@
+ M client/src/layouts/authenticated-layout.tsx

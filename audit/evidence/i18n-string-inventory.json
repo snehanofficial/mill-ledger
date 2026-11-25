@@ -1,0 +1,3827 @@
+{
+  "jsxTexts": [
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 480,
+      "text": "Collapse to icons"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 483,
+      "text": "⌘B"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 574,
+      "text": "Account settings"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 582,
+      "text": "Sign out"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 675,
+      "text": "Search pages"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 679,
+      "text": "No results found."
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 743,
+      "text": "Search"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 744,
+      "text": "⌘K"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 954,
+      "text": "Account settings"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 962,
+      "text": "Sign out"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 1088,
+      "text": "Skip to main content"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 1164,
+      "text": "Sync now"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 1173,
+      "text": "View outbox"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 1211,
+      "text": "Pending orders stored locally"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 1213,
+      "text": "You have"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 1213,
+      "text": "unsynced order(s) stored on this device.\n              They are preserved securely for your account and will sync when\n              you sign back in. Do you still wish to sign out?"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 1223,
+      "text": "Stay signed in"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 1233,
+      "text": "Sign out anyway"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 1243,
+      "text": "Notifications"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 1252,
+      "text": "No notifications"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 1255,
+      "text": "Activity and system events will appear here."
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 85,
+      "text": "Device Outbox"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 90,
+      "text": "conflict"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 102,
+      "text": "Local IndexedDB command queue awaiting server acceptance. No stock\n              reserved until synced."
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 132,
+      "text": "Refresh catalog"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 142,
+      "text": "Clear synced"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 154,
+      "text": "All orders synced"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 157,
+      "text": "Your device outbox is empty. Orders created offline will be\n                preserved here until synchronized."
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 198,
+      "text": "Waiting to sync"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 206,
+      "text": "Syncing..."
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 211,
+      "text": "Synced:"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 216,
+      "text": "Conflict:"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 237,
+      "text": "Total ("
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 237,
+      "text": "pkts)"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 262,
+      "text": "Retry"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 273,
+      "text": "Sync this"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 284,
+      "text": "Discard"
+    },
+    {
+      "file": "client/src/components/ui/confirmation-dialog.tsx",
+      "line": 43,
+      "text": "Cancel"
+    },
+    {
+      "file": "client/src/components/ui/loading-error-empty.tsx",
+      "line": 58,
+      "text": "Retry"
+    },
+    {
+      "file": "client/src/components/ui/pagination.tsx",
+      "line": 56,
+      "text": "Previous"
+    },
+    {
+      "file": "client/src/components/ui/pagination.tsx",
+      "line": 63,
+      "text": "Next"
+    },
+    {
+      "file": "client/src/layouts/authenticated-layout.tsx",
+      "line": 20,
+      "text": "Loading view..."
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 51,
+      "text": "Customer Directory"
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 54,
+      "text": "Live Master Data"
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 58,
+      "text": "Retailers, distributors, state tax jurisdictions, and sales assignments."
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 73,
+      "text": "Refresh"
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 84,
+      "text": "Accounts Register"
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 88,
+      "text": "total accounts"
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 96,
+      "text": "Loading customer directory..."
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 102,
+      "text": "Failed to load customers. Please verify connection and permissions."
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 109,
+      "text": "No customer accounts found"
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 112,
+      "text": "Customer accounts configured in master data will appear here."
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 119,
+      "text": "Account Code"
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 120,
+      "text": "Customer Name"
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 121,
+      "text": "Place of Supply"
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 122,
+      "text": "Tax Regime"
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 123,
+      "text": "GSTIN"
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 124,
+      "text": "Status"
+    },
+    {
+      "file": "client/src/pages/customers-page.tsx",
+      "line": 164,
+      "text": "Active"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 96,
+      "text": "Overview"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 100,
+      "text": "Executive operational overview and real time reconciled business\n            metrics"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 109,
+      "text": "As of"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 126,
+      "text": "Refresh"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 134,
+      "text": "Loading dashboard metrics..."
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 139,
+      "text": "Failed to load overview data"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 152,
+      "text": "Total revenue"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 164,
+      "text": "posted tax invoices"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 173,
+      "text": "Receivables outstanding"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 184,
+      "text": "Collections: ₹"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 193,
+      "text": "Stock valuation"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 208,
+      "text": "Ledger balanced"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 213,
+      "text": "Discrepancy flagged"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 223,
+      "text": "Good output units"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 229,
+      "text": "units"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 232,
+      "text": "Run cost: ₹"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 246,
+      "text": "Recent sales invoices"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 253,
+      "text": "View all"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 260,
+      "text": "Invoice"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 261,
+      "text": "Customer"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 262,
+      "text": "Total"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 263,
+      "text": "Status"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 273,
+      "text": "No invoices posted yet"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 316,
+      "text": "Critical stock items"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 323,
+      "text": "View all stock"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 330,
+      "text": "Item"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 331,
+      "text": "On hand"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 332,
+      "text": "Unit cost"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 333,
+      "text": "Valuation"
+    },
+    {
+      "file": "client/src/pages/dashboard-page.tsx",
+      "line": 343,
+      "text": "No stock items loaded"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 191,
+      "text": "Dispatch"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 195,
+      "text": "Physical stock movements, reservation release, and warehouse\n            fulfillment records"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 211,
+      "text": "Refresh"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 222,
+      "text": "Record dispatch"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 232,
+      "text": "Total dispatches"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 238,
+      "text": "Completed warehouse dispatches"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 245,
+      "text": "Quantity dispatched"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 250,
+      "text": "units"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 253,
+      "text": "Deducted from finished goods stock"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 260,
+      "text": "Reservations released"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 265,
+      "text": "units"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 268,
+      "text": "Atomic reservation release on dispatch"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 277,
+      "text": "Dispatches ledger"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 280,
+      "text": "dispatches recorded"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 287,
+      "text": "Loading dispatches..."
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 292,
+      "text": "Failed to load dispatches:"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 298,
+      "text": "No dispatches yet"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 300,
+      "text": "Record a physical dispatch for an approved sales order to deduct\n              inventory."
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 309,
+      "text": "Dispatch number"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 310,
+      "text": "Date and time"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 311,
+      "text": "Sales order"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 312,
+      "text": "Customer"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 313,
+      "text": "Vehicle and driver"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 314,
+      "text": "Dispatched items"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 315,
+      "text": "Invoice link"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 316,
+      "text": "Status"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 386,
+      "text": "Direct dispatch"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 415,
+      "text": "Record physical dispatch"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 441,
+      "text": "Select approved sales order *"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 445,
+      "text": "No approved orders ready for dispatch. Please approve an\n                    order first."
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 455,
+      "text": "Choose an order to dispatch..."
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 465,
+      "text": ") | Remaining:"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 466,
+      "text": "units"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 477,
+      "text": "Vehicle number"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 489,
+      "text": "Driver name"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 502,
+      "text": "Driver phone number"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 514,
+      "text": "Dispatch notes"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 526,
+      "text": "Inventory impact notice:"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 528,
+      "text": "Posting this dispatch will deduct finished goods from stock on\n                hand and release active stock reservations atomically."
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 539,
+      "text": "Cancel"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 554,
+      "text": "Confirm dispatch"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 133,
+      "text": "Invoices"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 137,
+      "text": "Tax calculation snapshots, FY series numbering, and immutable\n            invoice ledger"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 153,
+      "text": "Refresh"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 163,
+      "text": "Total invoices"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 169,
+      "text": "Posted tax invoices"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 176,
+      "text": "Total billed"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 187,
+      "text": "Gross invoiced value inclusive of GST"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 194,
+      "text": "Total outstanding"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 205,
+      "text": "Awaiting payment settlement"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 214,
+      "text": "Posted invoices ledger"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 217,
+      "text": "invoices found"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 224,
+      "text": "Loading invoices..."
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 229,
+      "text": "Failed to load invoices"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 231,
+      "text": "Retry"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 237,
+      "text": "No invoices posted yet."
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 244,
+      "text": "Invoice number"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 245,
+      "text": "FY"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 246,
+      "text": "Status"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 247,
+      "text": "Customer"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 248,
+      "text": "Place of supply"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 249,
+      "text": "Taxable"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 250,
+      "text": "GST"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 251,
+      "text": "Total"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 252,
+      "text": "Outstanding"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 253,
+      "text": "Actions"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 294,
+      "text": "IGST: ₹"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 297,
+      "text": "CGST/SGST: ₹"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 325,
+      "text": "View"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 340,
+      "text": "Credit note"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 360,
+      "text": "Tax Invoice"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 380,
+      "text": "Supplier (Billed by)"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 382,
+      "text": "Mill Ledger ERP"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 384,
+      "text": "Factory: Tamil Nadu"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 387,
+      "text": "GSTIN:"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 393,
+      "text": "Customer (Billed to)"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 399,
+      "text": "State:"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 402,
+      "text": "GSTIN:"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 413,
+      "text": "Item description"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 414,
+      "text": "HSN"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 415,
+      "text": "Qty"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 416,
+      "text": "Rate"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 417,
+      "text": "Taxable"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 418,
+      "text": "Tax"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 419,
+      "text": "Total"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 457,
+      "text": "Taxable value:"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 467,
+      "text": "CGST (2.5%):"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 475,
+      "text": "SGST (2.5%):"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 486,
+      "text": "IGST (5.0%):"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 494,
+      "text": "Invoice total:"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 500,
+      "text": "Outstanding:"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 515,
+      "text": "Close"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 523,
+      "text": "Print / Save PDF"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 535,
+      "text": "Issue credit note"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 538,
+      "text": "Adjust invoice"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 538,
+      "text": "without deleting\n              the immutable record."
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 545,
+      "text": "Reason for credit note"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 557,
+      "text": "Adjustment amount (₹)"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 566,
+      "text": "Maximum adjustable: ₹"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 581,
+      "text": "Cancel"
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 598,
+      "text": "Issuing..."
+    },
+    {
+      "file": "client/src/pages/invoices-page.tsx",
+      "line": 603,
+      "text": "Issue credit note"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 367,
+      "text": "Orders"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 371,
+      "text": "Salesman mobile orders, admin approval, shortages, and atomic stock\n            reservations"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 387,
+      "text": "Refresh"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 396,
+      "text": "New sales order"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 406,
+      "text": "Total orders"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 412,
+      "text": "pending approval"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 419,
+      "text": "Approved bookings"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 427,
+      "text": "Stock reserved atomically"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 434,
+      "text": "Booked value"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 445,
+      "text": "Approved orders inclusive of GST"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 452,
+      "text": "Available to promise"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 457,
+      "text": "pkts"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 460,
+      "text": "Murukku 200g net of active reservations"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 475,
+      "text": "All orders ("
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 484,
+      "text": "Device outbox"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 502,
+      "text": "Loading orders..."
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 507,
+      "text": "Failed to load sales orders"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 509,
+      "text": "Retry"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 517,
+      "text": "No sales orders created yet."
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 524,
+      "text": "Create first order"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 532,
+      "text": "Order number"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 533,
+      "text": "Status"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 534,
+      "text": "Customer"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 535,
+      "text": "Salesman"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 536,
+      "text": "Ordered"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 537,
+      "text": "Taxable"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 538,
+      "text": "GST"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 539,
+      "text": "Total"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 540,
+      "text": "Shortage status"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 541,
+      "text": "Actions"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 563,
+      "text": "Local:"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 572,
+      "text": "Waiting to sync"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 580,
+      "text": "Syncing..."
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 585,
+      "text": "Conflict:"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 590,
+      "text": "Synced:"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 605,
+      "text": "You (Device outbox)"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 608,
+      "text": "pkts"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 621,
+      "text": "Awaiting server acceptance"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 634,
+      "text": "Retry"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 645,
+      "text": "Sync"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 705,
+      "text": "pkts"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 716,
+      "text": "IGST: ₹"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 720,
+      "text": "CGST/SGST: ₹"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 737,
+      "text": "Shortage:"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 737,
+      "text": "pkts"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 742,
+      "text": "Reserved ("
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 746,
+      "text": "Stock ready"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 762,
+      "text": "Approve"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 773,
+      "text": "Reject"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 778,
+      "text": "Completed"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 798,
+      "text": "Create sales order"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 801,
+      "text": "Select customer and enter order quantities"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 819,
+      "text": "Offline mode active: Order will be saved locally in device\n                    outbox. No stock reserved until synchronized."
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 828,
+      "text": "Customer"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 846,
+      "text": "Place of supply:"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 855,
+      "text": "Product item"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 869,
+      "text": "Standard price: ₹"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 869,
+      "text": "/ pkt"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 875,
+      "text": "Order quantity (pkts)"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 884,
+      "text": "Available:"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 884,
+      "text": "pkts"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 894,
+      "text": "Warning: Stock shortage of"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 894,
+      "text": "packets\n                    detected. Order requires admin review or partial allocation."
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 902,
+      "text": "Order notes"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 915,
+      "text": "Taxable amount:"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 922,
+      "text": "GST (5%"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 929,
+      "text": "Total order amount:"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 943,
+      "text": "Cancel"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 978,
+      "text": "Order"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 978,
+      "text": "for"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 980,
+      "text": "packets)"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 986,
+      "text": "Approving this order will atomically reserve"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 989,
+      "text": "packets"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 991,
+      "text": "of finished goods Murukku 200g."
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 998,
+      "text": "Notice: Full quantity cannot be reserved because shortage\n                      is"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 999,
+      "text": "packets."
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 1007,
+      "text": "Reason for rejection"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 1027,
+      "text": "Cancel"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 1040,
+      "text": "Confirm approval"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 1056,
+      "text": "Confirm rejection"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 298,
+      "text": "Payments"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 302,
+      "text": "Customer collections, invoice payment allocations, and receivables\n            ledger"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 321,
+      "text": "Refresh"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 332,
+      "text": "Record payment"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 342,
+      "text": "Total collected"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 353,
+      "text": "Total receipts recorded across all modes"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 360,
+      "text": "Net outstanding"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 371,
+      "text": "Pending customer dues derived from ledger"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 378,
+      "text": "Unallocated credit"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 389,
+      "text": "Advance payments awaiting invoice allocation"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 405,
+      "text": "Payments ledger ("
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 416,
+      "text": "Customer receivables ("
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 425,
+      "text": "Collections ledger"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 428,
+      "text": "transactions recorded"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 435,
+      "text": "Loading payments..."
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 441,
+      "text": "No payments recorded"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 444,
+      "text": "Record receipts from customers to allocate against outstanding\n                invoices."
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 453,
+      "text": "Receipt number"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 454,
+      "text": "Date"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 455,
+      "text": "Customer"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 456,
+      "text": "Mode and reference"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 457,
+      "text": "Total amount"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 458,
+      "text": "Unallocated"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 459,
+      "text": "Allocated invoices"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 460,
+      "text": "Status"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 491,
+      "text": "Ref:"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 515,
+      "text": "Unallocated advance"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 555,
+      "text": "Customer receivables overview"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 558,
+      "text": "accounts found"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 565,
+      "text": "Loading receivables..."
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 569,
+      "text": "No customer records"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 576,
+      "text": "Customer"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 577,
+      "text": "State"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 578,
+      "text": "Total invoiced"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 579,
+      "text": "Credit notes"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 581,
+      "text": "Total collections"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 584,
+      "text": "Net outstanding"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 586,
+      "text": "Open invoices"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 587,
+      "text": "Actions"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 651,
+      "text": "View ledger"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 671,
+      "text": "Customer statement and ledger"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 687,
+      "text": "Loading ledger entries..."
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 699,
+      "text": "Code:"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 699,
+      "text": "| State:"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 708,
+      "text": "Current balance"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 724,
+      "text": "0 to 30 days"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 732,
+      "text": "31 to 60 days"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 740,
+      "text": "61 to 90 days"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 748,
+      "text": "Over 90 days"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 760,
+      "text": "Chronological ledger entries"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 766,
+      "text": "Date"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 767,
+      "text": "Type"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 768,
+      "text": "Reference number"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 770,
+      "text": "Debit (+)"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 773,
+      "text": "Credit (-)"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 775,
+      "text": "Balance"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 839,
+      "text": "Record customer payment"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 866,
+      "text": "Select customer *"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 877,
+      "text": "Choose customer..."
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 880,
+      "text": ") | Outstanding: ₹"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 891,
+      "text": "Receipt amount (₹) *"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 907,
+      "text": "Payment mode *"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 915,
+      "text": "Bank transfer / NEFT / RTGS"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 917,
+      "text": "UPI"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 918,
+      "text": "Cheque"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 919,
+      "text": "Cash"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 920,
+      "text": "Demand draft"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 929,
+      "text": "Reference number"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 941,
+      "text": "Notes"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 958,
+      "text": "Invoice allocation strategy"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 969,
+      "text": "Custom allocation"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 975,
+      "text": "Automatic FIFO mode: payment will settle oldest\n                        outstanding invoices first."
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 981,
+      "text": "Specify exact allocation amount per open invoice:"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 993,
+      "text": "Outstanding: ₹"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 1024,
+      "text": "Cancel"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 1037,
+      "text": "Save payment"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 25,
+      "text": "Module in Progress"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 37,
+      "text": "Workspace"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 40,
+      "text": "This view is currently scheduled for rollout in the next operational milestone."
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 44,
+      "text": "Ledger database schema and API contracts ready"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 272,
+      "text": "Sign in to MillLedger"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 275,
+      "text": "Enter your credentials to access the production unit."
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 286,
+      "text": "404 - Page Not Found"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 289,
+      "text": "The requested operational route does not exist."
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 248,
+      "text": "Production execution"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 252,
+      "text": "BOM execution, consumption variances, yield calculations, and run\n            costs"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 268,
+      "text": "Refresh"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 277,
+      "text": "Record production batch"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 287,
+      "text": "Total batches"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 293,
+      "text": "posted runs recorded"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 300,
+      "text": "Packets produced"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 308,
+      "text": "Finished goods credited to warehouse"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 315,
+      "text": "Total run cost"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 326,
+      "text": "Materials, labour, and utilities included"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 333,
+      "text": "Ledger integrity"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 338,
+      "text": "Verified"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 341,
+      "text": "Stock ledger reconciles deterministically"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 350,
+      "text": "Completed production runs"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 353,
+      "text": "records found"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 360,
+      "text": "Loading production runs..."
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 365,
+      "text": "Failed to load production runs from server"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 367,
+      "text": "Retry"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 373,
+      "text": "No production batches recorded yet."
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 380,
+      "text": "Record first batch"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 388,
+      "text": "Run number"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 389,
+      "text": "Status"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 390,
+      "text": "Product"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 391,
+      "text": "Good packets"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 392,
+      "text": "Yield variance"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 393,
+      "text": "Materials cost"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 394,
+      "text": "Total cost"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 395,
+      "text": "Cost / packet"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 396,
+      "text": "Actions"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 478,
+      "text": "Reverse"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 482,
+      "text": "Reversed"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 502,
+      "text": "Record production batch"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 505,
+      "text": "Murukku 200g standard batch (Benchmark: 200 expected packets)"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 521,
+      "text": "Bill of Materials (BOM) Recipe"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 530,
+      "text": "— Target:"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 530,
+      "text": "pkts"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 534,
+      "text": "Murukku 200 g (Standard BOM)"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 543,
+      "text": "Good packets produced"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 552,
+      "text": "Variance:"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 566,
+      "text": "(flagged)"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 574,
+      "text": "Damaged pouches"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 583,
+      "text": "Total pouches consumed:"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 592,
+      "text": "Cooking oil consumed (L)"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 602,
+      "text": "Variance:"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 616,
+      "text": "(flagged)"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 624,
+      "text": "Cartons used (pieces)"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 633,
+      "text": "Capacity:"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 633,
+      "text": "packets"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 643,
+      "text": "Warning:"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 643,
+      "text": "cartons represent"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 644,
+      "text": "of"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 644,
+      "text": "packets."
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 653,
+      "text": "Direct labour cost (₹)"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 665,
+      "text": "Gas and power cost (₹)"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 678,
+      "text": "Notes"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 692,
+      "text": "Direct materials:"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 697,
+      "text": "Direct labour:"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 701,
+      "text": "Gas and power:"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 707,
+      "text": "Total run cost:"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 713,
+      "text": "Cost per good packet:"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 730,
+      "text": "Cancel"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 741,
+      "text": "Posting batch..."
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 746,
+      "text": "Post production batch"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 760,
+      "text": "Reverse production run"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 763,
+      "text": "This will atomically restore raw materials and packaging back into\n              inventory and deduct"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 764,
+      "text": "finished\n              packets."
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 770,
+      "text": "Reversal reason"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 787,
+      "text": "Cancel"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 805,
+      "text": "Confirm reversal"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 175,
+      "text": "Procurement & Mandi Intake"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 178,
+      "text": "Live Ledger"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 182,
+      "text": "Mandi raw material receipts, supplier invoicing, and automated weighted-average cost updating."
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 197,
+      "text": "Refresh"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 206,
+      "text": "Record Purchase Receipt"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 217,
+      "text": "Purchase Receipts Ledger"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 221,
+      "text": "total recorded"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 229,
+      "text": "Loading receipts..."
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 235,
+      "text": "Failed to load purchase receipts. Please verify network connection."
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 242,
+      "text": "No purchase receipts recorded yet"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 245,
+      "text": "Click &quot;Record Purchase Receipt&quot; to intake flour, oil, or raw materials."
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 252,
+      "text": "Receipt #"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 253,
+      "text": "Date"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 254,
+      "text": "Supplier"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 255,
+      "text": "Item"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 256,
+      "text": "Quantity"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 257,
+      "text": "Unit Rate"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 258,
+      "text": "Total Amount"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 259,
+      "text": "Status"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 300,
+      "text": "Posted"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 318,
+      "text": "Record Purchase Receipt"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 321,
+      "text": "Intake raw materials, update stock, and recalculate WAC."
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 337,
+      "text": "Supplier / Mandi Vendor"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 350,
+      "text": "Supplier 1 (SUP-FLOUR-1)"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 359,
+      "text": "Receipt #"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 370,
+      "text": "Supplier Invoice #"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 384,
+      "text": "Raw Material Item"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 397,
+      "text": "Flour (RM-FLOUR)"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 406,
+      "text": "Quantity received"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 419,
+      "text": "Unit Purchase Rate (₹)"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 435,
+      "text": "Total Payable:"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 445,
+      "text": "Notes / Vehicle Details"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 464,
+      "text": "Cancel"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 126,
+      "text": "Reports & Audit"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 130,
+      "text": "Tax registers, stock valuation, production costing, and system\n            activity logs"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 150,
+      "text": "Refresh"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 194,
+      "text": "Sales Tax Register"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 197,
+      "text": "All posted sales invoices and tax snapshots"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 203,
+      "text": "Taxable: ₹"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 205,
+      "text": "Tax: ₹"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 207,
+      "text": "Grand total: ₹"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 216,
+      "text": "Loading sales register..."
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 223,
+      "text": "Invoice"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 224,
+      "text": "Date"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 225,
+      "text": "Customer"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 226,
+      "text": "Product"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 227,
+      "text": "Qty"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 228,
+      "text": "Taxable"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 229,
+      "text": "CGST"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 230,
+      "text": "SGST"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 231,
+      "text": "Total"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 286,
+      "text": "Total outward taxable"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 294,
+      "text": "Total tax liability"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 302,
+      "text": "Credit note deductions"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 317,
+      "text": "Rate wise tax liability"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 322,
+      "text": "GST Rate"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 323,
+      "text": "Taxable value"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 324,
+      "text": "CGST"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 325,
+      "text": "SGST"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 326,
+      "text": "Total tax"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 354,
+      "text": "HSN summary table"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 358,
+      "text": "HSN Code"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 359,
+      "text": "Quantity"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 360,
+      "text": "Taxable"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 361,
+      "text": "Tax"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 394,
+      "text": "Stock Valuation Ledger"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 397,
+      "text": "Weighted average unit cost and append only ledger reconciliation"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 403,
+      "text": "Total valuation"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 416,
+      "text": "SKU"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 417,
+      "text": "Item name"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 418,
+      "text": "Category"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 419,
+      "text": "On hand"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 420,
+      "text": "Reserved"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 421,
+      "text": "Available"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 422,
+      "text": "Avg cost"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 423,
+      "text": "Valuation"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 424,
+      "text": "Ledger check"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 456,
+      "text": "Balanced"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 461,
+      "text": "Mismatch"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 479,
+      "text": "Production Execution & Variance Report"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 482,
+      "text": "Actual output, yield variances, labor and utility cost\n                allocation"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 489,
+      "text": "Output:"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 489,
+      "text": "units |"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 492,
+      "text": "Total cost: ₹"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 502,
+      "text": "Run number"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 503,
+      "text": "Recipe"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 504,
+      "text": "Good output"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 505,
+      "text": "Yield variance"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 506,
+      "text": "Direct labor"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 507,
+      "text": "Gas & power"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 508,
+      "text": "Total cost"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 509,
+      "text": "Cost / packet"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 520,
+      "text": "pkts"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 559,
+      "text": "Receivables & Ageing Summary"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 562,
+      "text": "Customer account balances and overdue ageing buckets"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 568,
+      "text": "Total outstanding"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 581,
+      "text": "Customer"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 582,
+      "text": "State"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 583,
+      "text": "Invoiced"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 584,
+      "text": "Collections"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 585,
+      "text": "Outstanding"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 586,
+      "text": "0 to 30 days"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 587,
+      "text": "31 to 60 days"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 588,
+      "text": "Over 90 days"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 639,
+      "text": "System Audit Trail"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 642,
+      "text": "Immutable activity logs with actor, timestamp, action and\n                request metadata"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 652,
+      "text": "Timestamp"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 653,
+      "text": "Actor"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 654,
+      "text": "Action"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 655,
+      "text": "Entity"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 656,
+      "text": "Details"
+    },
+    {
+      "file": "client/src/pages/reports-page.tsx",
+      "line": 666,
+      "text": "No audit events recorded yet"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 145,
+      "text": "Operational UI System"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 147,
+      "text": "WCAG 2.2 AA"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 150,
+      "text": "Component inventory"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 153,
+      "text": "Reusable operational patterns, ledger-first views, accessible\n              forms, and tactile states engineered for the MillLedger ERP."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 163,
+      "text": "Open command menu"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 176,
+      "text": "Actions"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 182,
+      "text": "Forms"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 188,
+      "text": "Surfaces"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 194,
+      "text": "Feedback"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 200,
+      "text": "Data display"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 208,
+      "text": "Actions"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 211,
+      "text": "Primary, secondary, and consequential operations with explicit\n              focus states."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 217,
+      "text": "Buttons and menus"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 219,
+      "text": "One primary action anchors each workspace; secondary and\n                tertiary actions support."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 225,
+      "text": "Save draft"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 226,
+      "text": "Export"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 227,
+      "text": "View details"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 230,
+      "text": "Delete"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 232,
+      "text": "Disabled"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 237,
+      "text": "Saving"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 253,
+      "text": "Add item"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 261,
+      "text": "Actions"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 268,
+      "text": "View details"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 274,
+      "text": "Show archived"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 282,
+      "text": "Standard view"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 285,
+      "text": "Compact view"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 293,
+      "text": "Filter"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 297,
+      "text": "Filter name"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 332,
+      "text": "Forms"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 335,
+      "text": "Labels, helper instructions, and inline errors stay adjacent to\n              controls."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 342,
+      "text": "Field states"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 344,
+      "text": "Validation and descriptions linked with aria attributes."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 350,
+      "text": "Item name"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 353,
+      "text": "Use the name the mill team recognizes."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 357,
+      "text": "Quantity"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 363,
+      "text": "Enter a quantity of 0 kg or more."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 366,
+      "text": "Notes"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 373,
+      "text": "Effective date"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 382,
+      "text": "Choice controls"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 384,
+      "text": "Accessible radios, selects, checkboxes, and switches with 44px\n                  hit targets."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 391,
+      "text": "Category"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 397,
+      "text": "Raw materials"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 398,
+      "text": "Finished goods"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 399,
+      "text": "Packing"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 406,
+      "text": "Review mode"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 414,
+      "text": "Standard review"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 421,
+      "text": "Compact review"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 431,
+      "text": "Include inactive records"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 436,
+      "text": "Automatic background refresh"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 448,
+      "text": "Surfaces"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 451,
+      "text": "Dialogs, sheets, drawers, and modal command palettes."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 456,
+      "text": "Overlays and sheets"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 458,
+      "text": "Focused context-preserving panels for desktop and touch\n                viewports."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 466,
+      "text": "Open dialog"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 470,
+      "text": "Review record"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 472,
+      "text": "Review the values before finalizing the entry."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 476,
+      "text": "Wheat flour"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 477,
+      "text": "125.50 kg"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 478,
+      "text": "Draft"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 481,
+      "text": "Edit"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 482,
+      "text": "Confirm"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 489,
+      "text": "Open side panel"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 493,
+      "text": "Record detail"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 495,
+      "text": "Supporting operational context remains in view."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 500,
+      "text": "REC-1042"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 502,
+      "text": "Raw Materials Bay A"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 504,
+      "text": "Store Manager"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 512,
+      "text": "Open drawer"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 516,
+      "text": "Mobile drawer"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 518,
+      "text": "Optimized for touch-first handheld shopfloor actions."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 523,
+      "text": "Touch gestures, swipe-to-dismiss, and keyboard focus\n                        trap are active."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 528,
+      "text": "Continue"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 535,
+      "text": "Command menu"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 539,
+      "text": "No components found."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 547,
+      "text": "Actions"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 555,
+      "text": "Forms"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 563,
+      "text": "Data display"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 579,
+      "text": "Feedback"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 582,
+      "text": "Explicit, perceivable states for routine notifications and\n              consequential errors."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 589,
+      "text": "Alerts and toasts"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 591,
+      "text": "High-contrast status banners with icons and contextual advice."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 596,
+      "text": "The draft is stored locally and waiting to sync."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 599,
+      "text": "80 kg remains below the safe reorder threshold."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 602,
+      "text": "No balance was changed. Review the payment details before\n                  retrying."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 610,
+      "text": "Success toast"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 616,
+      "text": "Error toast"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 624,
+      "text": "States"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 626,
+      "text": "Loading, empty, and retryable error state boundaries."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 633,
+      "text": "Loading"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 636,
+      "text": "Empty"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 639,
+      "text": "Error"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 647,
+      "text": "No records"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 649,
+      "text": "Add the first record to begin tracking production."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 653,
+      "text": "Add record"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 676,
+      "text": "Data display"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 679,
+      "text": "Ledger-first tables with tabular numbers and semantic status\n              indicators."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 704,
+      "text": "Record table"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 706,
+      "text": "Responsive table with tabular numerals, right-aligned\n                quantities, and status badges."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 714,
+      "text": "Reference"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 715,
+      "text": "Item"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 716,
+      "text": "Quantity"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 717,
+      "text": "Status"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 723,
+      "text": "REC-1042"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 725,
+      "text": "Wheat flour"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 727,
+      "text": "125.50 kg"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 735,
+      "text": "REC-1043"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 737,
+      "text": "Rice bran"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 739,
+      "text": "48.00 kg"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 771,
+      "text": "Status badges"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 773,
+      "text": "Standardized status pills with icons for operational clarity."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 780,
+      "text": "Success"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 784,
+      "text": "Attention"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 788,
+      "text": "Blocked"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 792,
+      "text": "Informational"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 794,
+      "text": "Neutral"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 85,
+      "text": "Inventory & Stock Ledger"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 88,
+      "text": "Real time stock balances, weighted average costing, and ledger\n            reconciliation."
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 104,
+      "text": "Refresh Balances"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 112,
+      "text": "Total Items"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 121,
+      "text": "Raw Materials"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 130,
+      "text": "Packaging"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 139,
+      "text": "Finished Goods"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 148,
+      "text": "Valued Stock Total"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 169,
+      "text": "Current Stock on Hand"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 174,
+      "text": "Movements Reconciled"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 184,
+      "text": "Loading stock balances..."
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 189,
+      "text": "Failed to load inventory balances"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 191,
+      "text": "Ensure the server is running and database seed is completed."
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 196,
+      "text": "No inventory items registered. Run database seed to populate\n            benchmark masters."
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 203,
+      "text": "SKU"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 204,
+      "text": "Item Name"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 205,
+      "text": "Category"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 206,
+      "text": "On Hand"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 207,
+      "text": "Avg Unit Cost"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 208,
+      "text": "Total Value"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 210,
+      "text": "Ledger Status"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 267,
+      "text": "Balanced"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 278,
+      "text": "Variance"
+    }
+  ],
+  "attributes": [],
+  "toasts": [
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 58,
+      "type": "error",
+      "text": "Failed to refresh offline catalog"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 66,
+      "type": "error",
+      "text": "Cannot sync while device is offline"
+    },
+    {
+      "file": "client/src/components/shell/device-outbox-sheet.tsx",
+      "line": 69,
+      "type": "info",
+      "text": "Starting outbox synchronization"
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 278,
+      "type": "info",
+      "text": "Offline: Order saved locally in device outbox. No stock reserved until synced."
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 288,
+      "type": "success",
+      "text": "Sales order created successfully."
+    },
+    {
+      "file": "client/src/pages/orders-page.tsx",
+      "line": 302,
+      "type": "warning",
+      "text": "Network connection lost. Order queued locally in device outbox."
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 156,
+      "type": "success",
+      "text": "Purchase receipt posted successfully."
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 266,
+      "type": "info",
+      "text": "Details opened"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 312,
+      "type": "success",
+      "text": "Record post requested"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 321,
+      "type": "error",
+      "text": "Void action cancelled in demo"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 608,
+      "type": "success",
+      "text": "Changes saved"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 614,
+      "type": "error",
+      "text": "Could not save"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 660,
+      "type": "info",
+      "text": "Retry requested"
+    }
+  ],
+  "placeholders": [
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 677,
+      "text": "Search pages and actions..."
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 480,
+      "text": "e.g. TN 38 AB 1234"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 492,
+      "text": "e.g. Ravi Kumar"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 505,
+      "text": "e.g. 9876543210"
+    },
+    {
+      "file": "client/src/pages/dispatch-page.tsx",
+      "line": 517,
+      "text": "e.g. Dispatched via standard carrier"
+    },
+    {
+      "file": "client/src/pages/login-page.tsx",
+      "line": 266,
+      "text": "user@millledger.local"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 897,
+      "text": "e.g. 4000.00"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 932,
+      "text": "e.g. UTR or Cheque no"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 944,
+      "text": "e.g. On account settlement"
+    },
+    {
+      "file": "client/src/pages/payments-page.tsx",
+      "line": 1000,
+      "text": "₹"
+    },
+    {
+      "file": "client/src/pages/production-page.tsx",
+      "line": 775,
+      "text": "e.g. Quality inspection failed on batch"
+    },
+    {
+      "file": "client/src/pages/purchases-page.tsx",
+      "line": 451,
+      "text": "e.g. Mandi Lot #481, Truck TN-38-AX-1029"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 302,
+      "text": "Search records"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 369,
+      "text": "Record a useful milling batch detail"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 537,
+      "text": "Search components..."
+    }
+  ],
+  "titles": [
+    {
+      "file": "client/src/components/ui/sidebar.tsx",
+      "line": 712,
+      "text": "Resize sidebar"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 54,
+      "text": "Overview"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 63,
+      "text": "Orders"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 72,
+      "text": "New order"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 81,
+      "text": "Invoices"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 90,
+      "text": "Dispatch"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 99,
+      "text": "Payments"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 108,
+      "text": "Stock"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 117,
+      "text": "Purchases"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 126,
+      "text": "Today's production"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 135,
+      "text": "New production batch"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 144,
+      "text": "Production history"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 153,
+      "text": "Customers"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 162,
+      "text": "Sales report"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 171,
+      "text": "Stock report"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 180,
+      "text": "Production report"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 189,
+      "text": "Receivables report"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 198,
+      "text": "GST report"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 207,
+      "text": "Audit report"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 216,
+      "text": "Exports"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 225,
+      "text": "Settings"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 234,
+      "text": "Profile & Account"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 243,
+      "text": "User management"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 252,
+      "text": "Mill configuration"
+    },
+    {
+      "file": "client/src/pages/placeholder-pages.tsx",
+      "line": 261,
+      "text": "Audit log"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 309,
+      "text": "Post this record?"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 317,
+      "text": "Void this record?"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 595,
+      "text": "Saved on this device"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 598,
+      "text": "Stock is low"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 601,
+      "text": "Could not post"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 261,
+      "text": "Ledger sum equals on-hand balance"
+    },
+    {
+      "file": "client/src/pages/stock-page.tsx",
+      "line": 272,
+      "text": "Ledger variance detected"
+    }
+  ],
+  "ariaLabels": [
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 673,
+      "text": "Global search"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 738,
+      "text": "Search (Ctrl+K)"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 751,
+      "text": "Search"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 858,
+      "text": "Open navigation"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 1004,
+      "text": "Mobile navigation"
+    },
+    {
+      "file": "client/src/components/ui/breadcrumb.tsx",
+      "line": 9,
+      "text": "Breadcrumb"
+    },
+    {
+      "file": "client/src/components/ui/breadcrumb.tsx",
+      "line": 97,
+      "text": "More breadcrumb items"
+    },
+    {
+      "file": "client/src/components/ui/dialog.tsx",
+      "line": 43,
+      "text": "Close dialog"
+    },
+    {
+      "file": "client/src/components/ui/loading-error-empty.tsx",
+      "line": 22,
+      "text": "Loading table"
+    },
+    {
+      "file": "client/src/components/ui/pagination.tsx",
+      "line": 13,
+      "text": "Pagination"
+    },
+    {
+      "file": "client/src/components/ui/pagination.tsx",
+      "line": 54,
+      "text": "Go to previous page"
+    },
+    {
+      "file": "client/src/components/ui/pagination.tsx",
+      "line": 62,
+      "text": "Go to next page"
+    },
+    {
+      "file": "client/src/components/ui/sheet.tsx",
+      "line": 43,
+      "text": "Close panel"
+    },
+    {
+      "file": "client/src/components/ui/sidebar.tsx",
+      "line": 337,
+      "text": "Toggle sidebar"
+    },
+    {
+      "file": "client/src/components/ui/sidebar.tsx",
+      "line": 709,
+      "text": "Resize sidebar"
+    },
+    {
+      "file": "client/src/components/ui/spinner.tsx",
+      "line": 12,
+      "text": "Loading"
+    },
+    {
+      "file": "client/src/layouts/authenticated-layout.tsx",
+      "line": 86,
+      "text": "Loading workspace"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 169,
+      "text": "Component inventory sections"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 248,
+      "text": "Add item"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 412,
+      "text": "Standard review"
+    },
+    {
+      "file": "client/src/pages/showcase-page.tsx",
+      "line": 419,
+      "text": "Compact review"
+    }
+  ],
+  "tCalls": [
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 981,
+      "key": "nav.home",
+      "fallback": "Home"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 986,
+      "key": "nav.orders",
+      "fallback": "Orders"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 991,
+      "key": "nav.stock",
+      "fallback": "Stock"
+    },
+    {
+      "file": "client/src/components/shell/authenticated-shell.tsx",
+      "line": 996,
+      "key": "nav.more",
+      "fallback": "More"
+    }
+  ]
+}

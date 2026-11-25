@@ -1,0 +1,69 @@
+=== STEP 2: ORIGINAL REPRO VERIFICATION FOR F-097 ===
+Timestamp: 2026-11-22T21:24:58+05:30
+--- 1. Running original repro step 1: grep -rn 'toLocaleString' client/src/pages/ ---
+
+Total toLocaleString hits in client/src/pages/: 0
+--- 2. Running original repro step 2: grep -rn 'toFixed' client/src/pages/ ---
+
+Total toFixed hits in client/src/pages/: 0
+--- 3. Verifying specific offending locations cited in F-097.md ---
+Checking invoices-page.tsx around former lines 288 & 435:
+client/src/pages/invoices-page.tsx:4:import { formatINR } from "@/lib/formatters";
+client/src/pages/invoices-page.tsx:182:            {formatINR(totalBilled)}
+client/src/pages/invoices-page.tsx:197:            {formatINR(totalOutstanding)}
+client/src/pages/invoices-page.tsx:282:                      {formatINR(inv.taxableAmount)}
+client/src/pages/invoices-page.tsx:286:                        <span>IGST: {formatINR(inv.igstAmount)}</span>
+client/src/pages/invoices-page.tsx:290:                          {formatINR(
+client/src/pages/invoices-page.tsx:297:                      {formatINR(inv.totalAmount)}
+client/src/pages/invoices-page.tsx:300:                      {formatINR(inv.outstandingAmount)}
+client/src/pages/invoices-page.tsx:421:                          {formatINR(l.unitPrice)}
+client/src/pages/invoices-page.tsx:424:                          {formatINR(l.taxableAmount)}
+Checking reports-page.tsx around former lines 241 & 260:
+client/src/pages/reports-page.tsx:4:import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
+client/src/pages/reports-page.tsx:204:                  Taxable: {formatINR(salesData.summary.totalTaxable)}
+client/src/pages/reports-page.tsx:206:                <span>Tax: {formatINR(salesData.summary.totalTax)}</span>
+client/src/pages/reports-page.tsx:208:                  Grand total: {formatINR(salesData.summary.grandTotal)}
+client/src/pages/reports-page.tsx:242:                        {formatDate(row.invoiceDate)}
+client/src/pages/reports-page.tsx:261:                        {formatINR(row.taxableAmount)}
+client/src/pages/reports-page.tsx:264:                        {formatINR(row.cgstAmount)}
+client/src/pages/reports-page.tsx:267:                        {formatINR(row.sgstAmount)}
+client/src/pages/reports-page.tsx:270:                        {formatINR(row.lineTotal)}
+client/src/pages/reports-page.tsx:290:                {formatINR(gstData?.summary?.totalTaxable || 0)}
+Checking stock-page.tsx around former line 153:
+client/src/pages/stock-page.tsx:3:import { formatINR, formatQuantity } from "@/lib/formatters";
+client/src/pages/stock-page.tsx:154:              : formatINR(totalInventoryValue)}
+client/src/pages/stock-page.tsx:238:                      {formatQuantity(item.onHand)}{" "}
+client/src/pages/stock-page.tsx:244:                      {formatINR(item.weightedAverageCost, {
+client/src/pages/stock-page.tsx:250:                      {formatINR(totalValue)}
+Checking purchases-page.tsx around former line 295:
+client/src/pages/purchases-page.tsx:4:import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
+client/src/pages/purchases-page.tsx:276:                      {formatDate(rec.postedAt)}
+client/src/pages/purchases-page.tsx:285:                      {formatQuantity(firstLine?.quantity || 0)}{" "}
+client/src/pages/purchases-page.tsx:289:                      {formatINR(firstLine?.unitPrice || 0)}
+client/src/pages/purchases-page.tsx:292:                      {formatINR(totalAmount)}
+client/src/pages/purchases-page.tsx:435:                  {formatINR(lineTotal)}
+Checking dispatch-page.tsx around former line 326:
+client/src/pages/dispatch-page.tsx:4:import { formatDateTime, formatQuantity } from "@/lib/formatters";
+client/src/pages/dispatch-page.tsx:251:            {formatQuantity(totalUnitsDispatched, { unit: "units" })}
+client/src/pages/dispatch-page.tsx:266:            {formatQuantity(totalUnitsDispatched, { unit: "units" })}
+client/src/pages/dispatch-page.tsx:327:                      {formatDateTime(disp.dispatchedAt)}
+Checking payments-page.tsx around former line 782:
+client/src/pages/payments-page.tsx:4:import { formatDate, formatINR } from "@/lib/formatters";
+client/src/pages/payments-page.tsx:348:            {formatINR(totalCollected)}
+client/src/pages/payments-page.tsx:363:            {formatINR(totalNetOutstanding)}
+client/src/pages/payments-page.tsx:378:            {formatINR(totalUnallocated)}
+client/src/pages/payments-page.tsx:462:                        {formatDate(p.paymentDate)}
+client/src/pages/payments-page.tsx:487:                        {formatINR(p.amount)}
+client/src/pages/payments-page.tsx:492:                            {formatINR(p.unallocatedAmount)}
+client/src/pages/payments-page.tsx:513:                                <span>{formatINR(a.amount)}</span>
+client/src/pages/payments-page.tsx:594:                        {formatINR(r.totalInvoiced)}
+client/src/pages/payments-page.tsx:597:                        {formatINR(r.totalCreditNotes)}
+Checking device-outbox-sheet.tsx around former line 185:
+client/src/components/shell/device-outbox-sheet.tsx:22:import { formatINR, formatTime } from "@/lib/formatters";
+client/src/components/shell/device-outbox-sheet.tsx:185:                        {ord.customerState} • {formatTime(ord.createdAt)}
+client/src/components/shell/device-outbox-sheet.tsx:229:                          {formatINR(it.quantity * it.quotedUnitPrice)}
+client/src/components/shell/device-outbox-sheet.tsx:235:                      <span>{formatINR(totalQuoted)}</span>
+--- 4. Checking if any remaining toLocaleString / toFixed calls in client/src/pages/ are for currency or dates ---
+Zero toLocaleString occurrences remain in client/src/pages/.
+Zero toFixed occurrences remain in client/src/pages/.
+=== STEP 2 VERIFICATION COMPLETE ===

@@ -1,0 +1,512 @@
+{
+  "keyboardOnly": {
+    "focusObscurityEvaluation": []
+  },
+  "screenReaderSemantics": {
+    "routeTransitionResults": [
+      {
+        "route": "/dashboard",
+        "documentTitle": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+        "h1Text": null,
+        "activeElementTag": "BODY",
+        "activeElementRole": null,
+        "activeElementId": "",
+        "liveRegions": [
+          {
+            "role": "status",
+            "ariaLive": "polite",
+            "text": "Live"
+          },
+          {
+            "role": null,
+            "ariaLive": "polite",
+            "text": ""
+          }
+        ]
+      },
+      {
+        "route": "/orders",
+        "documentTitle": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+        "h1Text": null,
+        "activeElementTag": "BODY",
+        "activeElementRole": null,
+        "activeElementId": "",
+        "liveRegions": [
+          {
+            "role": "status",
+            "ariaLive": "polite",
+            "text": "Live"
+          },
+          {
+            "role": null,
+            "ariaLive": "polite",
+            "text": ""
+          }
+        ]
+      },
+      {
+        "route": "/stock",
+        "documentTitle": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+        "h1Text": null,
+        "activeElementTag": "BODY",
+        "activeElementRole": null,
+        "activeElementId": "",
+        "liveRegions": [
+          {
+            "role": "status",
+            "ariaLive": "polite",
+            "text": "Live"
+          },
+          {
+            "role": null,
+            "ariaLive": "polite",
+            "text": ""
+          }
+        ]
+      },
+      {
+        "route": "/production/today",
+        "documentTitle": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+        "h1Text": null,
+        "activeElementTag": "BODY",
+        "activeElementRole": null,
+        "activeElementId": "",
+        "liveRegions": [
+          {
+            "role": "status",
+            "ariaLive": "polite",
+            "text": "Live"
+          },
+          {
+            "role": null,
+            "ariaLive": "polite",
+            "text": ""
+          }
+        ]
+      },
+      {
+        "route": "/invoices",
+        "documentTitle": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+        "h1Text": null,
+        "activeElementTag": "BODY",
+        "activeElementRole": null,
+        "activeElementId": "",
+        "liveRegions": [
+          {
+            "role": "status",
+            "ariaLive": "polite",
+            "text": "Live"
+          },
+          {
+            "role": null,
+            "ariaLive": "polite",
+            "text": ""
+          }
+        ]
+      },
+      {
+        "route": "/dispatch",
+        "documentTitle": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+        "h1Text": null,
+        "activeElementTag": "BODY",
+        "activeElementRole": null,
+        "activeElementId": "",
+        "liveRegions": [
+          {
+            "role": "status",
+            "ariaLive": "polite",
+            "text": "Live"
+          },
+          {
+            "role": null,
+            "ariaLive": "polite",
+            "text": ""
+          }
+        ]
+      },
+      {
+        "route": "/payments",
+        "documentTitle": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+        "h1Text": null,
+        "activeElementTag": "BODY",
+        "activeElementRole": null,
+        "activeElementId": "",
+        "liveRegions": [
+          {
+            "role": "status",
+            "ariaLive": "polite",
+            "text": "Live"
+          },
+          {
+            "role": null,
+            "ariaLive": "polite",
+            "text": ""
+          }
+        ]
+      },
+      {
+        "route": "/reports/sales",
+        "documentTitle": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+        "h1Text": null,
+        "activeElementTag": "BODY",
+        "activeElementRole": null,
+        "activeElementId": "",
+        "liveRegions": [
+          {
+            "role": "status",
+            "ariaLive": "polite",
+            "text": "Live"
+          },
+          {
+            "role": null,
+            "ariaLive": "polite",
+            "text": ""
+          }
+        ]
+      },
+      {
+        "route": "/settings",
+        "documentTitle": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+        "h1Text": null,
+        "activeElementTag": "BODY",
+        "activeElementRole": null,
+        "activeElementId": "",
+        "liveRegions": [
+          {
+            "role": "status",
+            "ariaLive": "polite",
+            "text": "Live"
+          },
+          {
+            "role": null,
+            "ariaLive": "polite",
+            "text": ""
+          }
+        ]
+      }
+    ]
+  },
+  "namesAndRoles": {
+    "loginA11y": {
+      "title": "MillLedger | Order-to-Audit System for a Small Food Manufacturer",
+      "htmlLang": "en",
+      "hasMainLandmark": false,
+      "hasSkipLink": false,
+      "h1Text": "Sign in to MillLedger",
+      "email": {
+        "hasId": true,
+        "hasLabel": true,
+        "autocomplete": "email",
+        "type": "email"
+      },
+      "password": {
+        "hasId": true,
+        "hasLabel": true,
+        "autocomplete": "current-password",
+        "type": "password"
+      },
+      "langButton": {
+        "visibleText": "தமிழ்",
+        "ariaLabel": "Switch language to Tamil",
+        "labelInNamePasses": false
+      },
+      "eyeButton": {
+        "ariaLabel": "Show password",
+        "ariaPressed": "false"
+      },
+      "submitButton": {
+        "text": "Sign in",
+        "ariaBusy": "false"
+      }
+    }
+  },
+  "images": {
+    "loginHeroIcon": "Sign in to MillLedger"
+  },
+  "colorAndContrast": {
+    "badges": [],
+    "mutedForeground": {
+      "color": "rgb(82, 82, 91)",
+      "bg": "rgb(252, 253, 252)",
+      "ratio": 7.58,
+      "passesAA": true
+    }
+  },
+  "reflowAndZoom": {
+    "/orders": {
+      "docScrollWidth": 320,
+      "docClientWidth": 320,
+      "hasHorizontalWindowScroll": false,
+      "tableWidth": null,
+      "tableWrapperOverflowX": null
+    },
+    "/invoices": {
+      "docScrollWidth": 320,
+      "docClientWidth": 320,
+      "hasHorizontalWindowScroll": false,
+      "tableWidth": null,
+      "tableWrapperOverflowX": null
+    },
+    "/stock": {
+      "docScrollWidth": 320,
+      "docClientWidth": 320,
+      "hasHorizontalWindowScroll": false,
+      "tableWidth": null,
+      "tableWrapperOverflowX": null
+    },
+    "/production/today": {
+      "docScrollWidth": 320,
+      "docClientWidth": 320,
+      "hasHorizontalWindowScroll": false,
+      "tableWidth": null,
+      "tableWrapperOverflowX": null
+    },
+    "/reports/sales": {
+      "docScrollWidth": 320,
+      "docClientWidth": 320,
+      "hasHorizontalWindowScroll": false,
+      "tableWidth": null,
+      "tableWrapperOverflowX": null
+    }
+  },
+  "targetSize": {
+    "totalInteractives": 32,
+    "below24Count": 4,
+    "below24Samples": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "ariaLabel": null,
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "ariaLabel": "Resize sidebar",
+        "width": 16,
+        "height": 800
+      },
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "ariaLabel": null,
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "Orders",
+        "ariaLabel": null,
+        "width": 46,
+        "height": 20
+      }
+    ],
+    "below44Count": 21,
+    "below44Samples": [
+      {
+        "tag": "A",
+        "text": "Overview",
+        "ariaLabel": "Overview",
+        "width": 231,
+        "height": 36
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Orders",
+        "ariaLabel": "Orders",
+        "width": 231,
+        "height": 36
+      },
+      {
+        "tag": "A",
+        "text": "All orders",
+        "ariaLabel": "All orders",
+        "width": 190,
+        "height": 28
+      },
+      {
+        "tag": "A",
+        "text": "New order",
+        "ariaLabel": "New order",
+        "width": 190,
+        "height": 28
+      },
+      {
+        "tag": "A",
+        "text": "Invoices",
+        "ariaLabel": "Invoices",
+        "width": 231,
+        "height": 36
+      },
+      {
+        "tag": "A",
+        "text": "Dispatch",
+        "ariaLabel": "Dispatch",
+        "width": 231,
+        "height": 36
+      },
+      {
+        "tag": "A",
+        "text": "Payments",
+        "ariaLabel": "Payments",
+        "width": 231,
+        "height": 36
+      },
+      {
+        "tag": "A",
+        "text": "Stock",
+        "ariaLabel": "Stock",
+        "width": 231,
+        "height": 36
+      },
+      {
+        "tag": "A",
+        "text": "Purchases",
+        "ariaLabel": "Purchases",
+        "width": 231,
+        "height": 36
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Production",
+        "ariaLabel": "Production",
+        "width": 231,
+        "height": 36
+      }
+    ]
+  },
+  "forms": {
+    "formsCount": 0,
+    "hasConfirmationModal": false
+  },
+  "language": {
+    "loginHtmlLang": "en"
+  },
+  "timingAndSessionExpiry": {
+    "hasSessionTimer": false,
+    "hasTimeoutWarningDialog": false
+  },
+  "statusMessages": {
+    "liveRegionsFound": [
+      [
+        {
+          "role": "status",
+          "ariaLive": "polite",
+          "text": "Live"
+        },
+        {
+          "role": null,
+          "ariaLive": "polite",
+          "text": ""
+        }
+      ],
+      [
+        {
+          "role": "status",
+          "ariaLive": "polite",
+          "text": "Live"
+        },
+        {
+          "role": null,
+          "ariaLive": "polite",
+          "text": ""
+        }
+      ],
+      [
+        {
+          "role": "status",
+          "ariaLive": "polite",
+          "text": "Live"
+        },
+        {
+          "role": null,
+          "ariaLive": "polite",
+          "text": ""
+        }
+      ],
+      [
+        {
+          "role": "status",
+          "ariaLive": "polite",
+          "text": "Live"
+        },
+        {
+          "role": null,
+          "ariaLive": "polite",
+          "text": ""
+        }
+      ],
+      [
+        {
+          "role": "status",
+          "ariaLive": "polite",
+          "text": "Live"
+        },
+        {
+          "role": null,
+          "ariaLive": "polite",
+          "text": ""
+        }
+      ],
+      [
+        {
+          "role": "status",
+          "ariaLive": "polite",
+          "text": "Live"
+        },
+        {
+          "role": null,
+          "ariaLive": "polite",
+          "text": ""
+        }
+      ],
+      [
+        {
+          "role": "status",
+          "ariaLive": "polite",
+          "text": "Live"
+        },
+        {
+          "role": null,
+          "ariaLive": "polite",
+          "text": ""
+        }
+      ],
+      [
+        {
+          "role": "status",
+          "ariaLive": "polite",
+          "text": "Live"
+        },
+        {
+          "role": null,
+          "ariaLive": "polite",
+          "text": ""
+        }
+      ],
+      [
+        {
+          "role": "status",
+          "ariaLive": "polite",
+          "text": "Live"
+        },
+        {
+          "role": null,
+          "ariaLive": "polite",
+          "text": ""
+        }
+      ]
+    ]
+  },
+  "emulationModes": {
+    "reducedMotion": {
+      "animatedElementFound": true,
+      "animationDuration": "1e-05s",
+      "transitionDuration": "1e-05s"
+    },
+    "forcedColors": {
+      "forcedColorsDetected": true
+    }
+  }
+}

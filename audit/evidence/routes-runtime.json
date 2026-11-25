@@ -1,0 +1,802 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/me",
+    "middlewareChain": [
+      "requireAuth"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/auth/auth.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/health",
+    "middlewareChain": [],
+    "handler": "getHealth",
+    "sourceFile": "server/src/modules/health/health.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sales/customers",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sales/products",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sales/orders",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sales/orders/:id",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sales/orders",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/sales/orders/:id",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sales/orders/:id/approve",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sales/orders/:id/reject",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sales/dispatches",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sales/dispatches",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/orders/customers",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/orders/products",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/orders/orders",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/orders/orders/:id",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/orders/orders",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/orders/orders/:id",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/orders/orders/:id/approve",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/orders/orders/:id/reject",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/orders/dispatches",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/orders/dispatches",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dispatches/customers",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dispatches/products",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dispatches/orders",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dispatches/orders/:id",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/dispatches/orders",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/dispatches/orders/:id",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/dispatches/orders/:id/approve",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/dispatches/orders/:id/reject",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/dispatches/dispatches",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dispatches/dispatches",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/sales/sales.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production/recipes",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production/:id",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production/draft",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production/:id/post",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production/:id/reverse",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-runs",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-runs/recipes",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production-runs/:id",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-runs/draft",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-runs",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-runs/:id/post",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/production-runs/:id/reverse",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/production/production.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/inventory/purchase-receipts",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/inventory/inventory.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inventory/purchase-receipts",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/inventory/inventory.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inventory/suppliers",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/inventory/inventory.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inventory/balances",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/inventory/inventory.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inventory/items/:id/ledger",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/inventory/inventory.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/purchase-receipts/purchase-receipts",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/inventory/inventory.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/purchase-receipts/purchase-receipts",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/inventory/inventory.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/purchase-receipts/suppliers",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/inventory/inventory.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/purchase-receipts/balances",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/inventory/inventory.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/purchase-receipts/items/:id/ledger",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/inventory/inventory.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance/invoices",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/finance.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance/invoices/:id",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/finance.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/finance/invoices",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/finance.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/finance/invoices/:id/credit-note",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/finance.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/invoices/invoices",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/finance.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/invoices/invoices/:id",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/finance.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/invoices/invoices",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/finance.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/invoices/invoices/:id/credit-note",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/finance.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/payments",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/payment.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/payments/receivables/summary",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/payment.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/payments/ledger/:customerId",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/payment.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/payments/:id",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/payment.routes.ts"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/payments",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/finance/payment.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/reporting/reporting.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/dashboard",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/reporting/reporting.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/audit",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/reporting/reporting.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/:report/export",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/reporting/reporting.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/:report",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/reporting/reporting.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dashboard",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/reporting/reporting.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dashboard/dashboard",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/reporting/reporting.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dashboard/audit",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/reporting/reporting.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dashboard/:report/export",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/reporting/reporting.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dashboard/:report",
+    "middlewareChain": [
+      "requireAuth",
+      "<anonymous>"
+    ],
+    "handler": "<anonymous>",
+    "sourceFile": "server/src/modules/reporting/reporting.routes.ts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/health",
+    "middlewareChain": [],
+    "handler": "getHealth",
+    "sourceFile": "server/src/modules/health/health.routes.ts"
+  },
+  {
+    "method": "ALL",
+    "path": "/api/auth/*",
+    "middlewareChain": [],
+    "handler": "toNodeHandler(auth)",
+    "sourceFile": "server/src/lib/auth.ts"
+  }
+]

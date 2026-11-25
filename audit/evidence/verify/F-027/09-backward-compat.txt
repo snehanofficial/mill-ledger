@@ -1,0 +1,7 @@
+=== F-027 Verification: 09 Backward Compatibility ===
+1. Legacy Null TTL Safety:
+   Pre-existing reservations where `expiresAt` is `null` are safely treated as active until manually released, cancelled, or dispatched, ensuring full backward compatibility with historic seed data and benchmark runs.
+2. Default TTL Window:
+   New reservations automatically default to 48 hours TTL without requiring callers to change their API payloads.
+3. Benchmark Invariance:
+   Transactions 4, 5, and 6 in benchmark.md execute unmodified with 100% exact numerical match.

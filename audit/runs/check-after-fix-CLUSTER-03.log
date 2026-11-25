@@ -1,0 +1,20 @@
+$ pnpm -r run typecheck
+Scope: 3 of 4 workspace projects
+shared typecheck$ tsc --noEmit
+shared typecheck: Done
+client typecheck$ tsc -b --noEmit
+server typecheck$ tsc --noEmit
+client typecheck: Done
+server typecheck: src/payment-bounce.test.ts(65,50): error TS2339: Property 'BOUNCED' does not exist on type '{ POSTED: "POSTED"; CANCELLED: "CANCELLED"; }'.
+server typecheck: src/payment-bounce.test.ts(87,42): error TS2339: Property 'bouncePayment' does not exist on type 'PaymentService'.
+server typecheck: src/payment-bounce.test.ts(93,47): error TS2339: Property 'BOUNCED' does not exist on type '{ POSTED: "POSTED"; CANCELLED: "CANCELLED"; }'.
+server typecheck: src/payment-bounce.test.ts(140,26): error TS2339: Property 'bouncePayment' does not exist on type 'PaymentService'.
+server typecheck: src/payment-bounce.test.ts(143,22): error TS2339: Property 'bouncePayment' does not exist on type 'PaymentService'.
+server typecheck: Failed
+[ELIFECYCLE] Command failed with exit code 2.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × "pnpm recursive run" failed in /home/snehan/projects/web/mill-ledger/
+  │ server
+
+[ELIFECYCLE] Command failed with exit code 1.

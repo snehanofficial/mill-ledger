@@ -1,0 +1,5 @@
+=== F-021 Verification: 09 Backward Compatibility ===
+1. Legacy Inventory Mount Continuity:
+   `POST /api/v1/inventory/purchase-receipts`, `GET /api/v1/inventory/purchase-receipts`, and `GET /api/v1/inventory/suppliers` continue to work without modification, ensuring full backward compatibility with existing tests and UI components (`purchases-page.tsx`).
+2. Primary Contract Support:
+   `POST /api/v1/purchase-receipts` and `GET /api/v1/purchase-receipts` cleanly serve purchase receipt operations according to docs/api-contract.md.

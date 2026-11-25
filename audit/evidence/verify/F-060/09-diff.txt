@@ -1,0 +1,122 @@
+commit 4f4d755350631bfba5bb2e4aafbdb1d4fc927c7e
+Author: Snehan S <snehankgs@gmail.com>
+Date:   Tue Nov 24 13:08:36 2026 +0530
+
+    fix(a11y): add language of parts lang attributes for multilingual text fragments (F-060)
+
+diff --git a/client/src/components/shell/authenticated-shell.tsx b/client/src/components/shell/authenticated-shell.tsx
+index 9f31873..8778004 100644
+--- a/client/src/components/shell/authenticated-shell.tsx
++++ b/client/src/components/shell/authenticated-shell.tsx
+@@ -965,19 +965,21 @@ function StickyHeader({
+ 
+       {/* Right-side tools: language, sync, search, notifications, account menu */}
+       <div className="flex shrink-0 items-center gap-2">
+-        {/* Language switch toggle */}
++        {/* Language switch toggle (WCAG 2.2 SC 3.1.2 Level AA / F-060) */}
+         <Button
+           variant="ghost"
+           size="sm"
+           onClick={() => setLanguage(language === "en" ? "ta" : "en")}
+           aria-label={
+             language === "en"
+-              ? "தமிழ் - Switch language to Tamil"
+-              : "EN - Switch language to English"
++              ? "Switch language to Tamil"
++              : "Switch language to English"
+           }
+           className="h-8 px-2 text-xs font-semibold cursor-pointer text-muted-foreground hover:text-foreground"
+         >
+-          {language === "en" ? "தமிழ்" : "EN"}
++          <span lang={language === "en" ? "ta" : "en"}>
++            {language === "en" ? "தமிழ்" : "EN"}
++          </span>
+         </Button>
+ 
+         {/* Theme switch toggle (F-050) */}
+diff --git a/client/src/lib/i18n.tsx b/client/src/lib/i18n.tsx
+index 1c857fe..7abbcad 100644
+--- a/client/src/lib/i18n.tsx
++++ b/client/src/lib/i18n.tsx
+@@ -500,3 +500,23 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
+ export function useLanguage() {
+   return useContext(LanguageContext);
+ }
++
++/**
++ * LangPart: Inline language of parts wrapper (WCAG 2.2 SC 3.1.2 Level AA / F-060)
++ * Wraps foreign words, phrases, or script switchers with explicit `lang` tag.
++ */
++export function LangPart({
++  lang,
++  children,
++  className,
++}: {
++  lang: Language;
++  children: ReactNode;
++  className?: string;
++}) {
++  return (
++    <span lang={lang} className={className}>
++      {children}
++    </span>
++  );
++}
+diff --git a/client/src/pages/login-page.tsx b/client/src/pages/login-page.tsx
+index febec32..fdbeade 100644
+--- a/client/src/pages/login-page.tsx
++++ b/client/src/pages/login-page.tsx
+@@ -202,11 +202,13 @@ export function LoginPage() {
+           onClick={() => setLanguage(language === "en" ? "ta" : "en")}
+           aria-label={
+             language === "en"
+-              ? "தமிழ் (Switch language to Tamil)"
+-              : "English (ஆங்கிலத்திற்கு மாற்று)"
++              ? "Switch language to Tamil"
++              : "Switch language to English"
+           }
+         >
+-          {language === "en" ? "தமிழ்" : "English"}
++          <span lang={language === "en" ? "ta" : "en"}>
++            {language === "en" ? "தமிழ்" : "English"}
++          </span>
+         </Button>
+       </div>
+ 
+@@ -375,9 +377,13 @@ export function LoginPage() {
+         {/* Demo Fast-Switch Cards */}
+         <div className="rounded-control border border-border bg-card p-4 text-xs">
+           <p className="font-semibold text-foreground">
+-            {language === "ta"
+-              ? "சோதனை கணக்குகள் (Demo Roles):"
+-              : "Benchmark Demo Roles:"}
++            {language === "ta" ? (
++              <>
++                சோதனை கணக்குகள் (<span lang="en">Demo Roles</span>):
++              </>
++            ) : (
++              "Benchmark Demo Roles:"
++            )}
+           </p>
+           <div className="mt-2 grid grid-cols-2 gap-2">
+             {SEED_ACCOUNTS.map((acc) => (
+@@ -391,8 +397,8 @@ export function LoginPage() {
+                     : "border-border bg-background hover:bg-muted text-foreground"
+                 }`}
+               >
+-                <div className="font-medium">{acc.label}</div>
+-                <div className="truncate text-muted-foreground text-[11px]">
++                <div className="font-medium" lang="en">{acc.label}</div>
++                <div className="truncate text-muted-foreground text-[11px]" lang="en">
+                   {acc.email}
+                 </div>
+               </button>
+@@ -402,7 +408,7 @@ export function LoginPage() {
+ 
+         {/* Semantic Footer Landmark with Navigational Links */}
+         <footer className="pt-2 text-center text-xs text-muted-foreground">
+-          <p>© {CURRENT_YEAR} MillLedger ERP. All rights reserved.</p>
++          <p lang="en">© {CURRENT_YEAR} MillLedger ERP. All rights reserved.</p>
+           <div className="mt-2 flex justify-center gap-4">
+             <a
+               href="/auth/login"

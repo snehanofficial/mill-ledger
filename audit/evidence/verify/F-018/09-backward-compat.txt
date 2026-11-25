@@ -1,0 +1,12 @@
+=== F-018 VERIFICATION EVIDENCE 09: BACKWARD COMPATIBILITY ===
+Timestamp: 2026-11-23T15:31:15+05:30
+Scope: Existing client frontend and API contracts
+
+1. Client UI Compatibility:
+- `client/src/pages/dispatch-page.tsx` continues to invoke `GET /sales/dispatches?organizationId=MILL`.
+- When accessed by an admin or dispatcher, the full company ledger is returned as before.
+- When accessed by a field salesman, the page displays their own territory dispatches without UI crash or format discrepancy.
+
+2. Benchmark Oracle Compatibility:
+- Benchmark step 5 dispatches Retailer A order and reconciles registers.
+- All 18 benchmark oracle assertions pass with 100% numerical match.

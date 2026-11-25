@@ -1,0 +1,98 @@
+[
+  {
+    "journeyId": "J1",
+    "name": "Owner First-Time Setup",
+    "role": "OWNER",
+    "stepsCount": 4,
+    "clicksCount": 4,
+    "elapsedMs": 1814,
+    "isCompletableUIOnly": "NO",
+    "blockersAndFriction": [
+      "No bootstrap or signup link on login page; users must be pre-seeded or manually injected into DB.",
+      "No Roles management screen or link in navigation.",
+      "No User management screen in navigation.",
+      "/settings is a static placeholder ('Module in Progress'). Master data and mill configuration cannot be configured from UI."
+    ]
+  },
+  {
+    "journeyId": "J2",
+    "name": "Procurement",
+    "role": "ADMIN",
+    "stepsCount": 4,
+    "clicksCount": 6,
+    "elapsedMs": 2932,
+    "isCompletableUIOnly": "PARTIAL",
+    "blockersAndFriction": [
+      "Suppliers CANNOT be created or managed from the UI (no 'Add Supplier' button or screen).",
+      "Purchase receipts table empty after posting."
+    ]
+  },
+  {
+    "journeyId": "J3",
+    "name": "Production",
+    "role": "PRODUCTION",
+    "stepsCount": 4,
+    "clicksCount": 4,
+    "elapsedMs": 3005,
+    "isCompletableUIOnly": "YES",
+    "blockersAndFriction": [
+      "New Batch button not found on /production/today."
+    ]
+  },
+  {
+    "journeyId": "J4",
+    "name": "Salesman on 320px Phone",
+    "role": "SALESMAN",
+    "stepsCount": 5,
+    "clicksCount": 3,
+    "elapsedMs": 3037,
+    "isCompletableUIOnly": "YES",
+    "blockersAndFriction": []
+  },
+  {
+    "journeyId": "J5",
+    "name": "Admin Order to Dispatch",
+    "role": "ADMIN",
+    "stepsCount": 4,
+    "clicksCount": 6,
+    "elapsedMs": 3747,
+    "isCompletableUIOnly": "PARTIAL",
+    "blockersAndFriction": [
+      "CRITICAL BLOCKER: Invoicing cannot be initiated from the UI! No 'Generate Invoice' button exists on Orders, Dispatches, or Invoices pages."
+    ]
+  },
+  {
+    "journeyId": "J6",
+    "name": "Accounts Payment & Allocation",
+    "role": "ACCOUNTANT",
+    "stepsCount": 3,
+    "clicksCount": 7,
+    "elapsedMs": 3861,
+    "isCompletableUIOnly": "YES",
+    "blockersAndFriction": []
+  },
+  {
+    "journeyId": "J7",
+    "name": "Auditor Reports & Export",
+    "role": "ACCOUNTANT",
+    "stepsCount": 3,
+    "clicksCount": 4,
+    "elapsedMs": 2236,
+    "isCompletableUIOnly": "PARTIAL",
+    "blockersAndFriction": [
+      "Audit log search/filter input is completely missing on UI; cannot filter logs by entity, actor, or action."
+    ]
+  },
+  {
+    "journeyId": "J8",
+    "name": "Failure Paths & Error States",
+    "role": "ADMIN",
+    "stepsCount": 4,
+    "clicksCount": 3,
+    "elapsedMs": 2916,
+    "isCompletableUIOnly": "YES",
+    "blockersAndFriction": [
+      "404 Not Found page did not render for /non-existent-module-xyz."
+    ]
+  }
+]

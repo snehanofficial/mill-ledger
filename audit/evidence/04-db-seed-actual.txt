@@ -1,0 +1,16 @@
+$ tsx prisma/seed.ts
+Seeding test users for M1...
+Created user admin@millledger.local with role ADMIN
+Created user salesman1@millledger.local with role SALESMAN
+Created user salesman@millledger.local with role SALESMAN
+Created user salesman2@millledger.local with role SALESMAN
+Created user production@millledger.local with role PRODUCTION
+Created user operator@millledger.local with role PRODUCTION
+Created user accountant@millledger.local with role ACCOUNTANT
+Created user owner@millledger.local with role OWNER
+Seeding benchmark master data and opening stock (M2)...
+M2 benchmark master data seed successfully completed.
+
+real	0m1.739s
+user	0m2.592s
+sys	0m0.285s

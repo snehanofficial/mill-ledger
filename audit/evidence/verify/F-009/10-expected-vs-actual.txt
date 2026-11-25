@@ -1,0 +1,24 @@
+=== STEP 10: EXPECTED VS ACTUAL (TRIPLE) FOR F-009 ===
+Finding: F-009
+Title: Application database role retains full UPDATE and DELETE privileges on stock movements and posted invoices without database triggers or rules
+
+1. EXPECTED (source: MASTER_PROJECT_PLAN.md, docs/business-rules.md, docs/product-requirements.md REQ-009, REQ-036, OWASP ASVS v4.0.3 Item 8.3.1):
+   Database-level controls (e.g. BEFORE UPDATE OR DELETE triggers or revoked privileges) must enforce immutability:
+   - Rejects all UPDATE and DELETE operations on `stock_movement`.
+   - Rejects DELETE operations on `sales_invoice` when status is POSTED, PARTIALLY_PAID, PAID, or CANCELLED_BY_CREDIT_NOTE.
+   - Rejects UPDATE operations on posted `sales_invoice` financial, identification, and snapshot fields, and forbids downgrading status to bypass immutability.
+   - Protects lines belonging to posted sales invoices (`sales_invoice_line`) without interfering with or breaking operations on DRAFT invoices.
+   - Associated regression tests must prove every trigger works and catch mutations.
+
+2. ACTUAL (observed with evidence):
+   - Commit `ba71207ae75581b11bd721c95c3a00cfa8730500` resolves all 4 failure points from previous rejection:
+     * Column name in `enforce_sales_invoice_line_immutability()` correctly references `"invoiceId"` (COALESCE(OLD."invoiceId", NEW."invoiceId")).
+     * Valid DRAFT invoice line updates and deletes execute with exit code 0 (evidence: audit/evidence/verify/F-009/02-original-repro.txt).
+     * Status downgrade from POSTED/PAID/PARTIALLY_PAID/CANCELLED_BY_CREDIT_NOTE to DRAFT or other unposted statuses is blocked by trigger (evidence: audit/evidence/verify/F-009/05-adversarial-probes.txt).
+     * Customer and company snapshot fields (`customerNameSnapshot`, `companyGstinSnapshot`, `deliveryStateSnapshot`) are locked against modification (evidence: audit/evidence/verify/F-009/05-adversarial-probes.txt).
+     * Regression test suite `server/src/db-immutability.test.ts` expanded to 8 tests covering all triggers, status downgrade, snapshot protection, and line immutability.
+     * All 5 deliberate mutants killed by test suite with 0 survivors (evidence: audit/evidence/verify/F-009/04-mutation-check.txt).
+     * Clean environment migrations from zero pass; all 18 benchmark assertions and 10 SQL database invariants pass 100% (evidence: audit/evidence/verify/F-009/01-fresh-environment.txt, audit/evidence/verify/F-009/07-regression-radius.txt).
+
+3. DELTA:
+   None. The fix completely satisfies all expected security and data integrity requirements. Immutability of ledger movements, posted invoices, and invoice lines is enforced at the database engine level with bypass reserved strictly for administrative resets via local session variable.

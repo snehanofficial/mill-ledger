@@ -1,0 +1,1 @@
+F-058 verified: WCAG 2.2 SC 3.3.4 review and confirmation step added for irreversible financial and legal transactions (GST Credit Notes, Sales Invoices, Customer Payments, and Purchase Receipts).

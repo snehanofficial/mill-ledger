@@ -1,0 +1,95 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.374Z","requestId":"e0b84efc-7d2c-473f-bdd9-f8bb0f1d0e02","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":99,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.460Z","requestId":"23387b75-1d10-44a0-9d66-7a015cb0df72","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":80,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.497Z","requestId":"84003930-c2b2-4f19-8882-0fc4bc851a65","method":"POST","path":"/api/v1/inventory/purchase-receipts","statusCode":201,"durationMs":35,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.550Z","requestId":"7bee9888-be5d-4f60-b389-f05b3ef8f7d0","method":"POST","path":"/api/v1/production-runs","statusCode":201,"durationMs":51,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.583Z","requestId":"dae4bb51-218e-4309-9e47-08e49cbc3102","method":"POST","path":"/api/v1/sales/orders","statusCode":201,"durationMs":31,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.607Z","requestId":"135a7a80-3ed5-4f8d-876b-17dd5e59d72a","method":"POST","path":"/api/v1/sales/orders/cmwtq0odf001ap2ab2fny16qc/approve","statusCode":200,"durationMs":22,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.640Z","requestId":"9d9efa4f-61b0-4b99-84bf-f9b0cfb9bc4d","method":"POST","path":"/api/v1/finance/invoices","statusCode":201,"durationMs":32,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.668Z","requestId":"a8b78aaa-79d4-43f2-ab55-85c1c79c37e2","method":"POST","path":"/api/v1/sales/dispatches","statusCode":201,"durationMs":26,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.693Z","requestId":"e77dccc5-d430-4d32-9b3c-069c96d2b213","method":"POST","path":"/api/v1/payments","statusCode":201,"durationMs":23,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.709Z","requestId":"c4fe4d3b-8a37-4992-8853-236d7bd2d74f","method":"GET","path":"/api/v1/reports/sales","statusCode":200,"durationMs":14,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.718Z","requestId":"348c527e-52eb-41c9-8c93-d53c6c359fdb","method":"GET","path":"/api/v1/reports/gst","statusCode":200,"durationMs":8,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.727Z","requestId":"d13b0581-d02b-4b9e-ad43-86c132588cea","method":"GET","path":"/api/v1/reports/purchase","statusCode":200,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.738Z","requestId":"2f42d6a9-9841-41ec-a055-e3a12d28c428","method":"GET","path":"/api/v1/reports/stock","statusCode":200,"durationMs":10,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.748Z","requestId":"3ea98466-ffbb-4da1-ac49-b0d5f5615edf","method":"GET","path":"/api/v1/reports/production","statusCode":200,"durationMs":9,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.755Z","requestId":"0dbcb1c7-da36-4ff9-a312-499c434f2fa9","method":"GET","path":"/api/v1/reports/collections","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.765Z","requestId":"c5ff71d8-2ccd-41f3-9b70-1189c6c33705","method":"GET","path":"/api/v1/reports/receivables","statusCode":200,"durationMs":9,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.789Z","requestId":"e87184f5-e1af-494c-a5eb-3a118c9a47d0","method":"GET","path":"/api/v1/reports/dashboard","statusCode":200,"durationMs":21,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.809Z","requestId":"ddb79186-77a7-4681-978a-42d5ae3be4af","method":"GET","path":"/api/v1/dashboard?organizationId=MILL","statusCode":200,"durationMs":19,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.821Z","requestId":"f6e324d3-5373-4d9f-94fa-d73ab2ec4ae0","method":"GET","path":"/api/v1/reports/sales/export?format=csv","statusCode":200,"durationMs":11,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.826Z","requestId":"217f488e-da1a-46be-8b82-4a041f9a4538","method":"GET","path":"/api/v1/reports/audit","statusCode":200,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.903Z","requestId":"6b246e74-567a-44cc-aadb-e8745b213c89","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":75,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"INFO","timestamp":"2026-11-23T20:31:05.985Z","requestId":"709e29bf-e952-4d12-82ae-8d208c9cadf7","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":81,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"INFO","timestamp":"2026-11-23T20:31:06.000Z","requestId":"05e97061-06bc-4a32-a5c6-c7059e782486","method":"GET","path":"/api/v1/reports/sales","statusCode":200,"durationMs":7,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"INFO","timestamp":"2026-11-23T20:31:06.010Z","requestId":"c17a20d0-17c0-4c0a-98dc-6206bf07685f","method":"GET","path":"/api/v1/reports/production","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"rN7LdbOCSnelfTBvhCFUStihezOPU3MM","userRole":"PRODUCTION"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"INFO","timestamp":"2026-11-23T20:31:06.018Z","requestId":"94b584b1-1aa8-4347-87c8-c59dd57d176c","method":"GET","path":"/api/v1/reports/receivables","statusCode":200,"durationMs":8,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard > enforces role scoping: salesman and production scopes cannot access restricted reports
+{"level":"INFO","timestamp":"2026-11-23T20:31:06.025Z","requestId":"ae917261-2c66-443c-9513-cd9c8c6a006d","method":"GET","path":"/api/v1/reports/receivables?salesmanId=spoofed-id","statusCode":200,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"4vajJq6VITOesWw14GQPUuZUFI7mf05F","userRole":"SALESMAN"}
+
+ ✓ server/src/reports.test.ts (2 tests) 998ms
+   ✓ M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard  578ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  02:01:04
+   Duration  1.94s (transform 274ms, setup 0ms, collect 684ms, tests 998ms, environment 0ms, prepare 45ms)
+

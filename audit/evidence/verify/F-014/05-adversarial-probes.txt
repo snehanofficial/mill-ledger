@@ -1,0 +1,12 @@
+=== STEP 5: ADVERSARIAL PROBES FOR F-014 ===
+Probe 1: Product with unconfigured HSN (9999xxxx) submitted in order lines
+Result: Rejected with HTTP 422 AppError "TAX_CONFIGURATION_ERROR: No active statutory GST rate found for HSN 9999xxxx".
+
+Probe 2: Overlapping effective date ranges submitted to POST /api/v1/finance/tax-rates
+Result: Rejected with HTTP 422 AppError "TAX_CONFIGURATION_ERROR: Overlapping tax rate schedule detected for HSN ...".
+
+Probe 3: Subsequent rate change effective on future date
+Result: Historical posted invoice lines retain exact original rate (5%), taxable value (1000.00), and total tax (50.00) without retroactive modification. Future invoice posted on effective date dynamically receives revised rate (12%) and total tax (120.00).
+
+Probe 4: Automatic predecessor closure
+Result: When setting open-ended future schedule, existing open-ended schedule is automatically closed with effectiveTo equal to new effectiveFrom.

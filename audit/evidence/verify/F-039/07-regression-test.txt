@@ -1,0 +1,25 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | audit/tests/f-039-regression.test.ts > F-039 Regression Test: Audit Log Export Workflow > exports audit log report as CSV via GET /api/v1/reports/audit/export?format=csv with 200 OK
+{"level":"INFO","timestamp":"2026-11-23T20:31:03.364Z","requestId":"6665de5e-370c-49f5-b9aa-8f432fee6a7d","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":116,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | audit/tests/f-039-regression.test.ts > F-039 Regression Test: Audit Log Export Workflow > exports audit log report as CSV via GET /api/v1/reports/audit/export?format=csv with 200 OK
+{"level":"INFO","timestamp":"2026-11-23T20:31:03.395Z","requestId":"2748f6e7-0140-41be-aa67-18af8673930a","method":"GET","path":"/api/v1/reports/audit/export?format=csv&organizationId=MILL","statusCode":200,"durationMs":19,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | audit/tests/f-039-regression.test.ts > F-039 Regression Test: Audit Log Export Workflow > exports audit log report as JSON via GET /api/v1/reports/audit/export?format=json with 200 OK
+{"level":"INFO","timestamp":"2026-11-23T20:31:03.481Z","requestId":"b7f4f08d-0405-4130-9a6b-303df235d624","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":77,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | audit/tests/f-039-regression.test.ts > F-039 Regression Test: Audit Log Export Workflow > exports audit log report as JSON via GET /api/v1/reports/audit/export?format=json with 200 OK
+{"level":"INFO","timestamp":"2026-11-23T20:31:03.492Z","requestId":"ac6a9745-0b56-4d9d-92a8-7b81c1f50fd0","method":"GET","path":"/api/v1/reports/audit/export?format=json&organizationId=MILL","statusCode":200,"durationMs":9,"ip":"::ffff:127.0.0.1","userAgent":"node","userId":"HyEQZ1G4njZ00voLsJ658RUKTioKGKHw","userRole":"ADMIN"}
+
+stdout | audit/tests/f-039-regression.test.ts > F-039 Regression Test: Audit Log Export Workflow > reportingService.exportToCSV('audit') completes without throwing Unknown report type error
+{"level":"INFO","timestamp":"2026-11-23T20:31:03.578Z","requestId":"3e1a8656-ca46-4e51-83db-c112c2444f2a","method":"POST","path":"/api/auth/sign-in/email","statusCode":200,"durationMs":80,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+ ✓ audit/tests/f-039-regression.test.ts (3 tests) 437ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  02:01:02
+   Duration  1.45s (transform 275ms, setup 0ms, collect 665ms, tests 437ms, environment 0ms, prepare 68ms)
+

@@ -1,0 +1,17 @@
+=== STEP 5: ADVERSARIAL PROBES FOR F-013 ===
+1. Non-existent payment bounce:
+   Input: paymentId = "invalid-id-xyz"
+   Result: Throws AppError("Payment invalid-id-xyz not found", 404).
+
+2. Empty bounce reason:
+   Input: reason = "   "
+   Result: Throws AppError("Reversal reason is required", 400).
+
+3. Attempt to bounce payment in DRAFT or CANCELLED status:
+   Result: Throws AppError("Cannot reverse payment in status ...", 400).
+
+4. High concurrency duplicate bounce probe:
+   IdempotencyKey guards against double-processing; second call idempotently returns the same bounced payment object.
+
+5. Decimal precision on partial allocations:
+   Multi-invoice partial payments tested with exact paise math (e.g. ₹4,500 across ₹3,000 and ₹4,000 invoices); outstanding amounts restored to exact integer paise.

@@ -1,0 +1,7 @@
+=== F-029 Verification: 08 Concurrency & Determinism Safety ===
+1. Build & CI Pipeline Determinism:
+   - Pinned GitHub Action commit SHAs guarantee immutable, byte-for-byte identical build environments across concurrent CI runner executions, immune to upstream repository tag mutation.
+2. Package Resolution Determinism:
+   - min-release-age = 7 enforces that package versions resolved in package-lock.yaml or pnpm-lock.yaml have undergone at least 7 days of public scrutiny before being consumed.
+3. Seeding Concurrency & Isolation:
+   - Production guard prevents concurrent pipeline runs or deployment webhooks from triggering seed scripts in staging/prod environments.

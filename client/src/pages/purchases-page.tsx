@@ -1,6 +1,15 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api-client";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { useUrlState } from "@/hooks/use-url-state";
+import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
+import {
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
 import {
   Table,
   TableBody,
@@ -11,11 +20,32 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   PlusIcon,
   RefreshCwIcon,
   TruckIcon,
   CheckCircle2Icon,
+  EyeIcon,
+  FileWarningIcon,
+  RotateCcwIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -59,7 +89,21 @@ interface Supplier {
 
 export function PurchasesPage() {
   const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+  const { t } = useLanguage();
+  const canRecordPurchase =
+    user?.role === "ADMIN" || user?.role === "PRODUCTION";
+  const canManageAdminPurchase = user?.role === "ADMIN";
   const [showModal, setShowModal] = useState(false);
+  const [showConfirmReceipt, setShowConfirmReceipt] = useState(false);
+  const [detailReceipt, setDetailReceipt] = useState<PurchaseReceipt | null>(null);
+  const [debitNoteTarget, setDebitNoteTarget] = useState<PurchaseReceipt | null>(null);
+  const [debitNoteReason, setDebitNoteReason] = useState("");
+  const [debitNoteAmount, setDebitNoteAmount] = useState(0);
+  const [reverseReason, setReverseReason] = useState("");
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
 
   // Form states
   const [selectedSupplierId, setSelectedSupplierId] = useState("");
@@ -73,7 +117,7 @@ export function PurchasesPage() {
   const [notes, setNotes] = useState("Direct mandi intake");
 
   // Query receipts
-  const { data, isLoading, isError, refetch, isFetching } = useQuery<{
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     receipts: PurchaseReceipt[];
   }>({
     queryKey: ["purchase-receipts"],
@@ -153,33 +197,48 @@ export function PurchasesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchase-receipts"] });
       queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
-      toast.success("Purchase receipt posted successfully.");
+      setShowConfirmReceipt(false);
       setShowModal(false);
+      toast.success("Purchase receipt posted successfully.");
       setReceiptNumber(`PR-2026-${Date.now().toString().slice(-4)}`);
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error || err.message || "Failed to post receipt";
-      toast.error(msg);
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to post receipt"));
     },
   });
 
   const receipts = data?.receipts ?? [];
 
+  const filteredReceipts = receipts.filter((r) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    return (
+      r.receiptNumber.toLowerCase().includes(q) ||
+      r.supplier.name.toLowerCase().includes(q) ||
+      r.lines.some(
+        (l) =>
+          l.inventoryItem?.name?.toLowerCase().includes(q) ||
+          l.inventoryItem?.sku?.toLowerCase().includes(q),
+      ) ||
+      (r.supplierInvoiceNumber && r.supplierInvoiceNumber.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Procurement & Mandi Intake
+              {t("Procurement & Mandi Intake")}
             </h1>
             <Badge variant="outline" className="text-xs">
-              Live Ledger
+              {t("Live Ledger")}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Mandi raw material receipts, supplier invoicing, and automated weighted-average cost updating.
+          <p className="max-w-[60ch] text-sm text-muted-foreground">
+            {t("Mandi raw material receipts, supplier invoicing, and automated weighted-average cost updating.")}
           </p>
         </div>
 
@@ -194,50 +253,76 @@ export function PurchasesPage() {
             <RefreshCwIcon
               className={`size-3.5 ${isFetching ? "animate-spin" : ""}`}
             />
-            Refresh
+            {t("Refresh")}
           </Button>
 
-          <Button
-            size="sm"
-            onClick={() => setShowModal(true)}
-            className="gap-1.5"
-          >
-            <PlusIcon className="size-4" />
-            Record Purchase Receipt
-          </Button>
+          {canRecordPurchase && (
+            <Button
+              size="sm"
+              onClick={() => setShowModal(true)}
+              className="gap-1.5"
+            >
+              <PlusIcon className="size-4" />
+              {t("Record Purchase Receipt")}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* KPI Summary Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-1 rounded-xl border border-border bg-card p-4 shadow-xs">
+          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            {t("Total Recorded Receipts")}
+          </span>
+          <span className="text-2xl font-bold tracking-tight text-foreground">
+            {receipts.length}
+          </span>
         </div>
       </div>
 
       {/* Receipts Table Card */}
       <div className="rounded-xl border border-border bg-card shadow-xs">
-        <div className="flex items-center justify-between border-b border-border p-4">
+        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <TruckIcon className="size-4 text-muted-foreground" />
             <h2 className="text-sm font-semibold text-foreground">
-              Purchase Receipts Ledger
+              {t("Purchase Receipts Ledger")}
             </h2>
+            <span className="text-xs text-muted-foreground font-mono tabular-nums">
+              ({filteredReceipts.length} of {receipts.length})
+            </span>
           </div>
-          <span className="text-xs text-muted-foreground font-mono tabular-nums">
-            {receipts.length} total recorded
-          </span>
+
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder={t("Search receipts...")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 w-56 text-xs"
+              aria-label="Search purchase receipts"
+            />
+          </div>
         </div>
 
         {isLoading ? (
-          <div className="flex h-48 items-center justify-center">
-            <div className="flex flex-col items-center gap-2">
-              <RefreshCwIcon className="size-6 animate-spin text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Loading receipts...</span>
-            </div>
+          <div className="p-4">
+            <SkeletonTable rows={5} columns={8} />
           </div>
         ) : isError ? (
-          <div className="flex h-48 items-center justify-center p-6 text-center">
-            <p className="text-sm text-destructive">
-              Failed to load purchase receipts. Please verify network connection.
-            </p>
+          <div className="p-4">
+            <ErrorState
+              title={t("Failed to load purchase receipts", "Failed to load purchase receipts")}
+              description={
+                error instanceof Error ? error.message : "Failed to load purchase receipts. Please verify network connection."
+              }
+              error={error}
+              onRetry={() => refetch()}
+            />
           </div>
         ) : receipts.length === 0 ? (
           <div className="flex h-48 flex-col items-center justify-center p-6 text-center">
-            <TruckIcon className="size-8 text-muted-foreground/50 mb-2" />
+            <TruckIcon className="size-8 text-muted-foreground mb-2" />
             <p className="text-sm font-medium text-foreground">
               No purchase receipts recorded yet
             </p>
@@ -249,18 +334,29 @@ export function PurchasesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[140px]">Receipt #</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Supplier</TableHead>
-                <TableHead>Item</TableHead>
-                <TableHead className="text-right">Quantity</TableHead>
-                <TableHead className="text-right">Unit Rate</TableHead>
-                <TableHead className="text-right">Total Amount</TableHead>
-                <TableHead className="w-[100px] text-center">Status</TableHead>
+                <TableHead className="w-[140px]">{t("Receipt #")}</TableHead>
+                <TableHead>{t("Date")}</TableHead>
+                <TableHead>{t("Supplier")}</TableHead>
+                <TableHead>{t("Item")}</TableHead>
+                <TableHead className="text-right">{t("Quantity")}</TableHead>
+                <TableHead className="text-right">{t("Unit Rate")}</TableHead>
+                <TableHead className="text-right">{t("Total Amount")}</TableHead>
+                <TableHead className="w-[100px] text-center">{t("Status")}</TableHead>
+                <TableHead className="text-right">{t("Actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {receipts.map((rec) => {
+              {filteredReceipts.length === 0 && receipts.length > 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={9}
+                    className="py-8 text-center text-sm text-muted-foreground"
+                  >
+                    {t("No purchase receipts match the search query.")}
+                  </TableCell>
+                </TableRow>
+              )}
+              {filteredReceipts.map((rec) => {
                 const firstLine = rec.lines[0];
                 const totalAmount = rec.lines.reduce(
                   (sum, l) => sum + Number(l.totalPrice),
@@ -272,11 +368,7 @@ export function PurchasesPage() {
                       {rec.receiptNumber}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {new Date(rec.postedAt).toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {formatDate(rec.postedAt)}
                     </TableCell>
                     <TableCell className="font-medium text-sm">
                       {rec.supplier.name}
@@ -285,20 +377,48 @@ export function PurchasesPage() {
                       {firstLine?.inventoryItem.name || "Multiple items"}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs tabular-nums">
-                      {Number(firstLine?.quantity || 0).toLocaleString("en-IN")}{" "}
+                      {formatQuantity(firstLine?.quantity || 0)}{" "}
                       {firstLine?.inventoryItem.baseUom?.symbol || "kg"}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs tabular-nums">
-                      ₹{Number(firstLine?.unitPrice || 0).toFixed(2)}
+                      {formatINR(firstLine?.unitPrice || 0)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs font-semibold tabular-nums">
-                      ₹{totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      {formatINR(totalAmount)}
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge variant="success" className="text-[10px] gap-1">
                         <CheckCircle2Icon className="size-2.5" />
                         Posted
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDetailReceipt(rec)}
+                          className="h-7 px-2 text-xs gap-1"
+                        >
+                          <EyeIcon className="size-3" />
+                          View
+                        </Button>
+                        {canManageAdminPurchase && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setDebitNoteTarget(rec);
+                              setDebitNoteReason("");
+                              setDebitNoteAmount(totalAmount);
+                            }}
+                            className="h-7 px-2 text-xs gap-1"
+                          >
+                            <FileWarningIcon className="size-3" />
+                            Debit Note
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -309,122 +429,142 @@ export function PurchasesPage() {
       </div>
 
       {/* Record Purchase Receipt Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in-0 zoom-in-95">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div>
-                <h3 className="text-base font-semibold text-foreground">
-                  Record Purchase Receipt
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Intake raw materials, update stock, and recalculate WAC.
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowModal(false)}
-              >
-                ✕
-              </Button>
-            </div>
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Record Purchase Receipt</DialogTitle>
+            <DialogDescription>
+              Intake raw materials, update stock, and recalculate WAC.
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="mt-4 flex flex-col gap-4">
+          <div className="mt-2 flex flex-col gap-4">
               {/* Supplier Selection */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Supplier / Mandi Vendor
-                </label>
-                <select
-                  value={selectedSupplierId}
-                  onChange={(e) => setSelectedSupplierId(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+                <div className="flex items-center justify-between">
+                  <Label
+                    htmlFor="purchase-supplier-select"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
+                    Supplier / Mandi Vendor
+                  </Label>
+                  <Link
+                    to="/suppliers"
+                    className="text-xs text-primary hover:underline font-medium"
+                  >
+                    + Manage Suppliers
+                  </Link>
+                </div>
+                <Select
+                  value={selectedSupplierId || undefined}
+                  onValueChange={setSelectedSupplierId}
                 >
-                  {suppliers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.code})
-                    </option>
-                  ))}
-                  {suppliers.length === 0 && (
-                    <option value="">Supplier 1 (SUP-FLOUR-1)</option>
-                  )}
-                </select>
+                  <SelectTrigger id="purchase-supplier-select" className="font-medium">
+                    <SelectValue placeholder="Supplier 1 (SUP-FLOUR-1)" />
+                  </SelectTrigger>
+                  <SelectContent searchable searchPlaceholder="Search suppliers...">
+                    {suppliers.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name} ({s.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Receipt Number & Invoice */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <Label
+                    htmlFor="purchase-receipt-number-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Receipt #
-                  </label>
-                  <input
+                  </Label>
+                  <Input
+                    id="purchase-receipt-number-input"
                     type="text"
                     value={receiptNumber}
                     onChange={(e) => setReceiptNumber(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-mono"
+                    className="font-mono"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <Label
+                    htmlFor="purchase-supplier-invoice-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Supplier Invoice #
-                  </label>
-                  <input
+                  </Label>
+                  <Input
+                    id="purchase-supplier-invoice-input"
                     type="text"
                     value={supplierInvoiceNumber}
                     onChange={(e) => setSupplierInvoiceNumber(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-mono"
+                    className="font-mono"
                   />
                 </div>
               </div>
 
               {/* Item selection */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Raw Material Item
-                </label>
-                <select
-                  value={selectedItemId}
-                  onChange={(e) => setSelectedItemId(e.target.value)}
-                  className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+                <Label
+                  htmlFor="purchase-item-select"
+                  className="text-xs font-semibold text-muted-foreground"
                 >
-                  {rawItems.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name} ({item.sku}) — {item.baseUom?.symbol || "units"}
-                    </option>
-                  ))}
-                  {rawItems.length === 0 && (
-                    <option value="">Flour (RM-FLOUR)</option>
-                  )}
-                </select>
+                  Raw Material Item
+                </Label>
+                <Select
+                  value={selectedItemId || undefined}
+                  onValueChange={setSelectedItemId}
+                >
+                  <SelectTrigger id="purchase-item-select" className="font-medium">
+                    <SelectValue placeholder="Flour (RM-FLOUR)" />
+                  </SelectTrigger>
+                  <SelectContent searchable searchPlaceholder="Search raw materials...">
+                    {rawItems.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name} ({item.sku}) — {item.baseUom?.symbol || "units"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Quantity and Rate */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <Label
+                    htmlFor="purchase-quantity-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Quantity received
-                  </label>
-                  <input
+                  </Label>
+                  <Input
+                    id="purchase-quantity-input"
                     type="number"
                     step="0.01"
                     min="0.01"
                     value={quantity}
                     onChange={(e) => setQuantity(Number(e.target.value))}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-mono"
+                    className="font-mono"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
+                  <Label
+                    htmlFor="purchase-unit-price-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
                     Unit Purchase Rate (₹)
-                  </label>
-                  <input
+                  </Label>
+                  <Input
+                    id="purchase-unit-price-input"
                     type="number"
                     step="0.01"
                     min="0"
                     value={unitPrice}
                     onChange={(e) => setUnitPrice(Number(e.target.value))}
-                    className="rounded-md border bg-background px-3 py-2 text-sm font-mono"
+                    className="font-mono"
                   />
                 </div>
               </div>
@@ -435,26 +575,29 @@ export function PurchasesPage() {
                   Total Payable:
                 </span>
                 <span className="text-sm font-bold text-foreground font-mono tabular-nums">
-                  ₹{lineTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  {formatINR(lineTotal)}
                 </span>
               </div>
 
               {/* Notes */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <Label
+                  htmlFor="purchase-notes-input"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
                   Notes / Vehicle Details
-                </label>
-                <input
+                </Label>
+                <Input
+                  id="purchase-notes-input"
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="e.g. Mandi Lot #481, Truck TN-38-AX-1029"
-                  className="rounded-md border bg-background px-3 py-2 text-sm"
                 />
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-2 border-t border-border pt-4">
+            <DialogFooter className="mt-6 border-t border-border pt-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -465,15 +608,254 @@ export function PurchasesPage() {
               </Button>
               <Button
                 size="sm"
-                onClick={() => createReceiptMutation.mutate()}
+                onClick={() => {
+                  if (!activeSupplier) {
+                    toast.error("Please select a supplier");
+                    return;
+                  }
+                  if (!activeItem) {
+                    toast.error("Please select an inventory item");
+                    return;
+                  }
+                  if (!Number(quantity) || Number(quantity) <= 0) {
+                    toast.error("Please enter a valid quantity greater than zero");
+                    return;
+                  }
+                  if (Number(unitPrice) < 0) {
+                    toast.error("Unit price cannot be negative");
+                    return;
+                  }
+                  setShowConfirmReceipt(true);
+                }}
                 disabled={createReceiptMutation.isPending}
+                className="gap-2"
               >
-                {createReceiptMutation.isPending ? "Posting..." : "Post Purchase Receipt"}
+                <CheckCircle2Icon className="h-4 w-4" />
+                Review & confirm
               </Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Purchase Receipt Irreversible Financial/Inventory Confirmation (F-058) */}
+      {activeSupplier && activeItem && (
+        <ConfirmationDialog
+          open={showConfirmReceipt}
+          onOpenChange={setShowConfirmReceipt}
+          title={
+            <div className="flex items-center gap-2 font-semibold">
+              <TruckIcon className="h-5 w-5 text-primary" />
+              <span>Confirm Purchase Receipt Posting</span>
             </div>
-          </div>
-        </div>
+          }
+          description={
+            <div className="flex flex-col gap-3 text-left">
+              <p className="text-sm text-foreground">
+                You are about to record an inward goods receipt and book supplier accounts payable.
+              </p>
+              <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Receipt Number:</span>
+                  <span className="font-mono font-medium text-foreground">{receiptNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Supplier:</span>
+                  <span className="font-semibold text-foreground">{activeSupplier.name}</span>
+                </div>
+                {supplierInvoiceNumber && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Supplier Inv #:</span>
+                    <span className="font-mono">{supplierInvoiceNumber}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Inward Item:</span>
+                  <span className="font-medium text-foreground">{activeItem.name} ({activeItem.sku})</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Quantity:</span>
+                  <span className="font-mono font-medium">
+                    {formatQuantity(Number(quantity))} {activeItem.baseUom?.code || "KG"}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t border-border/50 pt-1 font-semibold">
+                  <span className="text-foreground">Total Inward Value:</span>
+                  <span className="font-mono text-foreground">{formatINR(lineTotal)}</span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Legal & financial warning: This transaction increases physical inventory balances and generates an accounts payable liability in the general ledger. Posted receipts cannot be deleted.
+              </p>
+            </div>
+          }
+          confirmLabel={createReceiptMutation.isPending ? "Posting..." : "Confirm & Post Inward Goods"}
+          cancelLabel="Back to Edit"
+          disabled={createReceiptMutation.isPending}
+          onConfirm={() => createReceiptMutation.mutate()}
+        />
       )}
+
+      {/* Purchase Receipt Detail & Reversal Modal (IMP-015) */}
+      <Dialog
+        open={detailReceipt !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDetailReceipt(null);
+            setReverseReason("");
+          }
+        }}
+      >
+        {detailReceipt && (
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Purchase Receipt {detailReceipt.receiptNumber}</DialogTitle>
+              <DialogDescription>
+                {detailReceipt.supplier.name} ({detailReceipt.supplier.code}) — {formatDate(detailReceipt.postedAt)}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 text-xs">
+              <div className="rounded-lg bg-muted/40 p-3 flex flex-col gap-1">
+                <div>Warehouse: <strong>{detailReceipt.warehouse.name}</strong></div>
+                <div>Supplier Invoice: <strong className="font-mono">{detailReceipt.supplierInvoiceNumber || "—"}</strong></div>
+                <div>Notes: {detailReceipt.notes || "—"}</div>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                    <TableHead className="text-right">Rate</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {detailReceipt.lines.map((l) => (
+                    <TableRow key={l.id}>
+                      <TableCell>{l.inventoryItem.name}</TableCell>
+                      <TableCell className="text-right font-mono">{Number(l.quantity)} {l.inventoryItem.baseUom?.symbol}</TableCell>
+                      <TableCell className="text-right">{formatINR(l.unitPrice)}</TableCell>
+                      <TableCell className="text-right font-semibold">{formatINR(l.totalPrice)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {canManageAdminPurchase && (
+                <div className="flex flex-col gap-1.5 border-t pt-3">
+                  <Label htmlFor="pr-reverse-reason" className="text-xs">
+                    Reversal Reason (optional — reverses stock if unconsumed)
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="pr-reverse-reason"
+                      value={reverseReason}
+                      onChange={(e) => setReverseReason(e.target.value)}
+                      placeholder="e.g. Duplicate receipt entry"
+                      className="h-8 text-xs"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={!reverseReason.trim()}
+                      onClick={async () => {
+                        try {
+                          await apiClient.post(
+                            `/inventory/purchase-receipts/${detailReceipt.id}/reverse`,
+                            { reason: reverseReason.trim() },
+                          );
+                          queryClient.invalidateQueries({ queryKey: ["purchase-receipts"] });
+                          queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
+                          setDetailReceipt(null);
+                          toast.success("Purchase receipt reversed.");
+                        } catch (err) {
+                          toast.error(extractErrorMessage(err, "Failed to reverse receipt"));
+                        }
+                      }}
+                      className="h-8 gap-1 text-xs shrink-0"
+                    >
+                      <RotateCcwIcon className="size-3.5" />
+                      Reverse
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter className="border-t pt-4">
+              <Button variant="outline" size="sm" onClick={() => setDetailReceipt(null)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
+
+      {/* Issue Debit Note Modal (IMP-015) */}
+      <Dialog
+        open={debitNoteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDebitNoteTarget(null);
+        }}
+      >
+        {debitNoteTarget && (
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Issue Supplier Debit Note</DialogTitle>
+              <DialogDescription>
+                Against {debitNoteTarget.receiptNumber} — {debitNoteTarget.supplier.name}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 py-2">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="dn-amount" className="text-xs">Taxable Amount (₹)</Label>
+                <Input
+                  id="dn-amount"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={debitNoteAmount}
+                  onChange={(e) => setDebitNoteAmount(Number(e.target.value))}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="dn-reason" className="text-xs">Reason</Label>
+                <Input
+                  id="dn-reason"
+                  value={debitNoteReason}
+                  onChange={(e) => setDebitNoteReason(e.target.value)}
+                  placeholder="Quality deduction / short weight"
+                />
+              </div>
+            </div>
+            <DialogFooter className="border-t pt-4">
+              <Button variant="outline" size="sm" onClick={() => setDebitNoteTarget(null)}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={!debitNoteReason.trim() || debitNoteAmount <= 0}
+                onClick={async () => {
+                  try {
+                    await apiClient.post("/finance/debit-notes", {
+                      organizationId: "MILL",
+                      supplierId: debitNoteTarget.supplier.id,
+                      purchaseReceiptId: debitNoteTarget.id,
+                      reason: debitNoteReason.trim(),
+                      taxableAmount: debitNoteAmount,
+                      taxAmount: 0,
+                      totalAmount: debitNoteAmount,
+                    });
+                    setDebitNoteTarget(null);
+                    toast.success("Debit note issued.");
+                  } catch (err) {
+                    toast.error(extractErrorMessage(err, "Failed to issue debit note"));
+                  }
+                }}
+              >
+                Issue Debit Note
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

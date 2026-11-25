@@ -1,0 +1,7 @@
+=== STEP 9: STANDARDS CHECK FOR F-015 ===
+Standards references:
+- RFC 7231 (Hypertext Transfer Protocol - Semantics and Content, Section 4.2.2 Idempotent Methods)
+- OWASP API Security Top 10:2023 API10:2023 (Unsafe Consumption of APIs / Idempotency handling)
+- REQ-051 (audit/01-expected-spec.md & docs/product-requirements.md): Exactly-once semantics and graceful recovery from duplicate concurrent submissions.
+
+All standards requirements fully met.

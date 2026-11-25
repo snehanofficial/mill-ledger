@@ -1,0 +1,11 @@
+=== F-018 VERIFICATION EVIDENCE 08: CONCURRENCY SAFETY ===
+Timestamp: 2026-11-23T15:31:05+05:30
+Scope: Read-side query isolation and consistent filtering
+
+1. Relational Query Consistency:
+- Filter condition `where.salesOrder = { salesmanId: user.id }` executed in PostgreSQL relational join via Prisma client.
+- No race condition can leak records during concurrent reads because query predicates are enforced in SQL WHERE clause at execution time.
+
+2. Dispatch Creation Atomicity:
+- Physical dispatches are posted transactionally inside `prisma.$transaction()` with `FOR UPDATE` row locking on `inventory_item` and atomic reservation release in `stock_reservation`.
+- Verified in `server/src/dispatch-concurrency.test.ts` and `server/src/modules/sales/dispatch.service.ts:35-150`.

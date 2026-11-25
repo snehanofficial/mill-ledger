@@ -1,0 +1,67 @@
+=== OBJECT & PROPERTY LEVEL AUTHORIZATION VERIFICATION ===
+Standard: OWASP API Security Top 10:2023 (API1:2023 Broken Object Level Authorization, API3:2023 Broken Property Level Authorization, API5:2023 Broken Function Level Authorization)
+Environment: Throwaway PostgreSQL Database, Node 22, Express 5.3.0, Prisma 7.10.1
+
+Actor 1: Salesman 1 (salesman1@millledger.local)
+Actor 2: Salesman 2 (salesman2@millledger.local)
+Customer 1: Retailer A (assigned to SM1)
+Customer 2: Distributor B (assigned to SM2)
+
+--- TEST 1: BOLA - SM1 READS SM2 ORDER BY ID ---
+Request: GET /api/v1/sales/orders/cmwnj82sv0000cxab845nt380
+Actual Status: 403 Forbidden
+Response Body: {"error":"Forbidden: Cannot view orders belonging to another salesman"}
+Finding: Pass. Service layer verifies salesmanId ownership before returning order.
+
+--- TEST 2: BOLA - SM1 EDITS SM2 DRAFT ORDER BY ID ---
+Request: PUT /api/v1/sales/orders/cmwnj82sv0000cxab845nt380
+Actual Status: 403 Forbidden
+Response Body: {"error":"Forbidden: Policy evaluation denied request"}
+Finding: Pass. ABAC policy and service check reject modification of another salesman's order.
+
+--- TEST 3: PRIVILEGE ESCALATION - SM1 APPROVES SM2 ORDER ---
+Request: POST /api/v1/sales/orders/cmwnj82sv0000cxab845nt380/approve
+Actual Status: 403 Forbidden
+Response Body: {"error":"Forbidden: Role SALESMAN lacks permission approve on order"}
+Finding: Pass. RBAC rejects approval by SALESMAN.
+
+--- TEST 4: PRIVILEGE ESCALATION - SM1 INVOICES SM2 ORDER ---
+Request: POST /api/v1/finance/invoices
+Actual Status: 403 Forbidden
+Response Body: {"error":"Forbidden: Role SALESMAN lacks permission create on invoice"}
+Finding: Pass. RBAC rejects invoice creation by SALESMAN.
+
+--- TEST 5: BOLA - SM1 CREATES ORDER FOR SM2'S ASSIGNED CUSTOMER ---
+Request: POST /api/v1/sales/orders (customerId: Distributor B)
+Actual Status: 403 Forbidden
+Response Body: {"error":"Salesman is not assigned to customer Distributor B"}
+Finding: Pass. Customer assignment check blocks order creation for unassigned customer.
+
+--- TEST 6: DATA LEAK - SM1 READS ALL COMPANY DISPATCHES ---
+Request: GET /api/v1/sales/dispatches
+Actual Status: 200 OK
+Response: Returns company-wide dispatches; salesRouter permits authorize("order", "read") and dispatchService.getDispatches lacks salesman scoping.
+Finding: P1 Information Disclosure / Unscoped Read.
+
+--- TEST 7: MASS ASSIGNMENT - SM1 CREATES ORDER WITH STATUS=APPROVED ---
+Request: POST /api/v1/sales/orders (body: { status: "APPROVED", ... })
+Actual Status: 201 Created
+Database State: Order status is set directly to APPROVED in PostgreSQL database without ATP checks or stock reservations!
+Finding: P0 Privilege Escalation / Mass Assignment via unconstrained createOrderSchema.status.
+
+--- TEST 8: MASS ASSIGNMENT - SM1 UPDATES DRAFT ORDER WITH STATUS=APPROVED ---
+Request: PUT /api/v1/sales/orders/:id (body: { status: "APPROVED" })
+Actual Status: 403 Forbidden (Blocked by ABAC policy rule requiring status === "DRAFT")
+Finding: Pass on PUT mutation due to ABAC rule check.
+
+--- TEST 9: PRICE MANIPULATION - SM1 OVERRIDES UNIT PRICE TO 0.01 ---
+Request: POST /api/v1/sales/orders (line: { quantity: 100, unitPrice: 0.01 })
+Actual Status: 201 Created
+Accepted Unit Price: 0.01 (Billed total: 1.05 for 100 units)
+Finding: P1 Unenforced Price List Authority / Missing Price Floor Validation.
+
+--- TEST 10: CROSS-TENANT ACCESS ---
+Request: GET /api/v1/sales/customers?organizationId=UNKNOWN_TENANT_999
+Actual Status: 403 Forbidden
+Response Body: {"error":"Forbidden: Access denied to organization UNKNOWN_TENANT_999"}
+Finding: Pass. requireTenant middleware blocks unknown/unauthorized tenant IDs.

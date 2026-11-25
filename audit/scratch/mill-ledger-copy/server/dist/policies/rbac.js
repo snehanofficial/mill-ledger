@@ -1,0 +1,52 @@
+export const ROLE_PERMISSIONS = {
+    ADMIN: {
+        order: ["create", "read", "update", "delete", "approve", "dispatch"],
+        invoice: ["create", "read", "update", "delete"],
+        production_run: ["create", "read", "update", "delete", "approve"],
+        inventory: ["create", "read", "update", "delete"],
+        purchase: ["create", "read", "update", "delete", "approve"],
+        payment: ["create", "read", "update", "delete"],
+        report: ["read"],
+        user: ["create", "read", "update", "delete"],
+        customer: ["create", "read", "update", "delete"],
+    },
+    SALESMAN: {
+        order: ["create", "read", "update"],
+        inventory: ["read"],
+        report: ["read"],
+        customer: ["read"],
+    },
+    PRODUCTION: {
+        production_run: ["create", "read", "update", "approve"],
+        inventory: ["read"],
+        purchase: ["create", "read"],
+        report: ["read"],
+    },
+    ACCOUNTANT: {
+        order: ["read"],
+        invoice: ["read"],
+        payment: ["read"],
+        purchase: ["read"],
+        inventory: ["read"],
+        report: ["read"],
+        customer: ["read"],
+    },
+    OWNER: {
+        order: ["read"],
+        invoice: ["read"],
+        production_run: ["read"],
+        inventory: ["read"],
+        purchase: ["read"],
+        payment: ["read"],
+        report: ["read"],
+        user: ["read"],
+        customer: ["read"],
+    },
+};
+export function hasRbacPermission(role, resource, action) {
+    const resourcePermissions = ROLE_PERMISSIONS[role]?.[resource];
+    if (!resourcePermissions) {
+        return false;
+    }
+    return resourcePermissions.includes(action);
+}

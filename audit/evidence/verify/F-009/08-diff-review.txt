@@ -1,0 +1,21 @@
+=== STEP 8: DIFF REVIEW FOR F-009 (COMMIT ba71207) ===
+Timestamp: 2026-11-22T21:52:45+05:30
+Target Commit: ba71207ae75581b11bd721c95c3a00cfa8730500
+Parent Commit: bfd9d04b8cf36e292ea730a502916c7e00292867
+
+1. Modified Files:
+   - server/prisma/migrations/20261120000002_ledger_immutability_triggers/migration.sql (15 lines changed)
+   - server/src/db-immutability.test.ts (160 lines changed)
+
+2. Scope and Hygiene Analysis:
+   - Scope Creep: None detected. Only addresses the 4 specific failure points identified in verification run 004 (FK column correction on line trigger, status downgrade protection, snapshot field protection, and line regression tests).
+   - Leftover Debug Code: None. No console.log or temporary inspect queries.
+   - Swallowed Errors: None. All triggers raise standard PostgreSQL exceptions (PL/pgSQL RAISE EXCEPTION).
+   - Type Safety: No TypeScript `any` or unsafe type assertions added.
+   - Disabled Lint Rules: None. Zero eslint-disable or oxlint-disable comments.
+   - Commented-out Code: None.
+   - Hardcoded Magic Values: None. Statuses checked correspond to canonical Prisma enum values ('POSTED', 'PARTIALLY_PAID', 'PAID', 'CANCELLED_BY_CREDIT_NOTE').
+   - TODOs / Placeholders: None.
+   - Untranslated Copy: N/A (database trigger exception messages are backend system messages).
+
+3. Verdict: DIFF CLEAN AND ACCEPTED.

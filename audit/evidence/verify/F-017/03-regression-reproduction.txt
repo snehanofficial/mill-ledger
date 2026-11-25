@@ -1,0 +1,20 @@
+=== F-017 VERIFICATION EVIDENCE 03: REGRESSION REPRODUCTION ===
+Finding ID: F-017
+Title: Unvalidated `status` in order creation payload allows salesman to set `status: "APPROVED"` directly in PostgreSQL
+Severity: P0
+Category: Authorization / Mass Assignment / Privilege Escalation
+Standard Refs: OWASP API Security Top 10:2023 API3:2023 (Broken Object Property Level Authorization), OWASP Top 10:2021 A01:2021 (Broken Access Control), OWASP ASVS v4.0.3 Section 5.1.4
+
+Root Cause:
+1. `server/src/modules/sales/sales.routes.ts`: `createOrderSchema` included `status: z.nativeEnum(OrderStatus).optional()`, allowing untrusted callers to send any lifecycle state (e.g. APPROVED, DISPATCHED) in the POST /orders body.
+2. `server/src/modules/sales/sales.service.ts`: `createOrder` used `const initialStatus = input.status ?? OrderStatus.SUBMITTED;` and directly inserted the record into `sales_order` with `status: initialStatus`. This allowed salesmen to bypass manager review, ATP inventory validation, and atomic stock reservations in `stock_reservation`.
+
+Reproduction & Verification:
+1. `server/src/orders.test.ts` (Test: `F-017: blocks mass assignment of status in sales order creation payload`):
+   - Salesman submits `status: "APPROVED"`: Server returns HTTP 400 Bad Request.
+   - Admin submits `status: "APPROVED"`: Server returns HTTP 400 Bad Request (approval must go through dedicated `/approve` endpoint with atomic stock reservation).
+   - Salesman submits `status: "DISPATCHED"`: Server returns HTTP 400 Bad Request.
+   - Salesman submits `status: "DRAFT"`: Server returns HTTP 201 Created with `order.status: "DRAFT"`.
+   - Salesman submits without status: Server returns HTTP 201 Created with default `order.status: "SUBMITTED"`.
+2. Service layer defense-in-depth:
+   - `salesService.createOrder` validates that `input.status` can only be `OrderStatus.DRAFT` or `OrderStatus.SUBMITTED`. Any attempt to pass other statuses throws `AppError("New sales orders can only be created with DRAFT or SUBMITTED status", 400)`.

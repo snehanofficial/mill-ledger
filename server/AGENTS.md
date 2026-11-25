@@ -52,9 +52,8 @@ pnpm --filter @mill-ledger/server prisma:generate
 
 ## Gotchas
 
-- Production, sales, inventory, and finance routers are currently skeleton placeholder routers.
-- The Prisma schema currently defines only Better Auth tables; core business entities remain to be added.
-- The API router mounts routes under `/api/v1` with a root `/api/health` alias for health checks.
+- Production, sales, inventory, finance, masters, and reporting routers are mounted under `/api/v1` with a root `/api/health` alias for health checks.
+- The Prisma schema defines Better Auth tables alongside full ERP domain models (`Organization`, `Customer`, `Product`, `InventoryItem`, `StockMovement`, `ProductionRun`, `SalesOrder`, `SalesInvoice`, `Payment`, `AuditLog`).
 
 ## Agent skills
 

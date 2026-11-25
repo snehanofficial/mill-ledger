@@ -1,0 +1,27 @@
+=== F-029 Verification: 03 Regression Reproduction ===
+Finding Title: CI pipeline uses mutable GitHub Action references, lacks package manager release-age protection, and exposes unconstrained database seeds
+Defect Analysis:
+1. Mutable GitHub Action References:
+   In .github/workflows/ci.yml, actions were referenced via mutable tags:
+   - actions/checkout@v4
+   - pnpm/action-setup@v4
+   - actions/setup-node@v4
+   These tags were subject to silent tag retargeting if an upstream account or branch was compromised, violating OWASP ASVS 14.2.1 and A08:2021.
+2. Missing Supply-Chain Security Settings:
+   - .npmrc lacked min-release-age configuration.
+   - pnpm-workspace.yaml lacked blockExoticSubdeps protection against transitive package hijacking.
+3. Unconstrained Database Seeding:
+   server/prisma/seed.ts and server/src/db/seed.ts executed runFullSeed() unconditionally without asserting process.env.NODE_ENV !== "production", risking accidental seeding of test accounts and benchmark data in live production deployments.
+
+Fix Applied:
+1. Pinned all GitHub Actions in .github/workflows/ci.yml to full 40-character commit SHAs with semantic version comments:
+   - actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+   - pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+   - actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+2. Added min-release-age = 7 to .npmrc.
+3. Added blockExoticSubdeps: true to pnpm-workspace.yaml.
+4. Added production guard to runFullSeed() in server/prisma/seed.ts and server/src/db/seed.ts:
+   if (process.env.NODE_ENV === "production") {
+     throw new Error("Seeding is strictly disabled in production environments.");
+   }
+5. Added regression test suites in audit/tests/f-029-regression.spec.ts and server/src/supply-chain.test.ts asserting SHA pinning, .npmrc release-age, pnpm workspace policy, and production seeding prohibition.

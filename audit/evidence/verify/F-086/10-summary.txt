@@ -1,0 +1,33 @@
+======================================================================
+F-086 VERIFICATION SUMMARY: PRE-HYDRATION HTML LANG SYNC & USER-SCOPED STORAGE
+======================================================================
+Date: 2026-11-24
+Severity: P2 | Tier: T9 | Cluster: CLUSTER-13
+Status: VERIFIED-PASS
+
+1. Root Cause:
+`<html lang="en">` was hardcoded in `client/index.html` without synchronous pre-hydration synchronization,
+causing Flash of Untranslated Content (FOUC) and screen reader synthesizer speech distortion on initial load
+when Tamil was selected. In addition, language preference was saved to a single un-scoped `localStorage`
+key ("mill_ledger_lang"), causing cross-user state bleed on multi-user terminal devices.
+
+2. Implementation Summary:
+- `client/index.html`:
+  * Embedded synchronous pre-hydration script in `<head>` evaluating active user ID or global key and setting
+    `document.documentElement.lang` before first DOM paint.
+- `client/src/lib/i18n.tsx`:
+  * Implemented `getUserScopedLanguageKey`, `getSavedLanguage`, and `saveUserLanguage` with fallback hierarchy.
+  * Updated `LanguageProvider` with user-scoped isolation preventing cross-account state contamination.
+- `client/src/lib/auth-client.ts`:
+  * Sets `mill_ledger_active_user` upon `signIn` and clears it upon `signOut`.
+- `client/src/layouts/authenticated-layout.tsx`:
+  * Synchronizes `mill_ledger_active_user` with current session user and purges upon logout.
+
+3. Verification Results:
+- Regression Test: `audit/tests/f-086-regression.test.ts` passed (6/6 tests).
+- Typecheck: Passed with 0 errors across shared, client, and server workspaces.
+- Lint: Passed with 0 errors and 0 warnings (oxlint).
+- Build: Passed (`vite build` and `tsc`).
+- Benchmark: 18/18 numerical assertions passed (100% exact numerical match).
+- Database Invariants: 10/10 PostgreSQL invariants passed (0 violations).
+- Full Test Suite: All unit and integration test suites passing.

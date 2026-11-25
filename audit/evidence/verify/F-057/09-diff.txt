@@ -1,0 +1,93 @@
+diff --git a/client/src/layouts/authenticated-layout.tsx b/client/src/layouts/authenticated-layout.tsx
+index 2cb55e0..23db524 100644
+--- a/client/src/layouts/authenticated-layout.tsx
++++ b/client/src/layouts/authenticated-layout.tsx
+@@ -18,6 +18,9 @@ import { AuthenticatedShell } from "@/components/shell/authenticated-shell";
+ import { useCurrentUser } from "@/hooks/use-current-user";
+ import { authClient } from "@/lib/auth-client";
+ import { offlineDb } from "@/offline/db";
++import { saveActiveFormDraft } from "@/lib/form-draft";
++import { useSessionTimeout } from "@/hooks/use-session-timeout";
++import { SessionTimeoutModal } from "@/components/shell/session-timeout-modal";
+ import type { RouteHandle } from "@/components/shell/use-breadcrumbs";
+ 
+ function RouteLoadingFallback() {
+@@ -67,13 +70,27 @@ export function AuthenticatedLayout() {
+     }
+   }, [label, location.pathname]);
+ 
++  // WCAG 2.2 SC 2.2.1 & SC 3.3.7: Proactive idle session warning and draft preservation
++  const { isWarningOpen, secondsRemaining, extendSession } = useSessionTimeout({
++    onTimeout: () => {
++      saveActiveFormDraft(location.pathname);
++      queryClient.clear();
++      navigate("/auth/login", {
++        replace: true,
++        state: { from: location, sessionExpired: true },
++      });
++    },
++  });
++
+   // Listen for unauthorized session expiration across active API queries
+   useEffect(() => {
+     const handleUnauthorized = () => {
++      // WCAG 2.2 SC 3.3.7: Serialize in-progress form inputs before redirect
++      saveActiveFormDraft(location.pathname);
+       queryClient.clear();
+       navigate("/auth/login", {
+         replace: true,
+-        state: { from: location },
++        state: { from: location, sessionExpired: true },
+       });
+     };
+ 
+@@ -142,6 +159,12 @@ export function AuthenticatedLayout() {
+       >
+         {routeAnnouncement}
+       </div>
++      <SessionTimeoutModal
++        isOpen={isWarningOpen}
++        secondsRemaining={secondsRemaining}
++        onExtend={extendSession}
++        onSignOut={handleSignOut}
++      />
+       <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>
+         <Suspense fallback={<RouteLoadingFallback />}>
+           <Outlet />
+diff --git a/client/src/pages/login-page.tsx b/client/src/pages/login-page.tsx
+index af3edc2..834be91 100644
+--- a/client/src/pages/login-page.tsx
++++ b/client/src/pages/login-page.tsx
+@@ -98,6 +98,9 @@ export function LoginPage() {
+   const [showPassword, setShowPassword] = useState(false);
+   const [isSubmitting, setIsSubmitting] = useState(false);
+   const [errorMessage, setErrorMessage] = useState<string | null>(null);
++  const isSessionExpired = Boolean(
++    (location.state as { sessionExpired?: boolean })?.sessionExpired,
++  );
+ 
+   // Derive target return URL with open-redirect protection
+   const rawFrom = (
+@@ -251,6 +254,22 @@ export function LoginPage() {
+                 </Alert>
+               )}
+ 
++              {isSessionExpired && !errorMessage && (
++                <Alert
++                  variant="warning"
++                  role="status"
++                  title={
++                    language === "ta"
++                      ? "அமர்வு காலாவதியானது"
++                      : "Session Expired"
++                  }
++                >
++                  {language === "ta"
++                    ? "செயலற்ற தன்மை காரணமாக உங்கள் அமர்வு காலாவதியானது. உங்கள் வேலையைத் தொடர மீண்டும் உள்நுழையவும்."
++                    : "Your session expired due to inactivity. Please sign in to resume your work."}
++                </Alert>
++              )}
++
+               <div className="space-y-1.5">
+                 <label
+                   htmlFor="email"

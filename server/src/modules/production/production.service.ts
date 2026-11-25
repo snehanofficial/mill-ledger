@@ -1,10 +1,14 @@
 import { prisma } from "../../db/client.js";
 import {
+  ItemCategory,
   MovementType,
+  Prisma,
   ProductionRunStatus,
   RecipeItemType,
 } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
+import type { UserContext } from "@mill-ledger/shared";
+import { auditService } from "../reporting/audit.service.js";
 
 export interface ConsumedMaterialInput {
   inventoryItemId: string;
@@ -43,13 +47,43 @@ export interface ReverseProductionRunInput {
 }
 
 export class ProductionService {
+  private async resolveOrgId(
+    orgIdOrCode?: string,
+    client: Prisma.TransactionClient | typeof prisma = prisma,
+  ): Promise<string> {
+    const target = orgIdOrCode || "MILL";
+    const org = await client.organization.findFirst({
+      where: {
+        OR: [{ id: target }, { code: target }],
+      },
+    });
+    return org ? org.id : target;
+  }
+
+  private async resolveWarehouseId(
+    warehouseIdOrCode: string,
+    organizationId: string,
+    client: Prisma.TransactionClient | typeof prisma = prisma,
+  ): Promise<string> {
+    const warehouse = await client.warehouse.findFirst({
+      where: {
+        OR: [
+          { id: warehouseIdOrCode },
+          { code: warehouseIdOrCode, facility: { organizationId } },
+        ],
+      },
+    });
+    return warehouse ? warehouse.id : warehouseIdOrCode;
+  }
+
   /**
    * List active BOM recipes for an organization
    */
   async getRecipes(organizationId: string) {
+    const resolvedOrgId = await this.resolveOrgId(organizationId);
     return await prisma.recipe.findMany({
       where: {
-        organizationId,
+        organizationId: resolvedOrgId,
         isActive: true,
       },
       include: {
@@ -67,7 +101,7 @@ export class ProductionService {
   /**
    * Create a draft production run with pre populated recipe BOM lines
    */
-  async createDraftRun(input: CreateDraftRunInput) {
+  async createDraftRun(input: CreateDraftRunInput, user?: UserContext) {
     const recipe = await prisma.recipe.findUnique({
       where: { id: input.recipeId },
       include: {
@@ -85,8 +119,13 @@ export class ProductionService {
       throw new AppError(`Recipe ${input.recipeId} not found`, 404);
     }
 
+    const resolvedOrgId = await this.resolveOrgId(input.organizationId);
+    const resolvedWarehouseId = await this.resolveWarehouseId(
+      input.warehouseId,
+      resolvedOrgId,
+    );
     const warehouse = await prisma.warehouse.findUnique({
-      where: { id: input.warehouseId },
+      where: { id: resolvedWarehouseId },
     });
     if (!warehouse) {
       throw new AppError(`Warehouse ${input.warehouseId} not found`, 404);
@@ -96,7 +135,8 @@ export class ProductionService {
       input.batchCount && input.batchCount > 0 ? input.batchCount : 1;
     const expectedOutputQty = Number(recipe.expectedOutputQty) * batchCount;
 
-    return await prisma.$transaction(async (tx) => {
+    try {
+      const txResult = await prisma.$transaction(async (tx) => {
       if (input.idempotencyKey) {
         const existing = await tx.productionRun.findUnique({
           where: { idempotencyKey: input.idempotencyKey },
@@ -114,8 +154,8 @@ export class ProductionService {
 
       const run = await tx.productionRun.create({
         data: {
-          organizationId: input.organizationId,
-          warehouseId: input.warehouseId,
+          organizationId: resolvedOrgId,
+          warehouseId: resolvedWarehouseId,
           recipeId: recipe.id,
           recipeVersion: recipe.version,
           runNumber: input.runNumber,
@@ -157,6 +197,47 @@ export class ProductionService {
         },
       });
     });
+
+    if (txResult) {
+      await auditService.log({
+        organizationId: txResult.organizationId,
+        userId: user?.id,
+        userEmail: user?.email,
+        action: "CREATE",
+        entity: "ProductionRun",
+        entityId: txResult.id,
+        details: {
+          runNumber: txResult.runNumber,
+          status: txResult.status,
+          recipeId: txResult.recipeId,
+          warehouseId: txResult.warehouseId,
+        },
+      });
+    }
+
+    return txResult;
+    } catch (err: unknown) {
+      if (
+        input.idempotencyKey &&
+        typeof err === "object" &&
+        err !== null &&
+        (err as { code?: string }).code === "P2002"
+      ) {
+        const existing = await prisma.productionRun.findUnique({
+          where: { idempotencyKey: input.idempotencyKey },
+          include: {
+            materials: {
+              include: { inventoryItem: true },
+            },
+            recipe: true,
+          },
+        });
+        if (existing) {
+          return existing;
+        }
+      }
+      throw err;
+    }
   }
 
   /**
@@ -174,6 +255,7 @@ export class ProductionService {
   async postProductionRun(
     runIdOrDraft: string | undefined,
     input: PostProductionRunInput,
+    user?: UserContext,
   ) {
     if (input.actualGoodQty <= 0) {
       throw new AppError(
@@ -185,7 +267,7 @@ export class ProductionService {
       throw new AppError("Production run must include consumed materials", 400);
     }
 
-    return await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existingRun = await tx.productionRun.findUnique({
@@ -248,10 +330,16 @@ export class ProductionService {
         );
       }
 
-      const warehouseId = runRecord ? runRecord.warehouseId : input.warehouseId;
-      if (!warehouseId) {
+      const resolvedOrgId = await this.resolveOrgId(input.organizationId, tx);
+      const rawWarehouseId = runRecord
+        ? runRecord.warehouseId
+        : input.warehouseId;
+      if (!rawWarehouseId) {
         throw new AppError("Warehouse ID is required", 400);
       }
+      const warehouseId = runRecord
+        ? rawWarehouseId
+        : await this.resolveWarehouseId(rawWarehouseId, resolvedOrgId, tx);
 
       const batchCount = runRecord
         ? Number(runRecord.batchCount)
@@ -308,10 +396,12 @@ export class ProductionService {
             id: string;
             name: string;
             sku: string;
+            category: string;
+            baseUomId: string;
             currentStock: unknown;
             weightedAverageCost: unknown;
           }>
-        >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${consumed.inventoryItemId} FOR UPDATE`;
+        >`SELECT id, name, sku, category, "baseUomId", "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${consumed.inventoryItemId} FOR UPDATE`;
         const invItem = invItems[0];
 
         if (!invItem) {
@@ -359,13 +449,61 @@ export class ProductionService {
         const lineTotalCost = actualQty * unitCost;
         directMaterialCost += lineTotalCost;
 
-        // Check non-blocking carton packaging capacity warning
-        if (invItem.sku === "PKG-CARTON" && actualQty > 0) {
-          const packetsHeld = actualQty * 20;
-          if (packetsHeld < actualGoodQty) {
-            warnings.push(
-              `${actualQty} cartons represent ${packetsHeld} of ${actualGoodQty} packets.`,
-            );
+        // Check non-blocking packaging capacity warning for packaging items
+        if (
+          (itemType === RecipeItemType.PACKAGING ||
+            invItem.category === ItemCategory.PACKAGING ||
+            invItem.sku === "PKG-CARTON") &&
+          actualQty > 0
+        ) {
+          const itemUomId = invItem.baseUomId ?? recipeItem?.uomId;
+          let conversion = itemUomId
+            ? await tx.unitConversion.findFirst({
+                where: {
+                  fromUomId: itemUomId,
+                  toUomId: recipe.outputUomId,
+                },
+                include: {
+                  fromUom: true,
+                  toUom: true,
+                },
+              })
+            : null;
+
+          if (
+            !conversion &&
+            (invItem.sku === "PKG-CARTON" ||
+              invItem.name.toLowerCase().includes("carton"))
+          ) {
+            conversion = await tx.unitConversion.findFirst({
+              where: {
+                fromUom: { code: "CARTON" },
+                toUomId: recipe.outputUomId,
+              },
+              include: {
+                fromUom: true,
+                toUom: true,
+              },
+            });
+          }
+
+          if (conversion) {
+            const factor = Number(conversion.factor);
+            const unitsHeld = actualQty * factor;
+            if (unitsHeld < actualGoodQty) {
+              const fromUnit = conversion.fromUom.name.toLowerCase() + "s";
+              const toUnit = conversion.toUom.name.toLowerCase() + "s";
+              warnings.push(
+                `${actualQty} ${fromUnit} represent ${unitsHeld} of ${actualGoodQty} ${toUnit}.`,
+              );
+            }
+          } else if (invItem.sku === "PKG-CARTON") {
+            const packetsHeld = actualQty * 20;
+            if (packetsHeld < actualGoodQty) {
+              warnings.push(
+                `${actualQty} cartons represent ${packetsHeld} of ${actualGoodQty} packets.`,
+              );
+            }
           }
         }
 
@@ -395,11 +533,14 @@ export class ProductionService {
         input.runNumber ??
         `RUN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
 
+      const packagingMismatch = warnings.length > 0;
+      const packagingWarning = packagingMismatch ? warnings.join("; ") : null;
+
       let runId = runRecord?.id;
       if (!runId) {
         const createdRun = await tx.productionRun.create({
           data: {
-            organizationId: input.organizationId,
+            organizationId: resolvedOrgId,
             warehouseId: warehouseId,
             recipeId: recipe.id,
             recipeVersion: recipe.version,
@@ -412,6 +553,8 @@ export class ProductionService {
             yieldVarianceQty: yieldVarianceQty,
             yieldVariancePct: yieldVariancePct,
             isYieldFlagged: isYieldFlagged,
+            packagingMismatch,
+            packagingWarning,
             directMaterialCost: directMaterialCost,
             directLaborCost: directLaborCost,
             utilityCost: utilityCost,
@@ -434,6 +577,8 @@ export class ProductionService {
             yieldVarianceQty: yieldVarianceQty,
             yieldVariancePct: yieldVariancePct,
             isYieldFlagged: isYieldFlagged,
+            packagingMismatch,
+            packagingWarning,
             directMaterialCost: directMaterialCost,
             directLaborCost: directLaborCost,
             utilityCost: utilityCost,
@@ -553,18 +698,41 @@ export class ProductionService {
         warnings,
       };
     });
+
+    if (result?.run) {
+      await auditService.log({
+        organizationId: result.run.organizationId,
+        userId: user?.id,
+        userEmail: user?.email,
+        action: "POST",
+        entity: "ProductionRun",
+        entityId: result.run.id,
+        details: {
+          runNumber: result.run.runNumber,
+          status: result.run.status,
+          actualYieldQuantity: Number(result.run.actualGoodQty),
+          totalCost: Number(result.run.totalRunCost),
+        },
+      });
+    }
+
+    return result;
   }
 
   /**
    * Reverses a posted production run with compensating stock movements
    * Restores consumed materials and removes output finished goods
    */
-  async reverseProductionRun(runId: string, input: ReverseProductionRunInput) {
+  async reverseProductionRun(
+    runId: string,
+    input: ReverseProductionRunInput,
+    user?: UserContext,
+  ) {
     if (!input.reason) {
       throw new AppError("Reversal reason is required", 400);
     }
 
-    return await prisma.$transaction(async (tx) => {
+    const reversed = await prisma.$transaction(async (tx) => {
       const run = await tx.productionRun.findUnique({
         where: { id: runId },
         include: {
@@ -701,14 +869,33 @@ export class ProductionService {
 
       return updatedRun;
     });
+
+    if (reversed) {
+      await auditService.log({
+        organizationId: reversed.organizationId,
+        userId: user?.id ?? input.reversedByUserId,
+        userEmail: user?.email,
+        action: "REVERSE",
+        entity: "ProductionRun",
+        entityId: reversed.id,
+        reason: input.reason,
+        details: {
+          runNumber: reversed.runNumber,
+          status: reversed.status,
+        },
+      });
+    }
+
+    return reversed;
   }
 
   /**
    * List production runs for an organization
    */
   async getProductionRuns(organizationId: string) {
+    const resolvedOrgId = await this.resolveOrgId(organizationId);
     return await prisma.productionRun.findMany({
-      where: { organizationId },
+      where: { organizationId: resolvedOrgId },
       include: {
         recipe: {
           include: { productVariant: true },
@@ -753,6 +940,252 @@ export class ProductionService {
     }
 
     return run;
+  }
+
+  /**
+   * Update a DRAFT production run (IMP-013). Rejects POSTED or REVERSED runs.
+   */
+  async updateDraftRun(
+    runId: string,
+    input: {
+      notes?: string;
+      batchCount?: number;
+      actualGoodQty?: number;
+      directLaborCost?: number;
+      utilityCost?: number;
+    },
+    user?: UserContext,
+  ) {
+    const run = await prisma.productionRun.findUnique({
+      where: { id: runId },
+    });
+    if (!run) {
+      throw new AppError(`Production run ${runId} not found`, 404);
+    }
+    if (run.status !== ProductionRunStatus.DRAFT) {
+      throw new AppError(
+        `Cannot edit production run ${run.runNumber} in status ${run.status}. Only DRAFT runs can be modified.`,
+        400,
+      );
+    }
+
+    const updated = await prisma.productionRun.update({
+      where: { id: runId },
+      data: {
+        notes: input.notes !== undefined ? input.notes : undefined,
+        batchCount: input.batchCount !== undefined ? input.batchCount : undefined,
+        actualGoodQty:
+          input.actualGoodQty !== undefined ? input.actualGoodQty : undefined,
+        directLaborCost:
+          input.directLaborCost !== undefined ? input.directLaborCost : undefined,
+        utilityCost:
+          input.utilityCost !== undefined ? input.utilityCost : undefined,
+      },
+      include: {
+        materials: { include: { inventoryItem: true } },
+        recipe: true,
+      },
+    });
+
+    await auditService.log({
+      organizationId: run.organizationId,
+      userId: user?.id,
+      userEmail: user?.email,
+      action: "UPDATE",
+      entity: "ProductionRun",
+      entityId: run.id,
+      details: { runNumber: run.runNumber, status: run.status },
+    });
+
+    return updated;
+  }
+
+  /**
+   * Delete a DRAFT production run (IMP-013). Rejects POSTED or REVERSED runs.
+   */
+  async deleteDraftRun(runId: string, user?: UserContext) {
+    const run = await prisma.productionRun.findUnique({
+      where: { id: runId },
+    });
+    if (!run) {
+      throw new AppError(`Production run ${runId} not found`, 404);
+    }
+    if (run.status !== ProductionRunStatus.DRAFT) {
+      throw new AppError(
+        `Cannot delete production run ${run.runNumber} in status ${run.status}. Use reversal for POSTED runs.`,
+        400,
+      );
+    }
+
+    await prisma.productionRun.delete({ where: { id: runId } });
+
+    await auditService.log({
+      organizationId: run.organizationId,
+      userId: user?.id,
+      userEmail: user?.email,
+      action: "DELETE",
+      entity: "ProductionRun",
+      entityId: run.id,
+      details: { runNumber: run.runNumber },
+    });
+
+    return { deleted: true, id: runId };
+  }
+
+  /**
+   * Create a new BOM recipe (IMP-011)
+   */
+  async createRecipe(
+    input: {
+      organizationId?: string;
+      productVariantId: string;
+      name: string;
+      standardBatchSize: number;
+      expectedOutputQty: number;
+      outputUomId: string;
+      items: Array<{
+        inventoryItemId: string;
+        itemType: "INGREDIENT" | "PACKAGING";
+        plannedQty: number;
+        uomId: string;
+        tolerancePct?: number;
+      }>;
+    },
+    user?: UserContext,
+  ) {
+    const orgId = await this.resolveOrgId(input.organizationId || "MILL");
+    const maxVer = await prisma.recipe.aggregate({
+      where: { productVariantId: input.productVariantId },
+      _max: { version: true },
+    });
+    const nextVersion = (maxVer._max.version ?? 0) + 1;
+
+    const recipe = await prisma.recipe.create({
+      data: {
+        organizationId: orgId,
+        productVariantId: input.productVariantId,
+        version: nextVersion,
+        name: input.name.trim(),
+        standardBatchSize: input.standardBatchSize,
+        expectedOutputQty: input.expectedOutputQty,
+        outputUomId: input.outputUomId,
+        items: {
+          create: input.items.map((it) => ({
+            inventoryItemId: it.inventoryItemId,
+            itemType: it.itemType,
+            plannedQty: it.plannedQty,
+            uomId: it.uomId,
+            tolerancePct: it.tolerancePct ?? 5.0,
+          })),
+        },
+      },
+      include: {
+        productVariant: true,
+        items: { include: { inventoryItem: true } },
+      },
+    });
+
+    await auditService.log({
+      organizationId: orgId,
+      userId: user?.id,
+      userEmail: user?.email,
+      action: "CREATE",
+      entity: "Recipe",
+      entityId: recipe.id,
+      details: { name: recipe.name, version: recipe.version },
+    });
+
+    return recipe;
+  }
+
+  /**
+   * Clone an existing BOM recipe into a new version without mutating historical versions (IMP-011)
+   */
+  async createRecipeVersion(
+    recipeId: string,
+    input: { name?: string; expectedOutputQty?: number },
+    user?: UserContext,
+  ) {
+    const existing = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+      include: { items: true },
+    });
+    if (!existing) {
+      throw new AppError(`Recipe ${recipeId} not found`, 404);
+    }
+
+    const maxVer = await prisma.recipe.aggregate({
+      where: { productVariantId: existing.productVariantId },
+      _max: { version: true },
+    });
+    const nextVersion = (maxVer._max.version ?? existing.version) + 1;
+
+    const cloned = await prisma.recipe.create({
+      data: {
+        organizationId: existing.organizationId,
+        productVariantId: existing.productVariantId,
+        version: nextVersion,
+        name: input.name?.trim() || `${existing.name} (v${nextVersion})`,
+        standardBatchSize: existing.standardBatchSize,
+        expectedOutputQty:
+          input.expectedOutputQty ?? existing.expectedOutputQty,
+        outputUomId: existing.outputUomId,
+        items: {
+          create: existing.items.map((it) => ({
+            inventoryItemId: it.inventoryItemId,
+            itemType: it.itemType,
+            plannedQty: it.plannedQty,
+            uomId: it.uomId,
+            tolerancePct: it.tolerancePct,
+          })),
+        },
+      },
+      include: {
+        productVariant: true,
+        items: { include: { inventoryItem: true } },
+      },
+    });
+
+    await auditService.log({
+      organizationId: existing.organizationId,
+      userId: user?.id,
+      userEmail: user?.email,
+      action: "CREATE_VERSION",
+      entity: "Recipe",
+      entityId: cloned.id,
+      details: { fromRecipeId: existing.id, version: cloned.version },
+    });
+
+    return cloned;
+  }
+
+  /**
+   * Archive or restore a BOM recipe (IMP-011)
+   */
+  async archiveRecipe(recipeId: string, isActive: boolean, user?: UserContext) {
+    const existing = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+    });
+    if (!existing) {
+      throw new AppError(`Recipe ${recipeId} not found`, 404);
+    }
+
+    const updated = await prisma.recipe.update({
+      where: { id: recipeId },
+      data: { isActive },
+    });
+
+    await auditService.log({
+      organizationId: existing.organizationId,
+      userId: user?.id,
+      userEmail: user?.email,
+      action: isActive ? "RESTORE" : "ARCHIVE",
+      entity: "Recipe",
+      entityId: updated.id,
+      details: { name: updated.name, isActive },
+    });
+
+    return updated;
   }
 }
 

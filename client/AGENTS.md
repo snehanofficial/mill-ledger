@@ -48,7 +48,7 @@ pnpm --filter client preview
 
 ## Gotchas
 
-- `useCurrentUser` currently returns a mocked local user until Better Auth client wiring is complete.
+- `useCurrentUser` fetches the live session from Better Auth (`GET /api/v1/auth/session` / auth client).
 - Client routes must not assume server approval or stock reservation during offline entry.
 - Service worker caching must never cache sensitive user data or private financial documents indiscriminately.
 
@@ -63,5 +63,3 @@ pnpm --filter client preview
 
 - [docs/ui-ux-spec.md](../docs/ui-ux-spec.md)
 - [docs/offline-sync.md](../docs/offline-sync.md)
-
-_Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._

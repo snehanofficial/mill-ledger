@@ -1,0 +1,13 @@
+FINDING F-048 PRE-FIX REPRODUCTION
+===================================
+Finding ID: F-048
+Title: Missing Confirmation Dialogs for Irreversible Operations (Dispatch, Order Rejection)
+Severity: P2
+Category: UX / Error Prevention / Safety
+Standard refs: NN/g H5 (Error Prevention), Phase 7 Specification Check 5
+
+Observed Defect:
+1. Irreversible operational actions lacked intermediate confirmation dialogs:
+   - On `/dispatch`: Submitting the "Record physical dispatch" modal immediately triggered `POST /api/v1/dispatch` without warning the operator that physical inventory will be permanently deducted and an immutable ledger record generated.
+   - On `/orders`: Clicking "Confirm rejection" immediately fired `POST /api/v1/sales/orders/:id/reject` without summarizing the irreversible business consequences (cancelling the customer order, releasing stock reservations).
+2. Existing UI confirmation components (`ConfirmationDialog`, `AlertDialog`) were only used on `showcase-page.tsx`, leaving critical shop floor and sales operations unprotected against accidental destructive clicks.

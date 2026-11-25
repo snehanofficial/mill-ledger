@@ -1,0 +1,11 @@
+=== F-028 Verification: 07 Client Session Security & Data Protection ===
+1. Sign-Out Execution:
+   - authClient.signOut() and AuthenticatedLayout.handleSignOut() both invoke offlineDb.purgeOnSignOut() [PASS]
+2. Purge Scope:
+   - customers table: all cached customer PII (names, phone numbers, state, GSTINs, addresses) deleted [PASS]
+   - products table: all cached product variants and price lists deleted [PASS]
+   - outbox table: all pending or synced offline orders deleted [PASS]
+   - meta table: all metadata and sync timestamps deleted [PASS]
+3. Cross-User Contamination Prevention:
+   - When a subsequent user logs in on a shared device, no previous offline records exist in Dexie [PASS]
+   - New user initiates fresh synchronization under their own credentials and tenant scope [PASS]

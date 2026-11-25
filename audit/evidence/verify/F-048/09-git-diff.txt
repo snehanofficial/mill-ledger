@@ -1,0 +1,449 @@
+diff --git a/client/src/components/ui/confirmation-dialog.tsx b/client/src/components/ui/confirmation-dialog.tsx
+index a67f903..3a03975 100644
+--- a/client/src/components/ui/confirmation-dialog.tsx
++++ b/client/src/components/ui/confirmation-dialog.tsx
+@@ -1,3 +1,4 @@
++import type React from "react";
+ import {
+   AlertDialog,
+   AlertDialogAction,
+@@ -11,41 +12,72 @@ import {
+ } from "@/components/ui/alert-dialog";
+ import { Button } from "@/components/ui/button";
+ 
++export interface ConfirmationDialogProps {
++  open?: boolean;
++  onOpenChange?: (open: boolean) => void;
++  trigger?: React.ReactNode;
++  triggerLabel?: string;
++  title: React.ReactNode;
++  description: React.ReactNode;
++  confirmLabel?: string;
++  cancelLabel?: string;
++  onConfirm: () => void;
++  onCancel?: () => void;
++  destructive?: boolean;
++  disabled?: boolean;
++  children?: React.ReactNode;
++}
++
+ function ConfirmationDialog({
++  open,
++  onOpenChange,
++  trigger,
+   triggerLabel,
+   title,
+   description,
+   confirmLabel = "Confirm",
++  cancelLabel = "Cancel",
+   onConfirm,
++  onCancel,
+   destructive = false,
+-}: {
+-  triggerLabel: string;
+-  title: string;
+-  description: string;
+-  confirmLabel?: string;
+-  onConfirm: () => void;
+-  destructive?: boolean;
+-}) {
++  disabled = false,
++  children,
++}: ConfirmationDialogProps) {
++  const rootProps =
++    open !== undefined
++      ? { open, onOpenChange }
++      : {};
++
+   return (
+-    <AlertDialog>
+-      <AlertDialogTrigger asChild>
+-        <Button variant={destructive ? "destructive" : "primary"}>
+-          {triggerLabel}
+-        </Button>
+-      </AlertDialogTrigger>
++    <AlertDialog {...rootProps}>
++      {trigger ? (
++        <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
++      ) : triggerLabel ? (
++        <AlertDialogTrigger asChild>
++          <Button variant={destructive ? "destructive" : "primary"}>
++            {triggerLabel}
++          </Button>
++        </AlertDialogTrigger>
++      ) : null}
+       <AlertDialogContent>
+         <AlertDialogHeader>
+           <AlertDialogTitle>{title}</AlertDialogTitle>
+-          <AlertDialogDescription>{description}</AlertDialogDescription>
++          <AlertDialogDescription asChild>
++            <div className="text-sm text-muted-foreground">{description}</div>
++          </AlertDialogDescription>
+         </AlertDialogHeader>
++        {children && <div className="py-2">{children}</div>}
+         <AlertDialogFooter>
+           <AlertDialogCancel asChild>
+-            <Button variant="secondary">Cancel</Button>
++            <Button variant="secondary" onClick={onCancel}>
++              {cancelLabel}
++            </Button>
+           </AlertDialogCancel>
+           <AlertDialogAction asChild>
+             <Button
+               variant={destructive ? "destructive" : "primary"}
+               onClick={onConfirm}
++              disabled={disabled}
+             >
+               {confirmLabel}
+             </Button>
+diff --git a/client/src/pages/dispatch-page.tsx b/client/src/pages/dispatch-page.tsx
+index 41a2048..51d7b33 100644
+--- a/client/src/pages/dispatch-page.tsx
++++ b/client/src/pages/dispatch-page.tsx
+@@ -20,6 +20,7 @@ import {
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
++import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+ import {
+   TruckIcon,
+   RefreshCwIcon,
+@@ -102,6 +103,8 @@ export function DispatchPage() {
+   const [driverPhone, setDriverPhone] = useState("");
+   const [notes, setNotes] = useState("");
+   const [dispatchError, setDispatchError] = useState<string | null>(null);
++  const [showConfirmDispatchDialog, setShowConfirmDispatchDialog] =
++    useState(false);
+   const [searchQuery, setSearchQuery] = useUrlState("q", "");
+ 
+   // 1. Fetch posted dispatches
+@@ -150,6 +153,7 @@ export function DispatchPage() {
+       queryClient.invalidateQueries({ queryKey: ["dispatches"] });
+       queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
+       queryClient.invalidateQueries({ queryKey: ["inventory-items"] });
++      setShowConfirmDispatchDialog(false);
+       setShowCreateModal(false);
+       setSelectedOrderId("");
+       setVehicleNumber("");
+@@ -196,6 +200,11 @@ export function DispatchPage() {
+       return;
+     }
+     setDispatchError(null);
++    setShowConfirmDispatchDialog(true);
++  };
++
++  const handleExecuteDispatch = () => {
++    setShowConfirmDispatchDialog(false);
+     dispatchMutation.mutate({
+       salesOrderId: selectedOrderId,
+       vehicleNumber: vehicleNumber.trim() || undefined,
+@@ -689,6 +698,87 @@ export function DispatchPage() {
+           </div>
+         </div>
+       )}
++
++      {/* Confirmation Dialog for Irreversible Dispatch (F-048) */}
++      {showConfirmDispatchDialog && (
++        <ConfirmationDialog
++          open={showConfirmDispatchDialog}
++          onOpenChange={setShowConfirmDispatchDialog}
++          title={
++            <div className="flex items-center gap-2 text-foreground font-semibold">
++              <AlertTriangleIcon className="h-5 w-5 text-amber-500" />
++              Confirm Physical Dispatch?
++            </div>
++          }
++          description={
++            <div className="space-y-3 pt-1 text-sm text-foreground">
++              <p>
++                This action will permanently deduct finished goods from physical
++                inventory and generate an immutable dispatch record.
++              </p>
++              <div className="rounded-lg bg-muted/60 p-3 text-xs space-y-1">
++                {eligibleOrders.find((o) => o.id === selectedOrderId) && (
++                  <>
++                    <div className="flex justify-between">
++                      <span className="text-muted-foreground">Sales Order:</span>
++                      <span className="font-mono font-medium text-foreground">
++                        {
++                          eligibleOrders.find((o) => o.id === selectedOrderId)
++                            ?.orderNumber
++                        }
++                      </span>
++                    </div>
++                    <div className="flex justify-between">
++                      <span className="text-muted-foreground">Customer:</span>
++                      <span className="font-medium text-foreground">
++                        {
++                          eligibleOrders.find((o) => o.id === selectedOrderId)
++                            ?.customer?.name
++                        }
++                      </span>
++                    </div>
++                    <div className="flex justify-between">
++                      <span className="text-muted-foreground">
++                        Quantity to Deduct:
++                      </span>
++                      <span className="font-semibold text-foreground">
++                        {eligibleOrders
++                          .find((o) => o.id === selectedOrderId)
++                          ?.lines.reduce(
++                            (sum, l) =>
++                              sum + (l.approvedQuantity - l.dispatchedQuantity),
++                            0,
++                          )}{" "}
++                        packets
++                      </span>
++                    </div>
++                  </>
++                )}
++                {vehicleNumber.trim() && (
++                  <div className="flex justify-between">
++                    <span className="text-muted-foreground">Vehicle:</span>
++                    <span className="font-mono text-foreground">
++                      {vehicleNumber.trim()}
++                    </span>
++                  </div>
++                )}
++              </div>
++              <div className="rounded-md bg-destructive/10 p-2.5 text-xs font-medium text-destructive border border-destructive/20">
++                Warning: This operational action cannot be undone. Physical on-hand stock balances will be deducted immediately.
++              </div>
++            </div>
++          }
++          confirmLabel={
++            dispatchMutation.isPending
++              ? "Dispatching..."
++              : "Confirm & Deduct Stock"
++          }
++          cancelLabel="Review details"
++          onConfirm={handleExecuteDispatch}
++          disabled={dispatchMutation.isPending}
++          destructive
++        />
++      )}
+     </div>
+   );
+ }
+diff --git a/client/src/pages/orders-page.tsx b/client/src/pages/orders-page.tsx
+index a4c5584..d78b734 100644
+--- a/client/src/pages/orders-page.tsx
++++ b/client/src/pages/orders-page.tsx
+@@ -19,13 +19,13 @@ import {
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
++import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+ import {
+   ShoppingCartIcon,
+   RefreshCwIcon,
+   AlertTriangleIcon,
+   CheckCircle2Icon,
+   PlusCircleIcon,
+-  XCircleIcon,
+   ShieldCheckIcon,
+   IndianRupeeIcon,
+   DatabaseIcon,
+@@ -1304,14 +1304,86 @@ export function OrdersPage() {
+         </div>
+       )}
+ 
+-      {/* Approve / Reject Dialog */}
+-      {selectedOrderForAction && actionType && (
+-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
++      {/* Rejection Confirmation Dialog for Irreversible Action (F-048) */}
++      {selectedOrderForAction && actionType === "REJECT" && (
++        <ConfirmationDialog
++          open={selectedOrderForAction !== null && actionType === "REJECT"}
++          onOpenChange={(open) => {
++            if (!open) {
++              setSelectedOrderForAction(null);
++              setActionType(null);
++            }
++          }}
++          title={
++            <div className="flex items-center gap-2 text-destructive font-semibold">
++              <AlertTriangleIcon className="h-5 w-5" />
++              Confirm Sales Order Rejection?
++            </div>
++          }
++          description={
++            <div className="space-y-3 pt-1 text-sm text-foreground">
++              <p>
++                Rejecting this order will permanently cancel order{" "}
++                <span className="font-mono font-semibold">
++                  {selectedOrderForAction.orderNumber}
++                </span>{" "}
++                for{" "}
++                <span className="font-semibold">
++                  {selectedOrderForAction.customer.name}
++                </span>{" "}
++                and release all stock reservations back to inventory.
++              </p>
++              <div className="rounded-lg bg-destructive/10 p-2.5 text-xs font-medium text-destructive border border-destructive/20">
++                Warning: This action is irreversible. The customer booking will be permanently cancelled.
++              </div>
++            </div>
++          }
++          confirmLabel={
++            rejectMutation.isPending ? "Rejecting..." : "Confirm Rejection"
++          }
++          cancelLabel="Cancel"
++          onConfirm={() =>
++            rejectMutation.mutate({
++              orderId: selectedOrderForAction.id,
++              reason: rejectionReason,
++            })
++          }
++          disabled={rejectMutation.isPending}
++          destructive
++        >
++          <div className="flex flex-col gap-1.5 pt-2">
++            <label
++              htmlFor="rejection-reason"
++              className="text-xs font-semibold text-muted-foreground"
++            >
++              Reason for rejection
++            </label>
++            <Input
++              id="rejection-reason"
++              type="text"
++              placeholder="e.g. Credit limit exceeded, invalid delivery location..."
++              value={rejectionReason}
++              onChange={(e) => setRejectionReason(e.target.value)}
++              className="text-sm"
++            />
++          </div>
++        </ConfirmationDialog>
++      )}
++
++      {/* Approve Dialog */}
++      {selectedOrderForAction && actionType === "APPROVE" && (
++        <div
++          role="dialog"
++          aria-modal="true"
++          aria-labelledby="approve-order-title"
++          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
++        >
+           <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl border">
+-            <h3 className="text-lg font-bold text-foreground">
+-              {actionType === "APPROVE"
+-                ? "Approve sales order"
+-                : "Reject sales order"}
++            <h3
++              id="approve-order-title"
++              className="text-lg font-bold text-foreground"
++            >
++              Approve sales order
+             </h3>
+             <p className="mt-1 text-xs text-muted-foreground">
+               Order {selectedOrderForAction.orderNumber} for{" "}
+@@ -1319,40 +1391,26 @@ export function OrdersPage() {
+               {Number(selectedOrderForAction.lines[0]?.quotedQuantity)} packets)
+             </p>
+ 
+-            {actionType === "APPROVE" ? (
+-              <div className="mt-4 flex flex-col gap-3">
+-                <p className="text-xs text-foreground">
+-                  Approving this order will atomically reserve{" "}
+-                  <span className="font-semibold">
+-                    {Number(selectedOrderForAction.lines[0]?.quotedQuantity)}{" "}
+-                    packets
+-                  </span>{" "}
+-                  of finished goods Murukku 200g.
+-                </p>
+-                {selectedOrderForAction.totalShortage &&
+-                selectedOrderForAction.totalShortage > 0 ? (
+-                  <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20">
+-                    <AlertTriangleIcon className="h-4 w-4 shrink-0" />
+-                    <span>
+-                      Notice: Full quantity cannot be reserved because shortage
+-                      is {selectedOrderForAction.totalShortage} packets.
+-                    </span>
+-                  </div>
+-                ) : null}
+-              </div>
+-            ) : (
+-              <div className="mt-4 flex flex-col gap-2">
+-                <label className="text-xs font-semibold text-muted-foreground">
+-                  Reason for rejection
+-                </label>
+-                <input
+-                  type="text"
+-                  value={rejectionReason}
+-                  onChange={(e) => setRejectionReason(e.target.value)}
+-                  className="rounded-md border bg-background px-3 py-2 text-sm"
+-                />
+-              </div>
+-            )}
++            <div className="mt-4 flex flex-col gap-3">
++              <p className="text-xs text-foreground">
++                Approving this order will atomically reserve{" "}
++                <span className="font-semibold">
++                  {Number(selectedOrderForAction.lines[0]?.quotedQuantity)}{" "}
++                  packets
++                </span>{" "}
++                of finished goods Murukku 200g.
++              </p>
++              {selectedOrderForAction.totalShortage &&
++              selectedOrderForAction.totalShortage > 0 ? (
++                <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20">
++                  <AlertTriangleIcon className="h-4 w-4 shrink-0" />
++                  <span>
++                    Notice: Full quantity cannot be reserved because shortage
++                    is {selectedOrderForAction.totalShortage} packets.
++                  </span>
++                </div>
++              ) : null}
++            </div>
+ 
+             <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
+               <Button
+@@ -1365,36 +1423,17 @@ export function OrdersPage() {
+               >
+                 Cancel
+               </Button>
+-
+-              {actionType === "APPROVE" ? (
+-                <Button
+-                  size="sm"
+-                  onClick={() =>
+-                    approveMutation.mutate(selectedOrderForAction.id)
+-                  }
+-                  disabled={approveMutation.isPending}
+-                  className="gap-2"
+-                >
+-                  <CheckCircle2Icon className="h-4 w-4" />
+-                  Confirm approval
+-                </Button>
+-              ) : (
+-                <Button
+-                  variant="destructive"
+-                  size="sm"
+-                  onClick={() =>
+-                    rejectMutation.mutate({
+-                      orderId: selectedOrderForAction.id,
+-                      reason: rejectionReason,
+-                    })
+-                  }
+-                  disabled={rejectMutation.isPending}
+-                  className="gap-2"
+-                >
+-                  <XCircleIcon className="h-4 w-4" />
+-                  Confirm rejection
+-                </Button>
+-              )}
++              <Button
++                size="sm"
++                onClick={() =>
++                  approveMutation.mutate(selectedOrderForAction.id)
++                }
++                disabled={approveMutation.isPending}
++                className="gap-2"
++              >
++                <CheckCircle2Icon className="h-4 w-4" />
++                Confirm approval
++              </Button>
+             </div>
+           </div>
+         </div>

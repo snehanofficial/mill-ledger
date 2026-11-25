@@ -16,9 +16,14 @@ import {
   RotateCcwIcon,
   DatabaseIcon,
   LayersIcon,
+  ClockIcon,
 } from "lucide-react";
 import { useSyncManager } from "@/offline/use-offline";
+import type { OfflineOrder } from "@/offline/db";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { toast } from "sonner";
+import { formatINR, formatTime } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
 
 interface DeviceOutboxSheetProps {
   open: boolean;
@@ -31,6 +36,7 @@ export function DeviceOutboxSheet({
   onOpenChange,
   userId,
 }: DeviceOutboxSheetProps) {
+  const { t } = useLanguage();
   const {
     isOnline,
     syncing,
@@ -46,6 +52,7 @@ export function DeviceOutboxSheet({
   } = useSyncManager(userId);
 
   const [isRefreshingCatalog, setIsRefreshingCatalog] = useState(false);
+  const [orderToDiscard, setOrderToDiscard] = useState<OfflineOrder | null>(null);
 
   const handleRefreshCatalog = async () => {
     setIsRefreshingCatalog(true);
@@ -82,25 +89,24 @@ export function DeviceOutboxSheet({
             <div className="flex items-center justify-between">
               <SheetTitle className="text-base font-bold flex items-center gap-2">
                 <DatabaseIcon className="size-4 text-primary" />
-                Device Outbox
+                {t("Device Outbox")}
               </SheetTitle>
               <div className="flex items-center gap-1.5">
                 {conflictCount > 0 && (
                   <Badge variant="danger" className="text-xs">
-                    {conflictCount} conflict{conflictCount > 1 ? "s" : ""}
+                    {conflictCount} {t("conflict")}{conflictCount > 1 ? "s" : ""}
                   </Badge>
                 )}
                 <Badge
                   variant={isOnline ? "outline" : "warning"}
                   className="text-xs"
                 >
-                  {isOnline ? "Connected" : "Offline"}
+                  {isOnline ? t("Connected") : t("Offline")}
                 </Badge>
               </div>
             </div>
             <SheetDescription className="text-xs text-muted-foreground">
-              Local IndexedDB command queue awaiting server acceptance. No stock
-              reserved until synced.
+              {t("Local IndexedDB command queue awaiting server acceptance. No stock reserved until synced.")}
             </SheetDescription>
           </SheetHeader>
 
@@ -116,7 +122,7 @@ export function DeviceOutboxSheet({
               <RefreshCwIcon
                 className={`size-3.5 ${syncing ? "animate-spin" : ""}`}
               />
-              {syncing ? "Syncing..." : "Sync now"}
+              {syncing ? t("Syncing...") : t("Sync now")}
             </Button>
 
             <Button
@@ -129,7 +135,7 @@ export function DeviceOutboxSheet({
               <LayersIcon
                 className={`size-3.5 ${isRefreshingCatalog ? "animate-spin" : ""}`}
               />
-              Refresh catalog
+              {t("Refresh catalog")}
             </Button>
 
             {syncedCount > 0 && (
@@ -139,7 +145,7 @@ export function DeviceOutboxSheet({
                 onClick={clearSynced}
                 className="h-8 text-xs text-muted-foreground hover:text-foreground"
               >
-                Clear synced
+                {t("Clear synced")}
               </Button>
             )}
           </div>
@@ -181,11 +187,7 @@ export function DeviceOutboxSheet({
                         {ord.customerName}
                       </div>
                       <div className="text-muted-foreground text-2xs">
-                        {ord.customerState} •{" "}
-                        {new Date(ord.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {ord.customerState} • {formatTime(ord.createdAt)}
                       </div>
                     </div>
 
@@ -193,27 +195,31 @@ export function DeviceOutboxSheet({
                     {ord.status === "queued" && (
                       <Badge
                         variant="outline"
-                        className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                        className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 flex items-center gap-1"
                       >
-                        Waiting to sync
+                        <ClockIcon className="size-3 shrink-0" aria-hidden="true" />
+                        <span>{t("Waiting to sync")}</span>
                       </Badge>
                     )}
                     {ord.status === "syncing" && (
                       <Badge
                         variant="outline"
-                        className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 animate-pulse"
+                        className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 animate-pulse-finite flex items-center gap-1"
                       >
-                        Syncing...
+                        <RefreshCwIcon className="size-3 shrink-0 animate-spin" aria-hidden="true" />
+                        <span>{t("Syncing...")}</span>
                       </Badge>
                     )}
                     {ord.status === "synced" && (
-                      <Badge variant="success">
-                        Synced: {ord.serverOrderNumber ?? "Accepted"}
+                      <Badge variant="success" className="flex items-center gap-1">
+                        <CheckCircle2Icon className="size-3 shrink-0" aria-hidden="true" />
+                        <span>{t("Synced")}: {ord.serverOrderNumber ?? t("Accepted")}</span>
                       </Badge>
                     )}
                     {ord.status === "conflict" && (
-                      <Badge variant="danger">
-                        Conflict: {ord.lastErrorCode ?? "Rejected"}
+                      <Badge variant="danger" className="flex items-center gap-1">
+                        <AlertTriangleIcon className="size-3 shrink-0" aria-hidden="true" />
+                        <span>{t("Conflict")}: {ord.lastErrorCode ?? t("Rejected")}</span>
                       </Badge>
                     )}
                   </div>
@@ -229,13 +235,13 @@ export function DeviceOutboxSheet({
                           {it.name || it.sku} × {it.quantity}
                         </span>
                         <span className="font-medium text-foreground">
-                          ₹{(it.quantity * it.quotedUnitPrice).toFixed(2)}
+                          {formatINR(it.quantity * it.quotedUnitPrice)}
                         </span>
                       </div>
                     ))}
                     <div className="border-t pt-1 flex justify-between font-semibold text-foreground">
-                      <span>Total ({totalItems} pkts)</span>
-                      <span>₹{totalQuoted.toFixed(2)}</span>
+                      <span>{t("Total")} ({totalItems} {t("term.packets", "pkts")})</span>
+                      <span>{formatINR(totalQuoted)}</span>
                     </div>
                   </div>
 
@@ -256,10 +262,10 @@ export function DeviceOutboxSheet({
                         variant="outline"
                         size="sm"
                         onClick={() => retryOrder(ord.id)}
-                        className="h-6 px-2 text-2xs gap-1"
+                        className="h-8 min-h-[32px] px-2.5 text-xs gap-1 sm:h-7 sm:min-h-[28px] sm:px-2 sm:text-2xs"
                       >
-                        <RotateCcwIcon className="size-3" />
-                        Retry
+                        <RotateCcwIcon className="size-3.5 sm:size-3" />
+                        {t("Retry")}
                       </Button>
                     )}
                     {ord.status === "queued" && isOnline && (
@@ -267,20 +273,20 @@ export function DeviceOutboxSheet({
                         variant="outline"
                         size="sm"
                         onClick={() => retryOrder(ord.id)}
-                        className="h-6 px-2 text-2xs gap-1"
+                        className="h-8 min-h-[32px] px-2.5 text-xs gap-1 sm:h-7 sm:min-h-[28px] sm:px-2 sm:text-2xs"
                       >
-                        <RefreshCwIcon className="size-3" />
-                        Sync this
+                        <RefreshCwIcon className="size-3.5 sm:size-3" />
+                        {t("action.sync_now", "Sync this")}
                       </Button>
                     )}
                     {ord.status !== "syncing" && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeOrder(ord.id)}
-                        className="h-6 px-2 text-2xs text-muted-foreground hover:text-destructive"
+                        onClick={() => setOrderToDiscard(ord)}
+                        className="h-8 min-h-[32px] min-w-[32px] px-2.5 text-xs text-muted-foreground hover:text-destructive sm:h-7 sm:min-h-[28px] sm:min-w-[28px] sm:px-2 sm:text-2xs"
                       >
-                        <Trash2Icon className="size-3" />
+                        <Trash2Icon className="size-3.5 sm:size-3" />
                         Discard
                       </Button>
                     )}
@@ -291,6 +297,73 @@ export function DeviceOutboxSheet({
           )}
         </div>
       </SheetContent>
+
+      {/* Discard Offline Order Confirmation Dialog (F-081) */}
+      {orderToDiscard && (
+        <ConfirmationDialog
+          open={orderToDiscard !== null}
+          onOpenChange={(open) => {
+            if (!open) setOrderToDiscard(null);
+          }}
+          title={
+            <div className="flex items-center gap-2 text-destructive font-semibold">
+              <AlertTriangleIcon className="h-5 w-5" />
+              <span>Discard Offline Order</span>
+            </div>
+          }
+          description={
+            <div className="flex flex-col gap-2.5 text-left">
+              <p className="text-sm text-foreground">
+                Are you sure you want to discard this offline order for{" "}
+                <strong>{orderToDiscard.customerName}</strong>?
+              </p>
+              <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Customer:</span>
+                  <span className="font-semibold text-foreground">
+                    {orderToDiscard.customerName} ({orderToDiscard.customerState})
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Items:</span>
+                  <span>
+                    {orderToDiscard.items.reduce((s, i) => s + i.quantity, 0)} packets (
+                    {orderToDiscard.items.length} product lines)
+                  </span>
+                </div>
+                <div className="flex justify-between border-t border-border/50 pt-1 font-semibold">
+                  <span className="text-destructive">Order Value:</span>
+                  <span className="font-mono text-destructive">
+                    {formatINR(
+                      orderToDiscard.items.reduce(
+                        (s, i) => s + i.quantity * i.quotedUnitPrice,
+                        0,
+                      ),
+                    )}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Created:</span>
+                  <span>{new Date(orderToDiscard.createdAt).toLocaleString()}</span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Warning: This uncommitted order exists only in your local device storage. Discarding will permanently erase it and it cannot be recovered.
+              </p>
+            </div>
+          }
+          confirmLabel="Yes, Discard Order"
+          cancelLabel="Keep Order"
+          destructive
+          onConfirm={() => {
+            if (orderToDiscard) {
+              removeOrder(orderToDiscard.id);
+              toast.info(`Offline order for ${orderToDiscard.customerName} discarded.`);
+              setOrderToDiscard(null);
+            }
+          }}
+        />
+      )}
     </Sheet>
   );
 }

@@ -1,0 +1,6 @@
+=== STEP 1: FRESH ENVIRONMENT FOR F-036 ===
+Timestamp: 2026-11-23T10:41:40+05:30
+Node: v22.22.1
+PostgreSQL 16: port 5432, database mill_ledger
+Prisma client 7.10.1 generated and clean.
+Environment operational and isolated.

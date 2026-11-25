@@ -1,0 +1,13 @@
+=== F-020 Verification: 10 Expected vs Actual Triple (Rule E9) ===
+
+Finding: F-020 (Arbitrary Unit Price and Missing Discount Bounds in Order Creation)
+Severity: P1 | Tier: T2 | Cluster: CLUSTER-04
+
+EXPECTED (Source: OD-07 & REQ-024, OWASP API3:2023):
+Base price derived from customer's default price list (PL-DEFAULT). Salesman discounts <= 5% allowed at salesman discretion (status: SUBMITTED). Discounts > 5% and <= 15% require manager approval (status: UNDER_REVIEW). Discounts > 15% rejected outright with HTTP 422 DISCOUNT_EXCEEDS_MAX_THRESHOLD. Approving an UNDER_REVIEW order requires a mandatory overrideReason recorded on the sales order. Line overrides upon approval also cannot exceed 15% discount. Draft orders cannot be transitioned directly to APPROVED via PUT.
+
+ACTUAL (Evidence: audit/evidence/verify/F-020/02-test-execution.txt & 04-full-suite-pass.txt):
+Implemented discount threshold checks in server/src/modules/sales/sales.service.ts for createSalesOrder, approveSalesOrder, and updateDraftOrder using exact Prisma.Decimal arithmetic. Added comprehensive regression tests in server/src/orders.test.ts covering all 7 paths (outright rejection at 30%, discretionary pass at 4%, UNDER_REVIEW at 10%, missing reason block on approval, valid approval with recorded reason, line override discount cap at 30%, and PUT status transition block). All 7 assertions pass, all 32 test files (184 tests) pass, all 18 benchmark oracle assertions pass, all 10 SQL invariants pass with 0 rows, and client/server typecheck and build pass cleanly.
+
+DELTA:
+None. Actual behavior matches expected specifications 100%. Status: VERIFIED-PASS.

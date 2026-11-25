@@ -1,0 +1,12 @@
+Pre-fix reproduction for F-040:
+====================================================================
+Finding: F-040 (Dead Links and Placeholder Pages in Primary Navigation (`/orders/new`, `/exports`, `/settings`))
+Severity: P1 | Tier: T5 | Cluster: CLUSTER-08
+Standards: NN/g Heuristic #1 & #4, REQ-054, REQ-058
+
+Observation:
+1. In `client/src/app.tsx:53-70`, routes `/orders/new`, `/exports`, and `/settings` were all wired directly to dummy `PlaceholderPage` components inside `client/src/pages/placeholder-pages.tsx`.
+2. Salesmen clicking "New order" in the sidebar encountered a dead-end "Module in Progress" card instead of the wholesale order entry form.
+3. Accountants and Owners clicking "Exports" encountered a placeholder card instead of the report download hub.
+4. Administrators clicking "Settings" encountered a placeholder card instead of mill parameters and user management screens.
+5. All three primary navigation affordances were broken, causing end-user disorientation and blocking operational readiness.

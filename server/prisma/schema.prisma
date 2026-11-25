@@ -7,17 +7,17 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  image         String?
-  role          String    @default("SALESMAN")
-  isActive      Boolean   @default(true)
-  organizationId String?  @map("organization_id")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  organization  Organization? @relation(fields: [organizationId], references: [id])
+  id                  String                       @id @default(cuid())
+  name                String
+  email               String                       @unique
+  emailVerified       Boolean                      @default(false)
+  image               String?
+  role                String                       @default("SALESMAN")
+  isActive            Boolean                      @default(true)
+  organizationId      String?                      @map("organization_id")
+  createdAt           DateTime                     @default(now())
+  updatedAt           DateTime                     @updatedAt
+  organization        Organization?                @relation(fields: [organizationId], references: [id])
   sessions            Session[]
   accounts            Account[]
   customerAssignments SalesmanCustomerAssignment[]
@@ -81,24 +81,25 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  facilities     Facility[]
-  customers      Customer[]
-  suppliers      Supplier[]
-  uoms           UnitOfMeasure[]
-  products       Product[]
-  inventoryItems InventoryItem[]
-  recipes        Recipe[]
-  priceLists     PriceList[]
-  taxRates       TaxRate[]
-  purchaseReceipts PurchaseReceipt[]
-  productionRuns ProductionRun[]
-  salesOrders    SalesOrder[]
-  invoices       SalesInvoice[]
-  dispatches     Dispatch[]
-  creditNotes    CreditNote[]
-  payments       Payment[]
-  auditLogs      AuditLog[]
-  users          User[]
+  facilities        Facility[]
+  customers         Customer[]
+  suppliers         Supplier[]
+  uoms              UnitOfMeasure[]
+  products          Product[]
+  inventoryItems    InventoryItem[]
+  recipes           Recipe[]
+  priceLists        PriceList[]
+  taxRates          TaxRate[]
+  purchaseReceipts  PurchaseReceipt[]
+  productionRuns    ProductionRun[]
+  salesOrders       SalesOrder[]
+  invoices          SalesInvoice[]
+  dispatches        Dispatch[]
+  creditNotes       CreditNote[]
+  debitNotes        DebitNote[]
+  payments          Payment[]
+  auditLogs         AuditLog[]
+  users             User[]
   documentSequences DocumentSequence[]
 
   @@map("organization")
@@ -129,11 +130,11 @@ model Warehouse {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  stockMovements StockMovement[]
-  purchaseReceipts PurchaseReceipt[]
-  productionRuns ProductionRun[]
-  salesOrders    SalesOrder[]
-  dispatches     Dispatch[]
+  stockMovements    StockMovement[]
+  purchaseReceipts  PurchaseReceipt[]
+  productionRuns    ProductionRun[]
+  salesOrders       SalesOrder[]
+  dispatches        Dispatch[]
   stockReservations StockReservation[]
 
   @@unique([facilityId, code])
@@ -193,6 +194,7 @@ model Supplier {
   updatedAt      DateTime     @updatedAt
 
   purchaseReceipts PurchaseReceipt[]
+  debitNotes       DebitNote[]
 
   @@unique([organizationId, code])
   @@map("supplier")
@@ -210,13 +212,14 @@ model UnitOfMeasure {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  inventoryItems  InventoryItem[]
-  productVariants ProductVariant[]
-  recipeOutputs   Recipe[]
-  recipeItems     RecipeItem[]
+  inventoryItems       InventoryItem[]
+  productVariants      ProductVariant[]
+  recipeOutputs        Recipe[]
+  recipeItems          RecipeItem[]
   purchaseReceiptLines PurchaseReceiptLine[]
-  fromConversions UnitConversion[] @relation("FromUom")
-  toConversions   UnitConversion[] @relation("ToUom")
+  debitNoteLines       DebitNoteLine[]
+  fromConversions      UnitConversion[]      @relation("FromUom")
+  toConversions        UnitConversion[]      @relation("ToUom")
 
   @@unique([organizationId, code])
   @@map("unit_of_measure")
@@ -259,15 +262,16 @@ model InventoryItem {
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
-  baseUom         UnitOfMeasure    @relation(fields: [baseUomId], references: [id], onDelete: Restrict)
-  productVariants ProductVariant[]
-  recipeItems     RecipeItem[]
-  stockMovements  StockMovement[]
-  purchaseReceiptLines PurchaseReceiptLine[]
+  baseUom                UnitOfMeasure           @relation(fields: [baseUomId], references: [id], onDelete: Restrict)
+  productVariants        ProductVariant[]
+  recipeItems            RecipeItem[]
+  stockMovements         StockMovement[]
+  purchaseReceiptLines   PurchaseReceiptLine[]
+  debitNoteLines         DebitNoteLine[]
   productionRunMaterials ProductionRunMaterial[]
-  salesOrderLines SalesOrderLine[]
-  stockReservations StockReservation[]
-  dispatchLines   DispatchLine[]
+  salesOrderLines        SalesOrderLine[]
+  stockReservations      StockReservation[]
+  dispatchLines          DispatchLine[]
 
   @@unique([organizationId, sku])
   @@map("inventory_item")
@@ -302,6 +306,7 @@ model StockMovement {
   warehouse     Warehouse     @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
 
   @@index([inventoryItemId, warehouseId, postedAt])
+  @@index([inventoryItemId, postedAt(sort: Desc)])
   @@map("stock_movement")
 }
 
@@ -326,22 +331,25 @@ model Product {
 }
 
 model ProductVariant {
-  id              String         @id @default(cuid())
+  id              String   @id @default(cuid())
   productId       String
   sku             String
   name            String
-  packSize        Decimal        @db.Decimal(18, 6)
+  packSize        Decimal  @db.Decimal(18, 6)
   uomId           String
   inventoryItemId String?
-  isActive        Boolean        @default(true)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  imageUrl        String?
+  thumbnailUrl    String?
+  thumbHash       String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  product       Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
-  uom           UnitOfMeasure  @relation(fields: [uomId], references: [id], onDelete: Restrict)
-  inventoryItem InventoryItem? @relation(fields: [inventoryItemId], references: [id], onDelete: SetNull)
-  recipes       Recipe[]
-  priceLines    PriceListLine[]
+  product         Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  uom             UnitOfMeasure    @relation(fields: [uomId], references: [id], onDelete: Restrict)
+  inventoryItem   InventoryItem?   @relation(fields: [inventoryItemId], references: [id], onDelete: SetNull)
+  recipes         Recipe[]
+  priceLines      PriceListLine[]
   salesOrderLines SalesOrderLine[]
 
   @@unique([productId, sku])
@@ -364,8 +372,8 @@ model Recipe {
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
-  productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
-  outputUom      UnitOfMeasure  @relation(fields: [outputUomId], references: [id], onDelete: Restrict)
+  productVariant ProductVariant  @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  outputUom      UnitOfMeasure   @relation(fields: [outputUomId], references: [id], onDelete: Restrict)
   items          RecipeItem[]
   productionRuns ProductionRun[]
 
@@ -453,24 +461,25 @@ model TaxRate {
 // ─── Purchases & Receipts ───────────────────────────────────────────
 
 model PurchaseReceipt {
-  id                    String                @id @default(cuid())
+  id                    String       @id @default(cuid())
   organizationId        String
-  organization          Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   supplierId            String
-  supplier              Supplier              @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  supplier              Supplier     @relation(fields: [supplierId], references: [id], onDelete: Restrict)
   warehouseId           String
-  warehouse             Warehouse             @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  warehouse             Warehouse    @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
   receiptNumber         String
   supplierInvoiceNumber String?
-  status                String                @default("POSTED")
-  totalAmount           Decimal               @db.Decimal(18, 2)
+  status                String       @default("POSTED")
+  totalAmount           Decimal      @db.Decimal(18, 2)
   notes                 String?
-  idempotencyKey        String?               @unique
-  postedAt              DateTime              @default(now())
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
+  idempotencyKey        String?      @unique
+  postedAt              DateTime     @default(now())
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
 
-  lines PurchaseReceiptLine[]
+  lines      PurchaseReceiptLine[]
+  debitNotes DebitNote[]
 
   @@unique([organizationId, receiptNumber])
   @@map("purchase_receipt")
@@ -519,6 +528,8 @@ model ProductionRun {
   yieldVarianceQty   Decimal             @default(0) @db.Decimal(18, 6)
   yieldVariancePct   Decimal             @default(0) @db.Decimal(5, 2)
   isYieldFlagged     Boolean             @default(false)
+  packagingMismatch  Boolean             @default(false)
+  packagingWarning   String?
   directMaterialCost Decimal             @default(0) @db.Decimal(18, 2)
   directLaborCost    Decimal             @default(0) @db.Decimal(18, 2)
   utilityCost        Decimal             @default(0) @db.Decimal(18, 2)
@@ -561,13 +572,13 @@ model ProductionRunMaterial {
 }
 
 model ProductionRunReversal {
-  id                 String        @id @default(cuid())
-  originalRunId      String        @unique
-  originalRun        ProductionRun @relation(fields: [originalRunId], references: [id], onDelete: Cascade)
-  reversalRunNumber  String
-  reason             String
-  reversedByUserId   String?
-  createdAt          DateTime      @default(now())
+  id                String        @id @default(cuid())
+  originalRunId     String        @unique
+  originalRun       ProductionRun @relation(fields: [originalRunId], references: [id], onDelete: Cascade)
+  reversalRunNumber String
+  reason            String
+  reversedByUserId  String?
+  createdAt         DateTime      @default(now())
 
   @@map("production_run_reversal")
 }
@@ -593,6 +604,7 @@ enum ReservationStatus {
   ACTIVE
   RELEASED
   CANCELLED
+  EXPIRED
 }
 
 model SalesOrder {
@@ -633,6 +645,8 @@ model SalesOrder {
 
   @@unique([organizationId, orderNumber])
   @@index([salesmanId, status])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([customerId])
   @@map("sales_order")
 }
 
@@ -658,6 +672,7 @@ model SalesOrderLine {
 
   reservations StockReservation[]
 
+  @@index([salesOrderId])
   @@map("sales_order_line")
 }
 
@@ -674,10 +689,12 @@ model StockReservation {
   reservedQuantity Decimal           @db.Decimal(18, 6)
   releasedQuantity Decimal           @default(0) @db.Decimal(18, 6)
   status           ReservationStatus @default(ACTIVE)
+  expiresAt        DateTime?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
   @@index([inventoryItemId, warehouseId, status])
+  @@index([status, expiresAt])
   @@map("stock_reservation")
 }
 
@@ -735,6 +752,9 @@ model SalesInvoice {
   paymentAllocations PaymentAllocation[]
 
   @@unique([organizationId, invoiceNumber])
+  @@index([customerId, status, postedAt(sort: Desc)])
+  @@index([organizationId, postedAt(sort: Desc)])
+  @@index([organizationId, status])
   @@map("sales_invoice")
 }
 
@@ -758,6 +778,7 @@ model SalesInvoiceLine {
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
+  @@index([invoiceId])
   @@map("sales_invoice_line")
 }
 
@@ -821,6 +842,56 @@ model CreditNote {
   @@map("credit_note")
 }
 
+enum DebitNoteStatus {
+  POSTED
+  CANCELLED
+}
+
+model DebitNote {
+  id                String           @id @default(cuid())
+  organizationId    String
+  organization      Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  debitNoteNumber   String
+  supplierId        String
+  supplier          Supplier         @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  purchaseReceiptId String?
+  purchaseReceipt   PurchaseReceipt? @relation(fields: [purchaseReceiptId], references: [id], onDelete: SetNull)
+  reason            String
+  status            DebitNoteStatus  @default(POSTED)
+  taxableAmount     Decimal          @db.Decimal(18, 2)
+  taxAmount         Decimal          @db.Decimal(18, 2)
+  totalAmount       Decimal          @db.Decimal(18, 2)
+  postedAt          DateTime         @default(now())
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  lines DebitNoteLine[]
+
+  @@unique([organizationId, debitNoteNumber])
+  @@index([organizationId, supplierId])
+  @@map("debit_note")
+}
+
+model DebitNoteLine {
+  id              String         @id @default(cuid())
+  debitNoteId     String
+  debitNote       DebitNote      @relation(fields: [debitNoteId], references: [id], onDelete: Cascade)
+  inventoryItemId String?
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id], onDelete: SetNull)
+  description     String?
+  quantity        Decimal?       @db.Decimal(18, 6)
+  uomId           String?
+  uom             UnitOfMeasure? @relation(fields: [uomId], references: [id], onDelete: SetNull)
+  unitPrice       Decimal?       @db.Decimal(18, 6)
+  taxableAmount   Decimal        @db.Decimal(18, 2)
+  taxAmount       Decimal        @db.Decimal(18, 2)
+  totalAmount     Decimal        @db.Decimal(18, 2)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("debit_note_line")
+}
+
 enum PaymentMode {
   CASH
   BANK_TRANSFER
@@ -832,28 +903,33 @@ enum PaymentMode {
 enum PaymentStatus {
   POSTED
   CANCELLED
+  BOUNCED
+  REVERSED
 }
 
 model Payment {
-  id                String            @id @default(cuid())
+  id                String        @id @default(cuid())
   organizationId    String
-  organization      Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization      Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   paymentNumber     String
   customerId        String
-  customer          Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  amount            Decimal           @db.Decimal(18, 2)
-  unallocatedAmount Decimal           @default(0) @db.Decimal(18, 2)
-  paymentMode       PaymentMode       @default(BANK_TRANSFER)
+  customer          Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  amount            Decimal       @db.Decimal(18, 2)
+  unallocatedAmount Decimal       @default(0) @db.Decimal(18, 2)
+  paymentMode       PaymentMode   @default(BANK_TRANSFER)
   referenceNumber   String?
-  paymentDate       DateTime          @default(now())
-  status            PaymentStatus     @default(POSTED)
+  paymentDate       DateTime      @default(now())
+  status            PaymentStatus @default(POSTED)
   notes             String?
-  idempotencyKey    String?           @unique
-  postedAt          DateTime          @default(now())
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  idempotencyKey    String?       @unique
+  reversalReason    String?
+  reversalReference String?
+  reversedAt        DateTime?
+  postedAt          DateTime      @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
-  allocations       PaymentAllocation[]
+  allocations PaymentAllocation[]
 
   @@unique([organizationId, paymentNumber])
   @@index([organizationId, customerId])
@@ -862,15 +938,17 @@ model Payment {
 }
 
 model PaymentAllocation {
-  id              String        @id @default(cuid())
-  paymentId       String
-  payment         Payment       @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  salesInvoiceId  String
-  salesInvoice    SalesInvoice  @relation(fields: [salesInvoiceId], references: [id], onDelete: Restrict)
-  amount          Decimal       @db.Decimal(18, 2)
-  allocatedAt     DateTime      @default(now())
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id             String       @id @default(cuid())
+  paymentId      String
+  payment        Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  salesInvoiceId String
+  salesInvoice   SalesInvoice @relation(fields: [salesInvoiceId], references: [id], onDelete: Restrict)
+  amount         Decimal      @db.Decimal(18, 2)
+  isReversed     Boolean      @default(false)
+  reversedAt     DateTime?
+  allocatedAt    DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@index([paymentId])
   @@index([salesInvoiceId])
@@ -898,17 +976,15 @@ model AuditLog {
 }
 
 model DocumentSequence {
-  id             String       @id @default(cuid())
-  organizationId String       @map("organization_id")
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
   type           String
-  financialYear  String       @map("financial_year")
-  currentValue   Int          @default(0) @map("current_value")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
+  financialYear  String   @map("financial_year")
+  currentValue   Int      @default(0) @map("current_value")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, type, financialYear])
   @@map("document_sequences")
 }
-
-

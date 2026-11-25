@@ -1,0 +1,37 @@
+======================================================================
+F-059 VERIFICATION SUMMARY: DYNAMIC SHORTAGE BANNERS & FORM ERRORS ARIA LIVE REGIONS (WCAG 4.1.3 & 3.3.1)
+======================================================================
+Date: 2026-11-24
+Severity: P2 | Tier: T7 | Cluster: CLUSTER-10
+Status: VERIFIED-PASS
+
+1. Root Cause:
+Dynamic shortage banners and form validation error alerts rendered conditionally
+into the DOM without programmatic ARIA live region declarations (`aria-live="polite"`
+or `aria-live="assertive"`) or appropriate roles (`role="status"` or `role="alert"`).
+Assistive technology users (screen reader users) were not notified when stock shortages
+or form validation errors appeared dynamically during order creation, approval,
+production planning, dispatch, or payment recording workflows.
+
+2. Implementation Summary:
+- `client/src/components/ui/alert.tsx`:
+  * Configured default `role={props.role || (variant === "danger" || variant === "warning" ? "alert" : "status")}`
+  * Configured default `aria-live={props["aria-live"] || (variant === "danger" ? "assertive" : "polite")}`
+- Operational pages updated:
+  * `client/src/pages/orders-page.tsx`: Added `role="status"` and `aria-live="polite"` to order shortage banner and approval shortage notice.
+  * `client/src/pages/new-order-page.tsx`: Added `role="status"` and `aria-live="polite"` to live catalog stepper shortage banner.
+  * `client/src/pages/production-page.tsx`: Added `role="status"` and `aria-live="polite"` to batch carton shortage banner.
+  * `client/src/pages/payments-page.tsx`: Added `role="alert"` and `aria-live="assertive"` to payment validation error banner.
+  * `client/src/pages/dispatch-page.tsx`: Added `role="alert"` and `aria-live="assertive"` to dispatch validation error banner.
+
+3. Verification Evidence:
+- 01-git-status.txt: Working tree clean, targeted files staged
+- 02-regression-test.txt: audit/tests/f-059-regression.test.ts (5/5 passed)
+- 03-typecheck.txt: TypeScript typecheck passed across client, server, and shared
+- 04-lint.txt: 0 errors, 0 warnings across 195 files
+- 05-build.txt: Production build passed (53 PWA precache entries)
+- 06-invariants.txt: 10/10 SQL database invariants passed (0 rows)
+- 07-benchmark.txt: 18/18 CDI benchmark oracle assertions passed (100% exact numerical match)
+- 08-test-suite.txt: 39/39 test files passed (241/241 tests)
+- 09-diff.txt: Clean diff verifying targeted changes in code commit 3a0b913
+======================================================================

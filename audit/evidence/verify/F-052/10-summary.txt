@@ -1,0 +1,24 @@
+F-052 Verification Summary
+Finding ID: F-052
+Title: Unassociated Form Labels and Missing Accessible Names Across Operational Forms
+Status: VERIFIED
+
+Verification Checklist:
+1. Git status clean for tracked codebase files.
+2. Full workspace TypeScript check (shared, client, server): 0 errors.
+3. Workspace lint (oxlint on 191 files): 0 warnings, 0 errors.
+4. Production build (Vite client PWA, TypeScript server): Clean build.
+5. Database invariants (10 business and financial integrity rules): All 10 passed (0 rows).
+6. CDI Benchmark Suite (18 assertions): 100% numerical match.
+7. Unit & integration test suites: 39 test files passed, 241 tests passed.
+8. F-052 Regression test (audit/tests/f-052-regression.test.ts): 8/8 assertions passed.
+   - orders-page.tsx: Explicit htmlFor and matching IDs on all order form inputs, plus aria-label on search and status filter.
+   - invoices-page.tsx: Credit note reason/amount and invoice creation order/notes paired with matching labels and inputs.
+   - production-page.tsx: Recipe selection, outputs, consumption, additional costs, and batch reversal reasons explicitly labeled.
+   - purchases-page.tsx: Goods receipt form fields (supplier, receipt #, invoice #, item, quantity, rate, notes) paired with labels.
+   - payments-page.tsx: Collection recording fields, mode selector, custom allocation toggle, and per-invoice allocation inputs fully labeled.
+   - dispatch-page.tsx: Order selection, vehicle, driver details, and notes associated with programmatic labels.
+   - suppliers-page.tsx: Vendor code, name, state, phone, email, and GSTIN inputs associated across new and edit modals.
+   - settings-page.tsx: Full name, email, password, and role selector associated with programmatic labels.
+   - reports-page.tsx: Audit search and action filter have accessible aria-labels.
+   - authenticated-shell.tsx: Global command search input has accessible aria-label.

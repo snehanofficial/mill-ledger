@@ -1,0 +1,1021 @@
+diff --git a/client/src/pages/customers-page.tsx b/client/src/pages/customers-page.tsx
+index 65771f3..40093c9 100644
+--- a/client/src/pages/customers-page.tsx
++++ b/client/src/pages/customers-page.tsx
+@@ -1,5 +1,6 @@
+ import { useQuery } from "@tanstack/react-query";
+ import { apiClient } from "@/lib/api-client";
++import { useUrlState } from "@/hooks/use-url-state";
+ import { useLanguage } from "@/lib/i18n";
+ import {
+   SkeletonTable,
+@@ -15,6 +16,7 @@ import {
+ } from "@/components/ui/table";
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
++import { Input } from "@/components/ui/input";
+ import {
+   UsersIcon,
+   RefreshCwIcon,
+@@ -36,6 +38,8 @@ interface Customer {
+ 
+ export function CustomersPage() {
+   const { t } = useLanguage();
++  const [searchQuery, setSearchQuery] = useUrlState("q", "");
++
+   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
+     customers: Customer[];
+   }>({
+@@ -48,6 +52,18 @@ export function CustomersPage() {
+ 
+   const customers = data?.customers ?? [];
+ 
++  const filteredCustomers = customers.filter((c) => {
++    if (!searchQuery.trim()) return true;
++    const q = searchQuery.toLowerCase().trim();
++    return (
++      c.name.toLowerCase().includes(q) ||
++      c.code.toLowerCase().includes(q) ||
++      c.state.toLowerCase().includes(q) ||
++      (c.phone && c.phone.toLowerCase().includes(q)) ||
++      (c.gstin && c.gstin.toLowerCase().includes(q))
++    );
++  });
++
+   return (
+     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8">
+       {/* Header */}
+@@ -84,16 +100,26 @@ export function CustomersPage() {
+ 
+       {/* Customers Table Card */}
+       <div className="rounded-xl border border-border bg-card shadow-xs">
+-        <div className="flex items-center justify-between border-b border-border p-4">
++        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+           <div className="flex items-center gap-2">
+             <UsersIcon className="size-4 text-muted-foreground" />
+             <h2 className="text-sm font-semibold text-foreground">
+-              Accounts Register
++              {t("Accounts Register")}
+             </h2>
++            <span className="text-xs text-muted-foreground font-mono tabular-nums">
++              ({filteredCustomers.length} of {customers.length})
++            </span>
++          </div>
++
++          <div className="flex items-center gap-2">
++            <Input
++              placeholder={t("Search customers...")}
++              value={searchQuery}
++              onChange={(e) => setSearchQuery(e.target.value)}
++              className="h-8 w-56 text-xs"
++              aria-label="Search customers"
++            />
+           </div>
+-          <span className="text-xs text-muted-foreground font-mono tabular-nums">
+-            {customers.length} total accounts
+-          </span>
+         </div>
+ 
+         {isLoading ? (
+@@ -134,7 +160,17 @@ export function CustomersPage() {
+               </TableRow>
+             </TableHeader>
+             <TableBody>
+-              {customers.map((c) => {
++              {filteredCustomers.length === 0 && customers.length > 0 && (
++                <TableRow>
++                  <TableCell
++                    colSpan={6}
++                    className="py-8 text-center text-sm text-muted-foreground"
++                  >
++                    {t("No customer accounts match the search query.")}
++                  </TableCell>
++                </TableRow>
++              )}
++              {filteredCustomers.map((c) => {
+                 const isIntraState =
+                   c.state?.trim().toLowerCase() === "tamil nadu";
+                 return (
+diff --git a/client/src/pages/dispatch-page.tsx b/client/src/pages/dispatch-page.tsx
+index 195efff..921948c 100644
+--- a/client/src/pages/dispatch-page.tsx
++++ b/client/src/pages/dispatch-page.tsx
+@@ -2,6 +2,7 @@ import { useState } from "react";
+ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ import { useCurrentUser } from "@/hooks/use-current-user";
+ import { apiClient } from "@/lib/api-client";
++import { useUrlState } from "@/hooks/use-url-state";
+ import { formatDateTime, formatQuantity } from "@/lib/formatters";
+ import { useLanguage } from "@/lib/i18n";
+ import {
+@@ -101,6 +102,7 @@ export function DispatchPage() {
+   const [driverPhone, setDriverPhone] = useState("");
+   const [notes, setNotes] = useState("");
+   const [dispatchError, setDispatchError] = useState<string | null>(null);
++  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+ 
+   // 1. Fetch posted dispatches
+   const {
+@@ -167,6 +169,18 @@ export function DispatchPage() {
+ 
+   const dispatches = dispatchesData?.dispatches ?? [];
+ 
++  const filteredDispatches = dispatches.filter((d) => {
++    if (!searchQuery.trim()) return true;
++    const q = searchQuery.toLowerCase().trim();
++    return (
++      d.dispatchNumber.toLowerCase().includes(q) ||
++      d.salesOrder.orderNumber.toLowerCase().includes(q) ||
++      d.salesOrder.customer.name.toLowerCase().includes(q) ||
++      (d.vehicleNumber && d.vehicleNumber.toLowerCase().includes(q)) ||
++      (d.driverName && d.driverName.toLowerCase().includes(q))
++    );
++  });
++
+   // Summary counts
+   const totalDispatches = dispatches.length;
+   const totalUnitsDispatched = dispatches.reduce((acc, d) => {
+@@ -284,13 +298,25 @@ export function DispatchPage() {
+ 
+       {/* Dispatches Table */}
+       <div className="rounded-xl border bg-card shadow-xs">
+-        <div className="flex items-center justify-between border-b px-4 py-3">
+-          <h2 className="text-base font-semibold text-foreground">
+-            Dispatches ledger
+-          </h2>
+-          <span className="text-xs text-muted-foreground">
+-            {dispatches.length} dispatches recorded
+-          </span>
++        <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
++          <div className="flex items-center gap-2">
++            <h2 className="text-base font-semibold text-foreground">
++              {t("Dispatches ledger")}
++            </h2>
++            <span className="text-xs text-muted-foreground">
++              ({filteredDispatches.length} of {dispatches.length})
++            </span>
++          </div>
++
++          <div className="flex items-center gap-2">
++            <Input
++              placeholder={t("Search dispatches...")}
++              value={searchQuery}
++              onChange={(e) => setSearchQuery(e.target.value)}
++              className="h-8 w-56 text-xs"
++              aria-label="Search dispatches"
++            />
++          </div>
+         </div>
+ 
+         {isLoading ? (
+@@ -333,7 +359,17 @@ export function DispatchPage() {
+                 </TableRow>
+               </TableHeader>
+               <TableBody>
+-                {dispatches.map((disp) => (
++                {filteredDispatches.length === 0 && dispatches.length > 0 && (
++                  <TableRow>
++                    <TableCell
++                      colSpan={8}
++                      className="py-8 text-center text-sm text-muted-foreground"
++                    >
++                      {t("No dispatches match the search query.")}
++                    </TableCell>
++                  </TableRow>
++                )}
++                {filteredDispatches.map((disp) => (
+                   <TableRow key={disp.id}>
+                     <TableCell className="font-mono text-sm font-semibold text-foreground">
+                       {disp.dispatchNumber}
+diff --git a/client/src/pages/invoices-page.tsx b/client/src/pages/invoices-page.tsx
+index f149272..8b102ee 100644
+--- a/client/src/pages/invoices-page.tsx
++++ b/client/src/pages/invoices-page.tsx
+@@ -2,6 +2,7 @@ import { useState } from "react";
+ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ import { useCurrentUser } from "@/hooks/use-current-user";
+ import { apiClient } from "@/lib/api-client";
++import { useUrlState } from "@/hooks/use-url-state";
+ import { formatINR } from "@/lib/formatters";
+ import { useLanguage } from "@/lib/i18n";
+ import {
+@@ -18,6 +19,7 @@ import {
+ } from "@/components/ui/table";
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
++import { Input } from "@/components/ui/input";
+ import { toast } from "sonner";
+ import {
+   FileTextIcon,
+@@ -87,6 +89,8 @@ export function InvoicesPage() {
+   const [selectedOrderIdForInvoice, setSelectedOrderIdForInvoice] =
+     useState<string>("");
+   const [invoiceNotes, setInvoiceNotes] = useState("");
++  const [statusFilter, setStatusFilter] = useUrlState("status", "ALL");
++  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+ 
+   // Fetch approved orders eligible for invoicing (F-037)
+   const { data: approvedOrdersData, isLoading: isLoadingApprovedOrders } =
+@@ -188,6 +192,26 @@ export function InvoicesPage() {
+ 
+   const invoices = data?.invoices ?? [];
+ 
++  const filteredInvoices = invoices.filter((inv) => {
++    if (statusFilter !== "ALL" && inv.status !== statusFilter) return false;
++    if (searchQuery.trim()) {
++      const q = searchQuery.toLowerCase().trim();
++      const matchNum = inv.invoiceNumber.toLowerCase().includes(q);
++      const matchCust =
++        inv.customerNameSnapshot.toLowerCase().includes(q) ||
++        (inv.customerGstinSnapshot || "").toLowerCase().includes(q);
++      const matchPos = (
++        inv.deliveryStateSnapshot ||
++        inv.customer?.state ||
++        ""
++      )
++        .toLowerCase()
++        .includes(q);
++      if (!matchNum && !matchCust && !matchPos) return false;
++    }
++    return true;
++  });
++
+   // Summary counts
+   const totalInvoices = invoices.length;
+   const totalBilled = invoices.reduce(
+@@ -289,13 +313,37 @@ export function InvoicesPage() {
+ 
+       {/* Invoices Table */}
+       <div className="rounded-xl border bg-card shadow-xs">
+-        <div className="flex items-center justify-between border-b px-4 py-3">
+-          <h2 className="text-base font-semibold text-foreground">
+-            Posted invoices ledger
+-          </h2>
+-          <span className="text-xs text-muted-foreground">
+-            {invoices.length} invoices found
+-          </span>
++        <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
++          <div className="flex items-center gap-2">
++            <h2 className="text-base font-semibold text-foreground">
++              {t("Posted invoices ledger")}
++            </h2>
++            <span className="text-xs text-muted-foreground">
++              ({filteredInvoices.length} of {invoices.length})
++            </span>
++          </div>
++
++          <div className="flex flex-wrap items-center gap-2">
++            <Input
++              placeholder={t("Search invoices...")}
++              value={searchQuery}
++              onChange={(e) => setSearchQuery(e.target.value)}
++              className="h-8 w-44 text-xs"
++              aria-label="Search invoices"
++            />
++            <select
++              value={statusFilter}
++              onChange={(e) => setStatusFilter(e.target.value)}
++              className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
++              aria-label="Filter invoices by status"
++            >
++              <option value="ALL">All statuses</option>
++              <option value="POSTED">Posted</option>
++              <option value="PAID">Paid</option>
++              <option value="PARTIAL">Partial</option>
++              <option value="CANCELLED">Cancelled</option>
++            </select>
++          </div>
+         </div>
+ 
+         {isLoading ? (
+@@ -336,7 +384,17 @@ export function InvoicesPage() {
+                 </TableRow>
+               </TableHeader>
+               <TableBody>
+-                {invoices.map((inv) => (
++                {filteredInvoices.length === 0 && invoices.length > 0 && (
++                  <TableRow>
++                    <TableCell
++                      colSpan={10}
++                      className="py-8 text-center text-sm text-muted-foreground"
++                    >
++                      {t("No invoices match the selected filters.")}
++                    </TableCell>
++                  </TableRow>
++                )}
++                {filteredInvoices.map((inv) => (
+                   <TableRow key={inv.id}>
+                     <TableCell className="font-mono font-medium">
+                       {inv.invoiceNumber}
+diff --git a/client/src/pages/orders-page.tsx b/client/src/pages/orders-page.tsx
+index 63528d9..94f6be6 100644
+--- a/client/src/pages/orders-page.tsx
++++ b/client/src/pages/orders-page.tsx
+@@ -1,6 +1,7 @@
+ import { useState } from "react";
+ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ import { apiClient } from "@/lib/api-client";
++import { useUrlState } from "@/hooks/use-url-state";
+ import { formatINR, formatQuantity } from "@/lib/formatters";
+ import { useLanguage } from "@/lib/i18n";
+ import {
+@@ -17,6 +18,7 @@ import {
+ } from "@/components/ui/table";
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
++import { Input } from "@/components/ui/input";
+ import {
+   ShoppingCartIcon,
+   RefreshCwIcon,
+@@ -106,7 +108,9 @@ export function OrdersPage() {
+     removeOrder,
+   } = syncManager;
+ 
+-  const [activeTab, setActiveTab] = useState<"stream" | "outbox">("stream");
++  const [activeTab, setActiveTab] = useUrlState<"stream" | "outbox">("tab", "stream", { replace: false });
++  const [statusFilter, setStatusFilter] = useUrlState("status", "ALL");
++  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+   const canCreateOrder = user?.role === "ADMIN" || user?.role === "SALESMAN";
+   const canApproveOrder = user?.role === "ADMIN";
+   const canCreateInvoice = user?.role === "ADMIN";
+@@ -389,6 +393,20 @@ export function OrdersPage() {
+ 
+   const orders = data?.orders ?? [];
+ 
++  const filteredOrders = orders.filter((o) => {
++    if (statusFilter !== "ALL" && o.status !== statusFilter) return false;
++    if (searchQuery.trim()) {
++      const q = searchQuery.toLowerCase().trim();
++      const matchNum = o.orderNumber.toLowerCase().includes(q);
++      const matchCust =
++        o.customer.name.toLowerCase().includes(q) ||
++        o.customer.code.toLowerCase().includes(q);
++      const matchNotes = (o.notes || "").toLowerCase().includes(q);
++      if (!matchNum && !matchCust && !matchNotes) return false;
++    }
++    return true;
++  });
++
+   // Summary counts
+   const totalOrders = orders.length;
+   const approvedOrders = orders.filter((o) => o.status === "APPROVED").length;
+@@ -503,7 +521,7 @@ export function OrdersPage() {
+ 
+       {/* Orders Table */}
+       <div className="rounded-xl border bg-card shadow-xs">
+-        <div className="flex items-center justify-between border-b px-4 py-3">
++        <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+           <div className="flex items-center gap-2">
+             <Button
+               variant={activeTab === "stream" ? "secondary" : "ghost"}
+@@ -528,11 +546,34 @@ export function OrdersPage() {
+               )}
+             </Button>
+           </div>
+-          <span className="text-xs text-muted-foreground">
+-            {activeTab === "stream"
+-              ? `${orders.length} server orders`
+-              : `${outboxOrders.length} local outbox orders`}
+-          </span>
++
++          <div className="flex flex-wrap items-center gap-2">
++            <Input
++              placeholder={t("Search orders...")}
++              value={searchQuery}
++              onChange={(e) => setSearchQuery(e.target.value)}
++              className="h-8 w-44 text-xs"
++              aria-label="Search orders"
++            />
++            <select
++              value={statusFilter}
++              onChange={(e) => setStatusFilter(e.target.value)}
++              className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
++              aria-label="Filter orders by status"
++            >
++              <option value="ALL">All statuses</option>
++              <option value="SUBMITTED">Submitted</option>
++              <option value="APPROVED">Approved</option>
++              <option value="REJECTED">Rejected</option>
++              <option value="DISPATCHED">Dispatched</option>
++              <option value="CANCELLED">Cancelled</option>
++            </select>
++            <span className="text-xs text-muted-foreground ml-1">
++              {activeTab === "stream"
++                ? `${filteredOrders.length} of ${orders.length} orders`
++                : `${outboxOrders.length} local orders`}
++            </span>
++          </div>
+         </div>
+ 
+         {isLoading ? (
+@@ -706,7 +747,19 @@ export function OrdersPage() {
+ 
+                 {/* Server orders stream */}
+                 {activeTab === "stream" &&
+-                  orders.map((o) => {
++                  filteredOrders.length === 0 &&
++                  orders.length > 0 && (
++                    <TableRow>
++                      <TableCell
++                        colSpan={10}
++                        className="py-8 text-center text-sm text-muted-foreground"
++                      >
++                        {t("No orders match the selected filters.")}
++                      </TableCell>
++                    </TableRow>
++                  )}
++                {activeTab === "stream" &&
++                  filteredOrders.map((o) => {
+                     const line = o.lines[0];
+                     const qty = Number(line?.quotedQuantity ?? 0);
+                     const shortage = o.totalShortage ?? 0;
+diff --git a/client/src/pages/payments-page.tsx b/client/src/pages/payments-page.tsx
+index 3d796fa..d794920 100644
+--- a/client/src/pages/payments-page.tsx
++++ b/client/src/pages/payments-page.tsx
+@@ -2,6 +2,7 @@ import { useState } from "react";
+ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ import { useCurrentUser } from "@/hooks/use-current-user";
+ import { apiClient } from "@/lib/api-client";
++import { useUrlState } from "@/hooks/use-url-state";
+ import { formatDate, formatINR } from "@/lib/formatters";
+ import { useLanguage } from "@/lib/i18n";
+ import {
+@@ -119,9 +120,13 @@ export function PaymentsPage() {
+   const { user } = useCurrentUser();
+   const { t } = useLanguage();
+   const canRecordPayment = user?.role === "ADMIN";
+-  const [activeTab, setActiveTab] = useState<"ledger" | "receivables">(
++  const [activeTab, setActiveTab] = useUrlState<"ledger" | "receivables">(
++    "tab",
+     "ledger",
++    { replace: false },
+   );
++  const [searchQuery, setSearchQuery] = useUrlState("q", "");
++  const [modeFilter, setModeFilter] = useUrlState("mode", "ALL");
+ 
+   // Modals state
+   const [showPaymentModal, setShowPaymentModal] = useState(false);
+@@ -238,6 +243,28 @@ export function PaymentsPage() {
+   const payments = paymentsData?.payments ?? [];
+   const receivables = receivablesData?.receivables ?? [];
+ 
++  const filteredPayments = payments.filter((p) => {
++    if (modeFilter !== "ALL" && p.paymentMode !== modeFilter) return false;
++    if (searchQuery.trim()) {
++      const q = searchQuery.toLowerCase().trim();
++      const matchNum = p.paymentNumber.toLowerCase().includes(q);
++      const matchCust = (p.customer?.name || "").toLowerCase().includes(q);
++      const matchRef = (p.referenceNumber || "").toLowerCase().includes(q);
++      if (!matchNum && !matchCust && !matchRef) return false;
++    }
++    return true;
++  });
++
++  const filteredReceivables = receivables.filter((r) => {
++    if (searchQuery.trim()) {
++      const q = searchQuery.toLowerCase().trim();
++      const matchName = (r.customerName || "").toLowerCase().includes(q);
++      const matchCode = (r.customerCode || "").toLowerCase().includes(q);
++      if (!matchName && !matchCode) return false;
++    }
++    return true;
++  });
++
+   // Summary calculations
+   const totalCollected = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+   const totalUnallocated = payments.reduce(
+@@ -425,13 +452,38 @@ export function PaymentsPage() {
+       {/* Tab 1: Payments Ledger */}
+       {activeTab === "ledger" && (
+         <div className="rounded-xl border bg-card shadow-xs">
+-          <div className="flex items-center justify-between border-b px-4 py-3">
+-            <h2 className="text-base font-semibold text-foreground">
+-              Collections ledger
+-            </h2>
+-            <span className="text-xs text-muted-foreground">
+-              {payments.length} transactions recorded
+-            </span>
++          <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
++            <div className="flex items-center gap-2">
++              <h2 className="text-base font-semibold text-foreground">
++                {t("Collections ledger")}
++              </h2>
++              <span className="text-xs text-muted-foreground">
++                ({filteredPayments.length} of {payments.length})
++              </span>
++            </div>
++
++            <div className="flex flex-wrap items-center gap-2">
++              <Input
++                placeholder={t("Search payments...")}
++                value={searchQuery}
++                onChange={(e) => setSearchQuery(e.target.value)}
++                className="h-8 w-44 text-xs"
++                aria-label="Search payments"
++              />
++              <select
++                value={modeFilter}
++                onChange={(e) => setModeFilter(e.target.value)}
++                className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
++                aria-label="Filter payments by mode"
++              >
++                <option value="ALL">All modes</option>
++                <option value="BANK_TRANSFER">Bank transfer</option>
++                <option value="NEFT_RTGS">NEFT / RTGS</option>
++                <option value="CHEQUE">Cheque</option>
++                <option value="UPI">UPI</option>
++                <option value="CASH">Cash</option>
++              </select>
++            </div>
+           </div>
+ 
+           {loadingPayments ? (
+@@ -476,7 +528,17 @@ export function PaymentsPage() {
+                   </TableRow>
+                 </TableHeader>
+                 <TableBody>
+-                  {payments.map((p) => (
++                  {filteredPayments.length === 0 && payments.length > 0 && (
++                    <TableRow>
++                      <TableCell
++                        colSpan={8}
++                        className="py-8 text-center text-sm text-muted-foreground"
++                      >
++                        {t("No payments match the selected filters.")}
++                      </TableCell>
++                    </TableRow>
++                  )}
++                  {filteredPayments.map((p) => (
+                     <TableRow key={p.id}>
+                       <TableCell className="font-mono text-sm font-semibold text-foreground">
+                         {p.paymentNumber}
+@@ -560,19 +622,30 @@ export function PaymentsPage() {
+       {/* Tab 2: Customer Receivables */}
+       {activeTab === "receivables" && (
+         <div className="rounded-xl border bg-card shadow-xs">
+-          <div className="flex items-center justify-between border-b px-4 py-3">
+-            <h2 className="text-base font-semibold text-foreground">
+-              Customer receivables overview
+-            </h2>
+-            <span className="text-xs text-muted-foreground">
+-              {receivables.length} accounts found
+-            </span>
++          <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
++            <div className="flex items-center gap-2">
++              <h2 className="text-base font-semibold text-foreground">
++                {t("Customer receivables overview")}
++              </h2>
++              <span className="text-xs text-muted-foreground">
++                ({filteredReceivables.length} of {receivables.length})
++              </span>
++            </div>
++
++            <div className="flex items-center gap-2">
++              <Input
++                placeholder={t("Search customer receivables...")}
++                value={searchQuery}
++                onChange={(e) => setSearchQuery(e.target.value)}
++                className="h-8 w-56 text-xs"
++                aria-label="Search customer receivables"
++              />
++            </div>
+           </div>
+ 
+           {loadingReceivables ? (
+-            <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
+-              <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
+-              Loading receivables...
++            <div className="p-4">
++              <SkeletonTable rows={5} columns={8} />
+             </div>
+           ) : receivables.length === 0 ? (
+             <div className="flex flex-col items-center justify-center p-12 text-center text-sm text-muted-foreground">
+@@ -598,7 +671,17 @@ export function PaymentsPage() {
+                   </TableRow>
+                 </TableHeader>
+                 <TableBody>
+-                  {receivables.map((r) => (
++                  {filteredReceivables.length === 0 && receivables.length > 0 && (
++                    <TableRow>
++                      <TableCell
++                        colSpan={8}
++                        className="py-8 text-center text-sm text-muted-foreground"
++                      >
++                        {t("No customer receivables match the search query.")}
++                      </TableCell>
++                    </TableRow>
++                  )}
++                  {filteredReceivables.map((r) => (
+                     <TableRow key={r.customerId}>
+                       <TableCell>
+                         <div className="flex flex-col">
+diff --git a/client/src/pages/production-page.tsx b/client/src/pages/production-page.tsx
+index 5235235..bd85219 100644
+--- a/client/src/pages/production-page.tsx
++++ b/client/src/pages/production-page.tsx
+@@ -2,6 +2,7 @@ import { useState } from "react";
+ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ import { useCurrentUser } from "@/hooks/use-current-user";
+ import { apiClient } from "@/lib/api-client";
++import { useUrlState } from "@/hooks/use-url-state";
+ import { formatINR, formatQuantity } from "@/lib/formatters";
+ import { useLanguage } from "@/lib/i18n";
+ import {
+@@ -18,6 +19,7 @@ import {
+ } from "@/components/ui/table";
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
++import { Input } from "@/components/ui/input";
+ import {
+   FactoryIcon,
+   RefreshCwIcon,
+@@ -89,6 +91,7 @@ export function ProductionPage() {
+     user?.role === "ADMIN" || user?.role === "PRODUCTION";
+   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
+   const [selectedRun, setSelectedRun] = useState<ProductionRun | null>(null);
++  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+ 
+   // Form states for benchmark Murukku batch
+   const [selectedRecipeId, setSelectedRecipeId] = useState("");
+@@ -233,6 +236,17 @@ export function ProductionPage() {
+ 
+   const runs = data?.runs ?? [];
+ 
++  const filteredRuns = runs.filter((r) => {
++    if (!searchQuery.trim()) return true;
++    const q = searchQuery.toLowerCase().trim();
++    return (
++      r.runNumber.toLowerCase().includes(q) ||
++      (r.recipe?.name || "").toLowerCase().includes(q) ||
++      (r.recipe?.productVariant?.name || "").toLowerCase().includes(q) ||
++      (r.notes && r.notes.toLowerCase().includes(q))
++    );
++  });
++
+   // Computed metrics
+   const totalRuns = runs.length;
+   const postedRuns = runs.filter((r) => r.status === "POSTED").length;
+@@ -357,13 +371,25 @@ export function ProductionPage() {
+ 
+       {/* Production Runs Table */}
+       <div className="rounded-xl border bg-card shadow-xs">
+-        <div className="flex items-center justify-between border-b px-4 py-3">
+-          <h2 className="text-base font-semibold text-foreground">
+-            Completed production runs
+-          </h2>
+-          <span className="text-xs text-muted-foreground">
+-            {runs.length} records found
+-          </span>
++        <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
++          <div className="flex items-center gap-2">
++            <h2 className="text-base font-semibold text-foreground">
++              {t("Completed production runs")}
++            </h2>
++            <span className="text-xs text-muted-foreground">
++              ({filteredRuns.length} of {runs.length})
++            </span>
++          </div>
++
++          <div className="flex items-center gap-2">
++            <Input
++              placeholder={t("Search production batches...")}
++              value={searchQuery}
++              onChange={(e) => setSearchQuery(e.target.value)}
++              className="h-8 w-56 text-xs"
++              aria-label="Search production batches"
++            />
++          </div>
+         </div>
+ 
+         {isLoading ? (
+@@ -413,7 +439,17 @@ export function ProductionPage() {
+                 </TableRow>
+               </TableHeader>
+               <TableBody>
+-                {runs.map((r) => {
++                {filteredRuns.length === 0 && runs.length > 0 && (
++                  <TableRow>
++                    <TableCell
++                      colSpan={9}
++                      className="py-8 text-center text-sm text-muted-foreground"
++                    >
++                      {t("No production batches match the search query.")}
++                    </TableCell>
++                  </TableRow>
++                )}
++                {filteredRuns.map((r) => {
+                   const yieldPct = Number(r.yieldVariancePct);
+                   const isYieldFlagged = r.isYieldFlagged;
+ 
+diff --git a/client/src/pages/purchases-page.tsx b/client/src/pages/purchases-page.tsx
+index aeea0f3..5c73b6e 100644
+--- a/client/src/pages/purchases-page.tsx
++++ b/client/src/pages/purchases-page.tsx
+@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
+ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ import { useCurrentUser } from "@/hooks/use-current-user";
+ import { apiClient } from "@/lib/api-client";
++import { useUrlState } from "@/hooks/use-url-state";
+ import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
+ import { useLanguage } from "@/lib/i18n";
+ import {
+@@ -19,6 +20,7 @@ import {
+ } from "@/components/ui/table";
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
++import { Input } from "@/components/ui/input";
+ import {
+   PlusIcon,
+   RefreshCwIcon,
+@@ -72,6 +74,7 @@ export function PurchasesPage() {
+   const canRecordPurchase =
+     user?.role === "ADMIN" || user?.role === "PRODUCTION";
+   const [showModal, setShowModal] = useState(false);
++  const [searchQuery, setSearchQuery] = useUrlState("q", "");
+ 
+   // Form states
+   const [selectedSupplierId, setSelectedSupplierId] = useState("");
+@@ -177,6 +180,21 @@ export function PurchasesPage() {
+ 
+   const receipts = data?.receipts ?? [];
+ 
++  const filteredReceipts = receipts.filter((r) => {
++    if (!searchQuery.trim()) return true;
++    const q = searchQuery.toLowerCase().trim();
++    return (
++      r.receiptNumber.toLowerCase().includes(q) ||
++      r.supplier.name.toLowerCase().includes(q) ||
++      r.lines.some(
++        (l) =>
++          l.inventoryItem?.name?.toLowerCase().includes(q) ||
++          l.inventoryItem?.sku?.toLowerCase().includes(q),
++      ) ||
++      (r.supplierInvoiceNumber && r.supplierInvoiceNumber.toLowerCase().includes(q))
++    );
++  });
++
+   return (
+     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8">
+       {/* Header */}
+@@ -224,16 +242,26 @@ export function PurchasesPage() {
+ 
+       {/* Receipts Table Card */}
+       <div className="rounded-xl border border-border bg-card shadow-xs">
+-        <div className="flex items-center justify-between border-b border-border p-4">
++        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+           <div className="flex items-center gap-2">
+             <TruckIcon className="size-4 text-muted-foreground" />
+             <h2 className="text-sm font-semibold text-foreground">
+-              Purchase Receipts Ledger
++              {t("Purchase Receipts Ledger")}
+             </h2>
++            <span className="text-xs text-muted-foreground font-mono tabular-nums">
++              ({filteredReceipts.length} of {receipts.length})
++            </span>
++          </div>
++
++          <div className="flex items-center gap-2">
++            <Input
++              placeholder={t("Search receipts...")}
++              value={searchQuery}
++              onChange={(e) => setSearchQuery(e.target.value)}
++              className="h-8 w-56 text-xs"
++              aria-label="Search purchase receipts"
++            />
+           </div>
+-          <span className="text-xs text-muted-foreground font-mono tabular-nums">
+-            {receipts.length} total recorded
+-          </span>
+         </div>
+ 
+         {isLoading ? (
+@@ -276,7 +304,17 @@ export function PurchasesPage() {
+               </TableRow>
+             </TableHeader>
+             <TableBody>
+-              {receipts.map((rec) => {
++              {filteredReceipts.length === 0 && receipts.length > 0 && (
++                <TableRow>
++                  <TableCell
++                    colSpan={8}
++                    className="py-8 text-center text-sm text-muted-foreground"
++                  >
++                    {t("No purchase receipts match the search query.")}
++                  </TableCell>
++                </TableRow>
++              )}
++              {filteredReceipts.map((rec) => {
+                 const firstLine = rec.lines[0];
+                 const totalAmount = rec.lines.reduce(
+                   (sum, l) => sum + Number(l.totalPrice),
+diff --git a/client/src/pages/reports-page.tsx b/client/src/pages/reports-page.tsx
+index f7d2915..3a3a0b7 100644
+--- a/client/src/pages/reports-page.tsx
++++ b/client/src/pages/reports-page.tsx
+@@ -2,6 +2,7 @@ import { useState } from "react";
+ import { useQuery } from "@tanstack/react-query";
+ import { apiClient } from "@/lib/api-client";
+ import { useCurrentUser } from "@/hooks/use-current-user";
++import { useUrlState } from "@/hooks/use-url-state";
+ import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
+ import { useLanguage } from "@/lib/i18n";
+ import { SkeletonTable } from "@/components/ui/loading-error-empty";
+@@ -75,14 +76,16 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
+     ? defaultTab
+     : allowedTabs[0]?.id || "sales";
+ 
+-  const [activeTab, setActiveTab] = useState(initialTab);
++  const [activeTab, setActiveTab] = useUrlState<string>("tab", initialTab, {
++    replace: false,
++  });
+   const effectiveTab = allowedTabs.some((t) => t.id === activeTab)
+     ? activeTab
+     : allowedTabs[0]?.id || "sales";
+ 
+   const [exporting, setExporting] = useState(false);
+-  const [auditSearch, setAuditSearch] = useState("");
+-  const [auditActionFilter, setAuditActionFilter] = useState("ALL");
++  const [auditSearch, setAuditSearch] = useUrlState("q", "");
++  const [auditActionFilter, setAuditActionFilter] = useUrlState("action", "ALL");
+ 
+   // 1. Sales Report
+   const {
+diff --git a/client/src/pages/stock-page.tsx b/client/src/pages/stock-page.tsx
+index c92d767..33f0fdd 100644
+--- a/client/src/pages/stock-page.tsx
++++ b/client/src/pages/stock-page.tsx
+@@ -1,5 +1,6 @@
+ import { useQuery } from "@tanstack/react-query";
+ import { apiClient } from "@/lib/api-client";
++import { useUrlState } from "@/hooks/use-url-state";
+ import { formatINR, formatQuantity } from "@/lib/formatters";
+ import { useLanguage } from "@/lib/i18n";
+ import {
+@@ -16,6 +17,7 @@ import {
+ } from "@/components/ui/table";
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
++import { Input } from "@/components/ui/input";
+ import {
+   CheckCircleIcon,
+   RefreshCwIcon,
+@@ -51,6 +53,9 @@ const CATEGORY_LABELS: Record<
+ 
+ export function StockPage() {
+   const { t } = useLanguage();
++  const [searchQuery, setSearchQuery] = useUrlState("q", "");
++  const [categoryFilter, setCategoryFilter] = useUrlState("category", "ALL");
++
+   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
+     balances: InventoryBalance[];
+   }>({
+@@ -66,6 +71,17 @@ export function StockPage() {
+ 
+   const balances = data?.balances ?? [];
+ 
++  const filteredBalances = balances.filter((item) => {
++    if (categoryFilter !== "ALL" && item.category !== categoryFilter) return false;
++    if (searchQuery.trim()) {
++      const q = searchQuery.toLowerCase().trim();
++      const matchSku = item.sku.toLowerCase().includes(q);
++      const matchName = item.name.toLowerCase().includes(q);
++      if (!matchSku && !matchName) return false;
++    }
++    return true;
++  });
++
+   // Computed summary metrics
+   const totalItems = balances.length;
+   const rawMaterialCount = balances.filter(
+@@ -164,20 +180,44 @@ export function StockPage() {
+ 
+       {/* Main Stock Table */}
+       <div className="flex flex-col rounded-xl border border-border bg-card shadow-xs">
+-        <div className="flex items-center justify-between border-b border-border p-4">
++        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+           <div className="flex items-center gap-2">
+             <PackageIcon
+               className="size-4 text-muted-foreground"
+               aria-hidden="true"
+             />
+             <h2 className="text-sm font-semibold text-foreground">
+-              Current Stock on Hand
++              {t("Current Stock on Hand")}
+             </h2>
++            <span className="text-xs text-muted-foreground font-mono tabular-nums">
++              ({filteredBalances.length} of {balances.length})
++            </span>
++          </div>
++
++          <div className="flex flex-wrap items-center gap-2">
++            <Input
++              placeholder={t("Search items by SKU or name...")}
++              value={searchQuery}
++              onChange={(e) => setSearchQuery(e.target.value)}
++              className="h-8 w-52 text-xs"
++              aria-label="Search stock"
++            />
++            <select
++              value={categoryFilter}
++              onChange={(e) => setCategoryFilter(e.target.value)}
++              className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
++              aria-label="Filter items by category"
++            >
++              <option value="ALL">All categories</option>
++              <option value="RAW_MATERIAL">Raw Material</option>
++              <option value="FINISHED_GOODS">Finished Goods</option>
++              <option value="PACKAGING">Packaging</option>
++            </select>
++            <Badge variant="outline" className="gap-1.5 text-xs text-emerald-600">
++              <CheckCircleIcon className="size-3.5" aria-hidden="true" />
++              <span>Movements Reconciled</span>
++            </Badge>
+           </div>
+-          <Badge variant="outline" className="gap-1.5 text-xs text-emerald-600">
+-            <CheckCircleIcon className="size-3.5" aria-hidden="true" />
+-            <span>Movements Reconciled</span>
+-          </Badge>
+         </div>
+ 
+         {isLoading ? (
+@@ -216,7 +256,17 @@ export function StockPage() {
+               </TableRow>
+             </TableHeader>
+             <TableBody>
+-              {balances.map((item) => {
++              {filteredBalances.length === 0 && balances.length > 0 && (
++                <TableRow>
++                  <TableCell
++                    colSpan={7}
++                    className="py-8 text-center text-sm text-muted-foreground"
++                  >
++                    {t("No items match the selected filters.")}
++                  </TableCell>
++                </TableRow>
++              )}
++              {filteredBalances.map((item) => {
+                 const totalValue = item.onHand * item.weightedAverageCost;
+                 const categoryConfig = CATEGORY_LABELS[item.category] || {
+                   label: item.category,
+diff --git a/client/src/pages/suppliers-page.tsx b/client/src/pages/suppliers-page.tsx
+index 41f3e83..a786a79 100644
+--- a/client/src/pages/suppliers-page.tsx
++++ b/client/src/pages/suppliers-page.tsx
+@@ -2,6 +2,7 @@ import { useState } from "react";
+ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ import { apiClient } from "@/lib/api-client";
+ import { useCurrentUser } from "@/hooks/use-current-user";
++import { useUrlState } from "@/hooks/use-url-state";
+ import { useLanguage } from "@/lib/i18n";
+ import {
+   SkeletonTable,
+@@ -50,7 +51,10 @@ export function SuppliersPage() {
+   const canManageSuppliers =
+     user?.role === "ADMIN" || user?.role === "PRODUCTION" || user?.role === "OWNER";
+ 
+-  const [searchQuery, setSearchQuery] = useState("");
++  const [searchQuery, setSearchQuery] = useUrlState("q", "");
++  const [statusFilter, setStatusFilter] = useUrlState<
++    "ALL" | "ACTIVE" | "INACTIVE"
++  >("status", "ALL");
+   const [showAddModal, setShowAddModal] = useState(false);
+   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+ 
+@@ -152,6 +156,8 @@ export function SuppliersPage() {
+   const suppliers = data?.suppliers ?? [];
+ 
+   const filteredSuppliers = suppliers.filter((s) => {
++    if (statusFilter === "ACTIVE" && !s.isActive) return false;
++    if (statusFilter === "INACTIVE" && s.isActive) return false;
+     const q = searchQuery.toLowerCase().trim();
+     if (!q) return true;
+     return (
+@@ -253,8 +259,8 @@ export function SuppliersPage() {
+         </div>
+       </div>
+ 
+-      {/* Search Bar */}
+-      <div className="flex items-center gap-2">
++      {/* Search Bar & Filters */}
++      <div className="flex flex-wrap items-center gap-2">
+         <div className="relative flex-1 max-w-sm">
+           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+           <input
+@@ -265,6 +271,16 @@ export function SuppliersPage() {
+             className="w-full rounded-md border bg-background pl-9 pr-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+           />
+         </div>
++        <select
++          value={statusFilter}
++          onChange={(e) => setStatusFilter(e.target.value)}
++          className="h-9.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
++          aria-label="Filter suppliers by status"
++        >
++          <option value="ALL">All status</option>
++          <option value="ACTIVE">Active only</option>
++          <option value="INACTIVE">Inactive only</option>
++        </select>
+       </div>
+ 
+       {/* Table */}

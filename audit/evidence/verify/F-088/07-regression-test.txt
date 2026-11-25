@@ -1,0 +1,22 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | audit/tests/f-088-regression.test.ts > F-088 Regression Test: noindex Protection & X-Robots-Tag (REQ-062) > emits X-Robots-Tag: noindex, nofollow on /api/v1/health
+{"level":"INFO","timestamp":"2026-11-23T21:41:44.901Z","requestId":"06bdd6bc-c8fd-40e5-bb8b-4c28bba88c2d","method":"GET","path":"/api/v1/health","statusCode":200,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stdout | audit/tests/f-088-regression.test.ts > F-088 Regression Test: noindex Protection & X-Robots-Tag (REQ-062) > emits X-Robots-Tag: noindex, nofollow on /api/health alias
+{"level":"INFO","timestamp":"2026-11-23T21:41:44.913Z","requestId":"1ecd7dd0-ab82-4eba-84ab-c735bcfde258","method":"GET","path":"/api/health","statusCode":200,"durationMs":1,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | audit/tests/f-088-regression.test.ts > F-088 Regression Test: noindex Protection & X-Robots-Tag (REQ-062) > emits X-Robots-Tag: noindex, nofollow on 404 responses
+{"level":"WARN","timestamp":"2026-11-23T21:41:44.917Z","requestId":"0044c10e-9cd7-438e-89d1-3c6757c34318","method":"GET","path":"/api/v1/non-existent-endpoint","statusCode":404,"durationMs":0,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+stderr | audit/tests/f-088-regression.test.ts > F-088 Regression Test: noindex Protection & X-Robots-Tag (REQ-062) > emits X-Robots-Tag: noindex, nofollow on authenticated endpoints
+{"level":"WARN","timestamp":"2026-11-23T21:41:44.927Z","requestId":"afa555f6-ad78-401f-bcb1-781851b4854b","method":"GET","path":"/api/v1/sales/orders","statusCode":401,"durationMs":6,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+ ✓ audit/tests/f-088-regression.test.ts (4 tests) 50ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  03:11:43
+   Duration  1.29s (transform 401ms, setup 0ms, collect 868ms, tests 50ms, environment 0ms, prepare 66ms)
+

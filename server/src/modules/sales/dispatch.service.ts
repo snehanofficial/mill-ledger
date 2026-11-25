@@ -4,8 +4,12 @@ import {
   FulfilmentStatus,
   MovementType,
   ReservationStatus,
+  type Prisma,
 } from "@prisma/client";
 import { AppError } from "../../middleware/error.middleware.js";
+import { sequenceService } from "../finance/sequence.service.js";
+import type { UserContext } from "@mill-ledger/shared";
+import { auditService } from "../reporting/audit.service.js";
 
 export interface CreateDispatchLineInput {
   salesOrderLineId: string;
@@ -31,8 +35,9 @@ export class DispatchService {
    * 3. Creates append-only DISPATCH stock movement
    * 4. Updates order fulfilment status to FULFILLED
    */
-  async postDispatch(input: CreateDispatchInput) {
-    return await prisma.$transaction(async (tx) => {
+  async postDispatch(input: CreateDispatchInput, user?: UserContext) {
+    try {
+      const result = await prisma.$transaction(async (tx) => {
       // 1. Idempotency check
       if (input.idempotencyKey) {
         const existing = await tx.dispatch.findUnique({
@@ -80,10 +85,10 @@ export class DispatchService {
       }
 
       const warehouseId = input.warehouseId || order.warehouseId;
-      const count = await tx.dispatch.count({
-        where: { organizationId: order.organizationId },
-      });
-      const dispatchNumber = `DSP-${new Date().getFullYear()}-${(count + 1).toString().padStart(4, "0")}`;
+      const dispatchNumber = await sequenceService.getNextDispatchNumber(
+        tx,
+        order.organizationId,
+      );
 
       const linkedInvoiceId = order.invoices[0]?.id;
 
@@ -260,14 +265,66 @@ export class DispatchService {
         },
       });
     });
+
+    if (result) {
+      await auditService.log({
+        organizationId: result.organizationId,
+        userId: user?.id,
+        userEmail: user?.email,
+        action: "DISPATCH",
+        entity: "Dispatch",
+        entityId: result.id,
+        details: {
+          dispatchNumber: result.dispatchNumber,
+          salesOrderId: result.salesOrderId,
+          salesInvoiceId: result.salesInvoiceId,
+          lineCount: result.lines?.length ?? 0,
+        },
+      });
+    }
+
+    return result;
+    } catch (err: unknown) {
+      if (
+        input.idempotencyKey &&
+        typeof err === "object" &&
+        err !== null &&
+        (err as { code?: string }).code === "P2002"
+      ) {
+        const existing = await prisma.dispatch.findUnique({
+          where: { idempotencyKey: input.idempotencyKey },
+          include: {
+            lines: {
+              include: { inventoryItem: true },
+            },
+            salesOrder: true,
+            salesInvoice: true,
+            warehouse: true,
+          },
+        });
+        if (existing) {
+          return existing;
+        }
+      }
+      throw err;
+    }
   }
 
   /**
-   * List dispatches for an organization
+   * List dispatches for an organization (with optional ABAC user-scoping per OD-03)
    */
-  async getDispatches(organizationId: string) {
+  async getDispatches(organizationId: string, user?: UserContext) {
+    const where: Prisma.DispatchWhereInput = { organizationId };
+
+    // ABAC rule per OD-03: Salesman sees only dispatches for orders they submitted
+    if (user?.role === "SALESMAN") {
+      where.salesOrder = {
+        salesmanId: user.id,
+      };
+    }
+
     return await prisma.dispatch.findMany({
-      where: { organizationId },
+      where,
       include: {
         lines: {
           include: { inventoryItem: true },
@@ -280,6 +337,147 @@ export class DispatchService {
       },
       orderBy: { dispatchedAt: "desc" },
     });
+  }
+
+  /**
+   * Get single dispatch by ID (with ABAC user-scoping per OD-03)
+   */
+  async getDispatchById(dispatchId: string, user?: UserContext) {
+    const where: Prisma.DispatchWhereInput = { id: dispatchId };
+
+    // ABAC rule per OD-03: Salesman can only access dispatches for orders they submitted
+    if (user?.role === "SALESMAN") {
+      where.salesOrder = {
+        salesmanId: user.id,
+      };
+    }
+
+    const dispatch = await prisma.dispatch.findFirst({
+      where,
+      include: {
+        lines: {
+          include: { inventoryItem: true },
+        },
+        salesOrder: {
+          include: { customer: true },
+        },
+        salesInvoice: true,
+        warehouse: true,
+      },
+    });
+
+    if (!dispatch) {
+      throw new AppError("Dispatch not found", 404);
+    }
+
+    return dispatch;
+  }
+
+  /**
+   * Record a sales return against a posted dispatch, restoring finished goods stock atomically (IMP-014)
+   */
+  async recordSalesReturn(
+    input: {
+      dispatchId: string;
+      reason: string;
+      lines: Array<{ inventoryItemId: string; quantity: number }>;
+    },
+    user?: UserContext,
+  ) {
+    if (!input.reason || input.reason.trim() === "") {
+      throw new AppError("Return reason is required", 400);
+    }
+    if (!input.lines || input.lines.length === 0) {
+      throw new AppError("At least one return line is required", 400);
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const dispatch = await tx.dispatch.findUnique({
+        where: { id: input.dispatchId },
+        include: { lines: true },
+      });
+      if (!dispatch) {
+        throw new AppError(`Dispatch ${input.dispatchId} not found`, 404);
+      }
+      if (dispatch.status !== DispatchStatus.POSTED) {
+        throw new AppError("Can only record returns against POSTED dispatches", 400);
+      }
+
+      const movements = [];
+      for (const retLine of input.lines) {
+        if (retLine.quantity <= 0) {
+          throw new AppError("Return quantity must be greater than zero", 400);
+        }
+        const dispLine = dispatch.lines.find(
+          (l) => l.inventoryItemId === retLine.inventoryItemId,
+        );
+        if (!dispLine) {
+          throw new AppError(
+            `Item ${retLine.inventoryItemId} was not part of dispatch ${dispatch.dispatchNumber}`,
+            400,
+          );
+        }
+        if (retLine.quantity > Number(dispLine.quantity)) {
+          throw new AppError(
+            `Return quantity (${retLine.quantity}) cannot exceed dispatched quantity (${Number(dispLine.quantity)})`,
+            400,
+          );
+        }
+
+        const locked = await tx.$queryRaw<
+          Array<{ id: string; currentStock: Prisma.Decimal; weightedAverageCost: Prisma.Decimal }>
+        >`
+          SELECT "id", "currentStock", "weightedAverageCost"
+          FROM "inventory_item"
+          WHERE "id" = ${retLine.inventoryItemId}
+          FOR UPDATE
+        `;
+        if (locked.length === 0) {
+          throw new AppError("Inventory item not found", 404);
+        }
+
+        const unitCost = Number(locked[0].weightedAverageCost);
+        const nextStock = Number(locked[0].currentStock) + retLine.quantity;
+
+        const mv = await tx.stockMovement.create({
+          data: {
+            inventoryItemId: retLine.inventoryItemId,
+            warehouseId: dispatch.warehouseId,
+            movementType: MovementType.RETURN,
+            quantity: retLine.quantity,
+            unitCost,
+            totalCost: retLine.quantity * unitCost,
+            referenceDocumentType: "SALES_RETURN",
+            referenceDocumentId: dispatch.id,
+            notes: `Sales return from ${dispatch.dispatchNumber}: ${input.reason.trim()}`,
+          },
+        });
+        movements.push(mv);
+
+        await tx.inventoryItem.update({
+          where: { id: retLine.inventoryItemId },
+          data: { currentStock: nextStock },
+        });
+      }
+
+      return { dispatchId: dispatch.id, dispatchNumber: dispatch.dispatchNumber, movements };
+    });
+
+    await auditService.log({
+      organizationId: "MILL",
+      userId: user?.id,
+      userEmail: user?.email,
+      action: "SALES_RETURN",
+      entity: "Dispatch",
+      entityId: result.dispatchId,
+      reason: input.reason.trim(),
+      details: {
+        dispatchNumber: result.dispatchNumber,
+        lines: input.lines,
+      },
+    });
+
+    return result;
   }
 }
 

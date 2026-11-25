@@ -1,0 +1,459 @@
+=== STEP 7: REGRESSION RADIUS CHECKS FOR F-009 ===
+Timestamp: 2026-11-22T21:50:56+05:30
+--- 1. Running Benchmark (18 assertions) ---
+$ pnpm --filter @mill-ledger/server benchmark
+$ tsx src/scripts/run-benchmark.ts
+==========================================================
+ MillLedger CDI Benchmark Acceptance Oracle Runner
+ Target: docs/benchmark.md (100% exact numerical match)
+==========================================================
+
+Cleaning database tables...
+Seeding benchmark masters and opening stock...
+Seeding benchmark master data and opening stock (M2)...
+M2 benchmark master data seed successfully completed.
+
+[Step 1] Recording purchase receipt: 60 kg flour at ₹45/kg...
+[Step 2, 3, 8] Posting production run: 188 good pkts, 6 damaged, 9 cartons...
+(node:48015) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[Step 4] Salesman 1 submits Retailer A order: 150 pkts at ₹50 in Tamil Nadu...
+[Step 5] Admin approves order, posts invoice, and dispatches...
+[Step 6] Salesman 2 submits Distributor B order: 120 pkts in Karnataka...
+[Step 7] Recording and allocating ₹4,000 payment to Retailer A...
+[Step 9] Reconciling closing inventory balances against oracle...
+Verifying sales register and stock valuation reports...
+
+==========================================================
+ Benchmark Acceptance Summary Results
+==========================================================
+[PASS] Flour weighted average cost after purchase     | Exp: ₹43.125 / kg   | Act: ₹43.125 / kg
+[PASS] Production total run cost                      | Exp: ₹5,855.00      | Act: ₹5855.00
+[PASS] Cost per good packet (₹5,855 / 188)            | Exp: ≈ ₹31.14       | Act: ₹31.14
+[PASS] Yield variance (-6% flagged)                   | Exp: true           | Act: true
+[PASS] Oil variance (+5% flagged)                     | Exp: true           | Act: true
+[PASS] Finished Murukku stock after run (50 + 188)    | Exp: 238 packets    | Act: 238 packets
+[PASS] Taxable invoice amount (150 pkts × ₹50)        | Exp: ₹7,500.00      | Act: ₹7500.00
+[PASS] CGST (2.5% intra state)                        | Exp: ₹187.50        | Act: ₹187.50
+[PASS] SGST (2.5% intra state)                        | Exp: ₹187.50        | Act: ₹187.50
+[PASS] Order total amount (Taxable + CGST + SGST)     | Exp: ₹7,875.00      | Act: ₹7875.00
+[PASS] Finished stock physical on hand after dispatch (238 - 150) | Exp: 88 packets     | Act: 88 packets
+[PASS] Distributor B stock shortage (120 requested - 88 available) | Exp: 32 packets     | Act: 32 packets
+[PASS] Retailer A invoice outstanding (₹7,875 - ₹4,000) | Exp: ₹3,875.00      | Act: ₹3875.00
+[PASS] Flour closing balance (100 + 60 - 40)          | Exp: 120 kg         | Act: 120 kg
+[PASS] Oil closing balance (30 - 10.5)                | Exp: 19.5 L         | Act: 19.5 L
+[PASS] Spice mix closing balance (5 - 1.2)            | Exp: 3.8 kg         | Act: 3.8 kg
+[PASS] Packaging pouch closing balance (500 - 194)    | Exp: 306 pieces     | Act: 306 pieces
+[PASS] Carton box closing balance (30 - 9)            | Exp: 21 pieces      | Act: 21 pieces
+[PASS] Sales register total invoiced                  | Exp: ₹7,875.00      | Act: ₹7875.00
+[PASS] Collections register total collected           | Exp: ₹4,000.00      | Act: ₹4000.00
+==========================================================
+ SUCCESS: All 18 benchmark assertions matched 100%!
+ Exit code: 0
+--- 2. Running Invariants Check (10 SQL invariants) ---
+----------------------------------------------------------------------
+INVARIANT 1: Inventory Current Stock Non-Negative
+Condition: currentStock >= 0
+----------------------------------------------------------------------
+ id | sku | name | currentStock 
+----+-----+------+--------------
+(0 rows)
+
+----------------------------------------------------------------------
+INVARIANT 2: Stock Balance Reconciliation (currentStock vs Ledger Sum)
+Condition: ABS(currentStock - SUM(stock_movement.quantity)) < 0.0001
+----------------------------------------------------------------------
+ id | sku | name | currentStock | ledger_sum | delta 
+----+-----+------+--------------+------------+-------
+(0 rows)
+
+----------------------------------------------------------------------
+INVARIANT 3: Reservation Integrity
+Condition: releasedQuantity <= reservedQuantity AND reservedQuantity > 0
+----------------------------------------------------------------------
+ id | salesOrderId | inventoryItemId | reservedQuantity | releasedQuantity | status 
+----+--------------+-----------------+------------------+------------------+--------
+(0 rows)
+
+----------------------------------------------------------------------
+INVARIANT 4: Active Stock Reservations Not Exceeding Current Stock
+Condition: SUM(active reservations) <= currentStock
+----------------------------------------------------------------------
+ id | sku | name | currentStock | net_reserved | oversold_units 
+----+-----+------+--------------+--------------+----------------
+(0 rows)
+
+----------------------------------------------------------------------
+INVARIANT 5: Sales Invoice Header Math Integrity
+Condition: totalAmount = taxableAmount + totalTaxAmount
+----------------------------------------------------------------------
+ id | invoiceNumber | taxableAmount | totalTaxAmount | totalAmount | discrepancy 
+----+---------------+---------------+----------------+-------------+-------------
+(0 rows)
+
+----------------------------------------------------------------------
+INVARIANT 6: Sales Invoice Tax Breakdown Integrity
+Condition: totalTaxAmount = cgstAmount + sgstAmount + igstAmount
+----------------------------------------------------------------------
+ id | invoiceNumber | cgstAmount | sgstAmount | igstAmount | totalTaxAmount | tax_discrepancy 
+----+---------------+------------+------------+------------+----------------+-----------------
+(0 rows)
+
+----------------------------------------------------------------------
+INVARIANT 7: Sales Invoice Lines vs Header Sum
+Condition: invoice.totalAmount = SUM(invoice_line.lineTotal)
+----------------------------------------------------------------------
+ id | invoiceNumber | totalAmount | lines_sum | delta 
+----+---------------+-------------+-----------+-------
+(0 rows)
+
+----------------------------------------------------------------------
+INVARIANT 8: Payment Allocation Sum Integrity
+Condition: payment.amount = payment.unallocatedAmount + SUM(payment_allocation.amount)
+----------------------------------------------------------------------
+ id | paymentNumber | amount | unallocatedAmount | allocated_sum | delta 
+----+---------------+--------+-------------------+---------------+-------
+(0 rows)
+
+----------------------------------------------------------------------
+INVARIANT 9: Sales Invoice Outstanding Derivability
+Condition: outstandingAmount = totalAmount - paidAmount - COALESCE(credit_notes, 0)
+----------------------------------------------------------------------
+ id | invoiceNumber | totalAmount | paidAmount | outstandingAmount | credit_notes_total | discrepancy 
+----+---------------+-------------+------------+-------------------+--------------------+-------------
+(0 rows)
+
+----------------------------------------------------------------------
+INVARIANT 10: Document Sequences Consistency
+Condition: document_sequences.current_value >= max document number generated
+----------------------------------------------------------------------
+ organization_id | financial_year | sequence_counter | posted_invoices_count 
+-----------------+----------------+------------------+-----------------------
+(0 rows)
+
+--- 3. Running Unit and Integration Test Suite ---
+$ vitest run --exclude '**/e2e/**'
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/payments.test.ts > M7: Payments, customer ledger, allocations, and costing
+M2 benchmark master data seed successfully completed.
+
+(node:48099) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/payments.test.ts (3 tests) 1007ms
+   ✓ M7: Payments, customer ledger, allocations, and costing > executes benchmark transaction 7: allocates ₹4,000 to Retailer A leaving ₹3,875 outstanding  397ms
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/reports.test.ts > M8: Reporting, audit logs, and owner dashboard
+M2 benchmark master data seed successfully completed.
+
+(node:48124) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/reports.test.ts (2 tests) 992ms
+   ✓ M8: Reporting, audit logs, and owner dashboard > executes full benchmark transactions 1 to 7 and reconciles all reporting registers and dashboard  557ms
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/orders.test.ts > M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations
+M2 benchmark master data seed successfully completed.
+
+(node:48144) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/orders.test.ts (3 tests) 962ms
+   ✓ M5: Sales orders, ABAC scoping, shortages, and atomic stock reservations > executes benchmark transactions 4, 5, and 6: salesman order creation, tax calculation, atomic reservation, and exact shortage 32  404ms
+stderr | server/src/auth.integration.test.ts > Better Auth and permission integration > Authentication behavior (401) > rejects login with invalid password
+2026-11-22T16:21:03.748Z WARN [Better Auth]: Invalid password
+
+ ✓ server/src/auth.integration.test.ts (9 tests) 951ms
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/invoice-dispatch.test.ts > M6: Invoice generation, physical dispatch, reservation release, and credit note
+M2 benchmark master data seed successfully completed.
+
+(node:48181) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/invoice-dispatch.test.ts (3 tests) 935ms
+   ✓ M6: Invoice generation, physical dispatch, reservation release, and credit note > executes benchmark transaction 5: posts ₹7,875 Retailer A invoice and dispatches stock reducing from 238 to 88 packets  382ms
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/offline-sync.test.ts > M9: Offline synchronization and idempotency verification
+M2 benchmark master data seed successfully completed.
+
+(node:48199) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/offline-sync.test.ts (5 tests) 875ms
+   ✓ M9: Offline synchronization and idempotency verification > verifies salesman customer scoping for offline snapshots  317ms
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/production.test.ts > M4: Production execution, atomic posting, and reversals
+M2 benchmark master data seed successfully completed.
+
+(node:48213) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ server/src/production.test.ts (3 tests) 904ms
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/purchases.test.ts > M3: Purchases and inventory ledger integration
+M2 benchmark master data seed successfully completed.
+
+ ✓ server/src/purchases.test.ts (3 tests) 619ms
+stdout | server/src/inventory-concurrency.test.ts > MLD-011: Inventory atomic concurrency and non-negative constraints
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/inventory-concurrency.test.ts > MLD-011: Inventory atomic concurrency and non-negative constraints
+M2 benchmark master data seed successfully completed.
+
+stdout | server/src/inventory-concurrency.test.ts > MLD-011: Inventory atomic concurrency and non-negative constraints > enforces database CHECK constraint chk_current_stock_non_negative on direct reduction past 0
+prisma:error 
+Invalid `prisma.inventoryItem.update()` invocation in
+/home/snehan/projects/web/mill-ledger/server/src/inventory-concurrency.test.ts:108:28
+
+  105 it("enforces database CHECK constraint chk_current_stock_non_negative on direct reduction past 0", async () => {
+  106   // Attempting to decrement currentStock below zero must violate the PostgreSQL check constraint
+  107   await expect(
+→ 108     prisma.inventoryItem.update(
+Database error. Code: `23514`. Message: `new row for relation "inventory_item" violates check constraint "chk_current_stock_non_negative"`
+
+ ✓ server/src/inventory-concurrency.test.ts (3 tests) 355ms
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: UPDATE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on stock_movement
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Stock movements are immutable: DELETE on stock_movement is prohibited`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL UPDATE of financial totals on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice financial and identification fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects direct SQL DELETE on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoices cannot be deleted (status: POSTED)`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects status downgrade from POSTED to DRAFT on sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice status cannot be downgraded from POSTED to DRAFT`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects mutation of snapshot fields on POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Posted sales invoice snapshot fields are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects DELETE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+stdout | server/src/db-immutability.test.ts > F-009: Database-Level Immutability Enforcement > rejects UPDATE on a line belonging to a POSTED sales_invoice
+prisma:error 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `P0001`. Message: `Lines belonging to posted sales invoices are immutable`
+
+ ✓ server/src/db-immutability.test.ts (8 tests) 295ms
+stdout | server/src/sequence-concurrency.test.ts > MLD-012: Atomic document sequence generation and concurrency
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/sequence-concurrency.test.ts > MLD-012: Atomic document sequence generation and concurrency
+M2 benchmark master data seed successfully completed.
+
+ ✓ server/src/sequence-concurrency.test.ts (2 tests) 275ms
+stdout | server/src/masters.test.ts > M2: Masters, BOM, and opening stock verification
+Seeding benchmark master data and opening stock (M2)...
+
+stdout | server/src/masters.test.ts > M2: Masters, BOM, and opening stock verification
+M2 benchmark master data seed successfully completed.
+
+ ✓ server/src/masters.test.ts (7 tests) 262ms
+ ✓ server/src/app.test.ts (5 tests) 39ms
+ ✓ client/src/lib/formatters.test.ts (16 tests) 21ms
+ ✓ server/src/financial-year-tz.test.ts (4 tests) 14ms
+ ✓ client/src/lib/auth-client.test.ts (10 tests) 14ms
+ ✓ client/src/lib/utils.test.ts (1 test) 6ms
+ ✓ server/src/middleware/auth.middleware.test.ts (4 tests) 5ms
+ ✓ server/src/config/env.test.ts (5 tests) 4ms
+ ✓ server/src/policies/rbac.test.ts (6 tests) 4ms
+ ✓ server/src/lib/origins.test.ts (5 tests) 4ms
+ ✓ server/src/policies/abac.test.ts (13 tests) 4ms
+ ✓ client/src/lib/i18n.test.ts (3 tests) 4ms
+
+ Test Files  23 passed (23)
+      Tests  123 passed (123)
+   Start at  21:50:57
+   Duration  19.05s (transform 392ms, setup 0ms, collect 5.13s, tests 8.55s, environment 3ms, prepare 1.07s)
+
+--- 4. Running Typecheck ---
+$ pnpm -r run typecheck
+Scope: 3 of 4 workspace projects
+shared typecheck$ tsc --noEmit
+shared typecheck: Done
+client typecheck$ tsc -b --noEmit
+server typecheck$ tsc --noEmit
+server typecheck: Done
+client typecheck: Done
+--- 5. Running Lint ---
+$ oxlint .
+
+  ! eslint(no-unused-vars): Variable 'ROOT' is declared but never used. Unused variables should start with a '_'.
+    ,-[.backup-remediation-baseline/tracker/check-tracker.mjs:20:7]
+ 19 | const __dirname = dirname(__filename);
+ 20 | const ROOT = join(__dirname, '../..');
+    :       ^^|^
+    :         `-- 'ROOT' is declared here
+ 21 | const TRACKER_JSON_PATH = join(__dirname, 'tracker.json');
+    `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Variable 'clusters' is declared but never used. Unused variables should start with a '_'.
+    ,-[.backup-remediation-baseline/tracker/check-tracker.mjs:52:9]
+ 51 |   const findings = items.filter((i) => !i.id.startsWith('CLUSTER-'));
+ 52 |   const clusters = items.filter((i) => i.id.startsWith('CLUSTER-'));
+    :         ^^^^|^^^
+    :             `-- 'clusters' is declared here
+ 53 | 
+    `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Catch parameter 'err' is caught but never used.
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:235:12]
+ 234 |     siblingSweepResults[cId] = { done: true, queryUsed: cData.searchCmd, hits };
+ 235 |   } catch (err) {
+     :            ^|^
+     :             `-- 'err' is declared here
+ 236 |     siblingSweepResults[cId] = { done: true, queryUsed: cData.searchCmd, hits: [] };
+     `----
+  help: Consider handling this error.
+
+  ! eslint(no-unused-vars): Variable 'idMatch' is declared but never used. Unused variables should start with a '_'.
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:247:9]
+ 246 | 
+ 247 |   const idMatch = content.match(/ID[\*:\s]+([^\n\r]+)/i);
+     :         ^^^|^^^
+     :            `-- 'idMatch' is declared here
+ 248 |   const titleMatch = content.match(/Title[\*:\s]+([^\n\r]+)/i);
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:247:37]
+ 246 | 
+ 247 |   const idMatch = content.match(/ID[\*:\s]+([^\n\r]+)/i);
+     :                                     ^^
+ 248 |   const titleMatch = content.match(/Title[\*:\s]+([^\n\r]+)/i);
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:248:43]
+ 247 |   const idMatch = content.match(/ID[\*:\s]+([^\n\r]+)/i);
+ 248 |   const titleMatch = content.match(/Title[\*:\s]+([^\n\r]+)/i);
+     :                                           ^^
+ 249 |   const sevMatch = content.match(/Severity[\*:\s]+([^\n\r]+)/i);
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:249:44]
+ 248 |   const titleMatch = content.match(/Title[\*:\s]+([^\n\r]+)/i);
+ 249 |   const sevMatch = content.match(/Severity[\*:\s]+([^\n\r]+)/i);
+     :                                            ^^
+ 250 |   const catMatch = content.match(/Category[\*:\s]+([^\n\r]+)/i);
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:250:44]
+ 249 |   const sevMatch = content.match(/Severity[\*:\s]+([^\n\r]+)/i);
+ 250 |   const catMatch = content.match(/Category[\*:\s]+([^\n\r]+)/i);
+     :                                            ^^
+ 251 |   const stdMatch = content.match(/Standard refs[\*:\s]+([^\n\r]+)/i);
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:251:49]
+ 250 |   const catMatch = content.match(/Category[\*:\s]+([^\n\r]+)/i);
+ 251 |   const stdMatch = content.match(/Standard refs[\*:\s]+([^\n\r]+)/i);
+     :                                                 ^^
+ 252 |   const effortMatch = content.match(/Effort[\*:\s]+([^\n\r]+)/i);
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:252:45]
+ 251 |   const stdMatch = content.match(/Standard refs[\*:\s]+([^\n\r]+)/i);
+ 252 |   const effortMatch = content.match(/Effort[\*:\s]+([^\n\r]+)/i);
+     :                                             ^^
+ 253 | 
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:254:54]
+ 253 | 
+ 254 |   const title = titleMatch ? titleMatch[1].replace(/[\*#]/g, "").trim() : fId;
+     :                                                      ^^
+ 255 |   let severity = "P2";
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:264:53]
+ 263 | 
+ 264 |   const category = catMatch ? catMatch[1].replace(/[\*#]/g, "").trim() : "General";
+     :                                                     ^^
+ 265 |   let effort = "M";
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '.'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:280:59]
+ 279 |   // Extract referenced files
+ 280 |   const fileMatches = [...content.matchAll(/([a-zA-Z0-9_\-\.\/]+\.(?:ts|tsx|js|mjs|json|prisma|sql|css|html|yml|yaml))/g)]
+     :                                                           ^^
+ 281 |     .map(m => m[1])
+     `----
+  help: Replace `\.` with `.`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '/'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:280:61]
+ 279 |   // Extract referenced files
+ 280 |   const fileMatches = [...content.matchAll(/([a-zA-Z0-9_\-\.\/]+\.(?:ts|tsx|js|mjs|json|prisma|sql|css|html|yml|yaml))/g)]
+     :                                                             ^^
+ 281 |     .map(m => m[1])
+     `----
+  help: Replace `\/` with `/`.
+
+Found 14 warnings and 0 errors.
+Finished in 59ms on 147 files using 16 threads.
+=== REGRESSION RADIUS COMPLETE ===

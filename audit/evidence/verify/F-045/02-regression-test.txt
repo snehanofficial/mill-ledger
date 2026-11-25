@@ -1,0 +1,13 @@
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+stderr | audit/tests/f-045-regression.test.ts > F-045 Regression Test: Skeleton Loaders & Request ID Error Recovery > backend server responses include x-request-id header and requestId in error payload for diagnostics
+{"level":"WARN","timestamp":"2026-11-23T23:43:41.220Z","requestId":"client-correlation-uuid-test","method":"GET","path":"/api/v1/non-existent-endpoint","statusCode":404,"durationMs":4,"ip":"::ffff:127.0.0.1","userAgent":"node"}
+
+ ✓ audit/tests/f-045-regression.test.ts (4 tests) 31ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  05:13:40
+   Duration  1.11s (transform 287ms, setup 0ms, collect 706ms, tests 31ms, environment 0ms, prepare 67ms)
+

@@ -1,0 +1,24 @@
+=== F-019 VERIFICATION EVIDENCE 10: EXPECTED VS ACTUAL ===
+Finding: F-019
+Title: Direct URL navigation to forbidden routes renders full operational page shells without route-level authorization guards or 403 pages
+Standard Refs: OWASP Top 10:2021 A01:2021 (Broken Access Control), NN/g Heuristic #9, WCAG 2.2 SC 3.3.1
+
+[EXPECTED]:
+Per docs/ui-ux-spec.md, docs/authorization-matrix.md, REQ-053:
+1. When an authenticated user navigates directly to a route for which their role lacks permissions, the router must prevent rendering the operational component and display an accessible 403 Access Denied page.
+2. The 403 page must explain the restriction and provide a navigation link back to their allowed workspace.
+3. Action buttons (such as "New sales order", "Approve", "Credit note", "Record payment") must only be displayed to roles possessing the required permissions.
+
+[ACTUAL]:
+1. Route protection implemented using <RoleGuard> wrapping each route definition in client/src/app.tsx.
+2. <ForbiddenPage> displays HTTP 403 badge, "Access Denied" heading, role-based message, and a "Go to [Workspace]" CTA button.
+3. Added <RoleDefaultRedirect> to direct each role upon login or visiting / to their dedicated workspace.
+4. Action buttons on OrdersPage, InvoicesPage, PaymentsPage, ProductionPage, DispatchPage, and PurchasesPage conditionally guarded by role.
+5. All 31 regression assertions in client/src/lib/role-routing.test.ts pass.
+6. Full test suite (32 files, 183 tests) passes 100%.
+7. Full benchmark (18 assertions) passes 100%.
+8. Database invariants (10 checks) pass with 0 discrepancies.
+
+[DELTA]:
+None. Fully verified.
+Status: VERIFIED-PASS

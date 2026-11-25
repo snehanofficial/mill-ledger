@@ -5,45 +5,14 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { productionService } from "./production.service.js";
-import { z } from "zod";
 import { AppError } from "../../middleware/error.middleware.js";
+import {
+  createDraftRunSchema,
+  postProductionRunSchema,
+  reverseRunSchema,
+} from "@mill-ledger/shared";
 
 export const productionRouter = Router();
-
-const createDraftRunSchema = z.object({
-  organizationId: z.string().min(1),
-  warehouseId: z.string().min(1),
-  recipeId: z.string().min(1),
-  runNumber: z.string().min(1),
-  batchCount: z.number().positive().optional(),
-  notes: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-});
-
-const consumedMaterialSchema = z.object({
-  inventoryItemId: z.string().min(1),
-  actualQty: z.number().min(0),
-  damagedQty: z.number().min(0).optional(),
-});
-
-const postProductionRunSchema = z.object({
-  organizationId: z.string().min(1),
-  warehouseId: z.string().min(1).optional(),
-  recipeId: z.string().min(1).optional(),
-  runNumber: z.string().min(1).optional(),
-  batchCount: z.number().positive().optional(),
-  actualGoodQty: z.number().positive(),
-  actualRejectedQty: z.number().min(0).optional(),
-  directLaborCost: z.number().min(0).optional(),
-  utilityCost: z.number().min(0).optional(),
-  notes: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-  consumedMaterials: z.array(consumedMaterialSchema).min(1),
-});
-
-const reverseRunSchema = z.object({
-  reason: z.string().min(1, "Reversal reason is required"),
-});
 
 // GET /api/v1/production-runs - List runs
 productionRouter.get(
@@ -116,13 +85,10 @@ productionRouter.post(
     try {
       const parsed = createDraftRunSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid draft run data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
-      const run = await productionService.createDraftRun(parsed.data);
+      const run = await productionService.createDraftRun(parsed.data, req.user);
       res.status(201).json(run);
     } catch (err) {
       next(err);
@@ -139,15 +105,13 @@ productionRouter.post(
     try {
       const parsed = postProductionRunSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid production run data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const result = await productionService.postProductionRun(
         undefined,
         parsed.data,
+        req.user,
       );
       res.status(201).json(result);
     } catch (err) {
@@ -172,15 +136,13 @@ productionRouter.post(
 
       const parsed = postProductionRunSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid production run data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
       const result = await productionService.postProductionRun(
         runId,
         parsed.data,
+        req.user,
       );
       res.status(200).json(result);
     } catch (err) {
@@ -205,17 +167,122 @@ productionRouter.post(
 
       const parsed = reverseRunSchema.safeParse(req.body);
       if (!parsed.success) {
-        throw new AppError(
-          `Invalid reversal data: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
-          400,
-        );
+        throw parsed.error;
       }
 
-      const reversedRun = await productionService.reverseProductionRun(runId, {
-        reason: parsed.data.reason,
-        reversedByUserId: req.user?.id,
-      });
+      const reversedRun = await productionService.reverseProductionRun(
+        runId,
+        {
+          reason: parsed.data.reason,
+          reversedByUserId: req.user?.id,
+        },
+        req.user,
+      );
       res.status(200).json(reversedRun);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// PUT /api/v1/production-runs/:id - Update DRAFT production run (IMP-013)
+productionRouter.put(
+  "/:id",
+  requireAuth,
+  authorize("production_run", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const runId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!runId) {
+        throw new AppError("Production run ID is required", 400);
+      }
+      const updated = await productionService.updateDraftRun(
+        runId,
+        req.body || {},
+        req.user,
+      );
+      res.json(updated);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// DELETE /api/v1/production-runs/:id - Delete DRAFT production run (IMP-013)
+productionRouter.delete(
+  "/:id",
+  requireAuth,
+  authorize("production_run", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const runId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      if (!runId) {
+        throw new AppError("Production run ID is required", 400);
+      }
+      const result = await productionService.deleteDraftRun(runId, req.user);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/production-runs/recipes - Create BOM recipe (IMP-011)
+productionRouter.post(
+  "/recipes",
+  requireAuth,
+  authorize("inventory", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const recipe = await productionService.createRecipe(req.body, req.user);
+      res.status(201).json({ recipe });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /api/v1/production-runs/recipes/:id/version - Clone new BOM version (IMP-011)
+productionRouter.post(
+  "/recipes/:id/version",
+  requireAuth,
+  authorize("inventory", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!id) throw new AppError("Recipe ID is required", 400);
+      const recipe = await productionService.createRecipeVersion(
+        id,
+        req.body || {},
+        req.user,
+      );
+      res.status(201).json({ recipe });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// PATCH /api/v1/production-runs/recipes/:id/archive - Archive/restore BOM (IMP-011)
+productionRouter.patch(
+  "/recipes/:id/archive",
+  requireAuth,
+  authorize("inventory", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!id) throw new AppError("Recipe ID is required", 400);
+      const isActive = Boolean(req.body?.isActive);
+      const recipe = await productionService.archiveRecipe(
+        id,
+        isActive,
+        req.user,
+      );
+      res.json({ recipe });
     } catch (err) {
       next(err);
     }

@@ -1,0 +1,13 @@
+=== F-017 VERIFICATION EVIDENCE 08: CONCURRENCY SAFETY ===
+Timestamp: 2026-11-23T15:14:25+05:30
+Scope: Order creation transactionality and downstream reservation atomicity
+
+1. Order Creation Transaction Integrity:
+- `salesService.createOrder` runs entirely inside `prisma.$transaction(async (tx) => { ... })`.
+- Validates assigned customers, calculates statutory line taxes, creates order header, and creates all order lines atomically.
+- Idempotency key prevents duplicate order creations under network retry.
+
+2. Downstream Reservation Protection:
+- By preventing unvalidated `status: "APPROVED"` during order creation, the system eliminates zero-reservation ghost approvals.
+- True approvals happen exclusively inside `approveOrder()` with `FOR UPDATE` pessimistic row locks on `inventory_item` and atomic inserts into `stock_reservation`.
+- Verified in `server/src/sales-concurrency.test.ts` and `server/src/concurrency-idempotency.test.ts`.

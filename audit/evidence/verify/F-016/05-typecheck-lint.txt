@@ -1,0 +1,142 @@
+$ pnpm -r run typecheck
+Scope: 3 of 4 workspace projects
+shared typecheck$ tsc --noEmit
+shared typecheck: Done
+client typecheck$ tsc -b --noEmit
+server typecheck$ tsc --noEmit
+client typecheck: Done
+server typecheck: Done
+$ oxlint .
+
+  ! eslint(no-unused-vars): Catch parameter 'err' is caught but never used.
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:235:12]
+ 234 |     siblingSweepResults[cId] = { done: true, queryUsed: cData.searchCmd, hits };
+ 235 |   } catch (err) {
+     :            ^|^
+     :             `-- 'err' is declared here
+ 236 |     siblingSweepResults[cId] = { done: true, queryUsed: cData.searchCmd, hits: [] };
+     `----
+  help: Consider handling this error.
+
+  ! eslint(no-unused-vars): Variable 'idMatch' is declared but never used. Unused variables should start with a '_'.
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:247:9]
+ 246 | 
+ 247 |   const idMatch = content.match(/ID[\*:\s]+([^\n\r]+)/i);
+     :         ^^^|^^^
+     :            `-- 'idMatch' is declared here
+ 248 |   const titleMatch = content.match(/Title[\*:\s]+([^\n\r]+)/i);
+     `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:247:37]
+ 246 | 
+ 247 |   const idMatch = content.match(/ID[\*:\s]+([^\n\r]+)/i);
+     :                                     ^^
+ 248 |   const titleMatch = content.match(/Title[\*:\s]+([^\n\r]+)/i);
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:248:43]
+ 247 |   const idMatch = content.match(/ID[\*:\s]+([^\n\r]+)/i);
+ 248 |   const titleMatch = content.match(/Title[\*:\s]+([^\n\r]+)/i);
+     :                                           ^^
+ 249 |   const sevMatch = content.match(/Severity[\*:\s]+([^\n\r]+)/i);
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:249:44]
+ 248 |   const titleMatch = content.match(/Title[\*:\s]+([^\n\r]+)/i);
+ 249 |   const sevMatch = content.match(/Severity[\*:\s]+([^\n\r]+)/i);
+     :                                            ^^
+ 250 |   const catMatch = content.match(/Category[\*:\s]+([^\n\r]+)/i);
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:250:44]
+ 249 |   const sevMatch = content.match(/Severity[\*:\s]+([^\n\r]+)/i);
+ 250 |   const catMatch = content.match(/Category[\*:\s]+([^\n\r]+)/i);
+     :                                            ^^
+ 251 |   const stdMatch = content.match(/Standard refs[\*:\s]+([^\n\r]+)/i);
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:251:49]
+ 250 |   const catMatch = content.match(/Category[\*:\s]+([^\n\r]+)/i);
+ 251 |   const stdMatch = content.match(/Standard refs[\*:\s]+([^\n\r]+)/i);
+     :                                                 ^^
+ 252 |   const effortMatch = content.match(/Effort[\*:\s]+([^\n\r]+)/i);
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:252:45]
+ 251 |   const stdMatch = content.match(/Standard refs[\*:\s]+([^\n\r]+)/i);
+ 252 |   const effortMatch = content.match(/Effort[\*:\s]+([^\n\r]+)/i);
+     :                                             ^^
+ 253 | 
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:254:54]
+ 253 | 
+ 254 |   const title = titleMatch ? titleMatch[1].replace(/[\*#]/g, "").trim() : fId;
+     :                                                      ^^
+ 255 |   let severity = "P2";
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '*'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:264:53]
+ 263 | 
+ 264 |   const category = catMatch ? catMatch[1].replace(/[\*#]/g, "").trim() : "General";
+     :                                                     ^^
+ 265 |   let effort = "M";
+     `----
+  help: Replace `\*` with `*`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '.'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:280:59]
+ 279 |   // Extract referenced files
+ 280 |   const fileMatches = [...content.matchAll(/([a-zA-Z0-9_\-\.\/]+\.(?:ts|tsx|js|mjs|json|prisma|sql|css|html|yml|yaml))/g)]
+     :                                                           ^^
+ 281 |     .map(m => m[1])
+     `----
+  help: Replace `\.` with `.`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '/'
+     ,-[.backup-remediation-baseline/tracker/generate-tracker.mjs:280:61]
+ 279 |   // Extract referenced files
+ 280 |   const fileMatches = [...content.matchAll(/([a-zA-Z0-9_\-\.\/]+\.(?:ts|tsx|js|mjs|json|prisma|sql|css|html|yml|yaml))/g)]
+     :                                                             ^^
+ 281 |     .map(m => m[1])
+     `----
+  help: Replace `\/` with `/`.
+
+  ! eslint(no-unused-vars): Variable 'ROOT' is declared but never used. Unused variables should start with a '_'.
+    ,-[.backup-remediation-baseline/tracker/check-tracker.mjs:20:7]
+ 19 | const __dirname = dirname(__filename);
+ 20 | const ROOT = join(__dirname, '../..');
+    :       ^^|^
+    :         `-- 'ROOT' is declared here
+ 21 | const TRACKER_JSON_PATH = join(__dirname, 'tracker.json');
+    `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Variable 'clusters' is declared but never used. Unused variables should start with a '_'.
+    ,-[.backup-remediation-baseline/tracker/check-tracker.mjs:52:9]
+ 51 |   const findings = items.filter((i) => !i.id.startsWith('CLUSTER-'));
+ 52 |   const clusters = items.filter((i) => i.id.startsWith('CLUSTER-'));
+    :         ^^^^|^^^
+    :             `-- 'clusters' is declared here
+ 53 | 
+    `----
+  help: Consider removing this declaration.
+
+Found 14 warnings and 0 errors.
+Finished in 26ms on 156 files using 16 threads.

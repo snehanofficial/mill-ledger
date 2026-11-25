@@ -1,0 +1,17 @@
+=== F-012 Verification: 10 Expected vs Actual ===
+
+EXPECTED (Source: Section 25 CGST Act, Rule 8 CGST Rules, GST Portal Specification gst.gov.in, OWASP ASVS v4.0.3 Item 5.1.4):
+1. A GSTIN must be validated for 15-character statutory format: 2-digit state code (01-38, 97), 10-character PAN, 1-character entity code, 'Z' placeholder, and Mod 36 checksum.
+2. The check digit must be calculated using the standard Luhn Modulo 36 algorithm.
+3. Invalid, counterfeit, and malformed GSTIN strings must be rejected with HTTP 400 Bad Request on customer creation and update.
+
+ACTUAL:
+1. Implemented shared/src/schemas/gstin.schema.ts with computeGstinCheckDigit(), validateGstin(), and gstinSchema.
+2. Verified 20 valid statutory GSTINs and 30 invalid variants (bad state, bad PAN, bad length, counterfeit check digit) with 100% precision.
+3. Added customer management endpoints in server/src/modules/sales/sales.routes.ts (POST and PUT) rejecting invalid GSTINs with HTTP 400 Bad Request.
+4. Integrated live validation badge into client/src/pages/customers-page.tsx.
+5. All 36 Vitest test suites (205 tests) pass. 0 typecheck errors, 0 lint warnings. 18/18 benchmark assertions pass. 10/10 SQL invariants hold. Client production build clean.
+
+DELTA:
+None. All expected criteria fully satisfied.
+Status: VERIFIED-PASS

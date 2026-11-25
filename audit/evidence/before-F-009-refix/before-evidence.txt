@@ -1,0 +1,28 @@
+F-009 Re-fix Before Evidence
+==============================
+Date: 2026-11-22
+Branch: remediation/main
+
+CONFIRMED BUGS IN EXISTING MIGRATION (20261120000002_ledger_immutability_triggers):
+
+1. BUG: sales_invoice_line trigger uses wrong column name
+   - Migration SQL line 82: COALESCE(OLD."salesInvoiceId", NEW."salesInvoiceId")
+   - Actual DB column name: "invoiceId" (confirmed via information_schema.columns)
+   - Effect: ANY UPDATE or DELETE on sales_invoice_line triggers a pg error
+     "column salesInvoiceId does not exist" at runtime, breaking legitimate
+     application code and potentially allowing bypasses
+   - Verification: psql query to pg_proc confirmed "salesInvoiceId" in function body
+
+2. BUG: Status downgrade not protected
+   - UPDATE on status from POSTED -> DRAFT is allowed by current trigger
+   - Only financial field changes are blocked
+   - Effect: status downgrade allows subsequent unconditional DELETE
+
+3. BUG: Snapshot fields not protected
+   - customerNameSnapshot, companyGstinSnapshot, deliveryStateSnapshot 
+     are all mutable on POSTED invoices
+   - Effect: document forgery possible
+
+4. MISSING: Zero tests for sales_invoice_line immutability
+   - db-immutability.test.ts has 0 test cases for sales_invoice_line
+   - Mutant 3 (bypass) survived because no test hits that trigger path

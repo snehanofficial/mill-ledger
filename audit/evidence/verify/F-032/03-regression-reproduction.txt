@@ -1,0 +1,26 @@
+=== F-032 Verification: Regression Reproduction ===
+
+Initial Defect:
+In Zod 3, schemas defined with `z.object({...})` default to `strip` mode. Unknown, misnamed, or injected fields submitted in API payloads were silently stripped, allowing invalid keys to return HTTP 200/201.
+Running `audit/scripts/verify-validation-inventory.ts` initially showed all mutating endpoints accepted unknown fields (`rejectsUnknownFields: false`).
+
+Remediation:
+Configured `.strict()` on all domain schemas across `@mill-ledger/shared`:
+- `shared/src/schemas/customer.schema.ts`
+- `shared/src/schemas/order.schema.ts`
+- `shared/src/schemas/dispatch.schema.ts`
+- `shared/src/schemas/production.schema.ts`
+- `shared/src/schemas/inventory.schema.ts`
+- `shared/src/schemas/finance.schema.ts`
+- `shared/src/schemas/payment.schema.ts`
+
+Observed Post-Fix Inventory Results (via `verify-validation-inventory.ts`):
+- POST /api/v1/sales/orders: rejectsUnknownFields=true, unknownFieldsStatus=400
+- POST /api/v1/sales/dispatches: rejectsUnknownFields=true, unknownFieldsStatus=400
+- POST /api/v1/production-runs/draft: rejectsUnknownFields=true, unknownFieldsStatus=400
+- POST /api/v1/production-runs: rejectsUnknownFields=true, unknownFieldsStatus=400
+- POST /api/v1/inventory/purchase-receipts: rejectsUnknownFields=true, unknownFieldsStatus=400
+- POST /api/v1/finance/invoices: rejectsUnknownFields=true, unknownFieldsStatus=400
+- POST /api/v1/payments: rejectsUnknownFields=true, unknownFieldsStatus=400
+
+All endpoints now reliably reject unknown keys with HTTP 400 Bad Request and issue code 'unrecognized_keys'.

@@ -1,8 +1,22 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useUrlState } from "@/hooks/use-url-state";
+import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
+import { SkeletonTable } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
   Table,
   TableBody,
@@ -17,10 +31,107 @@ import {
   AlertTriangleIcon,
   CheckCircle2Icon,
 } from "lucide-react";
+import type { Role } from "@mill-ledger/shared";
+
+interface ReportTabItem {
+  id: string;
+  label: string;
+  roles: Role[];
+}
+
+const REPORT_TABS: ReportTabItem[] = [
+  {
+    id: "sales",
+    label: "Sales register",
+    roles: ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
+  },
+  {
+    id: "customer-sales",
+    label: "Customer-wise sales",
+    roles: ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
+  },
+  {
+    id: "product-sales",
+    label: "Product-wise sales",
+    roles: ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
+  },
+  {
+    id: "gst",
+    label: "GST outward summary",
+    roles: ["ADMIN", "ACCOUNTANT", "OWNER"],
+  },
+  {
+    id: "stock",
+    label: "Stock valuation",
+    roles: ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
+  },
+  {
+    id: "stock-ledger",
+    label: "Stock ledger",
+    roles: ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
+  },
+  {
+    id: "production",
+    label: "Production & variances",
+    roles: ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
+  },
+  {
+    id: "receivables",
+    label: "Receivables & ageing",
+    roles: ["ADMIN", "ACCOUNTANT", "OWNER"],
+  },
+  {
+    id: "audit",
+    label: "Audit logs",
+    roles: ["ADMIN", "ACCOUNTANT", "OWNER"],
+  },
+];
 
 export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
-  const [activeTab, setActiveTab] = useState(defaultTab);
+  const { user } = useCurrentUser();
+  const { t } = useLanguage();
+  const allowedTabs = REPORT_TABS.filter((t) =>
+    user ? t.roles.includes(user.role) : true,
+  );
+
+  const isDefaultAllowed = allowedTabs.some((t) => t.id === defaultTab);
+  const initialTab = isDefaultAllowed
+    ? defaultTab
+    : allowedTabs[0]?.id || "sales";
+
+  const [activeTab, setActiveTab] = useUrlState<string>("tab", initialTab, {
+    replace: false,
+  });
+  const effectiveTab = allowedTabs.some((t) => t.id === activeTab)
+    ? activeTab
+    : allowedTabs[0]?.id || "sales";
+
   const [exporting, setExporting] = useState(false);
+  const [startDate, setStartDate] = useUrlState("startDate", "");
+  const [endDate, setEndDate] = useUrlState("endDate", "");
+  const [customerIdFilter, setCustomerIdFilter] = useUrlState("customerId", "ALL");
+  const [auditSearch, setAuditSearch] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
+  const [auditActionFilter, setAuditActionFilter] = useUrlState("action", "ALL");
+
+  const filterParams = new URLSearchParams({ organizationId: "MILL" });
+  if (startDate) filterParams.set("startDate", startDate);
+  if (endDate) filterParams.set("endDate", endDate);
+  if (customerIdFilter && customerIdFilter !== "ALL") {
+    filterParams.set("customerId", customerIdFilter);
+  }
+  const filterQs = filterParams.toString();
+
+  const { data: customersListData } = useQuery<{
+    customers: Array<{ id: string; name: string }>;
+  }>({
+    queryKey: ["report-filter-customers"],
+    queryFn: async () => {
+      const res = await apiClient.get("/sales/customers");
+      return res.data;
+    },
+  });
 
   // 1. Sales Report
   const {
@@ -28,56 +139,82 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     isLoading: loadingSales,
     refetch: refetchSales,
   } = useQuery({
-    queryKey: ["report-sales"],
+    queryKey: ["report-sales", filterQs],
     queryFn: async () => {
-      const res = await apiClient.get("/reports/sales?organizationId=MILL");
+      const res = await apiClient.get(`/reports/sales?${filterQs}`);
       return res.data;
     },
-    enabled: activeTab === "sales",
+    enabled: effectiveTab === "sales",
   });
 
   // 2. GST Outward Summary
   const { data: gstData, refetch: refetchGST } = useQuery({
-    queryKey: ["report-gst"],
+    queryKey: ["report-gst", filterQs],
     queryFn: async () => {
-      const res = await apiClient.get("/reports/gst?organizationId=MILL");
+      const res = await apiClient.get(`/reports/gst?${filterQs}`);
       return res.data;
     },
-    enabled: activeTab === "gst",
+    enabled: effectiveTab === "gst",
   });
 
   // 3. Stock Valuation Report
   const { data: stockData, refetch: refetchStock } = useQuery({
-    queryKey: ["report-stock"],
+    queryKey: ["report-stock", filterQs],
     queryFn: async () => {
-      const res = await apiClient.get("/reports/stock?organizationId=MILL");
+      const res = await apiClient.get(`/reports/stock?${filterQs}`);
       return res.data;
     },
-    enabled: activeTab === "stock",
+    enabled: effectiveTab === "stock",
   });
 
   // 4. Production Report
   const { data: prodData, refetch: refetchProd } = useQuery({
-    queryKey: ["report-production"],
+    queryKey: ["report-production", filterQs],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/reports/production?organizationId=MILL",
-      );
+      const res = await apiClient.get(`/reports/production?${filterQs}`);
       return res.data;
     },
-    enabled: activeTab === "production",
+    enabled: effectiveTab === "production",
   });
 
   // 5. Receivables Report
   const { data: recData, refetch: refetchRec } = useQuery({
-    queryKey: ["report-receivables"],
+    queryKey: ["report-receivables", filterQs],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/reports/receivables?organizationId=MILL",
-      );
+      const res = await apiClient.get(`/reports/receivables?${filterQs}`);
       return res.data;
     },
-    enabled: activeTab === "receivables",
+    enabled: effectiveTab === "receivables",
+  });
+
+  // 5b. Customer-wise Sales (IMP-020)
+  const { data: custSalesData, refetch: refetchCustSales } = useQuery({
+    queryKey: ["report-customer-sales", filterQs],
+    queryFn: async () => {
+      const res = await apiClient.get(`/reports/customer-sales?${filterQs}`);
+      return res.data;
+    },
+    enabled: effectiveTab === "customer-sales",
+  });
+
+  // 5c. Product-wise Sales (IMP-020)
+  const { data: prodSalesData, refetch: refetchProdSales } = useQuery({
+    queryKey: ["report-product-sales", filterQs],
+    queryFn: async () => {
+      const res = await apiClient.get(`/reports/product-sales?${filterQs}`);
+      return res.data;
+    },
+    enabled: effectiveTab === "product-sales",
+  });
+
+  // 5d. Stock Ledger (IMP-020)
+  const { data: stockLedgerData, refetch: refetchStockLedger } = useQuery({
+    queryKey: ["report-stock-ledger", filterQs],
+    queryFn: async () => {
+      const res = await apiClient.get(`/reports/stock-ledger?${filterQs}`);
+      return res.data;
+    },
+    enabled: effectiveTab === "stock-ledger",
   });
 
   // 6. Audit Report
@@ -87,14 +224,29 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
       const res = await apiClient.get("/reports/audit?organizationId=MILL");
       return res.data;
     },
-    enabled: activeTab === "audit",
+    enabled: effectiveTab === "audit",
   });
 
-  const handleExportCSV = async () => {
+  const filteredAuditLogs = (auditData?.logs || []).filter((log: any) => {
+    if (auditActionFilter !== "ALL" && log.action !== auditActionFilter) {
+      return false;
+    }
+    if (auditSearch.trim()) {
+      const q = auditSearch.toLowerCase();
+      const matchEmail = (log.userEmail || "").toLowerCase().includes(q);
+      const matchEntity = (log.entity || "").toLowerCase().includes(q);
+      const matchAction = (log.action || "").toLowerCase().includes(q);
+      const matchDetails = (log.details || "").toLowerCase().includes(q);
+      return matchEmail || matchEntity || matchAction || matchDetails;
+    }
+    return true;
+  });
+
+  const handleExport = async (format: "csv" | "xlsx" | "pdf") => {
     try {
       setExporting(true);
       const res = await apiClient.get(
-        `/reports/${activeTab}/export?format=csv&organizationId=MILL`,
+        `/reports/${effectiveTab}/export?format=${format}&${filterQs}`,
         {
           responseType: "blob",
         },
@@ -104,11 +256,12 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
       link.href = url;
       link.setAttribute(
         "download",
-        `${activeTab}-report-${new Date().toISOString().slice(0, 10)}.csv`,
+        `${effectiveTab}-report-${new Date().toISOString().slice(0, 10)}.${format}`,
       );
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Export failed", err);
     } finally {
@@ -119,74 +272,153 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Reports & Audit
             </h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="max-w-[60ch] text-sm text-muted-foreground">
             Tax registers, stock valuation, production costing, and system
             activity logs
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
-              if (activeTab === "sales") refetchSales();
-              if (activeTab === "gst") refetchGST();
-              if (activeTab === "stock") refetchStock();
-              if (activeTab === "production") refetchProd();
-              if (activeTab === "receivables") refetchRec();
-              if (activeTab === "audit") refetchAudit();
+              if (effectiveTab === "sales") refetchSales();
+              if (effectiveTab === "customer-sales") refetchCustSales();
+              if (effectiveTab === "product-sales") refetchProdSales();
+              if (effectiveTab === "gst") refetchGST();
+              if (effectiveTab === "stock") refetchStock();
+              if (effectiveTab === "stock-ledger") refetchStockLedger();
+              if (effectiveTab === "production") refetchProd();
+              if (effectiveTab === "receivables") refetchRec();
+              if (effectiveTab === "audit") refetchAudit();
             }}
-            className="gap-2"
+            className="gap-2 cursor-pointer"
           >
             <RefreshCwIcon className="h-4 w-4" />
             Refresh
           </Button>
           <Button
+            variant="outline"
             size="sm"
-            onClick={handleExportCSV}
+            onClick={() => handleExport("csv")}
             disabled={exporting}
-            className="gap-2"
+            className="gap-1.5 cursor-pointer"
           >
             <DownloadIcon className="h-4 w-4" />
-            {exporting ? "Exporting..." : "Export CSV"}
+            CSV
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleExport("xlsx")}
+            disabled={exporting}
+            className="gap-1.5 cursor-pointer"
+          >
+            <DownloadIcon className="h-4 w-4" />
+            Excel
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => handleExport("pdf")}
+            disabled={exporting}
+            className="gap-1.5 cursor-pointer"
+          >
+            <DownloadIcon className="h-4 w-4" />
+            PDF
           </Button>
         </div>
       </div>
 
+      {/* Report Filter Bar (IMP-006) */}
+      <div className="flex flex-wrap items-end gap-3 rounded-xl border bg-card p-3 shadow-xs">
+        <div className="flex flex-col gap-1">
+          <label htmlFor="report-start-date" className="text-2xs font-medium uppercase text-muted-foreground">
+            From Date
+          </label>
+          <Input
+            id="report-start-date"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="h-8 w-40 text-xs"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="report-end-date" className="text-2xs font-medium uppercase text-muted-foreground">
+            To Date
+          </label>
+          <Input
+            id="report-end-date"
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="h-8 w-40 text-xs"
+          />
+        </div>
+        {(effectiveTab === "sales" || effectiveTab === "receivables") && (
+          <div className="flex flex-col gap-1">
+            <label htmlFor="report-customer-filter" className="text-2xs font-medium uppercase text-muted-foreground">
+              Customer
+            </label>
+            <Select value={customerIdFilter} onValueChange={setCustomerIdFilter}>
+              <SelectTrigger id="report-customer-filter" className="h-8 w-48 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent searchable searchPlaceholder="Search customers...">
+                <SelectItem value="ALL">All Customers</SelectItem>
+                {(customersListData?.customers ?? []).map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        {(startDate || endDate || customerIdFilter !== "ALL") && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setStartDate("");
+              setEndDate("");
+              setCustomerIdFilter("ALL");
+            }}
+            className="h-8 text-xs text-muted-foreground"
+          >
+            Clear Filters
+          </Button>
+        )}
+      </div>
+
       {/* Navigation Tabs */}
       <div className="flex flex-wrap border-b border-border">
-        {[
-          { id: "sales", label: "Sales register" },
-          { id: "gst", label: "GST outward summary" },
-          { id: "stock", label: "Stock valuation" },
-          { id: "production", label: "Production & variances" },
-          { id: "receivables", label: "Receivables & ageing" },
-          { id: "audit", label: "Audit logs" },
-        ].map((tab) => (
+        {allowedTabs.map((tab) => (
           <button
             key={tab.id}
+            data-testid={`report-tab-${tab.id}`}
             onClick={() => setActiveTab(tab.id)}
-            className={`border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-              activeTab === tab.id
-                ? "border-primary text-foreground"
+            className={`border-b-2 px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
+              effectiveTab === tab.id
+                ? "border-primary text-foreground font-semibold"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            {tab.label}
+            {t(tab.label)}
           </button>
         ))}
       </div>
 
       {/* Tab 1: Sales Register */}
-      {activeTab === "sales" && (
+      {effectiveTab === "sales" && (
         <div className="rounded-xl border bg-card shadow-xs">
           <div className="flex flex-col gap-2 border-b p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -200,35 +432,34 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
             {salesData?.summary && (
               <div className="flex items-center gap-4 text-xs font-mono">
                 <span>
-                  Taxable: ₹{salesData.summary.totalTaxable.toFixed(2)}
+                  Taxable: {formatINR(salesData.summary.totalTaxable)}
                 </span>
-                <span>Tax: ₹{salesData.summary.totalTax.toFixed(2)}</span>
+                <span>Tax: {formatINR(salesData.summary.totalTax)}</span>
                 <span className="font-bold text-foreground">
-                  Grand total: ₹{salesData.summary.grandTotal.toFixed(2)}
+                  Grand total: {formatINR(salesData.summary.grandTotal)}
                 </span>
               </div>
             )}
           </div>
 
           {loadingSales ? (
-            <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-              <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
-              Loading sales register...
+            <div className="p-4">
+              <SkeletonTable rows={5} columns={9} />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Invoice</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Product</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Taxable</TableHead>
-                    <TableHead className="text-right">CGST</TableHead>
-                    <TableHead className="text-right">SGST</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead>{t("Invoice")}</TableHead>
+                    <TableHead>{t("Date")}</TableHead>
+                    <TableHead>{t("Customer")}</TableHead>
+                    <TableHead>{t("Product")}</TableHead>
+                    <TableHead className="text-right">{t("Qty")}</TableHead>
+                    <TableHead className="text-right">{t("Taxable")}</TableHead>
+                    <TableHead className="text-right">{t("CGST")}</TableHead>
+                    <TableHead className="text-right">{t("SGST")}</TableHead>
+                    <TableHead className="text-right">{t("Total")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -238,7 +469,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                         {row.invoiceNumber}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {new Date(row.invoiceDate).toLocaleDateString("en-IN")}
+                        {formatDate(row.invoiceDate)}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col text-xs">
@@ -257,16 +488,16 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                         {row.quantity}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{row.taxableAmount.toFixed(2)}
+                        {formatINR(row.taxableAmount)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{row.cgstAmount.toFixed(2)}
+                        {formatINR(row.cgstAmount)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{row.sgstAmount.toFixed(2)}
+                        {formatINR(row.sgstAmount)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs font-bold">
-                        ₹{row.lineTotal.toFixed(2)}
+                        {formatINR(row.lineTotal)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -278,7 +509,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
       )}
 
       {/* Tab 2: GST Outward Summary */}
-      {activeTab === "gst" && (
+      {effectiveTab === "gst" && (
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="rounded-xl border bg-card p-4 shadow-xs">
@@ -286,7 +517,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 Total outward taxable
               </span>
               <div className="mt-1 text-2xl font-bold font-mono">
-                ₹{Number(gstData?.summary?.totalTaxable || 0).toFixed(2)}
+                {formatINR(gstData?.summary?.totalTaxable || 0)}
               </div>
             </div>
             <div className="rounded-xl border bg-card p-4 shadow-xs">
@@ -294,7 +525,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 Total tax liability
               </span>
               <div className="mt-1 text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
-                ₹{Number(gstData?.summary?.totalTaxAmount || 0).toFixed(2)}
+                {formatINR(gstData?.summary?.totalTaxAmount || 0)}
               </div>
             </div>
             <div className="rounded-xl border bg-card p-4 shadow-xs">
@@ -302,10 +533,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 Credit note deductions
               </span>
               <div className="mt-1 text-2xl font-bold font-mono text-amber-600 dark:text-amber-400">
-                ₹
-                {Number(gstData?.summary?.totalCreditNotesAmount || 0).toFixed(
-                  2,
-                )}
+                {formatINR(gstData?.summary?.totalCreditNotesAmount || 0)}
               </div>
             </div>
           </div>
@@ -333,16 +561,16 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                         {r.ratePct}%
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{r.taxable.toFixed(2)}
+                        {formatINR(r.taxable)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{r.cgst.toFixed(2)}
+                        {formatINR(r.cgst)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{r.sgst.toFixed(2)}
+                        {formatINR(r.sgst)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs font-semibold">
-                        ₹{r.totalTax.toFixed(2)}
+                        {formatINR(r.totalTax)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -371,10 +599,10 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                         {h.quantity}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹{h.taxable.toFixed(2)}
+                        {formatINR(h.taxable)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs font-semibold">
-                        ₹{(h.cgst + h.sgst + h.igst).toFixed(2)}
+                        {formatINR(h.cgst + h.sgst + h.igst)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -386,7 +614,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
       )}
 
       {/* Tab 3: Stock Valuation */}
-      {activeTab === "stock" && (
+      {effectiveTab === "stock" && (
         <div className="rounded-xl border bg-card shadow-xs">
           <div className="flex items-center justify-between border-b p-4">
             <div>
@@ -403,7 +631,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                   Total valuation
                 </div>
                 <div className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
-                  ₹{Number(stockData.summary.totalValuation).toFixed(2)}
+                  {formatINR(stockData.summary.totalValuation)}
                 </div>
               </div>
             )}
@@ -418,8 +646,12 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                   <TableHead>Category</TableHead>
                   <TableHead className="text-right">On hand</TableHead>
                   <TableHead className="text-right">Reserved</TableHead>
-                  <TableHead className="text-right">Available</TableHead>
-                  <TableHead className="text-right">Avg cost</TableHead>
+                  <TableHead className="text-right">
+                    <DomainTooltip term="ATP">Available</DomainTooltip>
+                  </TableHead>
+                  <TableHead className="text-right">
+                    <DomainTooltip term="WAC">Avg cost</DomainTooltip>
+                  </TableHead>
                   <TableHead className="text-right">Valuation</TableHead>
                   <TableHead className="text-center">Ledger check</TableHead>
                 </TableRow>
@@ -444,10 +676,10 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                       {row.available}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                      ₹{row.weightedAverageCost.toFixed(2)}
+                      {formatINR(row.weightedAverageCost)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs font-bold">
-                      ₹{row.totalValuation.toFixed(2)}
+                      {formatINR(row.totalValuation)}
                     </TableCell>
                     <TableCell className="text-center">
                       {row.isReconciled ? (
@@ -471,7 +703,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
       )}
 
       {/* Tab 4: Production Report */}
-      {activeTab === "production" && (
+      {effectiveTab === "production" && (
         <div className="rounded-xl border bg-card shadow-xs">
           <div className="flex items-center justify-between border-b p-4">
             <div>
@@ -489,7 +721,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                   Output: {prodData.summary.totalGoodQuantity} units |{" "}
                 </span>
                 <span className="font-bold">
-                  Total cost: ₹{prodData.summary.totalRunCost.toFixed(2)}
+                  Total cost: {formatINR(prodData.summary.totalRunCost)}
                 </span>
               </div>
             )}
@@ -502,7 +734,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                   <TableHead>Run number</TableHead>
                   <TableHead>Recipe</TableHead>
                   <TableHead className="text-right">Good output</TableHead>
-                  <TableHead className="text-right">Yield variance</TableHead>
+                  <TableHead className="text-right">
+                    <DomainTooltip term="YIELD_VARIANCE">
+                      Yield variance
+                    </DomainTooltip>
+                  </TableHead>
                   <TableHead className="text-right">Direct labor</TableHead>
                   <TableHead className="text-right">Gas & power</TableHead>
                   <TableHead className="text-right">Total cost</TableHead>
@@ -531,16 +767,16 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                       </span>
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs">
-                      ₹{row.directLaborCost.toFixed(2)}
+                      {formatINR(row.directLaborCost)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs">
-                      ₹{row.gasPowerCost.toFixed(2)}
+                      {formatINR(row.gasPowerCost)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs font-semibold">
-                      ₹{row.totalCost.toFixed(2)}
+                      {formatINR(row.totalCost)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                      ₹{row.unitCost.toFixed(2)}
+                      {formatINR(row.unitCost)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -551,7 +787,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
       )}
 
       {/* Tab 5: Receivables and Ageing */}
-      {activeTab === "receivables" && (
+      {effectiveTab === "receivables" && (
         <div className="rounded-xl border bg-card shadow-xs">
           <div className="flex items-center justify-between border-b p-4">
             <div>
@@ -568,7 +804,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                   Total outstanding
                 </div>
                 <div className="text-xl font-bold font-mono text-amber-600 dark:text-amber-400">
-                  ₹{Number(recData.summary.totalOutstanding).toFixed(2)}
+                  {formatINR(recData.summary.totalOutstanding)}
                 </div>
               </div>
             )}
@@ -605,22 +841,22 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                       {row.state}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs">
-                      ₹{row.totalInvoiced.toFixed(2)}
+                      {formatINR(row.totalInvoiced)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-emerald-600">
-                      ₹{row.totalPaid.toFixed(2)}
+                      {formatINR(row.totalPaid)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs font-bold text-amber-600 dark:text-amber-400">
-                      ₹{row.netOutstanding.toFixed(2)}
+                      {formatINR(row.netOutstanding)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs">
-                      ₹{row.ageing.current0to30.toFixed(2)}
+                      {formatINR(row.ageing.current0to30)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                      ₹{row.ageing.days31to60.toFixed(2)}
+                      {formatINR(row.ageing.days31to60)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                      ₹{row.ageing.over90days.toFixed(2)}
+                      {formatINR(row.ageing.over90days)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -630,10 +866,102 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
         </div>
       )}
 
+      {/* Tab: Customer-Wise Sales (IMP-020) */}
+      {effectiveTab === "customer-sales" && (
+        <div className="rounded-xl border bg-card shadow-xs overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Customer</TableHead>
+                <TableHead>State</TableHead>
+                <TableHead className="text-right">Invoices</TableHead>
+                <TableHead className="text-right">Taxable</TableHead>
+                <TableHead className="text-right">GST</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Outstanding</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(custSalesData?.rows || []).map((r: any) => (
+                <TableRow key={r.customerCode}>
+                  <TableCell className="font-medium text-xs">{r.customerName} ({r.customerCode})</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{r.state}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{r.invoicesCount}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{formatINR(r.taxableAmount)}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{formatINR(r.totalTaxAmount)}</TableCell>
+                  <TableCell className="text-right font-mono text-xs font-bold">{formatINR(r.totalAmount)}</TableCell>
+                  <TableCell className="text-right font-mono text-xs text-amber-600">{formatINR(r.outstandingAmount)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Tab: Product-Wise Sales (IMP-020) */}
+      {effectiveTab === "product-sales" && (
+        <div className="rounded-xl border bg-card shadow-xs overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Product</TableHead>
+                <TableHead>HSN</TableHead>
+                <TableHead className="text-right">Qty Sold</TableHead>
+                <TableHead className="text-right">Taxable</TableHead>
+                <TableHead className="text-right">GST</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(prodSalesData?.rows || []).map((r: any) => (
+                <TableRow key={`${r.productName}-${r.hsnCode}`}>
+                  <TableCell className="font-medium text-xs">{r.productName}</TableCell>
+                  <TableCell className="font-mono text-xs">{r.hsnCode}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{r.totalQuantity}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{formatINR(r.taxableAmount)}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{formatINR(r.totalTaxAmount)}</TableCell>
+                  <TableCell className="text-right font-mono text-xs font-bold">{formatINR(r.totalAmount)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Tab: Stock Ledger (IMP-020) */}
+      {effectiveTab === "stock-ledger" && (
+        <div className="rounded-xl border bg-card shadow-xs overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Item</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead className="text-right">Qty</TableHead>
+                <TableHead className="text-right">Unit Cost</TableHead>
+                <TableHead>Notes</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(stockLedgerData?.rows || []).map((r: any, idx: number) => (
+                <TableRow key={`${r.sku}-${r.postedAt}-${idx}`}>
+                  <TableCell className="text-xs text-muted-foreground">{formatDateTime(r.postedAt)}</TableCell>
+                  <TableCell className="text-xs font-medium">{r.itemName} ({r.sku})</TableCell>
+                  <TableCell><Badge variant="outline" className="font-mono text-2xs">{r.movementType}</Badge></TableCell>
+                  <TableCell className="text-right font-mono text-xs font-semibold">{r.quantity} {r.uom}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{formatINR(r.unitCost)}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground max-w-xs truncate">{r.notes}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
       {/* Tab 6: Audit Logs */}
-      {activeTab === "audit" && (
+      {effectiveTab === "audit" && (
         <div className="rounded-xl border bg-card shadow-xs">
-          <div className="flex items-center justify-between border-b p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b p-4">
             <div>
               <h2 className="text-base font-semibold text-foreground">
                 System Audit Trail
@@ -642,6 +970,36 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 Immutable activity logs with actor, timestamp, action and
                 request metadata
               </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                placeholder="Search actor, entity, details..."
+                aria-label="Search audit events by actor, entity, details"
+                value={auditSearch}
+                onChange={(e) => setAuditSearch(e.target.value)}
+                className="h-8 w-56 text-xs"
+              />
+              <Select
+                value={auditActionFilter}
+                onValueChange={setAuditActionFilter}
+              >
+                <SelectTrigger
+                  aria-label="Filter audit events by action"
+                  className="h-9 w-auto min-w-32 px-3 py-1 text-xs font-medium"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Actions</SelectItem>
+                  <SelectItem value="CREATE">CREATE</SelectItem>
+                  <SelectItem value="UPDATE">UPDATE</SelectItem>
+                  <SelectItem value="DELETE">DELETE</SelectItem>
+                  <SelectItem value="APPROVE">APPROVE</SelectItem>
+                  <SelectItem value="POST">POST</SelectItem>
+                  <SelectItem value="REVERSE">REVERSE</SelectItem>
+                  <SelectItem value="EXPORT">EXPORT</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -657,20 +1015,22 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(auditData?.logs || []).length === 0 ? (
+                {filteredAuditLogs.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={5}
                       className="text-center text-xs text-muted-foreground py-8"
                     >
-                      No audit events recorded yet
+                      {auditSearch || auditActionFilter !== "ALL"
+                        ? "No matching audit events found"
+                        : "No audit events recorded yet"}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  auditData?.logs.map((log: any) => (
+                  filteredAuditLogs.map((log: any) => (
                     <TableRow key={log.id}>
                       <TableCell className="text-xs font-mono text-muted-foreground">
-                        {new Date(log.timestamp).toLocaleString("en-IN")}
+                        {formatDateTime(log.timestamp)}
                       </TableCell>
                       <TableCell className="text-xs font-medium">
                         {log.userEmail || "System"}

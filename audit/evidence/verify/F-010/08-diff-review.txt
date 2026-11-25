@@ -1,0 +1,16 @@
+=== STEP 8: DIFF REVIEW FOR F-010 ===
+Modified files:
+1. `server/src/modules/finance/tax.util.ts`:
+   - New utility module implementing `calculateLineTax` and `calculateOrderOrInvoiceTax` using `Prisma.Decimal` and `ROUND_HALF_UP`.
+2. `server/src/modules/finance/finance.service.ts`:
+   - Replaced native float arithmetic in `createInvoiceFromOrder` and `issueCreditNote` with `calculateLineTax`.
+3. `server/src/modules/sales/sales.service.ts`:
+   - Replaced native float arithmetic in `createOrder` and `approveOrder` with `calculateLineTax`.
+4. `server/src/invoice-rounding.test.ts`:
+   - Robust regression tests verifying statutory precision across single-line, multi-line, inter-state, and randomized configurations.
+
+Review:
+- No unintended behavior changes or side effects.
+- Exact decimal arithmetic preserved for money and tax.
+- Server-side authorization and transaction boundaries untouched.
+- Clean TypeScript types throughout.

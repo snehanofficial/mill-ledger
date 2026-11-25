@@ -1,0 +1,62 @@
+diff --git a/client/src/pages/login-page.tsx b/client/src/pages/login-page.tsx
+index 0b7a8c5..af3edc2 100644
+--- a/client/src/pages/login-page.tsx
++++ b/client/src/pages/login-page.tsx
+@@ -28,6 +28,8 @@ import {
+   EyeOffIcon,
+ } from "lucide-react";
+ 
++const CURRENT_YEAR = new Date().getFullYear();
++
+ interface SeedAccount {
+   label: string;
+   email: string;
+@@ -184,7 +186,11 @@ export function LoginPage() {
+   };
+ 
+   return (
+-    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
++    <main
++      id="main-content"
++      role="main"
++      className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8"
++    >
+       {/* Top utility row: language switch */}
+       <div className="absolute top-4 right-4">
+         <Button
+@@ -374,7 +380,34 @@ export function LoginPage() {
+             ))}
+           </div>
+         </div>
++
++        {/* Semantic Footer Landmark with Navigational Links */}
++        <footer className="pt-2 text-center text-xs text-muted-foreground">
++          <p>© {CURRENT_YEAR} MillLedger ERP. All rights reserved.</p>
++          <div className="mt-2 flex justify-center gap-4">
++            <a
++              href="/auth/login"
++              className="hover:text-foreground hover:underline"
++            >
++              {language === "ta" ? "உதவி மையம்" : "Support"}
++            </a>
++            <span aria-hidden="true">•</span>
++            <a
++              href="/auth/login"
++              className="hover:text-foreground hover:underline"
++            >
++              {language === "ta" ? "தனியுரிமை கொள்கை" : "Privacy Policy"}
++            </a>
++            <span aria-hidden="true">•</span>
++            <a
++              href="/auth/login"
++              className="hover:text-foreground hover:underline"
++            >
++              {language === "ta" ? "விதிமுறைகள்" : "Terms"}
++            </a>
++          </div>
++        </footer>
+       </div>
+-    </div>
++    </main>
+   );
+ }

@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api-client";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { useUrlState } from "@/hooks/use-url-state";
+import { formatDate, formatINR } from "@/lib/formatters";
+import { useLanguage } from "@/lib/i18n";
+import {
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
 import {
   Table,
   TableBody,
@@ -11,7 +19,27 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { DomainTooltip } from "@/components/ui/domain-tooltip";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   CreditCardIcon,
   RefreshCwIcon,
@@ -22,7 +50,6 @@ import {
   CheckCircle2Icon,
   UserCheckIcon,
   LayersIcon,
-  XIcon,
 } from "lucide-react";
 
 interface PaymentAllocation {
@@ -109,14 +136,69 @@ interface OpenInvoice {
 
 export function PaymentsPage() {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"ledger" | "receivables">(
+  const { user } = useCurrentUser();
+  const { t } = useLanguage();
+  const canRecordPayment = user?.role === "ADMIN";
+  const [activeTab, setActiveTab] = useUrlState<"ledger" | "receivables">(
+    "tab",
     "ledger",
+    { replace: false },
   );
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 250,
+  });
+  const [modeFilter, setModeFilter] = useUrlState("mode", "ALL");
 
   // Modals state
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedCustomerIdForLedger, setSelectedCustomerIdForLedger] =
     useState<string | null>(null);
+  const [allocatingPayment, setAllocatingPayment] = useState<Payment | null>(
+    null,
+  );
+  const [postAllocInvoiceId, setPostAllocInvoiceId] = useState("");
+  const [postAllocAmount, setPostAllocAmount] = useState("");
+
+  const { data: postAllocInvoicesData } = useQuery<{
+    invoices: OpenInvoice[];
+  }>({
+    queryKey: ["open-invoices-for-alloc", allocatingPayment?.customer?.id],
+    enabled: allocatingPayment !== null,
+    queryFn: async () => {
+      const res = await apiClient.get(
+        `/finance/invoices?organizationId=MILL&customerId=${allocatingPayment?.customer?.id ?? ""}`,
+      );
+      return res.data;
+    },
+  });
+
+  const allocateExistingMutation = useMutation({
+    mutationFn: async () => {
+      if (!allocatingPayment) return;
+      const res = await apiClient.post(
+        `/payments/${allocatingPayment.id}/allocate`,
+        {
+          allocations: [
+            {
+              salesInvoiceId: postAllocInvoiceId,
+              amount: Number(postAllocAmount),
+            },
+          ],
+        },
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["receivables-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["finance-invoices"] });
+      setAllocatingPayment(null);
+      toast.success("Unallocated cash applied to invoice.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to allocate payment"));
+    },
+  });
 
   // Payment form state
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
@@ -129,11 +211,22 @@ export function PaymentsPage() {
   >({});
   const [useManualAllocation, setUseManualAllocation] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [showConfirmPayment, setShowConfirmPayment] = useState(false);
+  const [pendingPaymentPayload, setPendingPaymentPayload] = useState<{
+    customerId: string;
+    amount: number;
+    paymentMode: string;
+    referenceNumber?: string;
+    notes?: string;
+    allocations?: Array<{ salesInvoiceId: string; amount: number }>;
+  } | null>(null);
 
   // 1. Fetch payments
   const {
     data: paymentsData,
     isLoading: loadingPayments,
+    isError: errorPayments,
+    error: paymentsError,
     refetch: refetchPayments,
     isFetching: fetchingPayments,
   } = useQuery<{ payments: Payment[] }>({
@@ -205,7 +298,9 @@ export function PaymentsPage() {
       queryClient.invalidateQueries({ queryKey: ["receivables-summary"] });
       queryClient.invalidateQueries({ queryKey: ["sales-invoices"] });
       queryClient.invalidateQueries({ queryKey: ["customer-ledger"] });
+      setShowConfirmPayment(false);
       setShowPaymentModal(false);
+      setPendingPaymentPayload(null);
       setSelectedCustomerId("");
       setPaymentAmount("");
       setReferenceNumber("");
@@ -213,6 +308,7 @@ export function PaymentsPage() {
       setManualAllocations({});
       setUseManualAllocation(false);
       setPaymentError(null);
+      toast.success("Customer payment posted and allocated successfully");
     },
     onError: (err: any) => {
       setPaymentError(
@@ -225,6 +321,28 @@ export function PaymentsPage() {
 
   const payments = paymentsData?.payments ?? [];
   const receivables = receivablesData?.receivables ?? [];
+
+  const filteredPayments = payments.filter((p) => {
+    if (modeFilter !== "ALL" && p.paymentMode !== modeFilter) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchNum = p.paymentNumber.toLowerCase().includes(q);
+      const matchCust = (p.customer?.name || "").toLowerCase().includes(q);
+      const matchRef = (p.referenceNumber || "").toLowerCase().includes(q);
+      if (!matchNum && !matchCust && !matchRef) return false;
+    }
+    return true;
+  });
+
+  const filteredReceivables = receivables.filter((r) => {
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchName = (r.customerName || "").toLowerCase().includes(q);
+      const matchCode = (r.customerCode || "").toLowerCase().includes(q);
+      if (!matchName && !matchCode) return false;
+    }
+    return true;
+  });
 
   // Summary calculations
   const totalCollected = payments.reduce((sum, p) => sum + Number(p.amount), 0);
@@ -278,7 +396,7 @@ export function PaymentsPage() {
     }
 
     setPaymentError(null);
-    paymentMutation.mutate({
+    setPendingPaymentPayload({
       customerId: selectedCustomerId,
       amount: amountNum,
       paymentMode,
@@ -286,21 +404,21 @@ export function PaymentsPage() {
       notes: notes.trim() || undefined,
       allocations: allocationsToSend,
     });
+    setShowConfirmPayment(true);
   };
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Payments
+              {t("Payments")}
             </h1>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Customer collections, invoice payment allocations, and receivables
-            ledger
+          <p className="max-w-[60ch] text-sm text-muted-foreground">
+            {t("Customer collections, invoice payment allocations, and receivables ledger")}
           </p>
         </div>
 
@@ -318,19 +436,21 @@ export function PaymentsPage() {
             <RefreshCwIcon
               className={`h-4 w-4 ${fetchingPayments ? "animate-spin" : ""}`}
             />
-            Refresh
+            {t("Refresh")}
           </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              setPaymentError(null);
-              setShowPaymentModal(true);
-            }}
-            className="gap-2"
-          >
-            <PlusCircleIcon className="h-4 w-4" />
-            Record payment
-          </Button>
+          {canRecordPayment && (
+            <Button
+              size="sm"
+              onClick={() => {
+                setPaymentError(null);
+                setShowPaymentModal(true);
+              }}
+              className="gap-2"
+            >
+              <PlusCircleIcon className="h-4 w-4" />
+              {t("Record payment")}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -339,15 +459,12 @@ export function PaymentsPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Total collected
+              {t("Total collected")}
             </span>
             <IndianRupeeIcon className="h-4 w-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            ₹
-            {totalCollected.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
+            {formatINR(totalCollected)}
           </div>
           <div className="text-xs text-muted-foreground">
             Total receipts recorded across all modes
@@ -357,15 +474,12 @@ export function PaymentsPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Net outstanding
+              {t("Net outstanding")}
             </span>
             <IndianRupeeIcon className="h-4 w-4 text-amber-600" />
           </div>
           <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-            ₹
-            {totalNetOutstanding.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
+            {formatINR(totalNetOutstanding)}
           </div>
           <div className="text-xs text-muted-foreground">
             Pending customer dues derived from ledger
@@ -375,15 +489,12 @@ export function PaymentsPage() {
         <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium uppercase tracking-wider">
-              Unallocated credit
+              {t("Unallocated credit")}
             </span>
             <LayersIcon className="h-4 w-4 text-primary" />
           </div>
           <div className="text-2xl font-bold text-primary">
-            ₹
-            {totalUnallocated.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
+            {formatINR(totalUnallocated)}
           </div>
           <div className="text-xs text-muted-foreground">
             Advance payments awaiting invoice allocation
@@ -402,7 +513,7 @@ export function PaymentsPage() {
           }`}
         >
           <CreditCardIcon className="h-4 w-4" />
-          Payments ledger ({payments.length})
+          {t("Payments ledger")} ({payments.length})
         </button>
         <button
           onClick={() => setActiveTab("receivables")}
@@ -413,30 +524,71 @@ export function PaymentsPage() {
           }`}
         >
           <UserCheckIcon className="h-4 w-4" />
-          Customer receivables ({receivables.length})
+          {t("Customer receivables")} ({receivables.length})
         </button>
       </div>
 
       {/* Tab 1: Payments Ledger */}
       {activeTab === "ledger" && (
         <div className="rounded-xl border bg-card shadow-xs">
-          <div className="flex items-center justify-between border-b px-4 py-3">
-            <h2 className="text-base font-semibold text-foreground">
-              Collections ledger
-            </h2>
-            <span className="text-xs text-muted-foreground">
-              {payments.length} transactions recorded
-            </span>
+          <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold text-foreground">
+                {t("Collections ledger")}
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                ({filteredPayments.length} of {payments.length})
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                placeholder={t("Search payments...")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 w-44 text-xs"
+                aria-label="Search payments"
+              />
+              <Select
+                value={modeFilter}
+                onValueChange={setModeFilter}
+              >
+                <SelectTrigger
+                  className="h-9 w-auto min-w-36 px-3 py-1 text-xs font-medium"
+                  aria-label="Filter payments by mode"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All modes</SelectItem>
+                  <SelectItem value="BANK_TRANSFER">Bank transfer</SelectItem>
+                  <SelectItem value="NEFT_RTGS">NEFT / RTGS</SelectItem>
+                  <SelectItem value="CHEQUE">Cheque</SelectItem>
+                  <SelectItem value="UPI">UPI</SelectItem>
+                  <SelectItem value="CASH">Cash</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {loadingPayments ? (
-            <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-              <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
-              Loading payments...
+            <div className="p-4">
+              <SkeletonTable rows={5} columns={8} />
+            </div>
+          ) : errorPayments ? (
+            <div className="p-4">
+              <ErrorState
+                title={t("Failed to load payments", "Failed to load payments")}
+                description={
+                  paymentsError instanceof Error ? paymentsError.message : "Failed to load payments."
+                }
+                error={paymentsError}
+                onRetry={() => refetchPayments()}
+              />
             </div>
           ) : payments.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 text-center text-sm text-muted-foreground">
-              <CreditCardIcon className="mb-3 h-8 w-8 text-muted-foreground/50" />
+              <CreditCardIcon className="mb-3 h-8 w-8 text-muted-foreground" />
               <p className="font-medium text-foreground">
                 No payments recorded
               </p>
@@ -446,30 +598,123 @@ export function PaymentsPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <>
+              {/* Mobile Card Layout (<md viewports per F-047) */}
+              <div
+                className="divide-y divide-border md:hidden"
+                data-slot="mobile-cards"
+              >
+                {filteredPayments.length === 0 && payments.length > 0 && (
+                  <div className="p-8 text-center text-sm text-muted-foreground">
+                    {t("No payments match the selected filters.")}
+                  </div>
+                )}
+                {filteredPayments.map((p) => (
+                  <div key={p.id} className="p-4 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-sm font-semibold text-foreground">
+                        {p.paymentNumber}
+                      </span>
+                      <Badge
+                        variant={p.status === "POSTED" ? "success" : "default"}
+                      >
+                        {p.status}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-baseline text-xs">
+                      <div>
+                        <span className="font-medium text-foreground">
+                          {p.customer?.name ?? "Customer"}
+                        </span>
+                        <span className="ml-1 font-mono text-2xs text-muted-foreground">
+                          ({p.customer?.code})
+                        </span>
+                      </div>
+                      <span className="text-muted-foreground font-mono text-2xs">
+                        {formatDate(p.paymentDate)}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
+                      <div>
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Mode & Ref
+                        </span>
+                        <p className="font-medium text-foreground">
+                          {p.paymentMode.replace(/_/g, " ")}
+                          {p.referenceNumber && (
+                            <span className="block font-mono text-2xs text-muted-foreground">
+                              {p.referenceNumber}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Total Amount
+                        </span>
+                        <p className="font-bold text-foreground">
+                          {formatINR(p.amount)}
+                        </p>
+                      </div>
+                    </div>
+                    {Number(p.unallocatedAmount) > 0 && (
+                      <div className="flex justify-between items-center text-xs px-1">
+                        <span className="text-muted-foreground">Unallocated:</span>
+                        <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
+                          {formatINR(p.unallocatedAmount)}
+                        </span>
+                      </div>
+                    )}
+                    {p.allocations.length > 0 && (
+                      <div className="text-2xs text-muted-foreground pt-1">
+                        <span className="font-medium">Allocated: </span>
+                        {p.allocations.map((a) => (
+                          <span
+                            key={a.id}
+                            className="font-mono text-emerald-600 dark:text-emerald-400 mr-2"
+                          >
+                            {a.salesInvoice?.invoiceNumber}: {formatINR(a.amount)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View (md+ viewports) */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Receipt number</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Mode and reference</TableHead>
-                    <TableHead className="text-right">Total amount</TableHead>
-                    <TableHead className="text-right">Unallocated</TableHead>
-                    <TableHead>Allocated invoices</TableHead>
-                    <TableHead className="text-right">Status</TableHead>
+                    <TableHead>{t("Receipt number")}</TableHead>
+                    <TableHead>{t("Date")}</TableHead>
+                    <TableHead>{t("Customer")}</TableHead>
+                    <TableHead>{t("Mode and reference")}</TableHead>
+                    <TableHead className="text-right">{t("Total amount")}</TableHead>
+                    <TableHead className="text-right">{t("Unallocated")}</TableHead>
+                    <TableHead>{t("Allocated invoices")}</TableHead>
+                    <TableHead className="text-right">{t("Status")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payments.map((p) => (
+                  {filteredPayments.length === 0 && payments.length > 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={8}
+                        className="py-8 text-center text-sm text-muted-foreground"
+                      >
+                        {t("No payments match the selected filters.")}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {filteredPayments.map((p) => (
                     <TableRow key={p.id}>
                       <TableCell className="font-mono text-sm font-semibold text-foreground">
                         {p.paymentNumber}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {new Date(p.paymentDate).toLocaleDateString("en-IN", {
-                          dateStyle: "medium",
-                        })}
+                        {formatDate(p.paymentDate)}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
@@ -494,15 +739,12 @@ export function PaymentsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right font-mono font-semibold">
-                        ₹
-                        {Number(p.amount).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                        {formatINR(p.amount)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
                         {Number(p.unallocatedAmount) > 0 ? (
                           <span className="text-amber-600 dark:text-amber-400">
-                            ₹{Number(p.unallocatedAmount).toFixed(2)}
+                            {formatINR(p.unallocatedAmount)}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">₹0.00</span>
@@ -523,72 +765,198 @@ export function PaymentsPage() {
                                 <span>
                                   {a.salesInvoice?.invoiceNumber || "Invoice"}:
                                 </span>
-                                <span>₹{Number(a.amount).toFixed(2)}</span>
+                                <span>{formatINR(a.amount)}</span>
                               </div>
                             ))
                           )}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Badge
-                          variant={
-                            p.status === "POSTED" ? "success" : "default"
-                          }
-                        >
-                          {p.status}
-                        </Badge>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Badge
+                            variant={
+                              p.status === "POSTED" ? "success" : "default"
+                            }
+                          >
+                            {p.status}
+                          </Badge>
+                          {p.status === "POSTED" &&
+                            Number(p.unallocatedAmount) > 0 &&
+                            canRecordPayment && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setAllocatingPayment(p);
+                                  setPostAllocInvoiceId("");
+                                  setPostAllocAmount(
+                                    String(Number(p.unallocatedAmount)),
+                                  );
+                                }}
+                                className="h-7 px-2 text-xs"
+                              >
+                                Allocate Cash
+                              </Button>
+                            )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
-          )}
+          </>
+        )}
         </div>
       )}
 
       {/* Tab 2: Customer Receivables */}
       {activeTab === "receivables" && (
         <div className="rounded-xl border bg-card shadow-xs">
-          <div className="flex items-center justify-between border-b px-4 py-3">
-            <h2 className="text-base font-semibold text-foreground">
-              Customer receivables overview
-            </h2>
-            <span className="text-xs text-muted-foreground">
-              {receivables.length} accounts found
-            </span>
+          <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold text-foreground">
+                {t("Customer receivables overview")}
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                ({filteredReceivables.length} of {receivables.length})
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder={t("Search customer receivables...")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 w-56 text-xs"
+                aria-label="Search customer receivables"
+              />
+            </div>
           </div>
 
           {loadingReceivables ? (
-            <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-              <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
-              Loading receivables...
+            <div className="p-4">
+              <SkeletonTable rows={5} columns={8} />
             </div>
           ) : receivables.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 text-center text-sm text-muted-foreground">
               <p className="font-medium text-foreground">No customer records</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <>
+              {/* Mobile Card Layout (<md viewports per F-047) */}
+              <div
+                className="divide-y divide-border md:hidden"
+                data-slot="mobile-cards"
+              >
+                {filteredReceivables.length === 0 && receivables.length > 0 && (
+                  <div className="p-8 text-center text-sm text-muted-foreground">
+                    {t("No customer receivables match the search query.")}
+                  </div>
+                )}
+                {filteredReceivables.map((r) => (
+                  <div key={r.customerId} className="p-4 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-foreground">{r.customerName}</p>
+                        <span className="font-mono text-2xs text-muted-foreground">
+                          {r.customerCode} ({r.state})
+                        </span>
+                      </div>
+                      <Badge
+                        variant={r.openInvoicesCount > 0 ? "warning" : "secondary"}
+                      >
+                        {r.openInvoicesCount} open
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
+                      <div>
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Invoiced
+                        </span>
+                        <p className="font-mono font-medium">
+                          {formatINR(r.totalInvoiced)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Collections
+                        </span>
+                        <p className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                          {formatINR(r.totalPaid)}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Credit Notes
+                        </span>
+                        <p className="font-mono font-medium text-muted-foreground">
+                          {formatINR(r.totalCreditNotes)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-muted-foreground text-2xs uppercase">
+                          Outstanding
+                        </span>
+                        <p
+                          className={`font-mono font-bold ${
+                            r.netOutstanding > 0
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "text-emerald-600 dark:text-emerald-400"
+                          }`}
+                        >
+                          {formatINR(r.netOutstanding)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end pt-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setSelectedCustomerIdForLedger(r.customerId)
+                        }
+                        className="min-h-[44px] w-full gap-1.5 text-xs justify-center"
+                      >
+                        <HistoryIcon className="h-4 w-4" />
+                        View ledger
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View (md+ viewports) */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>State</TableHead>
-                    <TableHead className="text-right">Total invoiced</TableHead>
-                    <TableHead className="text-right">Credit notes</TableHead>
+                    <TableHead>{t("Customer")}</TableHead>
+                    <TableHead>{t("State")}</TableHead>
+                    <TableHead className="text-right">{t("Total invoiced")}</TableHead>
+                    <TableHead className="text-right">{t("Credit notes")}</TableHead>
                     <TableHead className="text-right">
-                      Total collections
+                      {t("Total collections")}
                     </TableHead>
                     <TableHead className="text-right">
-                      Net outstanding
+                      {t("Net outstanding")}
                     </TableHead>
-                    <TableHead className="text-center">Open invoices</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-center">{t("Open invoices")}</TableHead>
+                    <TableHead className="text-right">{t("Actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {receivables.map((r) => (
+                  {filteredReceivables.length === 0 && receivables.length > 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={8}
+                        className="py-8 text-center text-sm text-muted-foreground"
+                      >
+                        {t("No customer receivables match the search query.")}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {filteredReceivables.map((r) => (
                     <TableRow key={r.customerId}>
                       <TableCell>
                         <div className="flex flex-col">
@@ -604,30 +972,18 @@ export function PaymentsPage() {
                         {r.state}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        ₹
-                        {r.totalInvoiced.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                        {formatINR(r.totalInvoiced)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                        ₹
-                        {r.totalCreditNotes.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                        {formatINR(r.totalCreditNotes)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs text-emerald-600 dark:text-emerald-400">
-                        ₹
-                        {r.totalPaid.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                        {formatINR(r.totalPaid)}
                       </TableCell>
                       <TableCell className="text-right font-mono font-semibold">
                         {r.netOutstanding > 0 ? (
                           <span className="text-amber-600 dark:text-amber-400">
-                            ₹
-                            {r.netOutstanding.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                            })}
+                            {formatINR(r.netOutstanding)}
                           </span>
                         ) : (
                           <span className="text-emerald-600 dark:text-emerald-400">
@@ -656,30 +1012,29 @@ export function PaymentsPage() {
                 </TableBody>
               </Table>
             </div>
-          )}
+          </>
+        )}
         </div>
       )}
 
       {/* Customer Detailed Ledger Modal */}
-      {selectedCustomerIdForLedger && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border bg-card p-6 shadow-xl">
-            <div className="flex items-center justify-between border-b pb-4">
+      <Dialog
+        open={selectedCustomerIdForLedger !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedCustomerIdForLedger(null);
+        }}
+      >
+        {selectedCustomerIdForLedger && (
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
               <div className="flex items-center gap-2">
                 <HistoryIcon className="h-5 w-5 text-foreground" />
-                <h3 className="text-lg font-semibold text-foreground">
-                  Customer statement and ledger
-                </h3>
+                <DialogTitle>Customer statement and ledger</DialogTitle>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedCustomerIdForLedger(null)}
-                className="h-8 w-8 p-0"
-              >
-                <XIcon className="h-4 w-4" />
-              </Button>
-            </div>
+              <DialogDescription className="sr-only">
+                Statement and transaction history for customer
+              </DialogDescription>
+            </DialogHeader>
 
             {loadingLedger || !customerLedger ? (
               <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
@@ -687,7 +1042,7 @@ export function PaymentsPage() {
                 Loading ledger entries...
               </div>
             ) : (
-              <div className="mt-4 flex flex-col gap-6">
+              <div className="mt-2 flex flex-col gap-6">
                 {/* Account details and ageing cards */}
                 <div className="rounded-lg border bg-muted/30 p-4">
                   <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -708,11 +1063,7 @@ export function PaymentsPage() {
                         Current balance
                       </div>
                       <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                        ₹
-                        {customerLedger.summary.netOutstanding.toLocaleString(
-                          undefined,
-                          { minimumFractionDigits: 2 },
-                        )}
+                        {formatINR(customerLedger.summary.netOutstanding)}
                       </div>
                     </div>
                   </div>
@@ -724,7 +1075,7 @@ export function PaymentsPage() {
                         0 to 30 days
                       </div>
                       <div className="font-mono text-xs font-semibold">
-                        ₹{customerLedger.summary.ageing.current0to30.toFixed(2)}
+                        {formatINR(customerLedger.summary.ageing.current0to30)}
                       </div>
                     </div>
                     <div className="rounded-md border bg-card p-2 text-center">
@@ -732,7 +1083,7 @@ export function PaymentsPage() {
                         31 to 60 days
                       </div>
                       <div className="font-mono text-xs font-semibold">
-                        ₹{customerLedger.summary.ageing.days31to60.toFixed(2)}
+                        {formatINR(customerLedger.summary.ageing.days31to60)}
                       </div>
                     </div>
                     <div className="rounded-md border bg-card p-2 text-center">
@@ -740,7 +1091,7 @@ export function PaymentsPage() {
                         61 to 90 days
                       </div>
                       <div className="font-mono text-xs font-semibold">
-                        ₹{customerLedger.summary.ageing.days61to90.toFixed(2)}
+                        {formatINR(customerLedger.summary.ageing.days61to90)}
                       </div>
                     </div>
                     <div className="rounded-md border bg-card p-2 text-center">
@@ -748,7 +1099,7 @@ export function PaymentsPage() {
                         Over 90 days
                       </div>
                       <div className="font-mono text-xs font-semibold">
-                        ₹{customerLedger.summary.ageing.over90days.toFixed(2)}
+                        {formatINR(customerLedger.summary.ageing.over90days)}
                       </div>
                     </div>
                   </div>
@@ -763,28 +1114,23 @@ export function PaymentsPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Reference number</TableHead>
+                          <TableHead>{t("Date")}</TableHead>
+                          <TableHead>{t("Type")}</TableHead>
+                          <TableHead>{t("Reference number")}</TableHead>
                           <TableHead className="text-right">
-                            Debit (+)
+                            {t("Debit (+)")}
                           </TableHead>
                           <TableHead className="text-right">
-                            Credit (-)
+                            {t("Credit (-)")}
                           </TableHead>
-                          <TableHead className="text-right">Balance</TableHead>
+                          <TableHead className="text-right">{t("Balance")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {customerLedger.ledgerEntries.map((entry, idx) => (
                           <TableRow key={idx}>
                             <TableCell className="text-xs text-muted-foreground">
-                              {new Date(entry.date).toLocaleDateString(
-                                "en-IN",
-                                {
-                                  dateStyle: "medium",
-                                },
-                              )}
+                              {formatDate(entry.date)}
                             </TableCell>
                             <TableCell>
                               <Badge
@@ -805,16 +1151,16 @@ export function PaymentsPage() {
                             </TableCell>
                             <TableCell className="text-right font-mono text-xs">
                               {entry.debit > 0
-                                ? `₹${entry.debit.toFixed(2)}`
+                                ? formatINR(entry.debit)
                                 : "-"}
                             </TableCell>
                             <TableCell className="text-right font-mono text-xs text-emerald-600 dark:text-emerald-400">
                               {entry.credit > 0
-                                ? `₹${entry.credit.toFixed(2)}`
+                                ? formatINR(entry.credit)
                                 : "-"}
                             </TableCell>
                             <TableCell className="text-right font-mono text-xs font-bold">
-                              ₹{entry.balance.toFixed(2)}
+                              {formatINR(entry.balance)}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -824,73 +1170,82 @@ export function PaymentsPage() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      )}
+          </DialogContent>
+        )}
+      </Dialog>
 
       {/* Record Payment Modal */}
-      {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border bg-card p-6 shadow-xl">
-            <div className="flex items-center justify-between border-b pb-4">
-              <div className="flex items-center gap-2">
-                <CreditCardIcon className="h-5 w-5 text-foreground" />
-                <h3 className="text-lg font-semibold text-foreground">
-                  Record customer payment
-                </h3>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowPaymentModal(false)}
-                className="h-8 w-8 p-0"
-              >
-                <XIcon className="h-4 w-4" />
-              </Button>
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <CreditCardIcon className="h-5 w-5 text-foreground" />
+              <DialogTitle>Record customer payment</DialogTitle>
             </div>
+            <DialogDescription className="sr-only">
+              Record receipt of customer payment and allocate against outstanding invoices
+            </DialogDescription>
+          </DialogHeader>
 
-            <form
-              onSubmit={handleRecordPaymentSubmit}
-              className="mt-4 flex flex-col gap-4"
-            >
+          <form
+            onSubmit={handleRecordPaymentSubmit}
+            className="mt-2 flex flex-col gap-4"
+          >
               {paymentError && (
-                <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
-                  <AlertTriangleIcon className="h-4 w-4 shrink-0" />
+                <div
+                  role="alert"
+                  aria-live="assertive"
+                  className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive"
+                >
+                  <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>{paymentError}</span>
                 </div>
               )}
 
               {/* Customer selection */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-foreground">
+                <Label
+                  htmlFor="payment-customer-select"
+                  className="text-xs font-semibold text-foreground"
+                >
                   Select customer *
-                </label>
-                <select
-                  value={selectedCustomerId}
-                  onChange={(e) => {
-                    setSelectedCustomerId(e.target.value);
+                </Label>
+                <Select
+                  value={selectedCustomerId || undefined}
+                  onValueChange={(value) => {
+                    setSelectedCustomerId(value);
                     setManualAllocations({});
                   }}
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
                   required
                 >
-                  <option value="">Choose customer...</option>
-                  {receivables.map((cust) => (
-                    <option key={cust.customerId} value={cust.customerId}>
-                      {cust.customerName} ({cust.customerCode}) | Outstanding: ₹
-                      {cust.netOutstanding.toFixed(2)}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    id="payment-customer-select"
+                    className="font-medium"
+                  >
+                    <SelectValue placeholder="Choose customer..." />
+                  </SelectTrigger>
+                  <SelectContent searchable searchPlaceholder="Search customers...">
+                    {receivables.map((cust) => (
+                      <SelectItem key={cust.customerId} value={cust.customerId}>
+                        {cust.customerName} ({cust.customerCode}) | Outstanding:{" "}
+                        {formatINR(cust.netOutstanding)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Amount and Payment Mode */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-foreground">
+                  <Label
+                    htmlFor="payment-amount-input"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Receipt amount (₹) *
-                  </label>
+                  </Label>
                   <Input
+                    id="payment-amount-input"
                     type="number"
                     step="0.01"
                     min="0.01"
@@ -903,32 +1258,46 @@ export function PaymentsPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-foreground">
-                    Payment mode *
-                  </label>
-                  <select
-                    value={paymentMode}
-                    onChange={(e) => setPaymentMode(e.target.value)}
-                    className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
+                  <Label
+                    htmlFor="payment-mode-select"
+                    className="text-xs font-semibold text-foreground"
                   >
-                    <option value="BANK_TRANSFER">
-                      Bank transfer / NEFT / RTGS
-                    </option>
-                    <option value="UPI">UPI</option>
-                    <option value="CHEQUE">Cheque</option>
-                    <option value="CASH">Cash</option>
-                    <option value="DEMAND_DRAFT">Demand draft</option>
-                  </select>
+                    Payment mode *
+                  </Label>
+                  <Select
+                    value={paymentMode}
+                    onValueChange={setPaymentMode}
+                  >
+                    <SelectTrigger
+                      id="payment-mode-select"
+                      className="font-medium"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BANK_TRANSFER">
+                        Bank transfer / NEFT / RTGS
+                      </SelectItem>
+                      <SelectItem value="UPI">UPI</SelectItem>
+                      <SelectItem value="CHEQUE">Cheque</SelectItem>
+                      <SelectItem value="CASH">Cash</SelectItem>
+                      <SelectItem value="DEMAND_DRAFT">Demand draft</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               {/* Reference and Notes */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-foreground">
+                  <Label
+                    htmlFor="payment-reference-input"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Reference number
-                  </label>
+                  </Label>
                   <Input
+                    id="payment-reference-input"
                     placeholder="e.g. UTR or Cheque no"
                     value={referenceNumber}
                     onChange={(e) => setReferenceNumber(e.target.value)}
@@ -937,10 +1306,14 @@ export function PaymentsPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-foreground">
+                  <Label
+                    htmlFor="payment-notes-input"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Notes
-                  </label>
+                  </Label>
                   <Input
+                    id="payment-notes-input"
                     placeholder="e.g. On account settlement"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
@@ -957,23 +1330,32 @@ export function PaymentsPage() {
                       <span className="text-xs font-semibold text-foreground">
                         Invoice allocation strategy
                       </span>
-                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <input
-                          type="checkbox"
+                      <Label
+                        htmlFor="payment-custom-allocation-toggle"
+                        className="flex items-center gap-1.5 text-xs font-normal text-muted-foreground cursor-pointer"
+                      >
+                        <Checkbox
+                          id="payment-custom-allocation-toggle"
                           checked={useManualAllocation}
-                          onChange={(e) =>
-                            setUseManualAllocation(e.target.checked)
+                          onCheckedChange={(checked) =>
+                            setUseManualAllocation(checked === true)
                           }
-                          className="rounded border-border"
                         />
                         Custom allocation
-                      </label>
+                      </Label>
                     </div>
 
                     {!useManualAllocation ? (
-                      <p className="text-xs text-muted-foreground">
-                        Automatic FIFO mode: payment will settle oldest
-                        outstanding invoices first.
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                        <DomainTooltip term="FIFO">
+                          <span className="font-medium text-foreground">
+                            Automatic FIFO mode
+                          </span>
+                        </DomainTooltip>
+                        <span>
+                          : payment will settle oldest outstanding invoices
+                          first.
+                        </span>
                       </p>
                     ) : (
                       <div className="mt-2 flex flex-col gap-2">
@@ -990,11 +1372,13 @@ export function PaymentsPage() {
                                 {inv.invoiceNumber}
                               </span>
                               <span className="text-[10px] text-muted-foreground">
-                                Outstanding: ₹
-                                {Number(inv.outstandingAmount).toFixed(2)}
+                                Outstanding:{" "}
+                                {formatINR(inv.outstandingAmount)}
                               </span>
                             </div>
                             <Input
+                              id={`allocation-${inv.id}`}
+                              aria-label={`Allocation amount for invoice ${inv.invoiceNumber}`}
                               type="number"
                               step="0.01"
                               placeholder="₹"
@@ -1014,7 +1398,7 @@ export function PaymentsPage() {
                   </div>
                 )}
 
-              <div className="flex items-center justify-end gap-2 border-t pt-4">
+              <DialogFooter className="border-t pt-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -1029,18 +1413,153 @@ export function PaymentsPage() {
                   disabled={paymentMutation.isPending || !selectedCustomerId}
                   className="gap-2"
                 >
-                  {paymentMutation.isPending ? (
-                    <RefreshCwIcon className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <CheckCircle2Icon className="h-4 w-4" />
-                  )}
-                  Save payment
+                  <CheckCircle2Icon className="h-4 w-4" />
+                  Review & confirm
                 </Button>
-              </div>
+              </DialogFooter>
             </form>
-          </div>
-        </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Irreversible Financial Action Confirmation (F-058) */}
+      {pendingPaymentPayload && (
+        <ConfirmationDialog
+          open={showConfirmPayment}
+          onOpenChange={setShowConfirmPayment}
+          title={
+            <div className="flex items-center gap-2 font-semibold">
+              <CreditCardIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <span>Confirm Customer Payment Posting</span>
+            </div>
+          }
+          description={
+            <div className="flex flex-col gap-3 text-left">
+              <p className="text-sm text-foreground">
+                You are about to post a permanent payment receipt into the accounting ledger.
+              </p>
+              <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Customer:</span>
+                  <span className="font-semibold text-foreground">
+                    {receivables.find((r) => r.customerId === pendingPaymentPayload.customerId)?.customerName ?? "Customer"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Payment Amount:</span>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatINR(pendingPaymentPayload.amount)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Payment Mode:</span>
+                  <span className="font-medium text-foreground">{pendingPaymentPayload.paymentMode}</span>
+                </div>
+                {pendingPaymentPayload.referenceNumber && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Reference / Cheque #:</span>
+                    <span className="font-mono">{pendingPaymentPayload.referenceNumber}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Allocation Strategy:</span>
+                  <span className="font-medium text-foreground">
+                    {pendingPaymentPayload.allocations && pendingPaymentPayload.allocations.length > 0
+                      ? `Manual: ${pendingPaymentPayload.allocations.length} invoice(s) allocated`
+                      : "Automatic FIFO allocation across open invoices"}
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Financial notice: This entry will immediately settle outstanding customer receivables and update cash/bank ledgers. This transaction cannot be deleted.
+              </p>
+            </div>
+          }
+          confirmLabel={paymentMutation.isPending ? "Posting..." : "Confirm & Post Payment"}
+          cancelLabel="Back to Edit"
+          disabled={paymentMutation.isPending}
+          onConfirm={() => {
+            if (pendingPaymentPayload) {
+              paymentMutation.mutate(pendingPaymentPayload);
+            }
+          }}
+        />
       )}
+
+      {/* Allocate Unallocated Cash Modal (IMP-018) */}
+      <Dialog
+        open={allocatingPayment !== null}
+        onOpenChange={(open) => {
+          if (!open) setAllocatingPayment(null);
+        }}
+      >
+        {allocatingPayment && (
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Allocate Unallocated Cash</DialogTitle>
+              <DialogDescription>
+                {allocatingPayment.paymentNumber} — Unallocated:{" "}
+                {formatINR(allocatingPayment.unallocatedAmount)}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 py-2">
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs">Open Invoice</Label>
+                <Select
+                  value={postAllocInvoiceId}
+                  onValueChange={setPostAllocInvoiceId}
+                >
+                  <SelectTrigger className="h-9 text-xs">
+                    <SelectValue placeholder="Select invoice..." />
+                  </SelectTrigger>
+                  <SelectContent searchable searchPlaceholder="Search invoices...">
+                    {(postAllocInvoicesData?.invoices ?? [])
+                      .filter((inv) => Number(inv.outstandingAmount) > 0)
+                      .map((inv) => (
+                        <SelectItem key={inv.id} value={inv.id}>
+                          {inv.invoiceNumber} — Outstanding:{" "}
+                          {formatINR(inv.outstandingAmount)}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="post-alloc-amount" className="text-xs">
+                  Allocation Amount (₹)
+                </Label>
+                <Input
+                  id="post-alloc-amount"
+                  type="number"
+                  min={0.01}
+                  step="0.01"
+                  value={postAllocAmount}
+                  onChange={(e) => setPostAllocAmount(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter className="border-t pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAllocatingPayment(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={
+                  allocateExistingMutation.isPending ||
+                  !postAllocInvoiceId ||
+                  Number(postAllocAmount) <= 0
+                }
+                onClick={() => allocateExistingMutation.mutate()}
+              >
+                Apply Allocation
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

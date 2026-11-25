@@ -1,0 +1,30 @@
+=== STEP 9: STANDARDS CHECK FOR F-011 ===
+Finding: F-011
+Category: Statutory Compliance / Timezone / Invoicing
+
+1. Applicable Standards and Statutory Rules:
+   - Rule 46 of Central Goods and Services Tax (CGST) Rules, 2017:
+     Clause (b) mandates that a tax invoice must contain: "a consecutive serial number not exceeding sixteen characters, in one or multiple series, containing alphabets or numerals or special characters... unique for a financial year."
+   - Section 2(7) of the Income-tax Act, 1961:
+     Defines the Indian financial year as the period commencing on the 1st day of April and ending on the 31st day of March of the next year.
+   - Timezone Requirement:
+     The Indian Goods and Services Tax Network (GSTN) and statutory books operate strictly on Indian Standard Time (IST, UTC+05:30). Cloud host server timezones (e.g. AWS/GCP default UTC) must not affect invoice serial numbering or tax year classification.
+
+2. Evidence of Compliance:
+   - `financeService.getFinancialYear()` formats timestamps strictly within `timeZone: "Asia/Kolkata"` using standard ECMAScript `Intl.DateTimeFormat`:
+     ```typescript
+     const formatter = new Intl.DateTimeFormat("en-CA", {
+       timeZone: "Asia/Kolkata",
+       year: "numeric",
+       month: "2-digit",
+     });
+     ```
+   - All 4 tests in `server/src/financial-year-tz.test.ts` pass under `TZ=UTC`:
+     * April 1 at 01:30 AM IST (UTC: March 31 20:30) correctly resolves to new FY `2026-27`.
+     * March 31 at 11:45 PM IST (UTC: March 31 18:15) correctly resolves to closing FY `2025-26`.
+     * Exact midnight April 1 00:00:00.000 IST resolves to `2026-27`.
+     * 1ms before midnight March 31 23:59:59.999 IST resolves to `2025-26`.
+   - Adversarial probes confirm timezone invariance across 10 global timezones (UTC+14 to UTC-11).
+   - 3 deliberate mutants killed with 0 survivors.
+
+3. Status: VERIFIED-PASS.

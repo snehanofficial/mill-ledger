@@ -1,0 +1,165 @@
+=== 1. SERVER HEALTH (GET http://localhost:4000/api/v1/health) ===
+HTTP/1.1 200 OK
+Content-Security-Policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 0
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Content-Type: application/json; charset=utf-8
+Content-Length: 127
+ETag: W/"7f-76c92J4hVGykHs7vZsPSA4VpdC8"
+Date: Thu, 19 Nov 2026 13:54:04 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"status":"ok","timestamp":"2026-11-19T13:54:04.746Z","uptime":4175.730906919,"service":"mill-ledger-server","version":"0.1.0"}
+=== 2. CORS PREFLIGHT ALLOWED ORIGIN (OPTIONS http://localhost:4000/api/v1/sales/orders) ===
+HTTP/1.1 204 No Content
+Content-Security-Policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 0
+Access-Control-Allow-Origin: http://localhost:5173
+Vary: Origin, Access-Control-Request-Headers
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE
+Access-Control-Allow-Headers: content-type
+Content-Length: 0
+Date: Thu, 19 Nov 2026 13:54:04 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+=== 3. CORS PREFLIGHT DISALLOWED ORIGIN (OPTIONS http://localhost:4000/api/v1/sales/orders) ===
+HTTP/1.1 200 OK
+Content-Security-Policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 0
+Allow: GET, HEAD, POST
+Content-Length: 15
+Content-Type: text/plain
+Date: Thu, 19 Nov 2026 13:54:04 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+GET, HEAD, POST
+=== 4. UNAUTHENTICATED API REQUEST (GET http://localhost:4000/api/v1/sales/orders) ===
+HTTP/1.1 401 Unauthorized
+Content-Security-Policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 0
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Content-Type: application/json; charset=utf-8
+Content-Length: 42
+ETag: W/"2a-kqALDaYdd1mt58BcZCd8jbEfki4"
+Date: Thu, 19 Nov 2026 13:54:04 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Unauthorized: Session required"}
+=== 5. SERVER 404 ROUTE (GET http://localhost:4000/api/v1/does-not-exist) ===
+HTTP/1.1 404 Not Found
+Content-Security-Policy: default-src 'none'
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 0
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Content-Type: text/html; charset=utf-8
+Content-Length: 160
+Date: Thu, 19 Nov 2026 13:54:04 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /api/v1/does-not-exist</pre>
+</body>
+</html>
+
+=== 6. CLIENT HEADERS (GET http://localhost:4173/) ===
+HTTP/1.1 200 OK
+Vary: Origin
+Content-Type: text/html
+Cache-Control: no-cache
+Etag: W/"385-VUYbYgo55rA3j2H+kw1h+Lag3aI"
+Date: Thu, 19 Nov 2026 13:54:04 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Content-Length: 901
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <script type="module">import { injectIntoGlobalHook } from "/@react-refresh";
+injectIntoGlobalHook(window);
+window.$RefreshReg$ = () => {};
+window.$RefreshSig$ = () => (type) => type;</script>
+
+    <script type="module" src="/@vite/client"></script>
+
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#176b54" />
+    <title>
+      MillLedger | Order-to-Audit System for a Small Food Manufacturer
+    </title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

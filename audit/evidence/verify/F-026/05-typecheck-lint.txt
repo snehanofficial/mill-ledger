@@ -1,0 +1,19 @@
+=== F-026 Verification: 05 Typecheck & Lint ===
+Command: pnpm typecheck
+
+$ pnpm -r run typecheck
+Scope: 3 of 4 workspace projects
+shared typecheck$ tsc --noEmit
+└─ Done in 778ms
+client typecheck$ tsc -b --noEmit
+server typecheck$ tsc --noEmit
+└─ Done in 4.4s
+└─ Done in 4.8s
+Exit code: 0
+
+Command: pnpm lint
+
+$ oxlint .
+Found 0 warnings and 0 errors.
+Finished in 26ms on 168 files using 16 threads.
+Exit code: 0

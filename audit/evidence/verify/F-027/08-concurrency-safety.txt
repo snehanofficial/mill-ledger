@@ -1,0 +1,4 @@
+=== F-027 Verification: 08 Concurrency Safety ===
+1. `expireStaleReservations` executes within an atomic PostgreSQL transaction `prisma.$transaction`.
+2. Active reservation aggregations in `getAvailableStock`, `createSalesOrder`, and `getInventoryBalances` explicitly exclude expired reservations using deterministic `expiresAt: { gt: referenceTime }` filters.
+3. Row-level locks in `approveSalesOrder` and `postDispatch` ensure concurrent expiration sweeps cannot cause race conditions with in-flight dispatches.

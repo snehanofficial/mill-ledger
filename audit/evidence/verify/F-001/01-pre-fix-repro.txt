@@ -1,0 +1,6 @@
+PRE-FIX REPRODUCTION:
+1. Running pnpm test:e2e triggered strict mode violation in e2e/app-shell.spec.ts:
+   Error: locator.focus: Error: strict mode violation: getByRole('link', { name: 'Skip to main content' }) resolved to 2 elements:
+     1) <a href="#main-content" ...>Skip to main content</a> in AuthenticatedShell
+     2) <a href="#main-content" ...>Skip to main content</a> in Header (StickyHeader)
+2. Keyboard navigation tab order was disrupted by multiple redundant skip links violating WCAG 2.2 SC 2.4.1 and SC 2.4.3.

@@ -1,0 +1,39 @@
+=== F-019 VERIFICATION EVIDENCE 07: AUTHORIZATION CHECKS ===
+Standards Ref: OWASP Top 10:2021 A01:2021 (Broken Access Control), NN/g Heuristic #9, WCAG 2.2 SC 3.3.1
+Scope: React Single-Page Application (SPA) Route & Component Authorization Barrier
+
+1. ROUTE LEVEL AUTHORIZATION BARRIERS:
+   - Wrapped all 20 operational and report routes in client/src/app.tsx with <RoleGuard allowedRoles={[...]}>.
+   - Unauthorized navigation attempts by any role now trigger <ForbiddenPage requiredRoles={[...]} />:
+     * HTTP 403 status indicator
+     * "Access Denied" accessible heading
+     * Descriptive explanation of why the user's role cannot view the page
+     * Direct CTA to navigate to their authorized default workspace
+   - Protected route map matches docs/authorization-matrix.md and audit/evidence/role-ui-route-matrix.csv 100%.
+
+2. DEFAULT WORKSPACE ROUTING (RoleDefaultRedirect):
+   - Eliminated blind redirects to /dashboard.
+   - Role-specific workspace destinations:
+     * SALESMAN -> /orders
+     * PRODUCTION -> /production/today
+     * ACCOUNTANT -> /invoices
+     * ADMIN / OWNER -> /dashboard
+
+3. IN-PAGE ACTION BUTTON RBAC ENFORCEMENT:
+   - OrdersPage (/orders):
+     * "New sales order" / "Create first order": Restricted to ADMIN and SALESMAN.
+     * "Approve" / "Reject": Restricted strictly to ADMIN.
+   - InvoicesPage (/invoices):
+     * "Credit note": Restricted strictly to ADMIN.
+   - PaymentsPage (/payments):
+     * "Record payment": Restricted strictly to ADMIN.
+   - ProductionPage (/production/*):
+     * "Record production batch" / "Record first batch": Restricted to ADMIN and PRODUCTION.
+   - DispatchPage (/dispatch):
+     * "Record dispatch": Restricted strictly to ADMIN.
+   - PurchasesPage (/purchases):
+     * "Record Purchase Receipt": Restricted to ADMIN and PRODUCTION.
+
+4. SHELL UI PARITY:
+   - AppBrand logo in AuthenticatedShell dynamically points to getDefaultRouteForRole(user.role), preventing navigation to forbidden /dashboard.
+   - MobileBottomNav items are role-scoped for touchscreens.

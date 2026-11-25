@@ -1,0 +1,35 @@
+{
+  "buttonStates": {
+    "hasButton": true,
+    "primaryClasses": "inline-flex min-h-10 items-center justify-center gap-2 rounded-control border text-sm font-medium whitespace-nowrap transition-colors outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.985] border-primary bg-primary text-primary-foreground shadow-xs hover:bg-primary-hover active:bg-primary-pressed h-10 px-4 py-2",
+    "hasDisabledButton": true,
+    "disabledClasses": "inline-flex min-h-10 items-center justify-center gap-2 rounded-control border text-sm font-medium whitespace-nowrap transition-colors outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.985] border-primary bg-primary text-primary-foreground shadow-xs hover:bg-primary-hover active:bg-primary-pressed h-10 px-4 py-2",
+    "disabledCursor": "not-allowed",
+    "disabledPointerEvents": "none"
+  },
+  "toastAccessibility": {
+    "toasterRole": null,
+    "toastRole": null,
+    "toastAriaLive": null,
+    "toastContent": "Changes saved"
+  },
+  "notificationsSheetContent": {
+    "sheetOpen": true,
+    "sheetText": "NotificationsNo notificationsActivity and system events will appear here.",
+    "hasPersistentToastsList": false
+  },
+  "syncStatusAudit": {
+    "headerIndicatorPresent": true,
+    "headerHasIcon": false,
+    "headerText": "Live"
+  },
+  "outboxBadgesAudit": {
+    "sampleCount": 0,
+    "items": []
+  },
+  "optimisticUpdatesCheck": {
+    "presentInServerMutations": false,
+    "reason": "Mutations across Invoices, Orders, Production, Purchases and Payments do not define onMutate rollback handlers; UI awaits server response with button loading spinner."
+  },
+  "timestamp": "2026-11-19T17:26:59.429Z"
+}

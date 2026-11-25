@@ -1,0 +1,19 @@
+=== F-023 Verification: 02 Test Execution ===
+Command: npx vitest run server/src/user-management.test.ts
+
+ RUN  v3.2.7 /home/snehan/projects/web/mill-ledger
+
+ ✓ server/src/user-management.test.ts (9 tests) 1083ms
+   ✓ F-023: User and Role Management APIs and Admin Safeguards > rejects unauthenticated requests to /api/v1/users with 401 29ms
+   ✓ F-023: User and Role Management APIs and Admin Safeguards > rejects non-admin role (SALESMAN) attempting to list users with 403 Forbidden 216ms
+   ✓ F-023: User and Role Management APIs and Admin Safeguards > allows ADMIN to list users via /api/v1/users and /api/v1/admin/users 103ms
+   ✓ F-023: User and Role Management APIs and Admin Safeguards > rejects SALESMAN attempting to create a user with 403 Forbidden 87ms
+   ✓ F-023: User and Role Management APIs and Admin Safeguards > allows ADMIN to create a new user and provisions credentials properly 262ms
+   ✓ F-023: User and Role Management APIs and Admin Safeguards > prevents demoting or deactivating the last remaining administrator (OD-02 Last-Admin Safeguard) 102ms
+   ✓ F-023: User and Role Management APIs and Admin Safeguards > allows demoting or deleting an admin when multiple active admins exist 186ms
+   ✓ F-023: User and Role Management APIs and Admin Safeguards > protects operational referential integrity: blocks deleting a user with sales records 83ms
+   ✓ F-023: User and Role Management APIs and Admin Safeguards > verifies admin:bootstrap refuses execution if an active admin already exists (OD-02) 3ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Duration  1.98s
