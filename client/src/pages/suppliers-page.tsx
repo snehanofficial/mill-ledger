@@ -97,7 +97,9 @@ export function SuppliersPage() {
   }>({
     queryKey: ["inventory-suppliers"],
     queryFn: async () => {
-      const res = await apiClient.get("/inventory/suppliers?organizationId=MILL");
+      const res = await apiClient.get(
+        "/inventory/suppliers?organizationId=MILL&includeInactive=true",
+      );
       return res.data;
     },
   });

@@ -67,11 +67,24 @@ interface PurchaseReceipt {
   id: string;
   receiptNumber: string;
   supplierInvoiceNumber?: string;
+  status?: string;
   postedAt: string;
   notes?: string;
   supplier: { id: string; code: string; name: string };
   warehouse: { id: string; name: string };
   lines: PurchaseReceiptLine[];
+}
+
+interface DebitNoteItem {
+  id: string;
+  debitNoteNumber: string;
+  postedAt: string;
+  reason: string;
+  taxableAmount: number | string;
+  taxAmount: number | string;
+  totalAmount: number | string;
+  supplier: { id: string; code: string; name: string };
+  purchaseReceipt?: { id: string; receiptNumber: string } | null;
 }
 
 interface InventoryItemBalance {
@@ -152,6 +165,18 @@ export function PurchasesPage() {
     },
   });
 
+  // Query debit notes
+  const { data: debitNotesData } = useQuery<{ debitNotes: DebitNoteItem[] }>({
+    queryKey: ["debit-notes"],
+    queryFn: async () => {
+      const res = await apiClient.get(
+        "/finance/debit-notes?organizationId=MILL",
+      );
+      return res.data;
+    },
+  });
+
+  const debitNotes = debitNotesData?.debitNotes || [];
   const suppliers = suppliersData?.suppliers || [];
   const rawItems =
     itemsData?.balances?.filter(
@@ -407,10 +432,17 @@ export function PurchasesPage() {
                       {formatINR(totalAmount)}
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="success" className="text-[10px] gap-1">
-                        <CheckCircle2Icon className="size-2.5" />
-                        Posted
-                      </Badge>
+                      {rec.status === "REVERSED" ? (
+                        <Badge variant="danger" className="text-[10px] gap-1">
+                          <RotateCcwIcon className="size-2.5" />
+                          Reversed
+                        </Badge>
+                      ) : (
+                        <Badge variant="success" className="text-[10px] gap-1">
+                          <CheckCircle2Icon className="size-2.5" />
+                          Posted
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">
@@ -423,7 +455,7 @@ export function PurchasesPage() {
                           <EyeIcon className="size-3" />
                           View
                         </Button>
-                        {canManageAdminPurchase && (
+                        {canManageAdminPurchase && rec.status !== "REVERSED" && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -447,6 +479,59 @@ export function PurchasesPage() {
           </Table>
         )}
       </div>
+
+      {/* Issued Supplier Debit Notes */}
+      {debitNotes.length > 0 && (
+        <div className="rounded-xl border border-border bg-card shadow-xs">
+          <div className="flex items-center justify-between border-b border-border p-4">
+            <div className="flex items-center gap-2">
+              <FileWarningIcon className="size-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold text-foreground">
+                Supplier Debit Notes
+              </h2>
+              <span className="text-xs text-muted-foreground font-mono tabular-nums">
+                ({debitNotes.length})
+              </span>
+            </div>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[140px]">Debit Note #</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Supplier</TableHead>
+                <TableHead>Receipt #</TableHead>
+                <TableHead>Reason</TableHead>
+                <TableHead className="text-right">Total Amount</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {debitNotes.map((dn) => (
+                <TableRow key={dn.id}>
+                  <TableCell className="font-mono text-xs font-semibold">
+                    {dn.debitNoteNumber}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {formatDate(dn.postedAt)}
+                  </TableCell>
+                  <TableCell className="text-sm font-medium">
+                    {dn.supplier.name}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {dn.purchaseReceipt?.receiptNumber || "—"}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {dn.reason}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs font-semibold tabular-nums">
+                    {formatINR(Number(dn.totalAmount))}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       {/* Record Purchase Receipt Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
@@ -476,11 +561,11 @@ export function PurchasesPage() {
                   </Link>
                 </div>
                 <Select
-                  value={selectedSupplierId || undefined}
+                  value={activeSupplier?.id || undefined}
                   onValueChange={setSelectedSupplierId}
                 >
                   <SelectTrigger id="purchase-supplier-select" className="font-medium">
-                    <SelectValue placeholder="Supplier 1 (SUP-FLOUR-1)" />
+                    <SelectValue placeholder="Select supplier" />
                   </SelectTrigger>
                   <SelectContent
                     searchable
@@ -549,11 +634,11 @@ export function PurchasesPage() {
                   Raw Material Item
                 </Label>
                 <Select
-                  value={selectedItemId || undefined}
+                  value={activeItem?.id || undefined}
                   onValueChange={setSelectedItemId}
                 >
                   <SelectTrigger id="purchase-item-select" className="font-medium">
-                    <SelectValue placeholder="Flour (RM-FLOUR)" />
+                    <SelectValue placeholder="Select raw material or packaging item" />
                   </SelectTrigger>
                   <SelectContent
                     searchable
@@ -787,7 +872,7 @@ export function PurchasesPage() {
                   ))}
                 </TableBody>
               </Table>
-              {canManageAdminPurchase && (
+              {canManageAdminPurchase && detailReceipt.status !== "REVERSED" && (
                 <div className="flex flex-col gap-1.5 border-t pt-3">
                   <Label htmlFor="pr-reverse-reason" className="text-xs">
                     Reversal Reason (optional, reverses stock if unconsumed)
@@ -883,7 +968,6 @@ export function PurchasesPage() {
                 onClick={async () => {
                   try {
                     await apiClient.post("/finance/debit-notes", {
-                      organizationId: "MILL",
                       supplierId: debitNoteTarget.supplier.id,
                       purchaseReceiptId: debitNoteTarget.id,
                       reason: debitNoteReason.trim(),
@@ -891,6 +975,7 @@ export function PurchasesPage() {
                       taxAmount: 0,
                       totalAmount: debitNoteAmount,
                     });
+                    queryClient.invalidateQueries({ queryKey: ["debit-notes"] });
                     setDebitNoteTarget(null);
                     toast.success("Debit note issued.");
                   } catch (err) {

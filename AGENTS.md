@@ -101,6 +101,8 @@ Update the owning document with code when behavior or a decision changes. Resolv
 
 ## UX and delivery
 
+Follow [UI/UX ENFORCEMENT.md](./UI_UX_ENFORCEMENT.md) for all UI/UX tasks.
+
 - Build mobile-first, role-specific experiences with WCAG 2.2 AA-oriented behavior.
 - Avoid decorative AI-style UI, unnecessary gradients, animations, or inaccessible controls.
 - Keep salesman, floor, review, accounting, and owner workflows efficient.

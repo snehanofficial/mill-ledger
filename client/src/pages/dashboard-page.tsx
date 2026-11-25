@@ -291,7 +291,9 @@ export function DashboardPage() {
                 <div key={m.sku} className="flex items-center justify-between text-xs">
                   <span className="font-medium truncate">{m.name}</span>
                   <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
-                    {formatINR(m.marginAmount)} ({m.marginPct}%)
+                    {m.unitCost > 0
+                      ? `${formatINR(m.marginAmount)} (${m.marginPct}%)`
+                      : "No run cost"}
                   </span>
                 </div>
               ))}

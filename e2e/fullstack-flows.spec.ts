@@ -57,7 +57,7 @@ test.describe("Full-Stack Integrated Flows", () => {
       page.getByRole("heading", { name: "Procurement & Mandi Intake" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /Record Purchase Receipt/i }),
+      page.getByRole("button", { name: /Record Purchase Receipt/i }).first(),
     ).toBeVisible();
     await expect(
       page.getByText(/total recorded/i).first(),

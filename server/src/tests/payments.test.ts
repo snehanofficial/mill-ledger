@@ -723,5 +723,63 @@ describe("M7: Payments, customer ledger, allocations, and costing", () => {
       };
       expect(Number(revPayment.unallocatedAmount)).toBe(500);
     });
+
+    it("preserves explicit empty allocations: [] as unallocated customer advance instead of running FIFO", async () => {
+      const retailerA = await prisma.customer.findFirstOrThrow({
+        where: { code: "CUST-RET-A" },
+      });
+      const adminCookie = await loginAndGetCookie(
+        "admin@millledger.local",
+        "AdminPassword123!",
+      );
+
+      // Ensure an open invoice exists so FIFO would auto-allocate if mistakenly triggered
+      const openInv = await prisma.salesInvoice.create({
+        data: {
+          organizationId: retailerA.organizationId,
+          invoiceNumber: `INV-FIFO-SKIP-${Date.now()}`,
+          financialYear: "2026-27",
+          customerId: retailerA.id,
+          customerNameSnapshot: retailerA.name,
+          deliveryStateSnapshot: retailerA.state,
+          status: "POSTED",
+          taxableAmount: 300,
+          cgstAmount: 0,
+          sgstAmount: 0,
+          igstAmount: 0,
+          totalTaxAmount: 0,
+          totalAmount: 300,
+          paidAmount: 0,
+          outstandingAmount: 300,
+        },
+      });
+
+      const res = await fetch(`${baseUrl}/api/v1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          customerId: retailerA.id,
+          amount: 100,
+          paymentMode: "BANK_TRANSFER",
+          allocations: [],
+          notes: "Explicit unallocated advance test",
+        }),
+      });
+      expect(res.status).toBe(201);
+      const payment = (await res.json()) as {
+        unallocatedAmount: string | number;
+        allocations: unknown[];
+      };
+      expect(Number(payment.unallocatedAmount)).toBe(100);
+      expect(payment.allocations).toHaveLength(0);
+
+      const invAfter = await prisma.salesInvoice.findUniqueOrThrow({
+        where: { id: openInv.id },
+      });
+      expect(Number(invAfter.outstandingAmount)).toBe(300);
+    });
   });
 });

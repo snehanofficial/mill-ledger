@@ -978,7 +978,12 @@ export function DispatchPage() {
                           .find((o) => o.id === selectedOrderId)
                           ?.lines.reduce(
                             (sum, l) =>
-                              sum + (l.approvedQuantity - l.dispatchedQuantity),
+                              sum +
+                              (lineDispatchQtys[l.id] ??
+                                Math.max(
+                                  0,
+                                  l.approvedQuantity - l.dispatchedQuantity,
+                                )),
                             0,
                           )}{" "}
                         packets

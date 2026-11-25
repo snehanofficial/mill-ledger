@@ -13,6 +13,13 @@ describe("M9: Offline synchronization and idempotency verification", () => {
   beforeAll(async () => {
     // Clean up dependent records in proper foreign key order
     await resetOperationalData();
+    await prisma.salesmanCustomerAssignment.deleteMany({
+      where: {
+        salesman: {
+          email: { in: ["salesman1@millledger.local", "salesman2@millledger.local"] },
+        },
+      },
+    });
     await seedBenchmarkMasters();
 
     const app = createApp();

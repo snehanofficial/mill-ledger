@@ -45,57 +45,75 @@ export async function requireAuth(
   }
 }
 
-export function authorize(resource: Resource, action: Action) {
-  return (
+export function authorize(
+  resource: Resource,
+  action: Action,
+  resolveAttributes?: (
+    req: AuthenticatedRequest,
+  ) =>
+    | Promise<Record<string, unknown> | undefined>
+    | Record<string, unknown>
+    | undefined,
+) {
+  return async (
     req: AuthenticatedRequest,
     _res: Response,
     next: NextFunction,
-  ): void => {
-    if (!req.user) {
-      return next(new AppError("Unauthorized", 401));
+  ): Promise<void> => {
+    try {
+      if (!req.user) {
+        return next(new AppError("Unauthorized", 401));
+      }
+
+      if (!hasRbacPermission(req.user.role, resource, action)) {
+        return next(
+          new AppError(
+            `Forbidden: Role ${req.user.role} lacks permission ${action} on ${resource}`,
+            403,
+          ),
+        );
+      }
+
+      // BOLA protection (MLD-002 / DEC-001): Deny cross-tenant data requests
+      const requestedOrg =
+        (req.query?.organizationId as string) ||
+        (req.body?.organizationId as string);
+
+      if (
+        requestedOrg &&
+        req.user.organizationId &&
+        requestedOrg !== req.user.organizationId &&
+        requestedOrg !== "MILL"
+      ) {
+        return next(
+          new AppError(
+            `Forbidden: Access denied to organization ${requestedOrg}`,
+            403,
+          ),
+        );
+      }
+
+      const resourceAttributes = resolveAttributes
+        ? ((await resolveAttributes(req)) ??
+          (req.body as Record<string, unknown>))
+        : (req.body as Record<string, unknown>);
+
+      const isAbacAllowed = evaluateAbac({
+        user: req.user,
+        resource,
+        action,
+        resourceAttributes,
+      });
+
+      if (!isAbacAllowed) {
+        return next(
+          new AppError("Forbidden: Policy evaluation denied request", 403),
+        );
+      }
+
+      next();
+    } catch (err) {
+      next(err);
     }
-
-    if (!hasRbacPermission(req.user.role, resource, action)) {
-      return next(
-        new AppError(
-          `Forbidden: Role ${req.user.role} lacks permission ${action} on ${resource}`,
-          403,
-        ),
-      );
-    }
-
-    // BOLA protection (MLD-002 / DEC-001): Deny cross-tenant data requests
-    const requestedOrg =
-      (req.query?.organizationId as string) ||
-      (req.body?.organizationId as string);
-
-    if (
-      requestedOrg &&
-      req.user.organizationId &&
-      requestedOrg !== req.user.organizationId &&
-      requestedOrg !== "MILL"
-    ) {
-      return next(
-        new AppError(
-          `Forbidden: Access denied to organization ${requestedOrg}`,
-          403,
-        ),
-      );
-    }
-
-    const isAbacAllowed = evaluateAbac({
-      user: req.user,
-      resource,
-      action,
-      resourceAttributes: req.body as Record<string, unknown>,
-    });
-
-    if (!isAbacAllowed) {
-      return next(
-        new AppError("Forbidden: Policy evaluation denied request", 403),
-      );
-    }
-
-    next();
   };
 }

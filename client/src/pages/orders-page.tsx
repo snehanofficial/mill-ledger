@@ -319,6 +319,7 @@ export function OrdersPage() {
   // Fetch current available stock for products
   const { data: stockData } = useQuery<{
     balances: Array<{
+      id?: string;
       sku: string;
       available: number;
       onHand: number;
@@ -334,10 +335,16 @@ export function OrdersPage() {
     },
   });
 
-  const getAvailableStockForProduct = (product?: { sku: string }) => {
+  const getAvailableStockForProduct = (product?: {
+    sku: string;
+    finishedGoodsItemId?: string | null;
+    finishedGoodsSku?: string | null;
+  }) => {
     if (!product) return 0;
     const stock = stockData?.balances.find(
       (b) =>
+        (product.finishedGoodsItemId && b.id === product.finishedGoodsItemId) ||
+        (product.finishedGoodsSku && b.sku === product.finishedGoodsSku) ||
         b.sku === product.sku ||
         (b.sku === "FG-MURUKKU-200G" && product.sku.includes("MURUKKU")),
     );
@@ -1504,8 +1511,18 @@ export function OrdersPage() {
                     )}
                   {activeTab === "stream" &&
                     filteredOrders.map((o) => {
-                      const line = o.lines[0];
-                      const qty = Number(line?.quotedQuantity ?? 0);
+                      const qty = o.lines.reduce(
+                        (sum, l) => sum + Number(l.quotedQuantity ?? 0),
+                        0,
+                      );
+                      const approvedQty = o.lines.reduce(
+                        (sum, l) =>
+                          sum + Number(l.approvedQuantity ?? l.quotedQuantity ?? 0),
+                        0,
+                      );
+                      const activeReservedQty = (o.reservations ?? [])
+                        .filter((r) => r.status === "ACTIVE")
+                        .reduce((sum, r) => sum + Number(r.reservedQuantity ?? 0), 0);
                       const shortage = o.totalShortage ?? 0;
 
                       return (
@@ -1542,7 +1559,9 @@ export function OrdersPage() {
                             {o.salesman.name}
                           </TableCell>
                           <TableCell className="text-right font-medium">
-                            {formatQuantity(qty, { unit: "pkts" })}
+                            {o.status === "APPROVED" && approvedQty !== qty
+                              ? `${formatQuantity(approvedQty)} / ${formatQuantity(qty, { unit: "pkts" })}`
+                              : formatQuantity(qty, { unit: "pkts" })}
                           </TableCell>
                           <TableCell className="text-right">
                             {formatINR(o.taxableAmount)}
@@ -1571,7 +1590,11 @@ export function OrdersPage() {
                             ) : o.status === "APPROVED" ? (
                               <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
                                 <CheckCircle2Icon className="h-3.5 w-3.5" />
-                                <span>Reserved ({qty})</span>
+                                <span>
+                                  {o.fulfilmentStatus === "FULFILLED"
+                                    ? "Fulfilled"
+                                    : `Reserved (${activeReservedQty || approvedQty})`}
+                                </span>
                               </div>
                             ) : (
                               <span className="text-xs text-muted-foreground">
@@ -2116,7 +2139,7 @@ export function OrdersPage() {
               reason: rejectionReason,
             })
           }
-          disabled={rejectMutation.isPending}
+          disabled={rejectMutation.isPending || !rejectionReason.trim()}
           destructive
         >
           <div className="flex flex-col gap-1.5 pt-2">

@@ -691,11 +691,13 @@ export class ReportingService {
       const totalCost = Number(run.totalRunCost);
       const unitCost = Number(run.costPerGoodUnit);
 
-      totalGoodQty += goodQty;
-      totalRejectedQty += rejectedQty;
-      totalRunCostSum += totalCost;
-      totalLaborCostSum += labor;
-      totalGasPowerCostSum += gas;
+      if (run.status === "POSTED") {
+        totalGoodQty += goodQty;
+        totalRejectedQty += rejectedQty;
+        totalRunCostSum += totalCost;
+        totalLaborCostSum += labor;
+        totalGasPowerCostSum += gas;
+      }
 
       const materials = run.materials.map((m) => {
         const planned = Number(m.plannedQty);
@@ -736,12 +738,14 @@ export class ReportingService {
       };
     });
 
+    const postedRunsCount = runs.filter((r) => r.status === "POSTED").length;
+
     return {
       reportTitle: "Production and Variance Report",
       generatedAt: new Date(),
       filters: params,
       summary: {
-        totalRunsCount: runs.length,
+        totalRunsCount: postedRunsCount,
         totalGoodQuantity: totalGoodQty,
         totalRejectedQuantity: totalRejectedQty,
         totalLaborCost: totalLaborCostSum,
@@ -1086,7 +1090,7 @@ export class ReportingService {
       }));
 
     const varianceAlerts = prodRep.rows
-      .filter((r) => Math.abs(r.yieldVariancePct) >= 5)
+      .filter((r) => r.status === "POSTED" && Math.abs(r.yieldVariancePct) >= 5)
       .map((r) => ({
         runNumber: r.runNumber,
         productName: r.productName,

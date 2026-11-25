@@ -46,6 +46,8 @@ import {
   BookOpenIcon,
   PlusCircleIcon,
   SlidersHorizontalIcon,
+  ScaleIcon,
+  PencilIcon,
 } from "lucide-react";
 
 interface InventoryBalance {
@@ -87,6 +89,17 @@ export function StockPage() {
     useState<InventoryBalance | null>(null);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
+  const [showUomsModal, setShowUomsModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<InventoryBalance | null>(null);
+  const [editItemName, setEditItemName] = useState("");
+
+  // UOM & Conversion state
+  const [uomCode, setUomCode] = useState("");
+  const [uomName, setUomName] = useState("");
+  const [uomSymbol, setUomSymbol] = useState("");
+  const [convFromId, setConvFromId] = useState("");
+  const [convToId, setConvToId] = useState("");
+  const [convFactor, setConvFactor] = useState<number>(1);
 
   // Add Item state
   const [itemSku, setItemSku] = useState("");
@@ -105,12 +118,77 @@ export function StockPage() {
 
   const { data: uomsData } = useQuery<{
     uoms: Array<{ id: string; code: string; name: string; symbol: string }>;
+    conversions: Array<{
+      id: string;
+      factor: number | string;
+      fromUom: { id: string; code: string; name: string; symbol: string };
+      toUom: { id: string; code: string; name: string; symbol: string };
+    }>;
   }>({
     queryKey: ["inventory-uoms"],
     enabled: canManageInventory,
     queryFn: async () => {
       const res = await apiClient.get("/inventory/uoms?organizationId=MILL");
       return res.data;
+    },
+  });
+
+  const createUomMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiClient.post("/inventory/uoms", {
+        organizationId: "MILL",
+        code: uomCode.trim(),
+        name: uomName.trim(),
+        symbol: uomSymbol.trim(),
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory-uoms"] });
+      setUomCode("");
+      setUomName("");
+      setUomSymbol("");
+      toast.success("Unit of measure added.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to create UOM"));
+    },
+  });
+
+  const createConversionMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiClient.post("/inventory/unit-conversions", {
+        fromUomId: convFromId,
+        toUomId: convToId,
+        factor: Number(convFactor),
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory-uoms"] });
+      setConvFactor(1);
+      toast.success("Unit conversion added.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to create conversion"));
+    },
+  });
+
+  const editItemMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingItem) throw new Error("No item selected");
+      const res = await apiClient.put(`/inventory/items/${editingItem.id}`, {
+        name: editItemName.trim(),
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
+      setEditingItem(null);
+      toast.success("Inventory item updated.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to update inventory item"));
     },
   });
 
@@ -264,6 +342,21 @@ export function StockPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
+                  const list = uomsData?.uoms ?? [];
+                  setConvFromId(list[0]?.id || "");
+                  setConvToId(list[1]?.id || list[0]?.id || "");
+                  setConvFactor(1);
+                  setShowUomsModal(true);
+                }}
+                className="gap-1.5"
+              >
+                <ScaleIcon className="size-4" aria-hidden="true" />
+                UOMs & Conversions
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
                   setAdjItemId(balances[0]?.id || "");
                   setAdjQty(0);
                   setAdjReason("");
@@ -272,7 +365,7 @@ export function StockPage() {
                 disabled={balances.length === 0}
                 className="gap-1.5"
               >
-                <SlidersHorizontalIcon className="size-4" />
+                <SlidersHorizontalIcon className="size-4" aria-hidden="true" />
                 Stock Adjustment
               </Button>
               <Button
@@ -543,19 +636,35 @@ export function StockPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs pt-1">
+                    <div className="flex items-center justify-between text-xs pt-1 gap-2">
                       <span className="text-muted-foreground">
                         Value: <strong className="text-foreground">{formatINR(totalValue)}</strong>
                       </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedLedgerItem(item)}
-                        className="min-h-[44px] px-3 text-xs gap-1.5"
-                      >
-                        <BookOpenIcon className="size-3.5" />
-                        View Ledger
-                      </Button>
+                      <div className="flex items-center gap-1.5">
+                        {canManageInventory && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingItem(item);
+                              setEditItemName(item.name);
+                            }}
+                            className="min-h-[44px] px-3 text-xs gap-1.5"
+                          >
+                            <PencilIcon className="size-3.5" aria-hidden="true" />
+                            Edit
+                          </Button>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedLedgerItem(item)}
+                          className="min-h-[44px] px-3 text-xs gap-1.5"
+                        >
+                          <BookOpenIcon className="size-3.5" aria-hidden="true" />
+                          View Ledger
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -675,15 +784,32 @@ export function StockPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedLedgerItem(item)}
-                            className="h-7 px-2.5 text-xs gap-1"
-                          >
-                            <BookOpenIcon className="size-3" />
-                            Ledger
-                          </Button>
+                          <div className="inline-flex items-center justify-end gap-1.5">
+                            {canManageInventory && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                aria-label={`Edit ${item.name}`}
+                                onClick={() => {
+                                  setEditingItem(item);
+                                  setEditItemName(item.name);
+                                }}
+                                className="h-7 px-2.5 text-xs gap-1"
+                              >
+                                <PencilIcon className="size-3" aria-hidden="true" />
+                                Edit
+                              </Button>
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedLedgerItem(item)}
+                              className="h-7 px-2.5 text-xs gap-1"
+                            >
+                              <BookOpenIcon className="size-3" aria-hidden="true" />
+                              Ledger
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -894,6 +1020,181 @@ export function StockPage() {
             <Button variant="outline" size="sm" onClick={() => setShowAdjustModal(false)}>Cancel</Button>
             <Button size="sm" disabled={adjustStockMutation.isPending || adjQty === 0 || !adjReason.trim()} onClick={() => adjustStockMutation.mutate()}>
               Post Adjustment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Inventory Item Modal */}
+      <Dialog
+        open={editingItem !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditingItem(null);
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Inventory Item</DialogTitle>
+            <DialogDescription>
+              Update item display name for {editingItem?.sku}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="edit-item-name" className="text-xs">Item Name</Label>
+              <Input
+                id="edit-item-name"
+                value={editItemName}
+                onChange={(e) => setEditItemName(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" size="sm" onClick={() => setEditingItem(null)}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={editItemMutation.isPending || !editItemName.trim()}
+              onClick={() => editItemMutation.mutate()}
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* UOMs & Unit Conversions Modal */}
+      <Dialog open={showUomsModal} onOpenChange={setShowUomsModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Units of Measure & Conversions</DialogTitle>
+            <DialogDescription>
+              Configure base units and dimension-safe conversion factors (e.g. 1 kg = 1000 g, 1 carton = 20 packets).
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-2 md:grid-cols-2">
+            <div className="flex flex-col gap-3 rounded-lg border p-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Add Unit of Measure
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="uom-code" className="text-xs">Code</Label>
+                  <Input
+                    id="uom-code"
+                    placeholder="G"
+                    value={uomCode}
+                    onChange={(e) => setUomCode(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="uom-symbol" className="text-xs">Symbol</Label>
+                  <Input
+                    id="uom-symbol"
+                    placeholder="g"
+                    value={uomSymbol}
+                    onChange={(e) => setUomSymbol(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="uom-name" className="text-xs">Unit Name</Label>
+                <Input
+                  id="uom-name"
+                  placeholder="Gram"
+                  value={uomName}
+                  onChange={(e) => setUomName(e.target.value)}
+                />
+              </div>
+              <Button
+                size="sm"
+                disabled={createUomMutation.isPending || !uomCode.trim() || !uomName.trim() || !uomSymbol.trim()}
+                onClick={() => createUomMutation.mutate()}
+              >
+                Add UOM
+              </Button>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {(uomsData?.uoms ?? []).map((u) => (
+                  <Badge key={u.id} variant="outline" className="font-mono text-2xs">
+                    {u.code} ({u.symbol})
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 rounded-lg border p-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Add Conversion Rule
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="conv-from" className="text-xs">From UOM</Label>
+                  <Select value={convFromId} onValueChange={setConvFromId}>
+                    <SelectTrigger id="conv-from" className="h-9 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(uomsData?.uoms ?? []).map((u) => (
+                        <SelectItem key={u.id} value={u.id}>
+                          {u.code} ({u.symbol})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="conv-to" className="text-xs">To UOM</Label>
+                  <Select value={convToId} onValueChange={setConvToId}>
+                    <SelectTrigger id="conv-to" className="h-9 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(uomsData?.uoms ?? []).map((u) => (
+                        <SelectItem key={u.id} value={u.id}>
+                          {u.code} ({u.symbol})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="conv-factor" className="text-xs">Factor (1 From = N To)</Label>
+                <Input
+                  id="conv-factor"
+                  type="number"
+                  min={0.000001}
+                  step="any"
+                  value={convFactor}
+                  onChange={(e) => setConvFactor(Number(e.target.value))}
+                />
+              </div>
+              <Button
+                size="sm"
+                disabled={createConversionMutation.isPending || !convFromId || !convToId || convFactor <= 0}
+                onClick={() => createConversionMutation.mutate()}
+              >
+                Add Conversion
+              </Button>
+              <div className="max-h-28 overflow-y-auto space-y-1 pt-1 text-xs">
+                {(uomsData?.conversions ?? []).length === 0 ? (
+                  <p className="text-muted-foreground">No conversions configured.</p>
+                ) : (
+                  (uomsData?.conversions ?? []).map((c) => (
+                    <div key={c.id} className="flex items-center justify-between rounded bg-muted/40 px-2 py-1 font-mono text-2xs">
+                      <span>1 {c.fromUom.code} = {Number(c.factor)} {c.toUom.code}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" size="sm" onClick={() => setShowUomsModal(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

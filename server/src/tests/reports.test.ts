@@ -75,7 +75,12 @@ describe("M8: Reporting, audit logs, and owner dashboard", () => {
       where: { sku: "VAR-MURUKKU-200G" },
     });
     const recipe = await prisma.recipe.findFirstOrThrow({
-      where: { organizationId: org.id, version: 1 },
+      where: {
+        organizationId: org.id,
+        productVariantId: murukkuVariant.id,
+        isActive: true,
+      },
+      orderBy: { version: "asc" },
     });
 
     const adminCookie = await loginAndGetCookie(
@@ -478,5 +483,115 @@ describe("M8: Reporting, audit logs, and owner dashboard", () => {
     expect(ledgerData.rows.length).toBeGreaterThan(0);
     expect(typeof dashData.metrics.todayOrdersCount).toBe("number");
     expect(Array.isArray(dashData.productMargins)).toBe(true);
+  });
+
+  it("excludes REVERSED and DRAFT production runs from production report summary and dashboard varianceAlerts", async () => {
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { code: "MILL" },
+    });
+    const warehouse = await prisma.warehouse.findFirstOrThrow({
+      where: { code: "WH-1" },
+    });
+    const murukkuVar = await prisma.productVariant.findFirstOrThrow({
+      where: { sku: "VAR-MURUKKU-200G" },
+    });
+    const recipe = await prisma.recipe.findFirstOrThrow({
+      where: {
+        organizationId: org.id,
+        productVariantId: murukkuVar.id,
+        isActive: true,
+      },
+    });
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+
+    const [beforeProdRes, beforeDashRes] = await Promise.all([
+      fetch(`${baseUrl}/api/v1/reports/production?organizationId=MILL`, {
+        headers: { Cookie: adminCookie },
+      }),
+      fetch(`${baseUrl}/api/v1/dashboard?organizationId=MILL`, {
+        headers: { Cookie: adminCookie },
+      }),
+    ]);
+    const beforeProd = (await beforeProdRes.json()) as {
+      summary: { totalRunsCount: number; totalGoodQuantity: number; totalRunCost: number };
+    };
+    const beforeDash = (await beforeDashRes.json()) as {
+      varianceAlerts: unknown[];
+    };
+
+    const ts = Date.now();
+    await prisma.productionRun.createMany({
+      data: [
+        {
+          organizationId: org.id,
+          warehouseId: warehouse.id,
+          recipeId: recipe.id,
+          recipeVersion: recipe.version,
+          runNumber: `RUN-REV-IGN-${ts}`,
+          batchCount: 1,
+          status: "REVERSED",
+          expectedOutputQty: 200,
+          actualGoodQty: 20,
+          actualRejectedQty: 180,
+          yieldVarianceQty: -180,
+          yieldVariancePct: -90,
+          isYieldFlagged: true,
+          directMaterialCost: 4000,
+          directLaborCost: 1200,
+          utilityCost: 600,
+          totalRunCost: 5800,
+          costPerGoodUnit: 290,
+          reversedAt: new Date(),
+        },
+        {
+          organizationId: org.id,
+          warehouseId: warehouse.id,
+          recipeId: recipe.id,
+          recipeVersion: recipe.version,
+          runNumber: `RUN-DFT-IGN-${ts}`,
+          batchCount: 1,
+          status: "DRAFT",
+          expectedOutputQty: 200,
+          actualGoodQty: 0,
+          actualRejectedQty: 0,
+          yieldVarianceQty: 0,
+          yieldVariancePct: -100,
+          isYieldFlagged: true,
+          directMaterialCost: 0,
+          directLaborCost: 1000,
+          utilityCost: 500,
+          totalRunCost: 1500,
+          costPerGoodUnit: 0,
+        },
+      ],
+    });
+
+    const [afterProdRes, afterDashRes] = await Promise.all([
+      fetch(`${baseUrl}/api/v1/reports/production?organizationId=MILL`, {
+        headers: { Cookie: adminCookie },
+      }),
+      fetch(`${baseUrl}/api/v1/dashboard?organizationId=MILL`, {
+        headers: { Cookie: adminCookie },
+      }),
+    ]);
+    const afterProd = (await afterProdRes.json()) as {
+      summary: { totalRunsCount: number; totalGoodQuantity: number; totalRunCost: number };
+    };
+    const afterDash = (await afterDashRes.json()) as {
+      varianceAlerts: Array<{ runNumber: string }>;
+    };
+
+    expect(afterProd.summary.totalRunsCount).toBe(beforeProd.summary.totalRunsCount);
+    expect(afterProd.summary.totalGoodQuantity).toBe(beforeProd.summary.totalGoodQuantity);
+    expect(afterProd.summary.totalRunCost).toBe(beforeProd.summary.totalRunCost);
+    expect(afterDash.varianceAlerts).toHaveLength(beforeDash.varianceAlerts.length);
+    expect(
+      afterDash.varianceAlerts.some(
+        (a) => a.runNumber === `RUN-REV-IGN-${ts}` || a.runNumber === `RUN-DFT-IGN-${ts}`,
+      ),
+    ).toBe(false);
   });
 });

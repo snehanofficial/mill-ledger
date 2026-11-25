@@ -63,7 +63,8 @@ export async function handleGetSuppliers(
       (req.query.organizationId as string) ||
       req.user?.organizationId ||
       "MILL";
-    const suppliers = await inventoryService.getSuppliers(orgId);
+    const includeInactive = req.query.includeInactive === "true";
+    const suppliers = await inventoryService.getSuppliers(orgId, includeInactive);
     res.json({ suppliers });
   } catch (err) {
     next(err);

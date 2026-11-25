@@ -120,13 +120,19 @@ export class UserService {
       },
     });
 
+    const orgKey = input.organizationId || "MILL";
+    const org = await prisma.organization.findFirst({
+      where: { OR: [{ id: orgKey }, { code: orgKey }] },
+      select: { id: true },
+    });
+
     // Update with application metadata (role, organization, active status)
     const updated = await prisma.user.update({
       where: { email: input.email.toLowerCase().trim() },
       data: {
         role,
         isActive: true,
-        organizationId: input.organizationId || "MILL",
+        organizationId: org?.id ?? null,
       },
       select: {
         id: true,
@@ -214,6 +220,11 @@ export class UserService {
         updatedAt: true,
       },
     });
+
+    // Invalidate all active sessions immediately when a user is deactivated or role changes
+    if (input.isActive === false || (input.role !== undefined && input.role !== user.role)) {
+      await prisma.session.deleteMany({ where: { userId: id } });
+    }
 
     // Audit log user update
     await auditService.log({

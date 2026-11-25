@@ -7,6 +7,7 @@ import {
 import { salesService } from "./sales.service.js";
 import { dispatchService } from "./dispatch.service.js";
 import { AppError } from "../../middleware/error.middleware.js";
+import { prisma } from "../../db/client.js";
 import { OrderStatus } from "@prisma/client";
 import {
   createCustomerSchema,
@@ -357,7 +358,21 @@ salesRouter.post(
 salesRouter.put(
   "/orders/:id",
   requireAuth,
-  authorize("order", "update"),
+  authorize("order", "update", async (req) => {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) return undefined;
+    const order = await prisma.salesOrder.findUnique({
+      where: { id },
+      select: { salesmanId: true, status: true },
+    });
+    if (!order) {
+      throw new AppError(`Order ${id} not found`, 404);
+    }
+    return {
+      creatorId: order.salesmanId,
+      status: order.status,
+    };
+  }),
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orderId = Array.isArray(req.params.id)

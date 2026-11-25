@@ -46,6 +46,8 @@ interface ProductItem {
   taxRate: number;
   hsnCode?: string;
   uom?: string;
+  finishedGoodsItemId?: string | null;
+  finishedGoodsSku?: string | null;
   imageUrl?: string;
 }
 
@@ -65,9 +67,11 @@ interface CustomerItem {
   name: string;
   state: string;
   gstin?: string;
+  isActive?: boolean;
 }
 
 interface StockBalance {
+  id?: string;
   sku: string;
   available: number;
   onHand: number;
@@ -149,20 +153,24 @@ export function NewOrderPage() {
     },
   });
 
-  const customersList: CustomerItem[] = customersData?.customers || [
-    {
-      id: "CUST-RET-A",
-      code: "CUST-RET-A",
-      name: "Retailer A",
-      state: "Tamil Nadu",
-    },
-    {
-      id: "CUST-DIST-B",
-      code: "CUST-DIST-B",
-      name: "Distributor B",
-      state: "Karnataka",
-    },
-  ];
+  const customersList: CustomerItem[] = (
+    customersData?.customers || [
+      {
+        id: "CUST-RET-A",
+        code: "CUST-RET-A",
+        name: "Retailer A",
+        state: "Tamil Nadu",
+        isActive: true,
+      },
+      {
+        id: "CUST-DIST-B",
+        code: "CUST-DIST-B",
+        name: "Distributor B",
+        state: "Karnataka",
+        isActive: true,
+      },
+    ]
+  ).filter((c) => c.isActive !== false);
 
   const productsList: ProductItem[] = productsData?.products ?? [];
   const totalProducts = productsData?.pagination?.total ?? productsList.length;
@@ -189,8 +197,14 @@ export function NewOrderPage() {
   const customerState = activeCustomer?.state || "Tamil Nadu";
   const isIntraState = customerState.trim().toLowerCase() === "tamil nadu";
 
-  const getProductStock = (sku: string) => {
-    return balances.find((b) => b.sku === sku)?.available ?? 0;
+  const getProductStock = (product: ProductItem) => {
+    const match = balances.find(
+      (b) =>
+        (product.finishedGoodsItemId && b.id === product.finishedGoodsItemId) ||
+        (product.finishedGoodsSku && b.sku === product.finishedGoodsSku) ||
+        b.sku === product.sku,
+    );
+    return match?.available ?? 0;
   };
 
   const updateQuantity = (product: ProductItem, qty: number) => {
@@ -200,10 +214,13 @@ export function NewOrderPage() {
       [product.id]: product,
       [product.sku]: product,
     }));
-    setQuantities((prev) => ({
-      ...prev,
-      [product.id]: validQty,
-    }));
+    setQuantities((prev) => {
+      const next = { ...prev, [product.id]: validQty };
+      if (product.sku && product.sku !== product.id) {
+        delete next[product.sku];
+      }
+      return next;
+    });
   };
 
   const handleStep = (product: ProductItem, delta: number) => {
@@ -211,20 +228,23 @@ export function NewOrderPage() {
     updateQuantity(product, current + delta);
   };
 
-  // Order summary calculations across all paginated selections
+  // Order summary calculations across all paginated selections (deduped by product.id)
+  const seenProductIds = new Set<string>();
   const orderLines = Object.entries(quantities)
     .filter(([, qty]) => qty > 0)
     .map(([key, qty]) => {
       const product =
         productsList.find((p) => p.id === key || p.sku === key) ??
         productCache[key];
-      if (!product) return null;
+      if (!product || seenProductIds.has(product.id)) return null;
+      if (key === product.sku && quantities[product.id] !== undefined) return null;
+      seenProductIds.add(product.id);
       const unitPrice = Number(product.defaultPrice || 50.0);
       const taxable = qty * unitPrice;
       const taxRate = Number(product.taxRate || 5.0) / 100;
       const tax = taxable * taxRate;
       const total = taxable + tax;
-      const stock = getProductStock(product.sku);
+      const stock = getProductStock(product);
       const shortage = Math.max(0, qty - stock);
 
       return {
@@ -326,7 +346,7 @@ export function NewOrderPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col pb-32">
+    <div className="flex flex-1 flex-col pb-52 md:pb-32">
       {/* Top Navigation & Breadcrumb */}
       <div className="border-b bg-card/60 backdrop-blur px-4 py-3 sm:px-6">
         <div className="flex items-center justify-between">
@@ -513,7 +533,7 @@ export function NewOrderPage() {
                 {productsList.map((product) => {
                   const qty = quantities[product.id] ?? quantities[product.sku] ?? 0;
                   const unitPrice = Number(product.defaultPrice || 50.0);
-                  const availableStock = getProductStock(product.sku);
+                  const availableStock = getProductStock(product);
                   const isShort = qty > availableStock;
                   const hasOrder = qty > 0;
 
@@ -715,7 +735,7 @@ export function NewOrderPage() {
       </div>
 
       {/* Sticky Bottom Summary Checkout Bar */}
-      <footer className="fixed bottom-0 left-0 right-0 z-30 border-t bg-card/95 backdrop-blur-md px-4 py-3 sm:px-8 shadow-xl">
+      <footer className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 z-30 border-t bg-card/95 backdrop-blur-md px-4 py-3 sm:px-8 shadow-xl">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-start">
             <div className="flex items-center gap-3">

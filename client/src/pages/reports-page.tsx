@@ -498,6 +498,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                     <TableHead className="text-right">{t("Taxable")}</TableHead>
                     <TableHead className="text-right">{t("CGST")}</TableHead>
                     <TableHead className="text-right">{t("SGST")}</TableHead>
+                    <TableHead className="text-right">{t("IGST")}</TableHead>
                     <TableHead className="text-right">{t("Total")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -534,6 +535,9 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
                         {formatINR(row.sgstAmount)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs">
+                        {formatINR(row.igstAmount)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs font-bold">
                         {formatINR(row.lineTotal)}
@@ -590,6 +594,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                     <TableHead className="text-right">Taxable value</TableHead>
                     <TableHead className="text-right">CGST</TableHead>
                     <TableHead className="text-right">SGST</TableHead>
+                    <TableHead className="text-right">IGST</TableHead>
                     <TableHead className="text-right">Total tax</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -607,6 +612,9 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs">
                         {formatINR(r.sgst)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs">
+                        {formatINR(r.igst)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs font-semibold">
                         {formatINR(r.totalTax)}

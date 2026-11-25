@@ -159,6 +159,30 @@ export function PaymentsPage() {
   );
   const [postAllocInvoiceId, setPostAllocInvoiceId] = useState("");
   const [postAllocAmount, setPostAllocAmount] = useState("");
+  const [bouncingPayment, setBouncingPayment] = useState<Payment | null>(null);
+  const [bounceReason, setBounceReason] = useState("");
+
+  const bounceMutation = useMutation({
+    mutationFn: async () => {
+      if (!bouncingPayment) return;
+      const res = await apiClient.post(
+        `/payments/${bouncingPayment.id}/bounce`,
+        { reason: bounceReason.trim() },
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["receivables-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["finance-invoices"] });
+      setBouncingPayment(null);
+      setBounceReason("");
+      toast.success("Payment bounced and allocations restored.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to bounce payment"));
+    },
+  });
 
   const { data: postAllocInvoicesData } = useQuery<{
     invoices: OpenInvoice[];
@@ -346,11 +370,12 @@ export function PaymentsPage() {
   });
 
   // Summary calculations
-  const totalCollected = payments.reduce((sum, p) => sum + Number(p.amount), 0);
-  const totalUnallocated = payments.reduce(
-    (sum, p) => sum + Number(p.unallocatedAmount),
-    0,
-  );
+  const totalCollected = payments
+    .filter((p) => p.status !== "BOUNCED" && p.status !== "REVERSED")
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+  const totalUnallocated = payments
+    .filter((p) => p.status === "POSTED")
+    .reduce((sum, p) => sum + Number(p.unallocatedAmount), 0);
   const totalNetOutstanding = receivables.reduce(
     (sum, r) => sum + Number(r.netOutstanding),
     0,
@@ -391,9 +416,7 @@ export function PaymentsPage() {
         );
         return;
       }
-      if (parsedAllocations.length > 0) {
-        allocationsToSend = parsedAllocations;
-      }
+      allocationsToSend = parsedAllocations;
     }
 
     setPaymentError(null);
@@ -810,7 +833,11 @@ export function PaymentsPage() {
                         <div className="flex items-center justify-end gap-1.5">
                           <Badge
                             variant={
-                              p.status === "POSTED" ? "success" : "default"
+                              p.status === "POSTED"
+                                ? "success"
+                                : p.status === "BOUNCED" || p.status === "REVERSED"
+                                  ? "danger"
+                                  : "default"
                             }
                           >
                             {p.status}
@@ -833,6 +860,19 @@ export function PaymentsPage() {
                                 Allocate Cash
                               </Button>
                             )}
+                          {p.status === "POSTED" && canRecordPayment && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setBouncingPayment(p);
+                                setBounceReason("");
+                              }}
+                              className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                            >
+                              Bounce / Reverse
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -1518,8 +1558,10 @@ export function PaymentsPage() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Allocation Strategy:</span>
                   <span className="font-medium text-foreground">
-                    {pendingPaymentPayload.allocations && pendingPaymentPayload.allocations.length > 0
-                      ? `Manual: ${pendingPaymentPayload.allocations.length} invoice(s) allocated`
+                    {pendingPaymentPayload.allocations !== undefined
+                      ? pendingPaymentPayload.allocations.length > 0
+                        ? `Manual: ${pendingPaymentPayload.allocations.length} invoice(s) allocated`
+                        : "Unallocated customer advance (credit)"
                       : "Automatic FIFO allocation across open invoices"}
                   </span>
                 </div>
@@ -1610,6 +1652,62 @@ export function PaymentsPage() {
                 onClick={() => allocateExistingMutation.mutate()}
               >
                 Apply Allocation
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
+
+      {/* Bounce / Reverse Payment Modal */}
+      <Dialog
+        open={bouncingPayment !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setBouncingPayment(null);
+            setBounceReason("");
+          }
+        }}
+      >
+        {bouncingPayment && (
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Bounce / Reverse Payment</DialogTitle>
+              <DialogDescription>
+                Reverse {bouncingPayment.paymentNumber} (
+                {formatINR(bouncingPayment.amount)}) and restore invoice balances.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 py-2">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="payment-bounce-reason" className="text-xs">
+                  Reversal / Bounce Reason
+                </Label>
+                <Input
+                  id="payment-bounce-reason"
+                  value={bounceReason}
+                  onChange={(e) => setBounceReason(e.target.value)}
+                  placeholder="e.g. Cheque dishonoured / erroneous entry"
+                />
+              </div>
+            </div>
+            <DialogFooter className="border-t pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setBouncingPayment(null);
+                  setBounceReason("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={bounceMutation.isPending || !bounceReason.trim()}
+                onClick={() => bounceMutation.mutate()}
+              >
+                Confirm Bounce / Reversal
               </Button>
             </DialogFooter>
           </DialogContent>

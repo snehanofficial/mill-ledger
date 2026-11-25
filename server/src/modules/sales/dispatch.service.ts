@@ -314,7 +314,12 @@ export class DispatchService {
    * List dispatches for an organization (with optional ABAC user-scoping per OD-03)
    */
   async getDispatches(organizationId: string, user?: UserContext) {
-    const where: Prisma.DispatchWhereInput = { organizationId };
+    const org = await prisma.organization.findFirst({
+      where: { OR: [{ id: organizationId }, { code: organizationId }] },
+      select: { id: true },
+    });
+    const resolvedOrgId = org ? org.id : organizationId;
+    const where: Prisma.DispatchWhereInput = { organizationId: resolvedOrgId };
 
     // ABAC rule per OD-03: Salesman sees only dispatches for orders they submitted
     if (user?.role === "SALESMAN") {
@@ -417,9 +422,21 @@ export class DispatchService {
             400,
           );
         }
-        if (retLine.quantity > Number(dispLine.quantity)) {
+        const priorReturns = await tx.stockMovement.aggregate({
+          where: {
+            referenceDocumentType: "SALES_RETURN",
+            referenceDocumentId: dispatch.id,
+            inventoryItemId: retLine.inventoryItemId,
+            movementType: MovementType.RETURN,
+          },
+          _sum: { quantity: true },
+        });
+        const alreadyReturned = Number(priorReturns._sum.quantity ?? 0);
+        const remainingReturnable = Number(dispLine.quantity) - alreadyReturned;
+
+        if (retLine.quantity > remainingReturnable) {
           throw new AppError(
-            `Return quantity (${retLine.quantity}) cannot exceed dispatched quantity (${Number(dispLine.quantity)})`,
+            `Return quantity (${retLine.quantity}) cannot exceed remaining returnable quantity (${remainingReturnable})`,
             400,
           );
         }

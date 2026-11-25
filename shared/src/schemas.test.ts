@@ -309,5 +309,33 @@ describe("F-031 Shared Domain Validation Schemas Contract Parity", () => {
         expect(paymentRes.error.issues[0].code).toBe("unrecognized_keys");
       }
     });
+
+    it("accepts zero taxAmount on creditNoteSchema and debitNoteSchema for tax-exempt adjustments", () => {
+      const creditRes = creditNoteSchema.safeParse({
+        reason: "Non-GST commercial discount",
+        taxableAmount: 100,
+        taxAmount: 0,
+        totalAmount: 100,
+      });
+      expect(creditRes.success).toBe(true);
+
+      const debitRes = debitNoteSchema.safeParse({
+        supplierId: "sup_123",
+        reason: "Zero-tax grain moisture deduction",
+        taxableAmount: 10,
+        taxAmount: 0,
+        totalAmount: 10,
+      });
+      expect(debitRes.success).toBe(true);
+
+      const negDebitRes = debitNoteSchema.safeParse({
+        supplierId: "sup_123",
+        reason: "Negative tax disallowed",
+        taxableAmount: 10,
+        taxAmount: -1,
+        totalAmount: 9,
+      });
+      expect(negDebitRes.success).toBe(false);
+    });
   });
 });

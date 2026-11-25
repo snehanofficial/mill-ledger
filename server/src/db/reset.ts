@@ -30,5 +30,27 @@ export async function resetOperationalData() {
         movementType: { not: "OPENING_BALANCE" },
       },
     });
+    await tx.inventoryItem.updateMany({
+      data: {
+        currentStock: 0,
+        weightedAverageCost: 0,
+      },
+    });
+    const openingBalances = await tx.stockMovement.groupBy({
+      by: ["inventoryItemId"],
+      where: { movementType: "OPENING_BALANCE" },
+      _sum: { quantity: true, totalCost: true },
+    });
+    for (const ob of openingBalances) {
+      const qty = Number(ob._sum.quantity ?? 0);
+      const total = Number(ob._sum.totalCost ?? 0);
+      await tx.inventoryItem.update({
+        where: { id: ob.inventoryItemId },
+        data: {
+          currentStock: qty,
+          weightedAverageCost: qty > 0 ? total / qty : 0,
+        },
+      });
+    }
   });
 }

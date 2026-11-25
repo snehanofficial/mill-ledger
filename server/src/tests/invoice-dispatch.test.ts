@@ -691,6 +691,21 @@ describe("M6: Invoice generation, physical dispatch, reservation release, and cr
     expect(Number(afterItem.currentStock)).toBe(
       Number(beforeItem.currentStock) + 5,
     );
+
+    // Cumulative over-return must be rejected
+    const overRetRes = await fetch(`${baseUrl}/api/v1/sales/returns`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: adminCookie,
+      },
+      body: JSON.stringify({
+        dispatchId: dispatch.id,
+        reason: "Attempt to return more than remaining dispatched quantity",
+        lines: [{ inventoryItemId: line.inventoryItemId, quantity: Number(line.quantity) }],
+      }),
+    });
+    expect(overRetRes.status).toBe(400);
   });
 
   it("lists posted invoices when queried by organization code (MILL) or default", async () => {
