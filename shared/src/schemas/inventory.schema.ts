@@ -39,7 +39,7 @@ export const purchaseReceiptItemSchema = z
 
 export const createPurchaseReceiptSchema = z
   .object({
-    organizationId: z.string().min(1, "Organization ID is required"),
+    organizationId: z.string().min(1).optional(),
     supplierId: z.string().min(1, "Supplier ID is required"),
     warehouseId: z.string().min(1, "Warehouse ID is required"),
     receiptNumber: z.string().min(1, "Receipt number is required"),

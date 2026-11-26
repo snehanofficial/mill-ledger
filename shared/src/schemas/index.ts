@@ -7,3 +7,4 @@ export * from "./production.schema.js";
 export * from "./inventory.schema.js";
 export * from "./finance.schema.js";
 export * from "./payment.schema.js";
+export * from "./warehouse.schema.js";

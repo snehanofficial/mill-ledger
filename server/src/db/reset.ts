@@ -23,6 +23,8 @@ export async function resetOperationalData() {
     await tx.productionRunReversal.deleteMany();
     await tx.productionRunMaterial.deleteMany();
     await tx.productionRun.deleteMany();
+    await tx.stockTransferLine.deleteMany();
+    await tx.stockTransfer.deleteMany();
     await tx.purchaseReceiptLine.deleteMany();
     await tx.purchaseReceipt.deleteMany();
     await tx.stockMovement.deleteMany({
@@ -30,6 +32,7 @@ export async function resetOperationalData() {
         movementType: { not: "OPENING_BALANCE" },
       },
     });
+    await tx.warehouseStockBalance.deleteMany();
     await tx.inventoryItem.updateMany({
       data: {
         currentStock: 0,
@@ -49,6 +52,27 @@ export async function resetOperationalData() {
         data: {
           currentStock: qty,
           weightedAverageCost: qty > 0 ? total / qty : 0,
+        },
+      });
+    }
+    const whOpeningBalances = await tx.stockMovement.groupBy({
+      by: ["warehouseId", "inventoryItemId"],
+      where: { movementType: "OPENING_BALANCE" },
+      _sum: { quantity: true },
+    });
+    for (const wb of whOpeningBalances) {
+      const wh = await tx.warehouse.findUnique({
+        where: { id: wb.warehouseId },
+        select: { organizationId: true },
+      });
+      if (!wh) continue;
+      await tx.warehouseStockBalance.create({
+        data: {
+          organizationId: wh.organizationId,
+          warehouseId: wb.warehouseId,
+          inventoryItemId: wb.inventoryItemId,
+          onHand: wb._sum.quantity ?? 0,
+          reserved: 0,
         },
       });
     }
