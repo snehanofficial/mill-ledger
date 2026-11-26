@@ -2,11 +2,18 @@ import { Router } from "express";
 import { z } from "zod";
 import {
   authorize,
+  getSessionOrgId,
   requireAuth,
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { AppError } from "../../middleware/error.middleware.js";
 import { mastersService } from "./masters.service.js";
+import {
+  createFacilitySchema,
+  updateFacilitySchema,
+  createWarehouseSchema,
+  updateWarehouseSchema,
+} from "@mill-ledger/shared";
 
 export const mastersRouter = Router();
 
@@ -61,7 +68,7 @@ mastersRouter.get(
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const data = await mastersService.getProductsMaster(orgId);
       res.json(data);
     } catch (err) {
@@ -174,7 +181,7 @@ mastersRouter.get(
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const data = await mastersService.getProductsMaster(orgId);
       res.json({ priceLists: data.priceLists });
     } catch (err) {
@@ -230,7 +237,7 @@ mastersRouter.get(
   authorize("report", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const organization = await mastersService.getOrganization(orgId);
       res.json({ organization });
     } catch (err) {
@@ -245,13 +252,175 @@ mastersRouter.put(
   authorize("user", "update"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.body?.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const organization = await mastersService.updateOrganization(
         orgId,
         req.body || {},
         req.user!,
       );
       res.json({ organization });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// ─── Facilities & Warehouses ──────────────────────────────────────────
+
+mastersRouter.get(
+  "/facilities",
+  requireAuth,
+  authorize("inventory", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const includeInactive = req.query.includeInactive === "true";
+      const facilities = await mastersService.getFacilities(orgId, includeInactive);
+      res.json({ facilities });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+mastersRouter.get(
+  "/facilities/:id",
+  requireAuth,
+  authorize("inventory", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!id) throw new AppError("Facility ID is required", 400);
+      const facility = await mastersService.getFacilityById(id, orgId);
+      res.json({ facility });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+mastersRouter.post(
+  "/facilities",
+  requireAuth,
+  authorize("inventory", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const parsed = createFacilitySchema.safeParse(req.body);
+      if (!parsed.success) throw parsed.error;
+      const facility = await mastersService.createFacility(
+        orgId,
+        parsed.data,
+        req.user!,
+      );
+      res.status(201).json({ facility });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+mastersRouter.put(
+  "/facilities/:id",
+  requireAuth,
+  authorize("inventory", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!id) throw new AppError("Facility ID is required", 400);
+      const parsed = updateFacilitySchema.safeParse(req.body);
+      if (!parsed.success) throw parsed.error;
+      const facility = await mastersService.updateFacility(
+        id,
+        orgId,
+        parsed.data,
+        req.user!,
+      );
+      res.json({ facility });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+mastersRouter.get(
+  "/warehouses",
+  requireAuth,
+  authorize("inventory", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const facilityId = req.query.facilityId as string | undefined;
+      const includeInactive = req.query.includeInactive === "true";
+      const warehouses = await mastersService.getWarehouses(orgId, {
+        facilityId,
+        includeInactive,
+      });
+      res.json({ warehouses });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+mastersRouter.get(
+  "/warehouses/:id",
+  requireAuth,
+  authorize("inventory", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!id) throw new AppError("Warehouse ID is required", 400);
+      const warehouse = await mastersService.getWarehouseById(id, orgId);
+      res.json({ warehouse });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+mastersRouter.post(
+  "/warehouses",
+  requireAuth,
+  authorize("inventory", "create"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const parsed = createWarehouseSchema.safeParse(req.body);
+      if (!parsed.success) throw parsed.error;
+      const warehouse = await mastersService.createWarehouse(
+        orgId,
+        parsed.data,
+        req.user!,
+      );
+      res.status(201).json({ warehouse });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+mastersRouter.put(
+  "/warehouses/:id",
+  requireAuth,
+  authorize("inventory", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      if (!id) throw new AppError("Warehouse ID is required", 400);
+      const parsed = updateWarehouseSchema.safeParse(req.body);
+      if (!parsed.success) throw parsed.error;
+      const warehouse = await mastersService.updateWarehouse(
+        id,
+        orgId,
+        parsed.data,
+        req.user!,
+      );
+      res.json({ warehouse });
     } catch (err) {
       next(err);
     }

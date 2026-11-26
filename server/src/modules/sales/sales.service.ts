@@ -5,6 +5,11 @@ import type { UserContext } from "@mill-ledger/shared";
 import { calculateLineTax } from "../finance/tax.util.js";
 import { sequenceService } from "../finance/sequence.service.js";
 import { auditService } from "../reporting/audit.service.js";
+import {
+  adjustWarehouseReserved,
+  getWarehouseItemBalance,
+  requireActiveOrgWarehouse,
+} from "../inventory/warehouse-balance.helper.js";
 
 export interface CreateOrderLineInput {
   productVariantId: string;
@@ -75,6 +80,13 @@ export class SalesService {
         select: {
           id: true,
           salesOrderId: true,
+          warehouseId: true,
+          inventoryItemId: true,
+          reservedQuantity: true,
+          releasedQuantity: true,
+          salesOrder: {
+            select: { organizationId: true },
+          },
         },
       });
 
@@ -87,6 +99,18 @@ export class SalesService {
         where: { id: { in: ids } },
         data: { status: ReservationStatus.EXPIRED },
       });
+
+      for (const r of staleReservations) {
+        const unreleased = r.reservedQuantity.minus(r.releasedQuantity);
+        if (unreleased.gt(0)) {
+          await adjustWarehouseReserved(tx, {
+            organizationId: r.salesOrder.organizationId,
+            warehouseId: r.warehouseId,
+            inventoryItemId: r.inventoryItemId,
+            delta: unreleased.neg(),
+          });
+        }
+      }
 
       // Update notes on orders where all reservations have expired
       const orderIds = [
@@ -483,20 +507,24 @@ export class SalesService {
           "MILL";
         const organizationId = await this.resolveOrgId(targetOrg, tx);
 
-        // 3. Resolve warehouse (default to first facility warehouse if not supplied)
-        let warehouseId = input.warehouseId;
-        if (!warehouseId) {
-          const wh = await tx.warehouse.findFirst({
-            where: { code: "WH-1" },
+        // 3. Resolve warehouse within the organization
+        let warehouseId: string | undefined;
+        if (input.warehouseId) {
+          const wh = await requireActiveOrgWarehouse(
+            tx,
+            organizationId,
+            input.warehouseId,
+          );
+          warehouseId = wh.id;
+        } else {
+          const defaultWh = await tx.warehouse.findFirst({
+            where: { organizationId, isActive: true },
+            orderBy: { code: "asc" },
           });
-          warehouseId = wh?.id;
+          warehouseId = defaultWh?.id;
         }
         if (!warehouseId) {
-          const anyWh = await tx.warehouse.findFirst();
-          warehouseId = anyWh?.id;
-        }
-        if (!warehouseId) {
-          throw new AppError("No warehouse available for order", 400);
+          throw new AppError("No active warehouse available for order", 400);
         }
 
         const orderNumber =
@@ -784,9 +812,14 @@ export class SalesService {
           );
         }
 
-        // Verify stock availability
+        // Verify warehouse-level stock availability
         if (line.inventoryItemId) {
-          const onHand = lockedItems.get(line.inventoryItemId) ?? 0;
+          const whBal = await getWarehouseItemBalance(
+            tx,
+            order.warehouseId,
+            line.inventoryItemId,
+          );
+          const onHand = Number(whBal.onHand);
 
           const resAgg = await tx.stockReservation.aggregate({
             where: {
@@ -838,6 +871,13 @@ export class SalesService {
               status: ReservationStatus.ACTIVE,
               expiresAt,
             },
+          });
+
+          await adjustWarehouseReserved(tx, {
+            organizationId: order.organizationId,
+            warehouseId: order.warehouseId,
+            inventoryItemId: line.inventoryItemId,
+            delta: approvedQty,
           });
         }
 
@@ -969,7 +1009,20 @@ export class SalesService {
         throw new AppError(`Order is already ${order.status}`, 400);
       }
 
-      // Cancel any active reservations
+      // Cancel any active reservations and release warehouse reserved balance
+      const activeReservations = await tx.stockReservation.findMany({
+        where: {
+          salesOrderId: order.id,
+          status: ReservationStatus.ACTIVE,
+        },
+        select: {
+          warehouseId: true,
+          inventoryItemId: true,
+          reservedQuantity: true,
+          releasedQuantity: true,
+        },
+      });
+
       await tx.stockReservation.updateMany({
         where: {
           salesOrderId: order.id,
@@ -979,6 +1032,18 @@ export class SalesService {
           status: ReservationStatus.CANCELLED,
         },
       });
+
+      for (const r of activeReservations) {
+        const unreleased = r.reservedQuantity.minus(r.releasedQuantity);
+        if (unreleased.gt(0)) {
+          await adjustWarehouseReserved(tx, {
+            organizationId: order.organizationId,
+            warehouseId: r.warehouseId,
+            inventoryItemId: r.inventoryItemId,
+            delta: unreleased.neg(),
+          });
+        }
+      }
 
       return await tx.salesOrder.update({
         where: { id: order.id },
