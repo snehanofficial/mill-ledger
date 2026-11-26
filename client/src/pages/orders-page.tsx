@@ -249,7 +249,7 @@ export function OrdersPage() {
           gstin?: string;
         }>;
       }>("/sales/customers");
-      return res.data.customers;
+      return res.data;
     },
   });
 
@@ -273,7 +273,7 @@ export function OrdersPage() {
     },
   });
 
-  const customersList = customersData ?? [];
+  const customersList = customersData?.customers ?? [];
 
   const productsList = productsData ?? [];
 
