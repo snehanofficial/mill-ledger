@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   requireAuth,
   authorize,
+  getSessionOrgId,
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { userService } from "./user.service.js";
@@ -17,14 +18,15 @@ userRouter.get(
   authorize("user", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const { role, isActive, organizationId } = req.query;
+      const orgId = getSessionOrgId(req);
+      const { role, isActive } = req.query;
       const users = await userService.getUsers({
         role: role as string | undefined,
         isActive:
           isActive === undefined
             ? undefined
             : isActive === "true" || isActive === "1",
-        organizationId: organizationId as string | undefined,
+        organizationId: orgId,
       });
       res.json({ users });
     } catch (err) {
@@ -39,8 +41,9 @@ userRouter.get(
   authorize("user", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
+      const orgId = getSessionOrgId(req);
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      const user = await userService.getUserById(id);
+      const user = await userService.getUserById(id, orgId);
       res.json({ user });
     } catch (err) {
       next(err);
@@ -54,17 +57,18 @@ userRouter.post(
   authorize("user", "create"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const { name, email, password, role, organizationId } = req.body;
+      const orgId = getSessionOrgId(req);
+      const { name, email, password, role } = req.body;
       const user = await userService.createUser({
         name,
         email,
         password,
         role,
-        organizationId: organizationId || req.user?.organizationId,
+        organizationId: orgId,
       });
 
       await auditService.log({
-        organizationId: user.organizationId || req.user?.organizationId,
+        organizationId: orgId,
         userId: req.user?.id,
         userEmail: req.user?.email,
         action: "CREATE",
@@ -87,17 +91,21 @@ userRouter.put(
   authorize("user", "update"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
+      const orgId = getSessionOrgId(req);
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      const { name, role, isActive, organizationId } = req.body;
-      const user = await userService.updateUser(id, {
-        name,
-        role,
-        isActive,
-        organizationId,
-      });
+      const { name, role, isActive } = req.body;
+      const user = await userService.updateUser(
+        id,
+        {
+          name,
+          role,
+          isActive,
+        },
+        orgId,
+      );
 
       await auditService.log({
-        organizationId: user.organizationId || req.user?.organizationId,
+        organizationId: orgId,
         userId: req.user?.id,
         userEmail: req.user?.email,
         action: "UPDATE",
@@ -120,17 +128,21 @@ userRouter.patch(
   authorize("user", "update"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
+      const orgId = getSessionOrgId(req);
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      const { name, role, isActive, organizationId } = req.body;
-      const user = await userService.updateUser(id, {
-        name,
-        role,
-        isActive,
-        organizationId,
-      });
+      const { name, role, isActive } = req.body;
+      const user = await userService.updateUser(
+        id,
+        {
+          name,
+          role,
+          isActive,
+        },
+        orgId,
+      );
 
       await auditService.log({
-        organizationId: user.organizationId || req.user?.organizationId,
+        organizationId: orgId,
         userId: req.user?.id,
         userEmail: req.user?.email,
         action: "UPDATE",
@@ -153,11 +165,12 @@ userRouter.delete(
   authorize("user", "delete"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
+      const orgId = getSessionOrgId(req);
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      const result = await userService.deleteUser(id);
+      const result = await userService.deleteUser(id, orgId);
 
       await auditService.log({
-        organizationId: req.user?.organizationId,
+        organizationId: orgId,
         userId: req.user?.id,
         userEmail: req.user?.email,
         action: "DELETE",

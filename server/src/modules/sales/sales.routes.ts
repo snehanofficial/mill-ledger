@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   authorize,
+  getSessionOrgId,
   requireAuth,
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
@@ -28,7 +29,7 @@ salesRouter.get(
   authorize("customer", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const customers = await salesService.getCustomers(orgId, req.user!);
       res.json({ customers });
     } catch (err) {
@@ -240,7 +241,7 @@ salesRouter.get(
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const limit =
         req.query.limit !== undefined ? Number(req.query.limit) : undefined;
       const effectiveLimit =
@@ -277,7 +278,7 @@ salesRouter.get(
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const status = req.query.status as OrderStatus | undefined;
       const limit =
         req.query.limit !== undefined ? Number(req.query.limit) : undefined;
@@ -514,10 +515,7 @@ salesRouter.get(
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId =
-        req.user?.organizationId ||
-        (req.query.organizationId as string) ||
-        "MILL";
+      const orgId = getSessionOrgId(req);
       const dispatches = await dispatchService.getDispatches(orgId, req.user);
       res.json({ dispatches });
     } catch (err) {

@@ -28,14 +28,22 @@ export async function requireAuth(
       throw new AppError("Forbidden: User account is inactive", 403);
     }
 
+    const organizationId = (session.user as { organizationId?: string | null })
+      .organizationId;
+    if (!organizationId) {
+      throw new AppError(
+        "Forbidden: User account is not assigned to an organization",
+        403,
+      );
+    }
+
     req.user = {
       id: session.user.id,
       name: session.user.name,
       email: session.user.email,
       role: (session.user as { role?: Role }).role ?? "SALESMAN",
       isActive,
-      organizationId:
-        (session.user as { organizationId?: string }).organizationId || "MILL",
+      organizationId,
       image: session.user.image,
     };
 
@@ -76,14 +84,14 @@ export function authorize(
 
       // BOLA protection (MLD-002 / DEC-001): Deny cross-tenant data requests
       const requestedOrg =
-        (req.query?.organizationId as string) ||
-        (req.body?.organizationId as string);
+        (req.query?.organizationId as string | undefined) ||
+        (req.body?.organizationId as string | undefined) ||
+        (req.headers?.["x-organization-id"] as string | undefined);
 
       if (
         requestedOrg &&
         req.user.organizationId &&
-        requestedOrg !== req.user.organizationId &&
-        requestedOrg !== "MILL"
+        requestedOrg !== req.user.organizationId
       ) {
         return next(
           new AppError(
@@ -116,4 +124,19 @@ export function authorize(
       next(err);
     }
   };
+}
+
+/**
+ * Extract the authoritative organizationId from the authenticated session.
+ * Never falls back to a default org code or client-supplied parameters.
+ */
+export function getSessionOrgId(req: AuthenticatedRequest): string {
+  const orgId = req.user?.organizationId;
+  if (!orgId) {
+    throw new AppError(
+      "Forbidden: Authenticated session lacks organization context",
+      403,
+    );
+  }
+  return orgId;
 }

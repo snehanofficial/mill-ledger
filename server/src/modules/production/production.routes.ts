@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   authorize,
+  getSessionOrgId,
   requireAuth,
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
@@ -21,10 +22,7 @@ productionRouter.get(
   authorize("production_run", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = req.query.organizationId as string;
-      if (!orgId) {
-        throw new AppError("organizationId query parameter is required", 400);
-      }
+      const orgId = getSessionOrgId(req);
 
       const runs = await productionService.getProductionRuns(orgId);
       res.json({ runs });
@@ -41,10 +39,7 @@ productionRouter.get(
   authorize("production_run", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId =
-        (req.query.organizationId as string) ||
-        req.user?.organizationId ||
-        "MILL";
+      const orgId = getSessionOrgId(req);
 
       const recipes = await productionService.getRecipes(orgId);
       res.json({ recipes });
@@ -88,7 +83,10 @@ productionRouter.post(
         throw parsed.error;
       }
 
-      const run = await productionService.createDraftRun(parsed.data, req.user);
+      const run = await productionService.createDraftRun(
+        { ...parsed.data, organizationId: getSessionOrgId(req) },
+        req.user,
+      );
       res.status(201).json(run);
     } catch (err) {
       next(err);
@@ -110,7 +108,7 @@ productionRouter.post(
 
       const result = await productionService.postProductionRun(
         undefined,
-        parsed.data,
+        { ...parsed.data, organizationId: getSessionOrgId(req) },
         req.user,
       );
       res.status(201).json(result);
@@ -141,7 +139,7 @@ productionRouter.post(
 
       const result = await productionService.postProductionRun(
         runId,
-        parsed.data,
+        { ...parsed.data, organizationId: getSessionOrgId(req) },
         req.user,
       );
       res.status(200).json(result);

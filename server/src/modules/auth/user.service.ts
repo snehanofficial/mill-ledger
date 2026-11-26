@@ -60,11 +60,14 @@ export class UserService {
   }
 
   /**
-   * Get single user by ID
+   * Get single user by ID (scoped to organization when provided)
    */
-  async getUserById(id: string) {
-    const user = await prisma.user.findUnique({
-      where: { id },
+  async getUserById(id: string, organizationId?: string) {
+    const user = await prisma.user.findFirst({
+      where: {
+        id,
+        ...(organizationId ? { organizationId } : {}),
+      },
       select: {
         id: true,
         name: true,
@@ -111,6 +114,17 @@ export class UserService {
       throw new AppError(`Invalid role: ${role}`, 400);
     }
 
+    if (!input.organizationId) {
+      throw new AppError("Organization context is required to create user", 400);
+    }
+    const org = await prisma.organization.findFirst({
+      where: { OR: [{ id: input.organizationId }, { code: input.organizationId }] },
+      select: { id: true },
+    });
+    if (!org) {
+      throw new AppError(`Organization ${input.organizationId} not found`, 404);
+    }
+
     // Provision credentialed account via Better Auth
     await auth.api.signUpEmail({
       body: {
@@ -120,19 +134,13 @@ export class UserService {
       },
     });
 
-    const orgKey = input.organizationId || "MILL";
-    const org = await prisma.organization.findFirst({
-      where: { OR: [{ id: orgKey }, { code: orgKey }] },
-      select: { id: true },
-    });
-
     // Update with application metadata (role, organization, active status)
     const updated = await prisma.user.update({
       where: { email: input.email.toLowerCase().trim() },
       data: {
         role,
         isActive: true,
-        organizationId: org?.id ?? null,
+        organizationId: org.id,
       },
       select: {
         id: true,
@@ -161,11 +169,14 @@ export class UserService {
   }
 
   /**
-   * Update an existing user, enforcing the Last-Admin Demotion/Deactivation safeguard
+   * Update an existing user, enforcing the Last-Admin Demotion/Deactivation safeguard per organization
    */
-  async updateUser(id: string, input: UpdateUserInput) {
-    const user = await prisma.user.findUnique({
-      where: { id },
+  async updateUser(id: string, input: UpdateUserInput, organizationId?: string) {
+    const user = await prisma.user.findFirst({
+      where: {
+        id,
+        ...(organizationId ? { organizationId } : {}),
+      },
     });
 
     if (!user) {
@@ -179,7 +190,7 @@ export class UserService {
       }
     }
 
-    // Safeguard: Protect the last remaining active administrator from demotion or deactivation
+    // Safeguard: Protect the last remaining active administrator in the organization from demotion or deactivation
     const isCurrentlyActiveAdmin = user.role === "ADMIN" && user.isActive;
     const isDemoting = input.role !== undefined && input.role !== "ADMIN";
     const isDeactivating = input.isActive === false;
@@ -189,6 +200,7 @@ export class UserService {
         where: {
           role: "ADMIN",
           isActive: true,
+          organizationId: user.organizationId,
           id: { not: id },
         },
       });
@@ -207,7 +219,6 @@ export class UserService {
         name: input.name?.trim(),
         role: input.role,
         isActive: input.isActive,
-        organizationId: input.organizationId,
       },
       select: {
         id: true,
@@ -239,23 +250,27 @@ export class UserService {
   }
 
   /**
-   * Delete user account, enforcing Last-Admin deletion safeguard and operational integrity
+   * Delete user account, enforcing Last-Admin deletion safeguard per organization and operational integrity
    */
-  async deleteUser(id: string) {
-    const user = await prisma.user.findUnique({
-      where: { id },
+  async deleteUser(id: string, organizationId?: string) {
+    const user = await prisma.user.findFirst({
+      where: {
+        id,
+        ...(organizationId ? { organizationId } : {}),
+      },
     });
 
     if (!user) {
       throw new AppError(`User ${id} not found`, 404);
     }
 
-    // Safeguard: Protect the last remaining active administrator from deletion
+    // Safeguard: Protect the last remaining active administrator in the organization from deletion
     if (user.role === "ADMIN" && user.isActive) {
       const activeAdminCount = await prisma.user.count({
         where: {
           role: "ADMIN",
           isActive: true,
+          organizationId: user.organizationId,
           id: { not: id },
         },
       });
