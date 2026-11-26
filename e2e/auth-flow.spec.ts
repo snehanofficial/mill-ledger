@@ -34,7 +34,9 @@ test.describe("Authentication and Route Protection Flow", () => {
 
     // Verify redirected back to originally requested route (/orders)
     await expect(page).toHaveURL(/\/orders$/);
-    await expect(page.getByRole("heading", { name: "Orders" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Order inbox|My work & orders|Sales orders/i }),
+    ).toBeVisible();
   });
 
   test("authenticated access to /auth/login redirects to /dashboard (vice versa)", async ({

@@ -366,4 +366,90 @@ describe("M3: Purchases and inventory ledger integration", () => {
     const officialInventoryLedgerData = await officialInventoryLedgerRes.json();
     expect(officialInventoryLedgerData.ledger).toBeDefined();
   });
+
+  it("sets purchaseReceipt status to REVERSED on reversal and allows zero-tax debit note with MILL organizationId", async () => {
+    const supplier = await prisma.supplier.findFirstOrThrow({
+      where: { code: "SUP-FLOUR-1" },
+    });
+    const warehouse = await prisma.warehouse.findFirstOrThrow({
+      where: { code: "WH-1" },
+    });
+    const flour = await prisma.inventoryItem.findFirstOrThrow({
+      where: { sku: "RM-FLOUR" },
+    });
+    const kgUom = await prisma.unitOfMeasure.findFirstOrThrow({
+      where: { code: "KG" },
+    });
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+
+    const createRes = await fetch(
+      `${baseUrl}/api/v1/inventory/purchase-receipts`,
+      {
+        method: "POST",
+        headers: {
+          Cookie: adminCookie,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          
+          supplierId: supplier.id,
+          warehouseId: warehouse.id,
+          receiptNumber: `PR-REV-DN-${Date.now()}`,
+          items: [
+            {
+              inventoryItemId: flour.id,
+              quantity: 5,
+              uomId: kgUom.id,
+              unitPrice: 40,
+            },
+          ],
+        }),
+      },
+    );
+    expect(createRes.status).toBe(201);
+    const receipt = (await createRes.json()) as { id: string };
+
+    // 1. Issue a zero-tax supplier debit note against the receipt without passing organizationId in JSON body
+    const dnRes = await fetch(`${baseUrl}/api/v1/finance/debit-notes`, {
+      method: "POST",
+      headers: {
+        Cookie: adminCookie,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        supplierId: supplier.id,
+        purchaseReceiptId: receipt.id,
+        reason: "Moisture deduction",
+        taxableAmount: 10,
+        taxAmount: 0,
+        totalAmount: 10,
+      }),
+    });
+    expect(dnRes.status).toBe(201);
+    const dn = (await dnRes.json()) as { debitNoteNumber: string; taxAmount: string | number };
+    expect(dn.debitNoteNumber).toMatch(/^DN-/);
+    expect(Number(dn.taxAmount)).toBe(0);
+
+    // 2. Reverse purchase receipt and confirm persisted status updates to REVERSED
+    const revRes = await fetch(
+      `${baseUrl}/api/v1/inventory/purchase-receipts/${receipt.id}/reverse`,
+      {
+        method: "POST",
+        headers: {
+          Cookie: adminCookie,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ reason: "Wrong batch" }),
+      },
+    );
+    expect(revRes.status).toBe(200);
+
+    const updatedReceipt = await prisma.purchaseReceipt.findUniqueOrThrow({
+      where: { id: receipt.id },
+    });
+    expect(updatedReceipt.status).toBe("REVERSED");
+  });
 });

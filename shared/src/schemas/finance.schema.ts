@@ -14,7 +14,7 @@ export const creditNoteSchema = z
   .object({
     reason: z.string().min(1, "Reason is required"),
     taxableAmount: z.number().positive().optional(),
-    taxAmount: z.number().positive().optional(),
+    taxAmount: z.number().nonnegative().optional(),
     totalAmount: z.number().positive().optional(),
   })
   .strict();
@@ -39,7 +39,7 @@ export const debitNoteSchema = z
     reason: z.string().min(1, "Reason is required"),
     totalAmount: z.number().positive().optional(),
     taxableAmount: z.number().positive().optional(),
-    taxAmount: z.number().positive().optional(),
+    taxAmount: z.number().nonnegative().optional(),
     lines: z.array(debitNoteLineSchema).optional(),
   })
   .strict();

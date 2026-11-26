@@ -49,14 +49,84 @@ const ProductionPage = lazy(() =>
 const OrdersPage = lazy(() =>
   import("@/pages/orders-page").then((m) => ({ default: m.OrdersPage })),
 );
+const OrderDetailPage = lazy(() =>
+  import("@/pages/order-detail-page").then((m) => ({
+    default: m.OrderDetailPage,
+  })),
+);
 const InvoicesPage = lazy(() =>
   import("@/pages/invoices-page").then((m) => ({ default: m.InvoicesPage })),
+);
+const NewInvoicePage = lazy(() =>
+  import("@/pages/new-invoice-page").then((m) => ({
+    default: m.NewInvoicePage,
+  })),
+);
+const InvoiceDetailPage = lazy(() =>
+  import("@/pages/invoice-detail-page").then((m) => ({
+    default: m.InvoiceDetailPage,
+  })),
 );
 const DispatchPage = lazy(() =>
   import("@/pages/dispatch-page").then((m) => ({ default: m.DispatchPage })),
 );
+const NewDispatchPage = lazy(() =>
+  import("@/pages/new-dispatch-page").then((m) => ({
+    default: m.NewDispatchPage,
+  })),
+);
+const DispatchDetailPage = lazy(() =>
+  import("@/pages/dispatch-detail-page").then((m) => ({
+    default: m.DispatchDetailPage,
+  })),
+);
 const PaymentsPage = lazy(() =>
   import("@/pages/payments-page").then((m) => ({ default: m.PaymentsPage })),
+);
+const NewPaymentPage = lazy(() =>
+  import("@/pages/new-payment-page").then((m) => ({
+    default: m.NewPaymentPage,
+  })),
+);
+const PaymentDetailPage = lazy(() =>
+  import("@/pages/payment-detail-page").then((m) => ({
+    default: m.PaymentDetailPage,
+  })),
+);
+const ReceivablesPage = lazy(() =>
+  import("@/pages/receivables-page").then((m) => ({
+    default: m.ReceivablesPage,
+  })),
+);
+const CustomerLedgerPage = lazy(() =>
+  import("@/pages/customer-ledger-page").then((m) => ({
+    default: m.CustomerLedgerPage,
+  })),
+);
+const StockLedgerPage = lazy(() =>
+  import("@/pages/stock-ledger-page").then((m) => ({
+    default: m.StockLedgerPage,
+  })),
+);
+const NewPurchasePage = lazy(() =>
+  import("@/pages/new-purchase-page").then((m) => ({
+    default: m.NewPurchasePage,
+  })),
+);
+const PurchaseDetailPage = lazy(() =>
+  import("@/pages/purchase-detail-page").then((m) => ({
+    default: m.PurchaseDetailPage,
+  })),
+);
+const ProductionRunDetailPage = lazy(() =>
+  import("@/pages/production-run-detail-page").then((m) => ({
+    default: m.ProductionRunDetailPage,
+  })),
+);
+const ReportsHomePage = lazy(() =>
+  import("@/pages/reports-home-page").then((m) => ({
+    default: m.ReportsHomePage,
+  })),
 );
 const ReportsSalesPage = lazy(() =>
   import("@/pages/reports-page").then((m) => ({ default: m.ReportsSalesPage })),
@@ -110,17 +180,32 @@ const ShowcasePage = lazy(() => import("@/pages/showcase-page"));
 import {
   dashboardHandle,
   ordersHandle,
+  orderDetailHandle,
   newOrderHandle,
   invoicesHandle,
+  newInvoiceHandle,
+  invoiceDetailHandle,
   dispatchHandle,
+  newDispatchHandle,
+  dispatchDetailHandle,
   paymentsHandle,
+  newPaymentHandle,
+  paymentDetailHandle,
+  receivablesHandle,
+  customerLedgerHandle,
   stockHandle,
+  stockLedgerHandle,
   purchasesHandle,
+  newPurchaseHandle,
+  purchaseDetailHandle,
   productionTodayHandle,
   productionNewHandle,
   productionHistoryHandle,
+  productionRunDetailHandle,
+  productionRecipesHandle,
   customersHandle,
   productsHandle,
+  reportsHomeHandle,
   reportsSalesHandle,
   reportsStockHandle,
   reportsProductionHandle,
@@ -241,62 +326,208 @@ const router = createBrowserRouter([
             ),
             handle: newOrderHandle,
           },
+          {
+            path: ":orderId",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/orders/:orderId"]}>
+                <OrderDetailPage />
+              </RoleGuard>
+            ),
+            handle: orderDetailHandle,
+          },
         ],
       },
 
       // Invoices
       {
         path: "invoices",
-        element: (
-          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/invoices"]}>
-            <InvoicesPage />
-          </RoleGuard>
-        ),
         handle: invoicesHandle,
+        children: [
+          {
+            index: true,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/invoices"]}>
+                <InvoicesPage />
+              </RoleGuard>
+            ),
+            handle: invoicesHandle,
+          },
+          {
+            path: "new",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/invoices/new"]}>
+                <NewInvoicePage />
+              </RoleGuard>
+            ),
+            handle: newInvoiceHandle,
+          },
+          {
+            path: ":invoiceId",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/invoices/:invoiceId"]}>
+                <InvoiceDetailPage />
+              </RoleGuard>
+            ),
+            handle: invoiceDetailHandle,
+          },
+        ],
       },
 
       // Dispatch
       {
         path: "dispatch",
-        element: (
-          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/dispatch"]}>
-            <DispatchPage />
-          </RoleGuard>
-        ),
         handle: dispatchHandle,
+        children: [
+          {
+            index: true,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/dispatch"]}>
+                <DispatchPage />
+              </RoleGuard>
+            ),
+            handle: dispatchHandle,
+          },
+          {
+            path: "new",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/dispatch/new"]}>
+                <NewDispatchPage />
+              </RoleGuard>
+            ),
+            handle: newDispatchHandle,
+          },
+          {
+            path: ":dispatchId",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/dispatch/:dispatchId"]}>
+                <DispatchDetailPage />
+              </RoleGuard>
+            ),
+            handle: dispatchDetailHandle,
+          },
+        ],
       },
 
       // Payments
       {
         path: "payments",
-        element: (
-          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/payments"]}>
-            <PaymentsPage />
-          </RoleGuard>
-        ),
         handle: paymentsHandle,
+        children: [
+          {
+            index: true,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/payments"]}>
+                <PaymentsPage />
+              </RoleGuard>
+            ),
+            handle: paymentsHandle,
+          },
+          {
+            path: "new",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/payments/new"]}>
+                <NewPaymentPage />
+              </RoleGuard>
+            ),
+            handle: newPaymentHandle,
+          },
+          {
+            path: ":paymentId",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/payments/:paymentId"]}>
+                <PaymentDetailPage />
+              </RoleGuard>
+            ),
+            handle: paymentDetailHandle,
+          },
+        ],
+      },
+
+      // Receivables & Customer Ledgers
+      {
+        path: "receivables",
+        handle: receivablesHandle,
+        children: [
+          {
+            index: true,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/receivables"]}>
+                <ReceivablesPage />
+              </RoleGuard>
+            ),
+            handle: receivablesHandle,
+          },
+          {
+            path: ":customerId",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/receivables/:customerId"]}>
+                <CustomerLedgerPage />
+              </RoleGuard>
+            ),
+            handle: customerLedgerHandle,
+          },
+        ],
       },
 
       // Stock
       {
         path: "stock",
-        element: (
-          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/stock"]}>
-            <StockPage />
-          </RoleGuard>
-        ),
         handle: stockHandle,
+        children: [
+          {
+            index: true,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/stock"]}>
+                <StockPage />
+              </RoleGuard>
+            ),
+            handle: stockHandle,
+          },
+          {
+            path: ":itemId/ledger",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/stock/:itemId/ledger"]}>
+                <StockLedgerPage />
+              </RoleGuard>
+            ),
+            handle: stockLedgerHandle,
+          },
+        ],
       },
 
       // Purchases
       {
         path: "purchases",
-        element: (
-          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/purchases"]}>
-            <PurchasesPage />
-          </RoleGuard>
-        ),
         handle: purchasesHandle,
+        children: [
+          {
+            index: true,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/purchases"]}>
+                <PurchasesPage />
+              </RoleGuard>
+            ),
+            handle: purchasesHandle,
+          },
+          {
+            path: "new",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/purchases/new"]}>
+                <NewPurchasePage />
+              </RoleGuard>
+            ),
+            handle: newPurchaseHandle,
+          },
+          {
+            path: ":receiptId",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/purchases/:receiptId"]}>
+                <PurchaseDetailPage />
+              </RoleGuard>
+            ),
+            handle: purchaseDetailHandle,
+          },
+        ],
       },
 
       // Suppliers
@@ -343,6 +574,28 @@ const router = createBrowserRouter([
             ),
             handle: productionHistoryHandle,
           },
+          {
+            path: "runs/:runId",
+            element: (
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/production/runs/:runId"]}
+              >
+                <ProductionRunDetailPage />
+              </RoleGuard>
+            ),
+            handle: productionRunDetailHandle,
+          },
+          {
+            path: "recipes",
+            element: (
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/production/recipes"]}
+              >
+                <ProductionPage />
+              </RoleGuard>
+            ),
+            handle: productionRecipesHandle,
+          },
         ],
       },
 
@@ -371,7 +624,17 @@ const router = createBrowserRouter([
       // Reports
       {
         path: "reports",
+        handle: reportsHomeHandle,
         children: [
+          {
+            index: true,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/reports"]}>
+                <ReportsHomePage />
+              </RoleGuard>
+            ),
+            handle: reportsHomeHandle,
+          },
           {
             path: "sales",
             element: (

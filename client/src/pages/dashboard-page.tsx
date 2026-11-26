@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatINR, formatQuantity, formatTime } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -104,14 +105,46 @@ interface DashboardData {
 
 export function DashboardPage() {
   const { t } = useLanguage();
+  const { user } = useCurrentUser();
+  const isAdmin = user?.role === "ADMIN";
   const { data, isLoading, isError, error, refetch, isFetching } =
     useQuery<DashboardData>({
       queryKey: ["owner-dashboard"],
       queryFn: async () => {
-        const res = await apiClient.get("/dashboard?organizationId=MILL");
+        const res = await apiClient.get("/dashboard");
         return res.data;
       },
     });
+
+  const { data: ordersQueueData } = useQuery<{
+    orders: Array<{
+      id: string;
+      orderNumber: string;
+      status: string;
+      fulfilmentStatus: string;
+      totalAmount: number;
+      customer: { name: string };
+      invoices?: Array<{ id: string }>;
+    }>;
+  }>({
+    queryKey: ["sales-orders"],
+    queryFn: async () => {
+      const res = await apiClient.get("/sales/orders");
+      return res.data;
+    },
+    enabled: isAdmin,
+  });
+
+  const allOrders = ordersQueueData?.orders ?? [];
+  const ordersToReview = allOrders.filter(
+    (o) => o.status === "SUBMITTED" || o.status === "UNDER_REVIEW",
+  );
+  const ordersToInvoice = allOrders.filter(
+    (o) => o.status === "APPROVED" && (!o.invoices || o.invoices.length === 0),
+  );
+  const ordersToDispatch = allOrders.filter(
+    (o) => o.status === "APPROVED" && o.fulfilmentStatus !== "FULFILLED",
+  );
 
   const metrics = data?.metrics;
 
@@ -122,11 +155,13 @@ export function DashboardPage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {t("Overview")}
+              {isAdmin ? t("Work queue") : t("Business overview")}
             </h1>
           </div>
           <p className="max-w-[60ch] text-sm text-muted-foreground">
-            {t("Executive operational overview and real time reconciled business metrics")}
+            {isAdmin
+              ? t("Prioritised operational tasks: orders to review, invoices to post, and dispatches to fulfil.")
+              : t("Executive operational overview and real time reconciled business metrics")}
           </p>
         </div>
 
@@ -151,6 +186,83 @@ export function DashboardPage() {
           </Button>
         </div>
       </div>
+
+      {isAdmin && (
+        <section
+          aria-labelledby="admin-work-queue-heading"
+          className="rounded-xl border border-border bg-card p-4 space-y-3"
+        >
+          <div className="flex items-center justify-between">
+            <h2 id="admin-work-queue-heading" className="text-sm font-semibold text-foreground">
+              Needs your action now
+            </h2>
+            <Link to="/orders" className="text-xs font-medium text-primary hover:underline">
+              Open Order inbox
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3 text-sm">
+            <div className="rounded-lg border border-border p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Orders awaiting review</span>
+                <Badge variant="outline">{ordersToReview.length}</Badge>
+              </div>
+              {ordersToReview.slice(0, 3).map((o) => (
+                <Link
+                  key={o.id}
+                  to={`/orders/${o.id}`}
+                  className="flex items-center justify-between text-xs text-primary hover:underline"
+                >
+                  <span>{o.orderNumber} ({o.customer.name})</span>
+                  <span className="tabular-nums">{formatINR(o.totalAmount)}</span>
+                </Link>
+              ))}
+              {ordersToReview.length === 0 && (
+                <p className="text-xs text-muted-foreground">No submitted orders pending.</p>
+              )}
+            </div>
+
+            <div className="rounded-lg border border-border p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Approved awaiting invoice</span>
+                <Badge variant="outline">{ordersToInvoice.length}</Badge>
+              </div>
+              {ordersToInvoice.slice(0, 3).map((o) => (
+                <Link
+                  key={o.id}
+                  to={`/invoices/new?orderId=${o.id}`}
+                  className="flex items-center justify-between text-xs text-primary hover:underline"
+                >
+                  <span>{o.orderNumber} ({o.customer.name})</span>
+                  <span>Create invoice</span>
+                </Link>
+              ))}
+              {ordersToInvoice.length === 0 && (
+                <p className="text-xs text-muted-foreground">All approved orders invoiced.</p>
+              )}
+            </div>
+
+            <div className="rounded-lg border border-border p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Ready to dispatch</span>
+                <Badge variant="outline">{ordersToDispatch.length}</Badge>
+              </div>
+              {ordersToDispatch.slice(0, 3).map((o) => (
+                <Link
+                  key={o.id}
+                  to={`/dispatch/new?orderId=${o.id}`}
+                  className="flex items-center justify-between text-xs text-primary hover:underline"
+                >
+                  <span>{o.orderNumber} ({o.customer.name})</span>
+                  <span>Prepare dispatch</span>
+                </Link>
+              ))}
+              {ordersToDispatch.length === 0 && (
+                <p className="text-xs text-muted-foreground">No pending dispatches.</p>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {isLoading ? (
         <div className="flex flex-col gap-6">
@@ -291,7 +403,9 @@ export function DashboardPage() {
                 <div key={m.sku} className="flex items-center justify-between text-xs">
                   <span className="font-medium truncate">{m.name}</span>
                   <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
-                    {formatINR(m.marginAmount)} ({m.marginPct}%)
+                    {m.unitCost > 0
+                      ? `${formatINR(m.marginAmount)} (${m.marginPct}%)`
+                      : "No run cost"}
                   </span>
                 </div>
               ))}

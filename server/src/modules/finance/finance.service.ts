@@ -517,7 +517,9 @@ export class FinanceService {
         throw new AppError(`Supplier ${input.supplierId} not found`, 404);
       }
 
-      const organizationId = input.organizationId || supplier.organizationId;
+      const organizationId = input.organizationId
+        ? await this.resolveOrgId(input.organizationId)
+        : supplier.organizationId;
 
       if (input.purchaseReceiptId) {
         const receipt = await tx.purchaseReceipt.findUnique({

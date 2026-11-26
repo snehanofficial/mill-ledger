@@ -140,7 +140,7 @@ export async function bootstrapAdmin() {
     data: {
       role: "ADMIN",
       isActive: true,
-      organizationId: org.code,
+      organizationId: org.id,
     },
   });
 

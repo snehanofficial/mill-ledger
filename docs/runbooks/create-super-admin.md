@@ -1,6 +1,8 @@
-# Emergency Super Administrator Provisioning Runbook
+# Emergency Organization Administrator Bootstrap Runbook
 
-This runbook establishes standard operating procedures for creating an initial or emergency super-administrator user in MillLedger ERP in accordance with Owner Decision OD-02 and ISO/IEC 27001 Access Control guidelines.
+This runbook establishes standard operating procedures for creating an initial or emergency organization administrator (`role: "ADMIN"`) in MillLedger ERP in accordance with Owner Decision OD-02 and ISO/IEC 27001 Access Control guidelines.
+
+> **Note**: MillLedger does not use a platform-wide `SUPER_ADMIN` role. `pnpm admin:bootstrap` provisions an organization-level `ADMIN` user bound to the `MILL` organization (`organizationId` referencing `Organization.id`).
 
 ---
 
@@ -26,7 +28,7 @@ When setting up a fresh production environment where no administrator exists:
    - **Admin Email**: Must be a valid email address (e.g. `admin@millledger.com`).
    - **Password**: Must be at least 8 characters, containing uppercase, lowercase, numbers, and symbols.
    - **Confirm Password**: Must match.
-3. Upon confirmation, the administrator account is created in Better Auth with `role: "ADMIN"` and `organizationId: "MILL"`.
+3. Upon confirmation, the administrator account is created in Better Auth with `role: "ADMIN"` and `organizationId` set to the `MILL` organization's `id`.
 
 ### Scenario B: Non-Interactive Scripted Provisioning
 For automated infrastructure deployments:

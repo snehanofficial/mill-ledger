@@ -37,7 +37,8 @@ function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        "flex h-11 w-full items-center justify-between gap-2 rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-sm text-foreground shadow-xs outline-none transition-colors",
+        "flex h-11 w-full min-w-0 max-w-full items-center justify-between gap-2 overflow-hidden rounded-control border border-input/45 dark:border-input bg-surface-muted/70 dark:bg-surface-muted px-4 py-2 text-left text-sm text-foreground shadow-xs outline-none transition-colors",
+        "[&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:flex-1 [&>[data-slot=select-value]]:truncate",
         "hover:border-foreground/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30",
         "disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50",
         className,
@@ -67,6 +68,14 @@ interface SelectContentProps
   emptyAction?: React.ReactNode;
 }
 
+function isCoarsePointer() {
+  return (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(pointer: coarse)").matches
+  );
+}
+
 function SelectContent({
   className,
   children,
@@ -84,7 +93,7 @@ function SelectContent({
   const hasRedirectedInitialFocusRef = React.useRef(false);
 
   React.useEffect(() => {
-    if (!searchable) return;
+    if (!searchable || isCoarsePointer()) return;
     hasRedirectedInitialFocusRef.current = false;
     const focusInput = () => inputRef.current?.focus({ preventScroll: true });
     focusInput();
@@ -118,7 +127,7 @@ function SelectContent({
         position={position}
         onFocus={(e) => {
           props.onFocus?.(e);
-          if (!searchable) return;
+          if (!searchable || isCoarsePointer()) return;
           if (e.target === inputRef.current) return;
           if (!hasRedirectedInitialFocusRef.current || e.target === e.currentTarget) {
             hasRedirectedInitialFocusRef.current = true;
@@ -126,7 +135,7 @@ function SelectContent({
           }
         }}
         className={cn(
-          "z-50 flex max-h-72 min-w-32 flex-col overflow-hidden rounded-control border border-border bg-popover text-popover-foreground shadow-menu",
+          "z-50 flex max-h-[min(18rem,var(--radix-select-content-available-height))] min-w-32 max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-control border border-border bg-popover text-popover-foreground shadow-menu",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           "data-[state=open]:duration-(--ml-motion-standard) data-[state=open]:ease-enter data-[state=closed]:duration-(--ml-motion-fast) data-[state=closed]:ease-exit",
           position === "popper" &&
@@ -138,16 +147,17 @@ function SelectContent({
         {searchable && (
           <search
             data-slot="select-search"
-            className="flex h-10 shrink-0 items-center gap-2 border-b border-border px-3"
+            onPointerDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            className="flex h-11 sm:h-10 shrink-0 items-center gap-2 border-b border-border px-3"
           >
             <SearchIcon
               aria-hidden="true"
-              className="size-3.5 shrink-0 text-muted-foreground"
+              className="size-4 sm:size-3.5 shrink-0 text-muted-foreground"
             />
             <input
               ref={inputRef}
               type="text"
-              autoFocus
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleSearchKeyDown}
@@ -156,7 +166,7 @@ function SelectContent({
               autoCorrect="off"
               autoCapitalize="none"
               spellCheck={false}
-              className="h-full w-full bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
+              className="h-full w-full bg-transparent text-base sm:text-xs text-foreground outline-none placeholder:text-muted-foreground"
             />
             {searchQuery && (
               <button
@@ -164,11 +174,11 @@ function SelectContent({
                 aria-label="Clear search"
                 onClick={() => {
                   setSearchQuery("");
-                  inputRef.current?.focus();
+                  inputRef.current?.focus({ preventScroll: true });
                 }}
-                className="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-small text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                className="flex size-8 sm:size-5 shrink-0 cursor-pointer items-center justify-center rounded-small text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
               >
-                <XIcon aria-hidden="true" className="size-3.5" />
+                <XIcon aria-hidden="true" className="size-4 sm:size-3.5" />
               </button>
             )}
           </search>
@@ -192,9 +202,9 @@ function SelectContent({
                     type="button"
                     onClick={() => {
                       setSearchQuery("");
-                      inputRef.current?.focus();
+                      inputRef.current?.focus({ preventScroll: true });
                     }}
-                    className="inline-flex min-h-7 cursor-pointer items-center justify-center rounded-small px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                    className="inline-flex min-h-10 sm:min-h-7 cursor-pointer items-center justify-center rounded-small px-3 sm:px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
                   >
                     Clear search
                   </button>
@@ -242,7 +252,7 @@ function SelectItem({
       hidden={!isMatch}
       disabled={disabled || !isMatch}
       className={cn(
-        "relative flex h-9 cursor-pointer items-center rounded-small pr-8 pl-3 text-sm outline-none transition-colors select-none",
+        "relative flex min-h-11 sm:min-h-9 min-w-0 cursor-pointer items-center break-words rounded-small pr-8 pl-3 py-2 sm:py-1.5 text-sm outline-none transition-colors select-none",
         "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         !isMatch && "hidden",

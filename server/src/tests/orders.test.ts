@@ -69,6 +69,22 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       where: { id: finishedGoodsItem.id },
       data: { currentStock: 238 },
     });
+    await prisma.warehouseStockBalance.upsert({
+      where: {
+        warehouseId_inventoryItemId: {
+          warehouseId: warehouse.id,
+          inventoryItemId: finishedGoodsItem.id,
+        },
+      },
+      update: { onHand: 238 },
+      create: {
+        organizationId: org.id,
+        warehouseId: warehouse.id,
+        inventoryItemId: finishedGoodsItem.id,
+        onHand: 238,
+        reserved: 0,
+      },
+    });
     await prisma.stockMovement.create({
       data: {
         inventoryItemId: finishedGoodsItem.id,
@@ -901,5 +917,155 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       where: { id: orderId },
     });
     expect(updatedOrder.notes).toContain("Reservation expired");
+  });
+
+  it("allows SALESMAN to edit own DRAFT order lines/totals (blocking others) and returns finishedGoods links + hides inactive customers", async () => {
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { code: "MILL" },
+    });
+    const retailerA = await prisma.customer.findFirstOrThrow({
+      where: { code: "CUST-RET-A" },
+    });
+    const murukkuVariant = await prisma.productVariant.findFirstOrThrow({
+      where: { sku: "VAR-MURUKKU-200G" },
+    });
+    const salesman1 = await prisma.user.findFirstOrThrow({
+      where: { email: "salesman1@millledger.local" },
+    });
+    const salesman1Cookie = await loginAndGetCookie(
+      "salesman1@millledger.local",
+      "SalesmanPassword123!",
+    );
+    const salesman2Cookie = await loginAndGetCookie(
+      "salesman2@millledger.local",
+      "SalesmanPassword123!",
+    );
+
+    // 1. Products catalog resolves finishedGoodsItemId/Sku and HSN taxRate from session org
+    const productsRes = await fetch(
+      `${baseUrl}/api/v1/sales/products`,
+      { headers: { Cookie: salesman1Cookie } },
+    );
+    expect(productsRes.status).toBe(200);
+    const productsData = (await productsRes.json()) as {
+      products: Array<{
+        sku: string;
+        taxRate: number;
+        finishedGoodsItemId?: string | null;
+        finishedGoodsSku?: string | null;
+      }>;
+    };
+    const murukkuProduct = productsData.products.find(
+      (p) => p.sku === "VAR-MURUKKU-200G",
+    );
+    expect(murukkuProduct?.finishedGoodsItemId).toBeTruthy();
+    expect(murukkuProduct?.finishedGoodsSku).toBe("FG-MURUKKU-200G");
+    expect(Number(murukkuProduct?.taxRate)).toBe(5);
+
+    // 2. Salesman creates own DRAFT order (10 pkts -> ₹525.00), then edits lines to 20 pkts (₹1,050.00)
+    const draftRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: salesman1Cookie,
+      },
+      body: JSON.stringify({
+        customerId: retailerA.id,
+        orderNumber: `SO-DRAFT-EDIT-${Date.now()}`,
+        status: "DRAFT",
+        lines: [{ productVariantId: murukkuVariant.id, quantity: 10, unitPrice: 50 }],
+      }),
+    });
+    expect(draftRes.status).toBe(201);
+    const draftData = (await draftRes.json()) as { order: { id: string } };
+
+    // Other salesman cannot edit this draft (ABAC 403)
+    const forbiddenPut = await fetch(
+      `${baseUrl}/api/v1/sales/orders/${draftData.order.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: salesman2Cookie,
+        },
+        body: JSON.stringify({
+          lines: [{ productVariantId: murukkuVariant.id, quantity: 5, unitPrice: 50 }],
+        }),
+      },
+    );
+    expect(forbiddenPut.status).toBe(403);
+
+    // Owner salesman edits lines & recomputes totals cleanly
+    const ownPut = await fetch(
+      `${baseUrl}/api/v1/sales/orders/${draftData.order.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: salesman1Cookie,
+        },
+        body: JSON.stringify({
+          notes: "Updated to 20 pkts",
+          lines: [{ productVariantId: murukkuVariant.id, quantity: 20, unitPrice: 50 }],
+        }),
+      },
+    );
+    expect(ownPut.status).toBe(200);
+    const updated = (await ownPut.json()) as {
+      order: {
+        taxableAmount: string | number;
+        totalTaxAmount: string | number;
+        totalAmount: string | number;
+        lines: Array<{ quotedQuantity: number }>;
+      };
+    };
+    expect(Number(updated.order.lines[0].quotedQuantity)).toBe(20);
+    expect(Number(updated.order.taxableAmount)).toBe(1000);
+    expect(Number(updated.order.totalTaxAmount)).toBe(50);
+    expect(Number(updated.order.totalAmount)).toBe(1050);
+
+    // 3. Inactive customer is excluded from SALESMAN GET /sales/customers and rejected on POST /sales/orders
+    const archivedCustomer = await prisma.customer.create({
+      data: {
+        organizationId: org.id,
+        code: `CUST-ARCH-${Date.now()}`,
+        name: "Archived Corner Store",
+        state: "Tamil Nadu",
+        isActive: false,
+      },
+    });
+    try {
+      await prisma.salesmanCustomerAssignment.create({
+        data: { salesmanId: salesman1.id, customerId: archivedCustomer.id },
+      });
+
+      const custListRes = await fetch(`${baseUrl}/api/v1/sales/customers`, {
+        headers: { Cookie: salesman1Cookie },
+      });
+      expect(custListRes.status).toBe(200);
+      const custList = (await custListRes.json()) as {
+        customers: Array<{ id: string }>;
+      };
+      expect(custList.customers.some((c) => c.id === archivedCustomer.id)).toBe(false);
+
+      const archivedOrderRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: salesman1Cookie,
+        },
+        body: JSON.stringify({
+          customerId: archivedCustomer.id,
+          orderNumber: `SO-ARCH-${Date.now()}`,
+          lines: [{ productVariantId: murukkuVariant.id, quantity: 5, unitPrice: 50 }],
+        }),
+      });
+      expect(archivedOrderRes.status).toBe(400);
+    } finally {
+      await prisma.salesmanCustomerAssignment.deleteMany({
+        where: { customerId: archivedCustomer.id },
+      });
+      await prisma.customer.delete({ where: { id: archivedCustomer.id } });
+    }
   });
 });

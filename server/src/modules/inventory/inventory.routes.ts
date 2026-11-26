@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   authorize,
+  getSessionOrgId,
   requireAuth,
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
@@ -9,6 +10,7 @@ import { AppError } from "../../middleware/error.middleware.js";
 import {
   createSupplierSchema,
   updateSupplierSchema,
+  createStockTransferSchema,
 } from "@mill-ledger/shared";
 import {
   handlePostPurchaseReceipt,
@@ -159,10 +161,7 @@ inventoryRouter.get(
   authorize("inventory", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = req.query.organizationId as string;
-      if (!orgId) {
-        throw new AppError("organizationId query parameter is required", 400);
-      }
+      const orgId = getSessionOrgId(req);
 
       const warehouseId = req.query.warehouseId as string | undefined;
       const balances = await inventoryService.getInventoryBalances(
@@ -190,12 +189,17 @@ inventoryRouter.get(
         throw new AppError("Item ID parameter is required", 400);
       }
 
+      const orgId = getSessionOrgId(req);
       const warehouseId =
         typeof req.query.warehouseId === "string"
           ? req.query.warehouseId
           : undefined;
 
-      const ledger = await inventoryService.getItemLedger(itemId, warehouseId);
+      const ledger = await inventoryService.getItemLedger(
+        itemId,
+        warehouseId,
+        orgId,
+      );
       res.json({ ledger });
     } catch (err) {
       next(err);
@@ -210,8 +214,9 @@ inventoryRouter.post(
   authorize("inventory", "create"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
+      const orgId = getSessionOrgId(req);
       const item = await inventoryService.createInventoryItem(
-        req.body,
+        { ...(req.body || {}), organizationId: orgId },
         req.user,
       );
       res.status(201).json({ item });
@@ -249,11 +254,73 @@ inventoryRouter.post(
   authorize("inventory", "update"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
+      const orgId = getSessionOrgId(req);
       const result = await inventoryService.postStockAdjustment(
-        req.body,
+        { ...(req.body || {}), organizationId: orgId },
         req.user,
       );
       res.status(201).json(result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /transfers - List inter-warehouse stock transfers
+inventoryRouter.get(
+  "/transfers",
+  requireAuth,
+  authorize("inventory", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const transfers = await inventoryService.getStockTransfers(orgId);
+      res.json({ transfers });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /transfers - Post inter-warehouse stock transfer
+inventoryRouter.post(
+  "/transfers",
+  requireAuth,
+  authorize("inventory", "update"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const parsed = createStockTransferSchema.safeParse(req.body);
+      if (!parsed.success) throw parsed.error;
+      const transfer = await inventoryService.postStockTransfer(
+        orgId,
+        parsed.data,
+        req.user,
+      );
+      res.status(201).json({ transfer });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /reconciliation - Warehouse stock balance reconciliation
+inventoryRouter.get(
+  "/reconciliation",
+  requireAuth,
+  authorize("inventory", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const warehouseId =
+        typeof req.query.warehouseId === "string"
+          ? req.query.warehouseId
+          : undefined;
+      const report = await inventoryService.getStockReconciliation(
+        orgId,
+        warehouseId,
+      );
+      res.json(report);
     } catch (err) {
       next(err);
     }
@@ -267,7 +334,7 @@ inventoryRouter.get(
   authorize("inventory", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const data = await inventoryService.getUomsAndConversions(orgId);
       res.json(data);
     } catch (err) {

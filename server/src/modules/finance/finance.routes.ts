@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   authorize,
+  getSessionOrgId,
   requireAuth,
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
@@ -23,7 +24,7 @@ financeRouter.get(
   authorize("invoice", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const customerId = req.query.customerId as string | undefined;
       const limit =
         req.query.limit !== undefined ? Number(req.query.limit) : undefined;
@@ -171,7 +172,7 @@ financeRouter.post(
         throw parsed.error;
       }
 
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const debitNote = await financeService.issueDebitNote(
         {
           ...parsed.data,
@@ -193,7 +194,7 @@ financeRouter.get(
   authorize("invoice", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const supplierId = req.query.supplierId as string | undefined;
       const debitNotes = await financeService.getDebitNotes(orgId, supplierId);
       res.json({ debitNotes });
@@ -210,7 +211,7 @@ financeRouter.get(
   authorize("invoice", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const hsnCode = req.query.hsnCode as string | undefined;
       const taxRates = await financeService.getTaxRates(orgId, hsnCode);
       res.json({ taxRates });
@@ -232,7 +233,7 @@ financeRouter.post(
         throw parsed.error;
       }
 
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const record = await financeService.setTaxRate(orgId, parsed.data);
       res.status(201).json(record);
     } catch (err) {

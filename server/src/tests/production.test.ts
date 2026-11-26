@@ -59,6 +59,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     const recipe = await prisma.recipe.findFirstOrThrow({
       where: {
         organizationId: org.id,
+        productVariant: { sku: "VAR-MURUKKU-200G" },
         version: 1,
       },
     });
@@ -270,6 +271,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     const recipe = await prisma.recipe.findFirstOrThrow({
       where: {
         organizationId: org.id,
+        productVariant: { sku: "VAR-MURUKKU-200G" },
         version: 1,
       },
     });
@@ -349,6 +351,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     const recipe = await prisma.recipe.findFirstOrThrow({
       where: {
         organizationId: org.id,
+        productVariant: { sku: "VAR-MURUKKU-200G" },
         version: 1,
       },
     });
@@ -433,7 +436,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     );
 
     const balRes = await fetch(
-      `${baseUrl}/api/v1/inventory/balances?organizationId=MILL`,
+      `${baseUrl}/api/v1/inventory/balances`,
       { headers: { Cookie: productionCookie } },
     );
     expect(balRes.status).toBe(200);
@@ -444,14 +447,18 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     expect(flour).toBeDefined();
 
     const recipesRes = await fetch(
-      `${baseUrl}/api/v1/production-runs/recipes?organizationId=MILL`,
+      `${baseUrl}/api/v1/production-runs/recipes`,
       { headers: { Cookie: productionCookie } },
     );
     expect(recipesRes.status).toBe(200);
     const recipesData = (await recipesRes.json()) as {
-      recipes: Array<{ id: string }>;
+      recipes: Array<{ id: string; productVariant?: { sku: string } }>;
     };
     expect(recipesData.recipes.length).toBeGreaterThan(0);
+    const murukkuRecipe =
+      recipesData.recipes.find(
+        (r) => r.productVariant?.sku === "VAR-MURUKKU-200G",
+      ) ?? recipesData.recipes[0];
 
     const postRes = await fetch(`${baseUrl}/api/v1/production-runs`, {
       method: "POST",
@@ -460,9 +467,9 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
         Cookie: productionCookie,
       },
       body: JSON.stringify({
-        organizationId: "MILL",
+        
         warehouseId: "WH-1",
-        recipeId: recipesData.recipes[0].id,
+        recipeId: murukkuRecipe.id,
         runNumber: "RUN-CODE-RES-001",
         batchCount: 1,
         actualGoodQty: 180,
@@ -472,7 +479,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     expect(postRes.status).toBe(201);
 
     const listRes = await fetch(
-      `${baseUrl}/api/v1/production-runs?organizationId=MILL`,
+      `${baseUrl}/api/v1/production-runs`,
       { headers: { Cookie: productionCookie } },
     );
     expect(listRes.status).toBe(200);
@@ -495,7 +502,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     );
 
     const recipesRes = await fetch(
-      `${baseUrl}/api/v1/production-runs/recipes?organizationId=MILL`,
+      `${baseUrl}/api/v1/production-runs/recipes`,
       { headers: { Cookie: adminCookie } },
     );
     const { recipes } = (await recipesRes.json()) as {
@@ -529,7 +536,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
         Cookie: prodCookie,
       },
       body: JSON.stringify({
-        organizationId: "MILL",
+        
         warehouseId: "WH-1",
         recipeId: cloned.id,
         runNumber: `RUN-DRAFT-${Date.now()}`,

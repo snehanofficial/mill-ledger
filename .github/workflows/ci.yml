@@ -37,6 +37,8 @@ jobs:
       BETTER_AUTH_SECRET: test_production_super_secret_key_minimum_32_characters_long_ci
       BETTER_AUTH_URL: http://localhost:4000
       CORS_ORIGIN: http://localhost:5173,http://localhost:4173
+      VITE_BACKEND_URL: http://localhost:4000
+      VITE_APP_URL: http://localhost:5173
 
     steps:
       - name: Checkout repository
@@ -58,6 +60,9 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm --filter @mill-ledger/server exec prisma generate
+
+      - name: Build shared workspace package
+        run: pnpm --filter @mill-ledger/shared build
 
       - name: Run linter
         run: pnpm lint

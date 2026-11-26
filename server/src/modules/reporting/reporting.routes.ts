@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   authorize,
+  getSessionOrgId,
   requireAuth,
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
@@ -17,7 +18,7 @@ reportingRouter.get(
   authorize("report", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const dashboard = await reportingService.getOwnerDashboard({
         organizationId: orgId,
       });
@@ -43,7 +44,7 @@ reportingRouter.get(
         );
       }
 
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const entity = req.query.entity as string | undefined;
       const action = req.query.action as string | undefined;
       const limit = req.query.limit
@@ -110,10 +111,7 @@ const handleReportExport = async (
       );
     }
 
-    const orgId =
-      (req.query.organizationId as string) ||
-      (req.body?.organizationId as string) ||
-      "MILL";
+    const orgId = getSessionOrgId(req);
     const format = String(
       req.query.format || req.body?.format || "csv",
     ).toLowerCase();
@@ -294,7 +292,7 @@ reportingRouter.get(
         throw new AppError("Production scope cannot access this report", 403);
       }
 
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
 
       const params = {
         organizationId: orgId,

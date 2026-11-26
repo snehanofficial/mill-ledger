@@ -154,6 +154,7 @@ export interface ShellUser {
   name: string;
   email: string;
   role: UserRole;
+  organizationId?: string;
   avatar?: string;
   initials: string;
 }
@@ -705,19 +706,21 @@ function SidebarUserMenu({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                if (isMobile) setOpenMobile(false);
-                navigate("/settings/profile");
-              }}
-              className="cursor-pointer"
-            >
-              <SettingsIcon
-                className="mr-2 size-4 text-muted-foreground"
-                aria-hidden
-              />
-              {t("Account settings", "Account settings")}
-            </DropdownMenuItem>
+            {(user.role === "ADMIN" || user.role === "OWNER") && (
+              <DropdownMenuItem
+                onClick={() => {
+                  if (isMobile) setOpenMobile(false);
+                  navigate("/settings");
+                }}
+                className="cursor-pointer"
+              >
+                <SettingsIcon
+                  className="mr-2 size-4 text-muted-foreground"
+                  aria-hidden
+                />
+                {t("Settings", "Settings")}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               onClick={() => {
                 if (isMobile) setOpenMobile(false);
@@ -865,7 +868,6 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="p-0 max-w-lg overflow-hidden border border-border shadow-2xl"
-        showCloseButton={false}
         aria-label="Global search"
       >
         <DialogTitle className="sr-only">Search pages</DialogTitle>
@@ -1048,6 +1050,7 @@ function StickyHeader({
   isInstallingApp,
   onInstallApp,
 }: StickyHeaderProps) {
+  const navigate = useNavigate();
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
   const { language, setLanguage, t } = useLanguage();
   const { resolvedTheme, toggleTheme } = useTheme();
@@ -1238,13 +1241,18 @@ function StickyHeader({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
-              <SettingsIcon
-                className="mr-2 size-4 text-muted-foreground"
-                aria-hidden
-              />
-              Account settings
-            </DropdownMenuItem>
+            {(user.role === "ADMIN" || user.role === "OWNER") && (
+              <DropdownMenuItem
+                onClick={() => navigate("/settings")}
+                className="cursor-pointer"
+              >
+                <SettingsIcon
+                  className="mr-2 size-4 text-muted-foreground"
+                  aria-hidden
+                />
+                {t("Settings", "Settings")}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={onOpenHelp} className="cursor-pointer">
               <BookOpenIcon
                 className="mr-2 size-4 text-muted-foreground"
@@ -1324,10 +1332,10 @@ function MobileBottomNav({ role }: { role: UserRole }) {
 
   if (role === "SALESMAN") {
     navItems = [
-      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      { label: t("nav.home", "My work"), href: "/orders", icon: HomeIcon },
       {
-        label: t("nav.orders", "Orders"),
-        href: "/orders",
+        label: t("nav.newOrder", "New order"),
+        href: "/orders/new",
         icon: ShoppingCartIcon,
       },
       {
@@ -1343,13 +1351,13 @@ function MobileBottomNav({ role }: { role: UserRole }) {
     ];
   } else if (role === "PRODUCTION") {
     navItems = [
-      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
-      { label: t("nav.stock", "Stock"), href: "/stock", icon: PackageIcon },
+      { label: t("nav.home", "Today"), href: "/production/today", icon: HomeIcon },
       {
-        label: t("nav.production", "Production"),
-        href: "/production/today",
+        label: t("nav.newRun", "New run"),
+        href: "/production/new",
         icon: PackageIcon,
       },
+      { label: t("nav.stock", "Stock"), href: "/stock", icon: PackageIcon },
       {
         label: t("nav.more", "More"),
         action: () => setOpenMobile(true),
@@ -1358,15 +1366,15 @@ function MobileBottomNav({ role }: { role: UserRole }) {
     ];
   } else if (role === "ACCOUNTANT") {
     navItems = [
-      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      { label: t("nav.home", "Reports"), href: "/reports", icon: HomeIcon },
       {
-        label: t("nav.orders", "Orders"),
-        href: "/orders",
+        label: t("nav.invoices", "Invoices"),
+        href: "/invoices",
         icon: ShoppingCartIcon,
       },
       {
-        label: t("nav.payments", "Payments"),
-        href: "/payments",
+        label: t("nav.receivables", "Balances"),
+        href: "/receivables",
         icon: PackageIcon,
       },
       {
@@ -1378,7 +1386,7 @@ function MobileBottomNav({ role }: { role: UserRole }) {
   } else {
     // ADMIN / OWNER
     navItems = [
-      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      { label: t("nav.home", role === "ADMIN" ? "Queue" : "Overview"), href: homeHref, icon: HomeIcon },
       {
         label: t("nav.orders", "Orders"),
         href: "/orders",
@@ -1396,7 +1404,7 @@ function MobileBottomNav({ role }: { role: UserRole }) {
   return (
     <nav
       aria-label="Mobile navigation"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex h-14 items-center justify-around border-t border-border bg-background/95 backdrop-blur-xs px-2 pb-[env(safe-area-inset-bottom)] shadow-lg"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex min-h-14 h-[calc(3.5rem+env(safe-area-inset-bottom))] items-center justify-around border-t border-border bg-background/95 backdrop-blur-xs px-2 pb-[env(safe-area-inset-bottom)] shadow-lg"
     >
       {navItems.map((item, idx) => {
         const isActive = item.href && location.pathname === item.href;
@@ -1559,7 +1567,17 @@ export function AuthenticatedShell({
             <AppBrand
               href={getDefaultRouteForRole(user.role)}
               name="MillLedger"
-              description="Production unit"
+              description={
+                user.role === "SALESMAN"
+                  ? "Field sales"
+                  : user.role === "PRODUCTION"
+                    ? "Production floor"
+                    : user.role === "ACCOUNTANT"
+                      ? "Audit & finance"
+                      : user.role === "OWNER"
+                        ? "Business oversight"
+                        : "Operations desk"
+              }
             />
           </SidebarHeader>
 
@@ -1714,7 +1732,7 @@ export function AuthenticatedShell({
 
           <main
             id="main-content"
-            className="flex flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden pb-16 md:pb-0"
+            className="flex flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable] pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0 scroll-pb-[calc(10rem+env(safe-area-inset-bottom))] md:scroll-pb-28"
             tabIndex={-1}
           >
             {children}
@@ -1784,9 +1802,9 @@ export function AuthenticatedShell({
         <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
           <SheetContent
             side="right"
-            className="flex w-84 max-w-full flex-col p-0"
+            className="flex w-96 max-w-full flex-col p-0"
           >
-            <div className="flex h-14 items-center justify-between border-b border-border px-5 pr-14">
+            <div className="flex min-h-16 items-center justify-between border-b border-border py-3 pl-5 pr-16">
               <div className="flex items-center gap-2">
                 <BellIcon
                   className="size-4 text-foreground"
@@ -1802,31 +1820,35 @@ export function AuthenticatedShell({
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1">
-                {unreadCount > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={markAllAsRead}
-                    className="h-8 min-h-[32px] px-2.5 text-xs text-muted-foreground hover:text-foreground sm:h-7 sm:min-h-[28px] sm:px-2"
-                  >
-                    Mark all read
-                  </Button>
-                )}
-                {notifications.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={clearNotifications}
-                    aria-label="Clear all notifications"
-                    title="Clear all notifications"
-                    className="size-8 min-h-8 min-w-8 text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2Icon className="size-3.5" aria-hidden="true" />
-                  </Button>
-                )}
-              </div>
             </div>
+
+            {notifications.length > 0 && (
+              <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-5 py-2">
+                <div>
+                  {unreadCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={markAllAsRead}
+                      className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Mark all read
+                    </Button>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearNotifications}
+                  aria-label="Clear all notifications"
+                  title="Clear all notifications"
+                  className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2Icon className="size-3.5" aria-hidden="true" />
+                  <span>Clear all</span>
+                </Button>
+              </div>
+            )}
 
             <div className="flex-1 overflow-y-auto p-4">
               {notifications.length === 0 ? (

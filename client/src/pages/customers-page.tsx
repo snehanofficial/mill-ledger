@@ -103,7 +103,7 @@ export function CustomersPage() {
   }>({
     queryKey: ["sales-customers"],
     queryFn: async () => {
-      const res = await apiClient.get("/sales/customers?organizationId=MILL");
+      const res = await apiClient.get("/sales/customers");
       return res.data;
     },
   });
@@ -120,7 +120,6 @@ export function CustomersPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       const res = await apiClient.post("/sales/customers", {
-        organizationId: "MILL",
         code: formCode.trim(),
         name: formName.trim(),
         state: formState.trim() || "Tamil Nadu",
@@ -577,7 +576,7 @@ export function CustomersPage() {
                 onChange={(e) => setFormState(e.target.value)}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="cust-phone" className="text-xs">
                   Phone

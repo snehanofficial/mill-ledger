@@ -62,7 +62,7 @@ describe("IMP-012: Inventory Items, UOMs, and Stock Adjustments", () => {
         Cookie: adminCookie,
       },
       body: JSON.stringify({
-        organizationId: "MILL",
+        
         sku: `RM-TEST-${Date.now()}`,
         name: "Test Sesame Seed",
         category: "RAW_MATERIAL",
@@ -85,7 +85,7 @@ describe("IMP-012: Inventory Items, UOMs, and Stock Adjustments", () => {
         Cookie: adminCookie,
       },
       body: JSON.stringify({
-        organizationId: "MILL",
+        
         inventoryItemId: item.id,
         quantity: 5,
         reason: "Found extra bag",
@@ -101,7 +101,7 @@ describe("IMP-012: Inventory Items, UOMs, and Stock Adjustments", () => {
         Cookie: adminCookie,
       },
       body: JSON.stringify({
-        organizationId: "MILL",
+        
         inventoryItemId: item.id,
         quantity: -50,
         reason: "Over-deduction test",
@@ -125,6 +125,12 @@ describe("IMP-012: Inventory Items, UOMs, and Stock Adjustments", () => {
     const flour = await prisma.inventoryItem.findFirstOrThrow({
       where: { sku: "RM-FLOUR" },
     });
+
+    const flourBefore = await prisma.inventoryItem.findFirstOrThrow({
+      where: { sku: "RM-FLOUR" },
+    });
+    const initialStock = Number(flourBefore.currentStock);
+    const initialWac = Number(flourBefore.weightedAverageCost);
 
     const prRes = await fetch(`${baseUrl}/api/v1/inventory/purchase-receipts`, {
       method: "POST",
@@ -168,5 +174,25 @@ describe("IMP-012: Inventory Items, UOMs, and Stock Adjustments", () => {
       },
     );
     expect(revRes.status).toBe(200);
+
+    const flourAfter = await prisma.inventoryItem.findFirstOrThrow({
+      where: { sku: "RM-FLOUR" },
+    });
+    expect(Number(flourAfter.currentStock)).toBeCloseTo(initialStock, 4);
+    expect(Number(flourAfter.weightedAverageCost)).toBeCloseTo(initialWac, 4);
+
+    // Second reversal must be rejected
+    const revAgain = await fetch(
+      `${baseUrl}/api/v1/inventory/purchase-receipts/${created.id}/reverse`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({ reason: "Second reversal attempt" }),
+      },
+    );
+    expect(revAgain.status).toBe(400);
   });
 });

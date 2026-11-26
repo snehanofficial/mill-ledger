@@ -21,6 +21,7 @@ export interface CachedProduct {
   taxRate: number;
   uom: string;
   hsnCode?: string;
+  organizationId?: string;
   updatedAt: string;
 }
 
@@ -37,6 +38,7 @@ export interface OfflineOrder {
   idempotencyKey: string;
   schemaVersion: number;
   userId: string;
+  organizationId?: string;
   deviceId: string;
   customerId: string;
   customerName: string;

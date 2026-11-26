@@ -1,6 +1,7 @@
 import { Router, type Response, type NextFunction } from "express";
 import {
   authorize,
+  getSessionOrgId,
   requireAuth,
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
@@ -27,7 +28,7 @@ export async function handlePostPurchaseReceipt(
     }
 
     const receipt = await inventoryService.postPurchaseReceipt(
-      parsed.data,
+      { ...parsed.data, organizationId: getSessionOrgId(req) },
       req.user,
     );
     res.status(201).json(receipt);
@@ -42,10 +43,7 @@ export async function handleGetPurchaseReceipts(
   next: NextFunction,
 ) {
   try {
-    const orgId =
-      (req.query.organizationId as string) ||
-      req.user?.organizationId ||
-      "MILL";
+    const orgId = getSessionOrgId(req);
     const receipts = await inventoryService.getPurchaseReceipts(orgId);
     res.json({ receipts });
   } catch (err) {
@@ -59,11 +57,9 @@ export async function handleGetSuppliers(
   next: NextFunction,
 ) {
   try {
-    const orgId =
-      (req.query.organizationId as string) ||
-      req.user?.organizationId ||
-      "MILL";
-    const suppliers = await inventoryService.getSuppliers(orgId);
+    const orgId = getSessionOrgId(req);
+    const includeInactive = req.query.includeInactive === "true";
+    const suppliers = await inventoryService.getSuppliers(orgId, includeInactive);
     res.json({ suppliers });
   } catch (err) {
     next(err);

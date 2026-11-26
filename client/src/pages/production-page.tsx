@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useWarehouses } from "@/hooks/use-warehouses";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { toast } from "sonner";
 import { useUrlState } from "@/hooks/use-url-state";
@@ -50,6 +52,7 @@ import {
   IndianRupeeIcon,
   Trash2Icon,
   LayersIcon,
+  PencilIcon,
 } from "lucide-react";
 
 interface ProductionRunMaterial {
@@ -73,6 +76,8 @@ interface ProductionRunMaterial {
 interface ProductionRun {
   id: string;
   runNumber: string;
+  recipeId?: string;
+  batchCount?: number;
   status: "DRAFT" | "POSTED" | "REVERSED";
   expectedOutputQty: number;
   actualGoodQty: number;
@@ -114,19 +119,43 @@ export function ProductionPage() {
   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
   const [showBomModal, setShowBomModal] = useState(false);
   const [selectedRun, setSelectedRun] = useState<ProductionRun | null>(null);
+  const [editingDraftRun, setEditingDraftRun] = useState<ProductionRun | null>(null);
+  const [draftEditGoodQty, setDraftEditGoodQty] = useState(200);
+  const [draftEditLabor, setDraftEditLabor] = useState(0);
+  const [draftEditUtility, setDraftEditUtility] = useState(0);
+  const [draftEditNotes, setDraftEditNotes] = useState("");
   const [searchQuery, setSearchQuery] = useUrlState("q", "", {
     debounceMs: 250,
   });
 
-  // Form states for benchmark Murukku batch
+  // Create BOM Recipe state
+  const [showCreateBomForm, setShowCreateBomForm] = useState(false);
+  const [newBomVariantId, setNewBomVariantId] = useState("");
+  const [newBomName, setNewBomName] = useState("");
+  const [newBomBatchSize, setNewBomBatchSize] = useState(100);
+  const [newBomExpectedOutput, setNewBomExpectedOutput] = useState(100);
+  const [newBomOutputUomId, setNewBomOutputUomId] = useState("");
+  const [newBomLines, setNewBomLines] = useState<
+    Array<{ inventoryItemId: string; itemType: "INGREDIENT" | "PACKAGING"; plannedQty: number }>
+  >([]);
+
+  // Form states for production batch
   const [selectedRecipeId, setSelectedRecipeId] = useState("");
+  const [batchCount, setBatchCount] = useState(1);
   const [actualGoodQty, setActualGoodQty] = useState(188);
-  const [damagedPouches, setDamagedPouches] = useState(6);
-  const [oilConsumed, setOilConsumed] = useState(10.5);
-  const [cartonsConsumed, setCartonsConsumed] = useState(9);
+  const [actualRejectedQty, setActualRejectedQty] = useState(0);
+  const [materialActuals, setMaterialActuals] = useState<
+    Record<string, { actualQty: number; damagedQty: number }>
+  >({});
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState("");
   const [laborCost, setLaborCost] = useState(1200);
   const [utilityCost, setUtilityCost] = useState(600);
   const [notes, setNotes] = useState("Murukku 200g production batch 1");
+
+  const { data: warehousesData } = useWarehouses();
+  const warehouses = warehousesData?.warehouses || [];
+  const activeWarehouse =
+    warehouses.find((w) => w.id === selectedWarehouseId) || warehouses[0];
 
   // Fetch production runs
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
@@ -134,7 +163,56 @@ export function ProductionPage() {
   }>({
     queryKey: ["production-runs"],
     queryFn: async () => {
-      const res = await apiClient.get("/production-runs?organizationId=MILL");
+      const res = await apiClient.get("/production-runs");
+      return res.data;
+    },
+  });
+
+  // Fetch live inventory balances for stock availability & WAC costing
+  const { data: balancesData } = useQuery<{
+    balances: Array<{
+      id: string;
+      sku: string;
+      name: string;
+      category: string;
+      onHand: number;
+      available: number;
+      weightedAverageCost: number;
+      baseUom: { id?: string; code: string; symbol: string };
+    }>;
+  }>({
+    queryKey: ["inventory-balances", activeWarehouse?.id ?? "all"],
+    queryFn: async () => {
+      const qs = activeWarehouse?.id
+        ? `?warehouseId=${encodeURIComponent(activeWarehouse.id)}`
+        : "";
+      const res = await apiClient.get(`/inventory/balances${qs}`);
+      return res.data;
+    },
+  });
+
+  const { data: productsData } = useQuery<{
+    products: Array<{
+      id: string;
+      name: string;
+      variants: Array<{ id: string; sku: string; name: string }>;
+    }>;
+  }>({
+    queryKey: ["masters-products"],
+    enabled: canManageBom && showBomModal,
+    queryFn: async () => {
+      const res = await apiClient.get("/masters/products");
+      return res.data;
+    },
+  });
+
+  const { data: uomsData } = useQuery<{
+    uoms: Array<{ id: string; code: string; name: string; symbol: string }>;
+  }>({
+    queryKey: ["inventory-uoms"],
+    enabled: canManageBom && showBomModal,
+    queryFn: async () => {
+      const res = await apiClient.get("/inventory/uoms");
       return res.data;
     },
   });
@@ -144,6 +222,7 @@ export function ProductionPage() {
     recipes: Array<{
       id: string;
       name: string;
+      productVariantId?: string;
       expectedOutputQty: number;
       productVariant: { sku: string; name: string };
       items: Array<{
@@ -153,14 +232,13 @@ export function ProductionPage() {
         tolerancePct: number;
         itemType: string;
         inventoryItem: { id: string; sku: string; name: string };
+        uom?: { code: string; symbol: string };
       }>;
     }>;
   }>({
     queryKey: ["production-recipes"],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/production-runs/recipes?organizationId=MILL",
-      );
+      const res = await apiClient.get("/production-runs/recipes");
       return res.data;
     },
   });
@@ -169,59 +247,48 @@ export function ProductionPage() {
     recipesData?.recipes.find((r) => r.id === selectedRecipeId) ||
     recipesData?.recipes[0];
 
+  const balanceById = new Map(
+    (balancesData?.balances ?? []).map((b) => [b.id, b]),
+  );
+
+  const getMaterialInput = (item: {
+    inventoryItemId: string;
+    plannedQty: number;
+    inventoryItem: { sku: string };
+  }) => {
+    const override = materialActuals[item.inventoryItemId];
+    if (override) return override;
+    const scaledPlanned = Number(item.plannedQty) * batchCount;
+    return { actualQty: scaledPlanned, damagedQty: 0 };
+  };
+
   // Post production batch mutation
   const postMutation = useMutation({
     mutationFn: async () => {
-      // Find inventory item IDs from current balances
-      const balRes = await apiClient.get(
-        "/inventory/balances?organizationId=MILL",
-      );
-      const items: Array<{ id: string; sku: string }> = balRes.data.balances;
-      const flourItem = items.find((i) => i.sku === "RM-FLOUR");
-      const oilItem = items.find((i) => i.sku === "RM-OIL");
-      const spiceItem = items.find((i) => i.sku === "RM-SPICE");
-      const pouchItem = items.find((i) => i.sku === "PKG-POUCH-200G");
-      const cartonItem = items.find((i) => i.sku === "PKG-CARTON");
+      if (!activeRecipe || activeRecipe.items.length === 0) {
+        throw new Error("Active BOM recipe with materials is required");
+      }
 
-      const isMurukkuBOM =
-        !activeRecipe ||
-        activeRecipe.name?.includes("Murukku") ||
-        activeRecipe.productVariant?.sku?.includes("MURUKKU");
-
-      let consumedMaterials: Array<{
-        inventoryItemId: string;
-        actualQty: number;
-        damagedQty?: number;
-      }> = [];
-
-      if (isMurukkuBOM && flourItem && oilItem && spiceItem && pouchItem && cartonItem) {
-        consumedMaterials = [
-          { inventoryItemId: flourItem.id, actualQty: 40 },
-          { inventoryItemId: oilItem.id, actualQty: oilConsumed },
-          { inventoryItemId: spiceItem.id, actualQty: 1.2 },
-          {
-            inventoryItemId: pouchItem.id,
-            actualQty: actualGoodQty + damagedPouches,
-            damagedQty: damagedPouches,
-          },
-          { inventoryItemId: cartonItem.id, actualQty: cartonsConsumed },
-        ];
-      } else if (activeRecipe && activeRecipe.items.length > 0) {
-        consumedMaterials = activeRecipe.items.map((item) => ({
+      const consumedMaterials = activeRecipe.items.map((item) => {
+        const entry = getMaterialInput(item);
+        return {
           inventoryItemId: item.inventoryItemId,
-          actualQty: Number(item.plannedQty),
-        }));
-      } else {
-        throw new Error("Required BOM items not found");
+          actualQty: Number(entry.actualQty),
+          damagedQty: Number(entry.damagedQty || 0),
+        };
+      });
+
+      if (!activeWarehouse) {
+        throw new Error("Production warehouse is required");
       }
 
       const payload = {
-        organizationId: "MILL",
-        warehouseId: "WH-1",
-        recipeId: activeRecipe?.id,
+        warehouseId: activeWarehouse.id,
+        recipeId: activeRecipe.id,
         runNumber: `RUN-2026-${Date.now().toString().slice(-4)}`,
-        batchCount: 1,
+        batchCount,
         actualGoodQty,
+        actualRejectedQty,
         directLaborCost: laborCost,
         utilityCost,
         notes,
@@ -245,16 +312,26 @@ export function ProductionPage() {
   // Save draft production batch mutation (IMP-013)
   const saveDraftMutation = useMutation({
     mutationFn: async () => {
-      if (!activeRecipe) throw new Error("Recipe is required");
-      const res = await apiClient.post("/production-runs/draft", {
-        organizationId: "MILL",
-        warehouseId: "WH-1",
+      if (!activeRecipe || !activeWarehouse) {
+        throw new Error("Recipe and warehouse are required");
+      }
+      const createdRes = await apiClient.post("/production-runs/draft", {
+        warehouseId: activeWarehouse.id,
         recipeId: activeRecipe.id,
         runNumber: `RUN-DRAFT-${Date.now().toString().slice(-5)}`,
-        batchCount: 1,
+        batchCount,
         notes,
       });
-      return res.data;
+      const created = createdRes.data;
+      if (created?.id) {
+        await apiClient.put(`/production-runs/${created.id}`, {
+          actualGoodQty,
+          directLaborCost: laborCost,
+          utilityCost,
+          notes,
+        });
+      }
+      return created;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["production-runs"] });
@@ -266,22 +343,43 @@ export function ProductionPage() {
     },
   });
 
+  const updateDraftMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingDraftRun) throw new Error("No draft selected");
+      const res = await apiClient.put(`/production-runs/${editingDraftRun.id}`, {
+        actualGoodQty: draftEditGoodQty,
+        directLaborCost: draftEditLabor,
+        utilityCost: draftEditUtility,
+        notes: draftEditNotes,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["production-runs"] });
+      setEditingDraftRun(null);
+      toast.success("Draft run updated.");
+    },
+    onError: (err) => {
+      toast.error(extractErrorMessage(err, "Failed to update draft"));
+    },
+  });
+
   const postDraftMutation = useMutation({
     mutationFn: async (run: ProductionRun) => {
       const res = await apiClient.post(`/production-runs/${run.id}/post`, {
-        organizationId: "MILL",
-        warehouseId: "WH-1",
-        recipeId: activeRecipe?.id || "",
+        warehouseId: activeWarehouse?.id || "",
+        recipeId: run.recipeId || activeRecipe?.id || "",
         runNumber: run.runNumber,
-        batchCount: 1,
+        batchCount: Number(run.batchCount) || 1,
         actualGoodQty: Number(run.actualGoodQty) || Number(run.expectedOutputQty) || 200,
+        actualRejectedQty: Number(run.actualRejectedQty) || 0,
         directLaborCost: Number(run.directLaborCost) || 0,
         utilityCost: Number(run.utilityCost) || 0,
         notes: run.notes || undefined,
         consumedMaterials: run.materials.map((m) => ({
           inventoryItemId: m.inventoryItemId,
-          actualQty: Number(m.actualQty),
-          damagedQty: Number(m.damagedQty),
+          actualQty: Number(m.actualQty) > 0 ? Number(m.actualQty) : Number(m.plannedQty),
+          damagedQty: Number(m.damagedQty) || 0,
         })),
       });
       return res.data;
@@ -293,6 +391,48 @@ export function ProductionPage() {
     },
     onError: (err) => {
       toast.error(extractErrorMessage(err, "Failed to post draft run"));
+    },
+  });
+
+  const createRecipeMutation = useMutation({
+    mutationFn: async () => {
+      if (!newBomVariantId || !newBomName.trim() || !newBomOutputUomId) {
+        throw new Error("Variant, recipe name, and output UOM are required");
+      }
+      if (newBomLines.length === 0) {
+        throw new Error("Add at least one ingredient or packaging line");
+      }
+      const res = await apiClient.post("/production-runs/recipes", {
+        productVariantId: newBomVariantId,
+        name: newBomName.trim(),
+        standardBatchSize: Number(newBomBatchSize),
+        expectedOutputQty: Number(newBomExpectedOutput),
+        outputUomId: newBomOutputUomId,
+        items: newBomLines.map((l) => {
+          const item = balanceById.get(l.inventoryItemId);
+          const matchingUom = uomsData?.uoms.find(
+            (u) => u.code === item?.baseUom?.code,
+          );
+          return {
+            inventoryItemId: l.inventoryItemId,
+            itemType: l.itemType,
+            plannedQty: Number(l.plannedQty),
+            uomId: matchingUom?.id || newBomOutputUomId,
+            tolerancePct: 5,
+          };
+        }),
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["production-recipes"] });
+      setShowCreateBomForm(false);
+      setNewBomName("");
+      setNewBomLines([]);
+      toast.success("BOM recipe created.");
+    },
+    onError: (err) => {
+      toast.error(extractErrorMessage(err, "Failed to create BOM recipe"));
     },
   });
 
@@ -384,13 +524,31 @@ export function ProductionPage() {
     .filter((r) => r.status === "POSTED")
     .reduce((sum, r) => sum + Number(r.totalRunCost), 0);
 
-  // Live modal calculations
-  const expectedPackets = 200;
+  // Live modal calculations from selected BOM & live WAC
+  const expectedPackets =
+    (Number(activeRecipe?.expectedOutputQty) || 200) * batchCount;
   const yieldVariancePct =
-    ((actualGoodQty - expectedPackets) / expectedPackets) * 100;
-  const oilVariancePct = ((oilConsumed - 10) / 10) * 100;
-  const cartonsHold = cartonsConsumed * 20;
-  const hasCartonShortage = cartonsHold < actualGoodQty;
+    expectedPackets > 0
+      ? ((actualGoodQty - expectedPackets) / expectedPackets) * 100
+      : 0;
+
+  const liveDirectMaterialCost = (activeRecipe?.items ?? []).reduce(
+    (sum, item) => {
+      const entry = getMaterialInput(item);
+      const wac = balanceById.get(item.inventoryItemId)?.weightedAverageCost ?? 0;
+      return sum + Number(entry.actualQty) * wac;
+    },
+    0,
+  );
+
+  const cartonLine = (activeRecipe?.items ?? []).find(
+    (it) =>
+      it.inventoryItem.sku === "PKG-CARTON" ||
+      it.inventoryItem.name.toLowerCase().includes("carton"),
+  );
+  const cartonsUsedLive = cartonLine ? getMaterialInput(cartonLine).actualQty : 0;
+  const cartonsHold = cartonsUsedLive * 20;
+  const hasCartonShortage = Boolean(cartonLine) && cartonsHold < actualGoodQty;
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -615,7 +773,12 @@ export function ProductionPage() {
                   return (
                     <TableRow key={r.id}>
                       <TableCell className="font-mono font-medium">
-                        {r.runNumber}
+                        <Link
+                          to={`/production/runs/${r.id}`}
+                          className="text-primary hover:underline"
+                        >
+                          {r.runNumber}
+                        </Link>
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -680,6 +843,24 @@ export function ProductionPage() {
                       <TableCell className="text-right">
                         {r.status === "DRAFT" && canRecordProduction ? (
                           <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              aria-label={`Edit draft ${r.runNumber}`}
+                              onClick={() => {
+                                setEditingDraftRun(r);
+                                setDraftEditGoodQty(
+                                  Number(r.actualGoodQty) || Number(r.expectedOutputQty) || 0,
+                                );
+                                setDraftEditLabor(Number(r.directLaborCost) || 0);
+                                setDraftEditUtility(Number(r.utilityCost) || 0);
+                                setDraftEditNotes(r.notes || "");
+                              }}
+                              className="h-7 px-2 text-xs"
+                            >
+                              <PencilIcon className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
@@ -753,11 +934,11 @@ export function ProductionPage() {
                   </Label>
                 </DomainTooltip>
                 <Select
-                  value={selectedRecipeId || undefined}
+                  value={activeRecipe?.id || undefined}
                   onValueChange={setSelectedRecipeId}
                 >
                   <SelectTrigger id="production-recipe-select" className="font-medium">
-                    <SelectValue placeholder="Murukku 200 g (Standard BOM)" />
+                    <SelectValue placeholder="Select BOM recipe" />
                   </SelectTrigger>
                   <SelectContent searchable searchPlaceholder="Search BOM recipes...">
                     {(recipesData?.recipes || []).map((r) => (
@@ -769,8 +950,53 @@ export function ProductionPage() {
                 </Select>
               </div>
 
-              {/* Output inputs */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Warehouse selection */}
+              <div className="flex flex-col gap-1.5">
+                <Label
+                  htmlFor="production-warehouse-select"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
+                  Production Warehouse
+                </Label>
+                <Select
+                  value={activeWarehouse?.id || undefined}
+                  onValueChange={setSelectedWarehouseId}
+                >
+                  <SelectTrigger id="production-warehouse-select">
+                    <SelectValue placeholder="Select warehouse" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {warehouses.map((w) => (
+                      <SelectItem key={w.id} value={w.id}>
+                        {w.code} · {w.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Output & Batch inputs */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <Label
+                    htmlFor="production-batch-count-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
+                    Batches
+                  </Label>
+                  <Input
+                    id="production-batch-count-input"
+                    type="number"
+                    min={0.1}
+                    step="0.1"
+                    value={batchCount}
+                    onChange={(e) => setBatchCount(Math.max(0.1, Number(e.target.value) || 1))}
+                  />
+                  <span className="text-2xs text-muted-foreground">
+                    Expected: {expectedPackets}
+                  </span>
+                </div>
+
                 <div className="flex flex-col gap-1.5">
                   <Label
                     htmlFor="production-good-qty-input"
@@ -781,11 +1007,12 @@ export function ProductionPage() {
                   <Input
                     id="production-good-qty-input"
                     type="number"
+                    min={0}
                     value={actualGoodQty}
                     onChange={(e) => setActualGoodQty(Number(e.target.value))}
                     className="font-semibold"
                   />
-                  <div className="flex items-center gap-1 text-xs">
+                  <div className="flex items-center gap-1 text-2xs">
                     <span>{t("Variance")}:</span>
                     <span
                       className={`font-semibold ${
@@ -795,89 +1022,133 @@ export function ProductionPage() {
                       }`}
                     >
                       {yieldVariancePct > 0
-                        ? `+${yieldVariancePct}%`
-                        : `${yieldVariancePct}%`}
+                        ? `+${yieldVariancePct.toFixed(1)}%`
+                        : `${yieldVariancePct.toFixed(1)}%`}
                     </span>
-                    {yieldVariancePct !== 0 && (
-                      <span className="text-xs text-amber-600 font-medium">
-                        ({t("flagged")})
-                      </span>
-                    )}
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <Label
-                    htmlFor="production-damaged-pouches-input"
+                    htmlFor="production-rejected-qty-input"
                     className="text-xs font-semibold text-muted-foreground"
                   >
-                    {t("Damaged pouches")}
+                    Rejected output
                   </Label>
                   <Input
-                    id="production-damaged-pouches-input"
+                    id="production-rejected-qty-input"
                     type="number"
-                    value={damagedPouches}
-                    onChange={(e) => setDamagedPouches(Number(e.target.value))}
+                    min={0}
+                    value={actualRejectedQty}
+                    onChange={(e) => setActualRejectedQty(Number(e.target.value))}
                   />
-                  <span className="text-xs text-muted-foreground">
-                    Total pouches consumed: {actualGoodQty + damagedPouches}
-                  </span>
                 </div>
               </div>
 
-              {/* Material consumption inputs */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor="production-oil-consumed-input"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    {t("Cooking oil consumed (L)")}
-                  </Label>
-                  <Input
-                    id="production-oil-consumed-input"
-                    type="number"
-                    step="0.1"
-                    value={oilConsumed}
-                    onChange={(e) => setOilConsumed(Number(e.target.value))}
-                  />
-                  <div className="flex items-center gap-1 text-xs">
-                    <span>{t("Variance")}:</span>
-                    <span
-                      className={`font-semibold ${
-                        oilVariancePct !== 0
-                          ? "text-amber-600 dark:text-amber-400"
-                          : "text-emerald-600"
-                      }`}
-                    >
-                      {oilVariancePct > 0
-                        ? `+${oilVariancePct}%`
-                        : `${oilVariancePct}%`}
-                    </span>
-                    {oilVariancePct >= 5 && (
-                      <span className="text-xs text-amber-600 font-medium">
-                        ({t("flagged")})
-                      </span>
-                    )}
-                  </div>
-                </div>
+              {/* Dynamic BOM Material Lines with live stock & variance */}
+              <div className="flex flex-col gap-2">
+                <Label className="text-xs font-semibold text-muted-foreground">
+                  BOM Material & Packaging Consumption (Live Stock & WAC)
+                </Label>
+                <div className="max-h-56 overflow-y-auto rounded-lg border divide-y">
+                  {(activeRecipe?.items ?? []).map((item) => {
+                    const entry = getMaterialInput(item);
+                    const bal = balanceById.get(item.inventoryItemId);
+                    const available = bal?.available ?? 0;
+                    const plannedScaled = Number(item.plannedQty) * batchCount;
+                    const varPct =
+                      plannedScaled > 0
+                        ? ((entry.actualQty - plannedScaled) / plannedScaled) * 100
+                        : 0;
+                    const shortage = Math.max(0, entry.actualQty - available);
+                    const unitSym = item.uom?.symbol || bal?.baseUom?.symbol || "";
 
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor="production-cartons-consumed-input"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    {t("Cartons used (pieces)")}
-                  </Label>
-                  <Input
-                    id="production-cartons-consumed-input"
-                    type="number"
-                    value={cartonsConsumed}
-                    onChange={(e) => setCartonsConsumed(Number(e.target.value))}
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    Capacity: {cartonsHold} packets
-                  </span>
+                    return (
+                      <div key={item.id} className="p-2.5 flex flex-col gap-1.5 text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium text-foreground">
+                            {item.inventoryItem.name} ({unitSym})
+                          </span>
+                          <span className="text-2xs text-muted-foreground font-mono">
+                            Plan: {plannedScaled} · Avail: {available}
+                            {shortage > 0 && (
+                              <span className="ml-1 text-destructive font-semibold">
+                                · Short {shortage}
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-stretch sm:items-center">
+                          <div className="flex flex-col gap-0.5">
+                            <Label
+                              htmlFor={`mat-actual-${item.inventoryItem.sku}`}
+                              className="text-2xs text-muted-foreground"
+                            >
+                              Consumed
+                            </Label>
+                            <Input
+                              id={`mat-actual-${item.inventoryItem.sku}`}
+                              type="number"
+                              min={0}
+                              step="any"
+                              value={entry.actualQty}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setMaterialActuals((prev) => ({
+                                  ...prev,
+                                  [item.inventoryItemId]: {
+                                    actualQty: val,
+                                    damagedQty: entry.damagedQty,
+                                  },
+                                }));
+                              }}
+                              className="h-8 text-xs font-mono"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-0.5">
+                            <Label
+                              htmlFor={`mat-damaged-${item.inventoryItem.sku}`}
+                              className="text-2xs text-muted-foreground"
+                            >
+                              Damaged/Scrap
+                            </Label>
+                            <Input
+                              id={`mat-damaged-${item.inventoryItem.sku}`}
+                              type="number"
+                              min={0}
+                              step="any"
+                              value={entry.damagedQty}
+                              onChange={(e) => {
+                                const dmg = Number(e.target.value);
+                                setMaterialActuals((prev) => ({
+                                  ...prev,
+                                  [item.inventoryItemId]: {
+                                    actualQty: entry.actualQty,
+                                    damagedQty: dmg,
+                                  },
+                                }));
+                              }}
+                              className="h-8 text-xs font-mono"
+                            />
+                          </div>
+                          <div className="text-right font-mono text-2xs">
+                            <span
+                              className={
+                                Math.abs(varPct) >= (item.tolerancePct || 5) && varPct !== 0
+                                  ? "text-amber-600 font-semibold"
+                                  : "text-muted-foreground"
+                              }
+                            >
+                              {varPct > 0 ? `+${varPct.toFixed(1)}%` : `${varPct.toFixed(1)}%`}
+                            </span>
+                            <div className="text-muted-foreground">
+                              {formatINR(entry.actualQty * (bal?.weightedAverageCost ?? 0))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -890,14 +1161,14 @@ export function ProductionPage() {
                 >
                   <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>
-                    Warning: {cartonsConsumed} cartons represent {cartonsHold}{" "}
+                    Warning: {cartonsUsedLive} cartons represent {cartonsHold}{" "}
                     of {actualGoodQty} packets.
                   </span>
                 </div>
               )}
 
               {/* Additional Costs */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <Label
                     htmlFor="production-labor-cost-input"
@@ -908,6 +1179,7 @@ export function ProductionPage() {
                   <Input
                     id="production-labor-cost-input"
                     type="number"
+                    min={0}
                     value={laborCost}
                     onChange={(e) => setLaborCost(Number(e.target.value))}
                     className="font-semibold"
@@ -924,6 +1196,7 @@ export function ProductionPage() {
                   <Input
                     id="production-utility-cost-input"
                     type="number"
+                    min={0}
                     value={utilityCost}
                     onChange={(e) => setUtilityCost(Number(e.target.value))}
                     className="font-semibold"
@@ -946,13 +1219,13 @@ export function ProductionPage() {
                 />
               </div>
 
-              {/* Cost summary preview */}
+              {/* Cost summary preview (computed from live inventory WAC) */}
               <div className="rounded-lg bg-muted/50 p-3 text-xs flex flex-col gap-1">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
                     {t("Direct materials:")}
                   </span>
-                  <span className="font-semibold">₹4,055.00</span>
+                  <span className="font-semibold">{formatINR(liveDirectMaterialCost)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("Direct labour:")}</span>
@@ -967,15 +1240,15 @@ export function ProductionPage() {
                 <div className="flex justify-between border-t pt-1 font-bold">
                   <span>{t("Total run cost:")}</span>
                   <span className="text-foreground">
-                    {formatINR(4055 + laborCost + utilityCost)}
+                    {formatINR(liveDirectMaterialCost + laborCost + utilityCost)}
                   </span>
                 </div>
                 <div className="flex justify-between text-emerald-600 font-bold">
                   <span>{t("Cost per good packet:")}</span>
                   <span>
-                    {formatINR(
-                      (4055 + laborCost + utilityCost) / actualGoodQty
-                    )}
+                    {actualGoodQty > 0
+                      ? formatINR((liveDirectMaterialCost + laborCost + utilityCost) / actualGoodQty)
+                      : "—"}
                   </span>
                 </div>
               </div>
@@ -1096,6 +1369,77 @@ export function ProductionPage() {
         )}
       </Dialog>
 
+      {/* Edit Draft Modal */}
+      <Dialog
+        open={editingDraftRun !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditingDraftRun(null);
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Draft Run {editingDraftRun?.runNumber}</DialogTitle>
+            <DialogDescription>
+              Update expected output, labour, utility, or notes before posting.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="draft-edit-good-qty" className="text-xs">Actual Good Output</Label>
+              <Input
+                id="draft-edit-good-qty"
+                type="number"
+                min={0}
+                value={draftEditGoodQty}
+                onChange={(e) => setDraftEditGoodQty(Number(e.target.value))}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="draft-edit-labor" className="text-xs">Direct Labour (₹)</Label>
+                <Input
+                  id="draft-edit-labor"
+                  type="number"
+                  min={0}
+                  value={draftEditLabor}
+                  onChange={(e) => setDraftEditLabor(Number(e.target.value))}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="draft-edit-utility" className="text-xs">Gas & Power (₹)</Label>
+                <Input
+                  id="draft-edit-utility"
+                  type="number"
+                  min={0}
+                  value={draftEditUtility}
+                  onChange={(e) => setDraftEditUtility(Number(e.target.value))}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="draft-edit-notes" className="text-xs">Notes</Label>
+              <Input
+                id="draft-edit-notes"
+                value={draftEditNotes}
+                onChange={(e) => setDraftEditNotes(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" size="sm" onClick={() => setEditingDraftRun(null)}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={updateDraftMutation.isPending}
+              onClick={() => updateDraftMutation.mutate()}
+            >
+              Save Draft Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* BOM Recipes Management Modal (IMP-011) */}
       <Dialog open={showBomModal} onOpenChange={setShowBomModal}>
         <DialogContent className="max-w-2xl">
@@ -1108,7 +1452,215 @@ export function ProductionPage() {
               Active BOM recipes and version history. Cloning creates a new version without mutating historical runs.
             </DialogDescription>
           </DialogHeader>
+          {canManageBom && (
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => {
+                  const allVariants = (productsData?.products ?? []).flatMap((p) => p.variants);
+                  setNewBomVariantId(allVariants[0]?.id || "");
+                  setNewBomOutputUomId(
+                    uomsData?.uoms.find((u) => u.code === "PACKET")?.id ||
+                      uomsData?.uoms[0]?.id ||
+                      "",
+                  );
+                  if (newBomLines.length === 0 && (balancesData?.balances ?? []).length > 0) {
+                    const firstRaw = balancesData!.balances.find((b) => b.category === "RAW_MATERIAL");
+                    if (firstRaw) {
+                      setNewBomLines([{ inventoryItemId: firstRaw.id, itemType: "INGREDIENT", plannedQty: 10 }]);
+                    }
+                  }
+                  setShowCreateBomForm((v) => !v);
+                }}
+              >
+                {showCreateBomForm ? "Hide Form" : "New Recipe / BOM"}
+              </Button>
+            </div>
+          )}
           <div className="max-h-96 overflow-y-auto flex flex-col gap-3 py-2">
+            {showCreateBomForm && canManageBom && (
+              <div className="rounded-lg border bg-muted/30 p-3 flex flex-col gap-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Create New BOM Recipe
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="new-bom-variant" className="text-xs">Product Variant</Label>
+                    <Select value={newBomVariantId} onValueChange={setNewBomVariantId}>
+                      <SelectTrigger id="new-bom-variant" className="h-9 text-xs">
+                        <SelectValue placeholder="Select variant" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(productsData?.products ?? []).flatMap((p) =>
+                          p.variants.map((v) => (
+                            <SelectItem key={v.id} value={v.id}>
+                              {v.name} ({v.sku})
+                            </SelectItem>
+                          )),
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="new-bom-name" className="text-xs">Recipe Name</Label>
+                    <Input
+                      id="new-bom-name"
+                      placeholder="Standard Mixture 250g BOM"
+                      value={newBomName}
+                      onChange={(e) => setNewBomName(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="new-bom-batch" className="text-xs">Batch Size</Label>
+                    <Input
+                      id="new-bom-batch"
+                      type="number"
+                      min={1}
+                      value={newBomBatchSize}
+                      onChange={(e) => setNewBomBatchSize(Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="new-bom-output" className="text-xs">Expected Yield</Label>
+                    <Input
+                      id="new-bom-output"
+                      type="number"
+                      min={1}
+                      value={newBomExpectedOutput}
+                      onChange={(e) => setNewBomExpectedOutput(Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="new-bom-uom" className="text-xs">Output UOM</Label>
+                    <Select value={newBomOutputUomId} onValueChange={setNewBomOutputUomId}>
+                      <SelectTrigger id="new-bom-uom" className="h-9 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(uomsData?.uoms ?? []).map((u) => (
+                          <SelectItem key={u.id} value={u.id}>
+                            {u.code} ({u.symbol})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium">BOM Material Lines</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => {
+                        const first = balancesData?.balances[0];
+                        if (!first) return;
+                        setNewBomLines((prev) => [
+                          ...prev,
+                          {
+                            inventoryItemId: first.id,
+                            itemType: first.category === "PACKAGING" ? "PACKAGING" : "INGREDIENT",
+                            plannedQty: 1,
+                          },
+                        ]);
+                      }}
+                    >
+                      + Add Line
+                    </Button>
+                  </div>
+                  {newBomLines.map((line, idx) => (
+                    <div key={idx} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-stretch sm:items-center">
+                      <div className="sm:col-span-5">
+                        <Select
+                          value={line.inventoryItemId}
+                          onValueChange={(val) =>
+                            setNewBomLines((prev) =>
+                              prev.map((l, i) => (i === idx ? { ...l, inventoryItemId: val } : l)),
+                            )
+                          }
+                        >
+                          <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {(balancesData?.balances ?? [])
+                              .filter((b) => b.category !== "FINISHED_GOODS")
+                              .map((b) => (
+                                <SelectItem key={b.id} value={b.id}>
+                                  {b.name} ({b.baseUom.symbol})
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="sm:col-span-3">
+                        <Select
+                          value={line.itemType}
+                          onValueChange={(val) =>
+                            setNewBomLines((prev) =>
+                              prev.map((l, i) =>
+                                i === idx
+                                  ? { ...l, itemType: val as "INGREDIENT" | "PACKAGING" }
+                                  : l,
+                              ),
+                            )
+                          }
+                        >
+                          <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="INGREDIENT">Ingredient</SelectItem>
+                            <SelectItem value="PACKAGING">Packaging</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="sm:col-span-3">
+                        <Input
+                          type="number"
+                          min={0.001}
+                          step="any"
+                          value={line.plannedQty}
+                          onChange={(e) =>
+                            setNewBomLines((prev) =>
+                              prev.map((l, i) =>
+                                i === idx ? { ...l, plannedQty: Number(e.target.value) } : l,
+                              ),
+                            )
+                          }
+                          className="h-11 sm:h-9 text-base sm:text-xs"
+                        />
+                      </div>
+                      <div className="sm:col-span-1 text-right">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-1.5 text-destructive"
+                          onClick={() =>
+                            setNewBomLines((prev) => prev.filter((_, i) => i !== idx))
+                          }
+                        >
+                          <Trash2Icon className="size-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    size="sm"
+                    disabled={createRecipeMutation.isPending || !newBomName.trim()}
+                    onClick={() => createRecipeMutation.mutate()}
+                  >
+                    Save Recipe
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {(recipesData?.recipes ?? []).map((r) => (
               <div key={r.id} className="rounded-lg border p-3 flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-2">

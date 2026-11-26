@@ -289,7 +289,7 @@ describe("Better Auth and permission integration", () => {
       );
 
       // Verify normal access to user's own organization works
-      const ownOrgRes = await fetch(`${baseUrl}/api/v1/dashboard?organizationId=MILL`, {
+      const ownOrgRes = await fetch(`${baseUrl}/api/v1/dashboard`, {
         headers: { Cookie: cookie },
       });
       expect(ownOrgRes.status).toBe(200);

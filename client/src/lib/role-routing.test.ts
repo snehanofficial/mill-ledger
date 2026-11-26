@@ -6,7 +6,7 @@ import {
 } from "./role-routing";
 import type { Role } from "@mill-ledger/shared";
 
-describe("F-019 Regression: Frontend Route-Level Role Authorization & Default Workspaces", () => {
+describe("Frontend Route-Level Role Authorization & Default Workspaces", () => {
   describe("getDefaultRouteForRole", () => {
     it("routes SALESMAN to their order intake workspace", () => {
       expect(getDefaultRouteForRole("SALESMAN")).toBe("/orders");
@@ -16,8 +16,8 @@ describe("F-019 Regression: Frontend Route-Level Role Authorization & Default Wo
       expect(getDefaultRouteForRole("PRODUCTION")).toBe("/production/today");
     });
 
-    it("routes ACCOUNTANT to statutory invoices", () => {
-      expect(getDefaultRouteForRole("ACCOUNTANT")).toBe("/invoices");
+    it("routes ACCOUNTANT to reporting home", () => {
+      expect(getDefaultRouteForRole("ACCOUNTANT")).toBe("/reports");
     });
 
     it("routes ADMIN and OWNER to operations dashboard", () => {
@@ -31,10 +31,12 @@ describe("F-019 Regression: Frontend Route-Level Role Authorization & Default Wo
     });
   });
 
-  describe("isRoutePermitted matrix compliance (audit/evidence/role-ui-route-matrix.csv)", () => {
+  describe("isRoutePermitted matrix compliance", () => {
     it("blocks SALESMAN from navigating directly to sensitive finance and production views", () => {
       expect(isRoutePermitted("/invoices", "SALESMAN")).toBe(false);
+      expect(isRoutePermitted("/invoices/inv-1", "SALESMAN")).toBe(false);
       expect(isRoutePermitted("/payments", "SALESMAN")).toBe(false);
+      expect(isRoutePermitted("/receivables", "SALESMAN")).toBe(false);
       expect(isRoutePermitted("/dispatch", "SALESMAN")).toBe(false);
       expect(isRoutePermitted("/stock", "SALESMAN")).toBe(false);
       expect(isRoutePermitted("/purchases", "SALESMAN")).toBe(false);
@@ -43,11 +45,14 @@ describe("F-019 Regression: Frontend Route-Level Role Authorization & Default Wo
       expect(isRoutePermitted("/dashboard", "SALESMAN")).toBe(false);
       expect(isRoutePermitted("/settings", "SALESMAN")).toBe(false);
       expect(isRoutePermitted("/exports", "SALESMAN")).toBe(false);
+      expect(isRoutePermitted("/reports", "SALESMAN")).toBe(false);
 
       // Permitted views for Salesman
       expect(isRoutePermitted("/orders", "SALESMAN")).toBe(true);
       expect(isRoutePermitted("/orders/new", "SALESMAN")).toBe(true);
+      expect(isRoutePermitted("/orders/ord-123", "SALESMAN")).toBe(true);
       expect(isRoutePermitted("/customers", "SALESMAN")).toBe(true);
+      expect(isRoutePermitted("/customers/cust-123", "SALESMAN")).toBe(true);
       expect(isRoutePermitted("/reports/sales", "SALESMAN")).toBe(true);
       expect(isRoutePermitted("/reports/stock", "SALESMAN")).toBe(true);
     });
@@ -57,6 +62,7 @@ describe("F-019 Regression: Frontend Route-Level Role Authorization & Default Wo
       expect(isRoutePermitted("/orders/new", "PRODUCTION")).toBe(false);
       expect(isRoutePermitted("/invoices", "PRODUCTION")).toBe(false);
       expect(isRoutePermitted("/payments", "PRODUCTION")).toBe(false);
+      expect(isRoutePermitted("/receivables", "PRODUCTION")).toBe(false);
       expect(isRoutePermitted("/dispatch", "PRODUCTION")).toBe(false);
       expect(isRoutePermitted("/customers", "PRODUCTION")).toBe(false);
       expect(isRoutePermitted("/dashboard", "PRODUCTION")).toBe(false);
@@ -66,15 +72,21 @@ describe("F-019 Regression: Frontend Route-Level Role Authorization & Default Wo
       expect(isRoutePermitted("/production/today", "PRODUCTION")).toBe(true);
       expect(isRoutePermitted("/production/new", "PRODUCTION")).toBe(true);
       expect(isRoutePermitted("/production/history", "PRODUCTION")).toBe(true);
+      expect(isRoutePermitted("/production/runs/run-1", "PRODUCTION")).toBe(true);
+      expect(isRoutePermitted("/production/recipes", "PRODUCTION")).toBe(true);
       expect(isRoutePermitted("/stock", "PRODUCTION")).toBe(true);
+      expect(isRoutePermitted("/stock/item-1/ledger", "PRODUCTION")).toBe(true);
       expect(isRoutePermitted("/purchases", "PRODUCTION")).toBe(true);
+      expect(isRoutePermitted("/purchases/new", "PRODUCTION")).toBe(true);
       expect(isRoutePermitted("/reports/stock", "PRODUCTION")).toBe(true);
       expect(isRoutePermitted("/reports/production", "PRODUCTION")).toBe(true);
     });
 
     it("blocks ACCOUNTANT from order creation, dispatches, and production batch execution", () => {
       expect(isRoutePermitted("/orders/new", "ACCOUNTANT")).toBe(false);
+      expect(isRoutePermitted("/invoices/new", "ACCOUNTANT")).toBe(false);
       expect(isRoutePermitted("/dispatch", "ACCOUNTANT")).toBe(false);
+      expect(isRoutePermitted("/payments/new", "ACCOUNTANT")).toBe(false);
       expect(isRoutePermitted("/production/today", "ACCOUNTANT")).toBe(false);
       expect(isRoutePermitted("/production/new", "ACCOUNTANT")).toBe(false);
       expect(isRoutePermitted("/production/history", "ACCOUNTANT")).toBe(false);
@@ -82,9 +94,14 @@ describe("F-019 Regression: Frontend Route-Level Role Authorization & Default Wo
       expect(isRoutePermitted("/settings", "ACCOUNTANT")).toBe(false);
 
       // Permitted read/finance views for Accountant
+      expect(isRoutePermitted("/reports", "ACCOUNTANT")).toBe(true);
       expect(isRoutePermitted("/orders", "ACCOUNTANT")).toBe(true);
+      expect(isRoutePermitted("/orders/ord-1", "ACCOUNTANT")).toBe(true);
       expect(isRoutePermitted("/invoices", "ACCOUNTANT")).toBe(true);
+      expect(isRoutePermitted("/invoices/inv-1", "ACCOUNTANT")).toBe(true);
       expect(isRoutePermitted("/payments", "ACCOUNTANT")).toBe(true);
+      expect(isRoutePermitted("/receivables", "ACCOUNTANT")).toBe(true);
+      expect(isRoutePermitted("/receivables/cust-1", "ACCOUNTANT")).toBe(true);
       expect(isRoutePermitted("/stock", "ACCOUNTANT")).toBe(true);
       expect(isRoutePermitted("/purchases", "ACCOUNTANT")).toBe(true);
       expect(isRoutePermitted("/customers", "ACCOUNTANT")).toBe(true);
@@ -94,8 +111,12 @@ describe("F-019 Regression: Frontend Route-Level Role Authorization & Default Wo
       expect(isRoutePermitted("/exports", "ACCOUNTANT")).toBe(true);
     });
 
-    it("blocks OWNER from operational write forms (new order, new run) per authorization matrix", () => {
+    it("blocks OWNER from operational write forms per authorization matrix", () => {
       expect(isRoutePermitted("/orders/new", "OWNER")).toBe(false);
+      expect(isRoutePermitted("/invoices/new", "OWNER")).toBe(false);
+      expect(isRoutePermitted("/dispatch/new", "OWNER")).toBe(false);
+      expect(isRoutePermitted("/payments/new", "OWNER")).toBe(false);
+      expect(isRoutePermitted("/purchases/new", "OWNER")).toBe(false);
       expect(isRoutePermitted("/production/new", "OWNER")).toBe(false);
 
       // Permitted views for Owner
@@ -104,10 +125,12 @@ describe("F-019 Regression: Frontend Route-Level Role Authorization & Default Wo
       expect(isRoutePermitted("/invoices", "OWNER")).toBe(true);
       expect(isRoutePermitted("/dispatch", "OWNER")).toBe(true);
       expect(isRoutePermitted("/payments", "OWNER")).toBe(true);
+      expect(isRoutePermitted("/receivables", "OWNER")).toBe(true);
       expect(isRoutePermitted("/stock", "OWNER")).toBe(true);
       expect(isRoutePermitted("/purchases", "OWNER")).toBe(true);
       expect(isRoutePermitted("/production/today", "OWNER")).toBe(true);
       expect(isRoutePermitted("/production/history", "OWNER")).toBe(true);
+      expect(isRoutePermitted("/reports", "OWNER")).toBe(true);
       expect(isRoutePermitted("/settings", "OWNER")).toBe(true);
     });
 
@@ -118,13 +141,15 @@ describe("F-019 Regression: Frontend Route-Level Role Authorization & Default Wo
       }
     });
 
-    it("rejects unauthorized access when role is null or unauthenticated", () => {
+    it("fails closed for unknown routes and unauthenticated users", () => {
       expect(isRoutePermitted("/invoices", null)).toBe(false);
       expect(isRoutePermitted("/dashboard", null)).toBe(false);
+      expect(isRoutePermitted("/unknown-secret-route", "ADMIN")).toBe(false);
+      expect(isRoutePermitted("/unknown-secret-route", "OWNER")).toBe(false);
     });
   });
 
-  describe("Exact parity with audit role-ui-route-matrix.csv", () => {
+  describe("Exact parity with authorization matrix", () => {
     const roles: Role[] = ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"];
     const expectedPermittedRoutes: Record<string, string[]> = {
       "/dashboard": ["ADMIN", "OWNER"],
@@ -133,12 +158,14 @@ describe("F-019 Regression: Frontend Route-Level Role Authorization & Default Wo
       "/invoices": ["ADMIN", "ACCOUNTANT", "OWNER"],
       "/dispatch": ["ADMIN", "OWNER"],
       "/payments": ["ADMIN", "ACCOUNTANT", "OWNER"],
+      "/receivables": ["ADMIN", "ACCOUNTANT", "OWNER"],
       "/stock": ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
       "/purchases": ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
       "/production/today": ["ADMIN", "PRODUCTION", "OWNER"],
       "/production/new": ["ADMIN", "PRODUCTION"],
       "/production/history": ["ADMIN", "PRODUCTION", "OWNER"],
       "/customers": ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
+      "/reports": ["ADMIN", "ACCOUNTANT", "OWNER"],
       "/reports/sales": ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
       "/reports/stock": ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
       "/reports/production": ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],

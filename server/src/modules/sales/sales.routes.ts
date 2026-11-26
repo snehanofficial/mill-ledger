@@ -1,12 +1,14 @@
 import { Router } from "express";
 import {
   authorize,
+  getSessionOrgId,
   requireAuth,
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { salesService } from "./sales.service.js";
 import { dispatchService } from "./dispatch.service.js";
 import { AppError } from "../../middleware/error.middleware.js";
+import { prisma } from "../../db/client.js";
 import { OrderStatus } from "@prisma/client";
 import {
   createCustomerSchema,
@@ -27,7 +29,7 @@ salesRouter.get(
   authorize("customer", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const customers = await salesService.getCustomers(orgId, req.user!);
       res.json({ customers });
     } catch (err) {
@@ -239,7 +241,7 @@ salesRouter.get(
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const limit =
         req.query.limit !== undefined ? Number(req.query.limit) : undefined;
       const effectiveLimit =
@@ -276,7 +278,7 @@ salesRouter.get(
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const status = req.query.status as OrderStatus | undefined;
       const limit =
         req.query.limit !== undefined ? Number(req.query.limit) : undefined;
@@ -357,7 +359,21 @@ salesRouter.post(
 salesRouter.put(
   "/orders/:id",
   requireAuth,
-  authorize("order", "update"),
+  authorize("order", "update", async (req) => {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) return undefined;
+    const order = await prisma.salesOrder.findUnique({
+      where: { id },
+      select: { salesmanId: true, status: true },
+    });
+    if (!order) {
+      throw new AppError(`Order ${id} not found`, 404);
+    }
+    return {
+      creatorId: order.salesmanId,
+      status: order.status,
+    };
+  }),
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orderId = Array.isArray(req.params.id)
@@ -499,10 +515,7 @@ salesRouter.get(
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId =
-        req.user?.organizationId ||
-        (req.query.organizationId as string) ||
-        "MILL";
+      const orgId = getSessionOrgId(req);
       const dispatches = await dispatchService.getDispatches(orgId, req.user);
       res.json({ dispatches });
     } catch (err) {

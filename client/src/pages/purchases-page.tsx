@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useWarehouses } from "@/hooks/use-warehouses";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
@@ -30,7 +31,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
   Dialog,
   DialogContent,
@@ -67,11 +67,24 @@ interface PurchaseReceipt {
   id: string;
   receiptNumber: string;
   supplierInvoiceNumber?: string;
+  status?: string;
   postedAt: string;
   notes?: string;
   supplier: { id: string; code: string; name: string };
   warehouse: { id: string; name: string };
   lines: PurchaseReceiptLine[];
+}
+
+interface DebitNoteItem {
+  id: string;
+  debitNoteNumber: string;
+  postedAt: string;
+  reason: string;
+  taxableAmount: number | string;
+  taxAmount: number | string;
+  totalAmount: number | string;
+  supplier: { id: string; code: string; name: string };
+  purchaseReceipt?: { id: string; receiptNumber: string } | null;
 }
 
 interface InventoryItemBalance {
@@ -96,7 +109,7 @@ export function PurchasesPage() {
     user?.role === "ADMIN" || user?.role === "PRODUCTION";
   const canManageAdminPurchase = user?.role === "ADMIN";
   const [showModal, setShowModal] = useState(false);
-  const [showConfirmReceipt, setShowConfirmReceipt] = useState(false);
+  const [receiptStep, setReceiptStep] = useState<"form" | "confirm">("form");
   const [detailReceipt, setDetailReceipt] = useState<PurchaseReceipt | null>(null);
   const [debitNoteTarget, setDebitNoteTarget] = useState<PurchaseReceipt | null>(null);
   const [debitNoteReason, setDebitNoteReason] = useState("");
@@ -109,6 +122,7 @@ export function PurchasesPage() {
   // Form states
   const [selectedSupplierId, setSelectedSupplierId] = useState("");
   const [selectedItemId, setSelectedItemId] = useState("");
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState("");
   const [quantity, setQuantity] = useState<number>(60);
   const [unitPrice, setUnitPrice] = useState<number>(45);
   const [receiptNumber, setReceiptNumber] = useState(
@@ -117,15 +131,18 @@ export function PurchasesPage() {
   const [supplierInvoiceNumber, setSupplierInvoiceNumber] = useState("INV-MANDI-01");
   const [notes, setNotes] = useState("Direct mandi intake");
 
+  const { data: warehousesData } = useWarehouses();
+  const warehouses = warehousesData?.warehouses || [];
+  const activeWarehouse =
+    warehouses.find((w) => w.id === selectedWarehouseId) || warehouses[0];
+
   // Query receipts
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     receipts: PurchaseReceipt[];
   }>({
     queryKey: ["purchase-receipts"],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/inventory/purchase-receipts?organizationId=MILL",
-      );
+      const res = await apiClient.get("/inventory/purchase-receipts");
       return res.data;
     },
   });
@@ -134,9 +151,7 @@ export function PurchasesPage() {
   const { data: suppliersData } = useQuery<{ suppliers: Supplier[] }>({
     queryKey: ["inventory-suppliers"],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/inventory/suppliers?organizationId=MILL",
-      );
+      const res = await apiClient.get("/inventory/suppliers");
       return res.data;
     },
   });
@@ -145,13 +160,21 @@ export function PurchasesPage() {
   const { data: itemsData } = useQuery<{ balances: InventoryItemBalance[] }>({
     queryKey: ["inventory-balances"],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/inventory/balances?organizationId=MILL",
-      );
+      const res = await apiClient.get("/inventory/balances");
       return res.data;
     },
   });
 
+  // Query debit notes
+  const { data: debitNotesData } = useQuery<{ debitNotes: DebitNoteItem[] }>({
+    queryKey: ["debit-notes"],
+    queryFn: async () => {
+      const res = await apiClient.get("/finance/debit-notes");
+      return res.data;
+    },
+  });
+
+  const debitNotes = debitNotesData?.debitNotes || [];
   const suppliers = suppliersData?.suppliers || [];
   const rawItems =
     itemsData?.balances?.filter(
@@ -168,14 +191,13 @@ export function PurchasesPage() {
   // Submit purchase mutation
   const createReceiptMutation = useMutation({
     mutationFn: async () => {
-      if (!activeSupplier || !activeItem) {
-        throw new Error("Supplier and Inventory item are required");
+      if (!activeSupplier || !activeItem || !activeWarehouse) {
+        throw new Error("Supplier, warehouse, and inventory item are required");
       }
 
       const payload = {
-        organizationId: "MILL",
         supplierId: activeSupplier.id,
-        warehouseId: "WH-1",
+        warehouseId: activeWarehouse.id,
         receiptNumber,
         supplierInvoiceNumber: supplierInvoiceNumber || undefined,
         notes: notes || undefined,
@@ -198,7 +220,7 @@ export function PurchasesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchase-receipts"] });
       queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
-      setShowConfirmReceipt(false);
+      setReceiptStep("form");
       setShowModal(false);
       toast.success("Purchase receipt posted successfully.");
       setReceiptNumber(`PR-2026-${Date.now().toString().slice(-4)}`);
@@ -385,7 +407,12 @@ export function PurchasesPage() {
                 return (
                   <TableRow key={rec.id}>
                     <TableCell className="font-mono text-xs font-semibold">
-                      {rec.receiptNumber}
+                      <Link
+                        to={`/purchases/${rec.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {rec.receiptNumber}
+                      </Link>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {formatDate(rec.postedAt)}
@@ -407,10 +434,17 @@ export function PurchasesPage() {
                       {formatINR(totalAmount)}
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="success" className="text-[10px] gap-1">
-                        <CheckCircle2Icon className="size-2.5" />
-                        Posted
-                      </Badge>
+                      {rec.status === "REVERSED" ? (
+                        <Badge variant="danger" className="text-[10px] gap-1">
+                          <RotateCcwIcon className="size-2.5" />
+                          Reversed
+                        </Badge>
+                      ) : (
+                        <Badge variant="success" className="text-[10px] gap-1">
+                          <CheckCircle2Icon className="size-2.5" />
+                          Posted
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">
@@ -423,7 +457,7 @@ export function PurchasesPage() {
                           <EyeIcon className="size-3" />
                           View
                         </Button>
-                        {canManageAdminPurchase && (
+                        {canManageAdminPurchase && rec.status !== "REVERSED" && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -448,15 +482,88 @@ export function PurchasesPage() {
         )}
       </div>
 
-      {/* Record Purchase Receipt Modal */}
-      <Dialog open={showModal} onOpenChange={setShowModal}>
+      {/* Issued Supplier Debit Notes */}
+      {debitNotes.length > 0 && (
+        <div className="rounded-xl border border-border bg-card shadow-xs">
+          <div className="flex items-center justify-between border-b border-border p-4">
+            <div className="flex items-center gap-2">
+              <FileWarningIcon className="size-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold text-foreground">
+                Supplier Debit Notes
+              </h2>
+              <span className="text-xs text-muted-foreground font-mono tabular-nums">
+                ({debitNotes.length})
+              </span>
+            </div>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[140px]">Debit Note #</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Supplier</TableHead>
+                <TableHead>Receipt #</TableHead>
+                <TableHead>Reason</TableHead>
+                <TableHead className="text-right">Total Amount</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {debitNotes.map((dn) => (
+                <TableRow key={dn.id}>
+                  <TableCell className="font-mono text-xs font-semibold">
+                    {dn.debitNoteNumber}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {formatDate(dn.postedAt)}
+                  </TableCell>
+                  <TableCell className="text-sm font-medium">
+                    {dn.supplier.name}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {dn.purchaseReceipt?.receiptNumber || "—"}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {dn.reason}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs font-semibold tabular-nums">
+                    {formatINR(Number(dn.totalAmount))}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Record Purchase Receipt Modal (single-dialog two-step flow) */}
+      <Dialog
+        open={showModal}
+        onOpenChange={(open) => {
+          setShowModal(open);
+          if (!open) setReceiptStep("form");
+        }}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Record Purchase Receipt</DialogTitle>
+            <DialogTitle className={receiptStep === "confirm" ? "flex items-center gap-2" : undefined}>
+              {receiptStep === "confirm" ? (
+                <>
+                  <TruckIcon className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                  <span>Confirm Purchase Receipt Posting</span>
+                </>
+              ) : (
+                "Record Purchase Receipt"
+              )}
+            </DialogTitle>
             <DialogDescription>
-              Intake raw materials, update stock, and recalculate WAC.
+              {receiptStep === "confirm"
+                ? "Review the inward goods receipt and accounts payable details before posting."
+                : "Intake raw materials, update stock, and recalculate WAC."}
             </DialogDescription>
           </DialogHeader>
+
+          {receiptStep === "form" ? (
+            <>
 
           <div className="mt-2 flex flex-col gap-4">
               {/* Supplier Selection */}
@@ -476,11 +583,11 @@ export function PurchasesPage() {
                   </Link>
                 </div>
                 <Select
-                  value={selectedSupplierId || undefined}
+                  value={activeSupplier?.id || undefined}
                   onValueChange={setSelectedSupplierId}
                 >
                   <SelectTrigger id="purchase-supplier-select" className="font-medium">
-                    <SelectValue placeholder="Supplier 1 (SUP-FLOUR-1)" />
+                    <SelectValue placeholder="Select supplier" />
                   </SelectTrigger>
                   <SelectContent
                     searchable
@@ -506,8 +613,33 @@ export function PurchasesPage() {
                 </Select>
               </div>
 
+              {/* Warehouse selection */}
+              <div className="flex flex-col gap-1.5">
+                <Label
+                  htmlFor="purchase-warehouse-select"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
+                  Receiving Warehouse
+                </Label>
+                <Select
+                  value={activeWarehouse?.id || undefined}
+                  onValueChange={setSelectedWarehouseId}
+                >
+                  <SelectTrigger id="purchase-warehouse-select">
+                    <SelectValue placeholder="Select warehouse" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {warehouses.map((w) => (
+                      <SelectItem key={w.id} value={w.id}>
+                        {w.code} · {w.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Receipt Number & Invoice */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <Label
                     htmlFor="purchase-receipt-number-input"
@@ -549,11 +681,11 @@ export function PurchasesPage() {
                   Raw Material Item
                 </Label>
                 <Select
-                  value={selectedItemId || undefined}
+                  value={activeItem?.id || undefined}
                   onValueChange={setSelectedItemId}
                 >
                   <SelectTrigger id="purchase-item-select" className="font-medium">
-                    <SelectValue placeholder="Flour (RM-FLOUR)" />
+                    <SelectValue placeholder="Select raw material or packaging item" />
                   </SelectTrigger>
                   <SelectContent
                     searchable
@@ -580,7 +712,7 @@ export function PurchasesPage() {
               </div>
 
               {/* Quantity and Rate */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <Label
                     htmlFor="purchase-quantity-input"
@@ -673,7 +805,7 @@ export function PurchasesPage() {
                     toast.error("Unit price cannot be negative");
                     return;
                   }
-                  setShowConfirmReceipt(true);
+                  setReceiptStep("confirm");
                 }}
                 disabled={createReceiptMutation.isPending}
                 className="gap-2"
@@ -682,66 +814,70 @@ export function PurchasesPage() {
                 Review & confirm
               </Button>
             </DialogFooter>
+            </>
+          ) : activeSupplier && activeItem ? (
+            <>
+              <div className="mt-2 flex flex-col gap-3">
+                <p className="text-sm text-foreground">
+                  You are about to record an inward goods receipt and book supplier accounts payable.
+                </p>
+                <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Receipt Number:</span>
+                    <span className="font-mono font-medium text-foreground">{receiptNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Supplier:</span>
+                    <span className="font-semibold text-foreground">{activeSupplier.name}</span>
+                  </div>
+                  {supplierInvoiceNumber && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Supplier Inv #:</span>
+                      <span className="font-mono">{supplierInvoiceNumber}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Inward Item:</span>
+                    <span className="font-medium text-foreground">{activeItem.name} ({activeItem.sku})</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Quantity:</span>
+                    <span className="font-mono font-medium">
+                      {formatQuantity(Number(quantity))} {activeItem.baseUom?.code || "KG"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-t border-border/50 pt-1 font-semibold">
+                    <span className="text-foreground">Total Inward Value:</span>
+                    <span className="font-mono text-foreground">{formatINR(lineTotal)}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Legal & financial warning: This transaction increases physical inventory balances and generates an accounts payable liability in the general ledger. Posted receipts cannot be deleted.
+                </p>
+              </div>
+              <DialogFooter className="mt-6 border-t border-border pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setReceiptStep("form")}
+                  disabled={createReceiptMutation.isPending}
+                >
+                  Back to Edit
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={createReceiptMutation.isPending}
+                  onClick={() => createReceiptMutation.mutate()}
+                >
+                  {createReceiptMutation.isPending ? "Posting..." : "Confirm & Post Inward Goods"}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
         </DialogContent>
       </Dialog>
-
-      {/* Purchase Receipt Irreversible Financial/Inventory Confirmation (F-058) */}
-      {activeSupplier && activeItem && (
-        <ConfirmationDialog
-          open={showConfirmReceipt}
-          onOpenChange={setShowConfirmReceipt}
-          title={
-            <div className="flex items-center gap-2 font-semibold">
-              <TruckIcon className="h-5 w-5 text-primary" />
-              <span>Confirm Purchase Receipt Posting</span>
-            </div>
-          }
-          description={
-            <div className="flex flex-col gap-3 text-left">
-              <p className="text-sm text-foreground">
-                You are about to record an inward goods receipt and book supplier accounts payable.
-              </p>
-              <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Receipt Number:</span>
-                  <span className="font-mono font-medium text-foreground">{receiptNumber}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Supplier:</span>
-                  <span className="font-semibold text-foreground">{activeSupplier.name}</span>
-                </div>
-                {supplierInvoiceNumber && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Supplier Inv #:</span>
-                    <span className="font-mono">{supplierInvoiceNumber}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Inward Item:</span>
-                  <span className="font-medium text-foreground">{activeItem.name} ({activeItem.sku})</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Quantity:</span>
-                  <span className="font-mono font-medium">
-                    {formatQuantity(Number(quantity))} {activeItem.baseUom?.code || "KG"}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t border-border/50 pt-1 font-semibold">
-                  <span className="text-foreground">Total Inward Value:</span>
-                  <span className="font-mono text-foreground">{formatINR(lineTotal)}</span>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Legal & financial warning: This transaction increases physical inventory balances and generates an accounts payable liability in the general ledger. Posted receipts cannot be deleted.
-              </p>
-            </div>
-          }
-          confirmLabel={createReceiptMutation.isPending ? "Posting..." : "Confirm & Post Inward Goods"}
-          cancelLabel="Back to Edit"
-          disabled={createReceiptMutation.isPending}
-          onConfirm={() => createReceiptMutation.mutate()}
-        />
-      )}
 
       {/* Purchase Receipt Detail & Reversal Modal (IMP-015) */}
       <Dialog
@@ -787,7 +923,7 @@ export function PurchasesPage() {
                   ))}
                 </TableBody>
               </Table>
-              {canManageAdminPurchase && (
+              {canManageAdminPurchase && detailReceipt.status !== "REVERSED" && (
                 <div className="flex flex-col gap-1.5 border-t pt-3">
                   <Label htmlFor="pr-reverse-reason" className="text-xs">
                     Reversal Reason (optional, reverses stock if unconsumed)
@@ -883,7 +1019,6 @@ export function PurchasesPage() {
                 onClick={async () => {
                   try {
                     await apiClient.post("/finance/debit-notes", {
-                      organizationId: "MILL",
                       supplierId: debitNoteTarget.supplier.id,
                       purchaseReceiptId: debitNoteTarget.id,
                       reason: debitNoteReason.trim(),
@@ -891,6 +1026,7 @@ export function PurchasesPage() {
                       taxAmount: 0,
                       totalAmount: debitNoteAmount,
                     });
+                    queryClient.invalidateQueries({ queryKey: ["debit-notes"] });
                     setDebitNoteTarget(null);
                     toast.success("Debit note issued.");
                   } catch (err) {

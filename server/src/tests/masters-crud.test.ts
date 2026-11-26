@@ -167,7 +167,7 @@ describe("IMP-009 & IMP-010: Customers ABAC/Assignments and Products/Variants/Pr
     );
 
     const getRes = await fetch(
-      `${baseUrl}/api/v1/masters/organization?organizationId=MILL`,
+      `${baseUrl}/api/v1/masters/organization`,
       { headers: { Cookie: ownerCookie } },
     );
     expect(getRes.status).toBe(200);
@@ -179,7 +179,7 @@ describe("IMP-009 & IMP-010: Customers ABAC/Assignments and Products/Variants/Pr
         "Content-Type": "application/json",
         Cookie: ownerCookie,
       },
-      body: JSON.stringify({ organizationId: "MILL", name: "Hacked" }),
+      body: JSON.stringify({ name: "Hacked" }),
     });
     expect(ownerPut.status).toBe(403);
 
@@ -191,7 +191,6 @@ describe("IMP-009 & IMP-010: Customers ABAC/Assignments and Products/Variants/Pr
         Cookie: adminCookie,
       },
       body: JSON.stringify({
-        organizationId: "MILL",
         name: "MillLedger Foods Pvt Ltd",
       }),
     });

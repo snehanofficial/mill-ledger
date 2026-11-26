@@ -166,7 +166,7 @@ export function ProductsPage() {
   }>({
     queryKey: ["masters-products"],
     queryFn: async () => {
-      const res = await apiClient.get("/masters/products?organizationId=MILL");
+      const res = await apiClient.get("/masters/products");
       return res.data;
     },
   });
@@ -251,7 +251,6 @@ export function ProductsPage() {
       }
       return (
         await apiClient.post("/masters/products", {
-          organizationId: "MILL",
           code: prodCode.trim().toUpperCase(),
           name: prodName.trim(),
           hsnCode: prodHsn.trim(),
@@ -366,7 +365,6 @@ export function ProductsPage() {
     mutationFn: async () => {
       return (
         await apiClient.post("/masters/price-lists", {
-          organizationId: "MILL",
           code: plCode.trim().toUpperCase(),
           name: plName.trim(),
           isDefault: plIsDefault,
@@ -1038,7 +1036,7 @@ export function ProductsPage() {
                 placeholder="Murukku"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="prod-hsn" className="text-xs">
                   HSN Code (4-12 chars)
@@ -1140,7 +1138,7 @@ export function ProductsPage() {
                 placeholder="Murukku 500 g"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="var-pack" className="text-xs">
                   Pack Size

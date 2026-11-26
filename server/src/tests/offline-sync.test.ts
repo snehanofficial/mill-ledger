@@ -13,6 +13,13 @@ describe("M9: Offline synchronization and idempotency verification", () => {
   beforeAll(async () => {
     // Clean up dependent records in proper foreign key order
     await resetOperationalData();
+    await prisma.salesmanCustomerAssignment.deleteMany({
+      where: {
+        salesman: {
+          email: { in: ["salesman1@millledger.local", "salesman2@millledger.local"] },
+        },
+      },
+    });
     await seedBenchmarkMasters();
 
     const app = createApp();
@@ -251,6 +258,22 @@ describe("M9: Offline synchronization and idempotency verification", () => {
     await prisma.inventoryItem.update({
       where: { id: finishedGoodsItem.id },
       data: { currentStock: 100 },
+    });
+    await prisma.warehouseStockBalance.upsert({
+      where: {
+        warehouseId_inventoryItemId: {
+          warehouseId: warehouse.id,
+          inventoryItemId: finishedGoodsItem.id,
+        },
+      },
+      update: { onHand: 100, reserved: 0 },
+      create: {
+        organizationId: org.id,
+        warehouseId: warehouse.id,
+        inventoryItemId: finishedGoodsItem.id,
+        onHand: 100,
+        reserved: 0,
+      },
     });
 
     const balances = await inventoryService.getInventoryBalances(

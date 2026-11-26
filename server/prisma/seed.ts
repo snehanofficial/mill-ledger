@@ -180,6 +180,7 @@ export async function seedBenchmarkMasters() {
     },
     update: {},
     create: {
+      organizationId: org.id,
       facilityId: facility.id,
       code: "WH-1",
       name: "Central Factory Warehouse",

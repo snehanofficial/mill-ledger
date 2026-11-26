@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createDraftRunSchema = z
   .object({
-    organizationId: z.string().min(1, "Organization ID is required"),
+    organizationId: z.string().min(1).optional(),
     warehouseId: z.string().min(1, "Warehouse ID is required"),
     recipeId: z.string().min(1, "Recipe ID is required"),
     runNumber: z.string().min(1, "Run number is required"),
@@ -25,7 +25,7 @@ export const consumedMaterialSchema = z
 
 export const postProductionRunSchema = z
   .object({
-    organizationId: z.string().min(1, "Organization ID is required"),
+    organizationId: z.string().min(1).optional(),
     warehouseId: z.string().min(1).optional(),
     recipeId: z.string().min(1).optional(),
     runNumber: z.string().min(1).optional(),
