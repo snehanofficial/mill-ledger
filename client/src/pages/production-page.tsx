@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWarehouses } from "@/hooks/use-warehouses";
@@ -772,7 +773,12 @@ export function ProductionPage() {
                   return (
                     <TableRow key={r.id}>
                       <TableCell className="font-mono font-medium">
-                        {r.runNumber}
+                        <Link
+                          to={`/production/runs/${r.id}`}
+                          className="text-primary hover:underline"
+                        >
+                          {r.runNumber}
+                        </Link>
                       </TableCell>
                       <TableCell>
                         <Badge

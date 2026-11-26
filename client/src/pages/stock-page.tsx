@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -810,10 +811,20 @@ export function StockPage() {
                     return (
                       <TableRow key={item.id}>
                         <TableCell className="font-mono text-xs font-medium text-foreground">
-                          {item.sku}
+                          <Link
+                            to={`/stock/${item.id}/ledger`}
+                            className="text-primary hover:underline"
+                          >
+                            {item.sku}
+                          </Link>
                         </TableCell>
                         <TableCell className="font-medium text-foreground">
-                          {item.name}
+                          <Link
+                            to={`/stock/${item.id}/ledger`}
+                            className="hover:underline"
+                          >
+                            {item.name}
+                          </Link>
                         </TableCell>
                         <TableCell>
                           <Badge

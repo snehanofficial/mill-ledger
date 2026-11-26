@@ -407,7 +407,12 @@ export function PurchasesPage() {
                 return (
                   <TableRow key={rec.id}>
                     <TableCell className="font-mono text-xs font-semibold">
-                      {rec.receiptNumber}
+                      <Link
+                        to={`/purchases/${rec.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {rec.receiptNumber}
+                      </Link>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {formatDate(rec.postedAt)}
