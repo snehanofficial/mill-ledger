@@ -69,6 +69,22 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       where: { id: finishedGoodsItem.id },
       data: { currentStock: 238 },
     });
+    await prisma.warehouseStockBalance.upsert({
+      where: {
+        warehouseId_inventoryItemId: {
+          warehouseId: warehouse.id,
+          inventoryItemId: finishedGoodsItem.id,
+        },
+      },
+      update: { onHand: 238 },
+      create: {
+        organizationId: org.id,
+        warehouseId: warehouse.id,
+        inventoryItemId: finishedGoodsItem.id,
+        onHand: 238,
+        reserved: 0,
+      },
+    });
     await prisma.stockMovement.create({
       data: {
         inventoryItemId: finishedGoodsItem.id,
@@ -925,9 +941,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       "SalesmanPassword123!",
     );
 
-    // 1. Products catalog resolves finishedGoodsItemId/Sku and HSN taxRate with organizationId=MILL
+    // 1. Products catalog resolves finishedGoodsItemId/Sku and HSN taxRate from session org
     const productsRes = await fetch(
-      `${baseUrl}/api/v1/sales/products?organizationId=MILL`,
+      `${baseUrl}/api/v1/sales/products`,
       { headers: { Cookie: salesman1Cookie } },
     );
     expect(productsRes.status).toBe(200);
@@ -954,7 +970,6 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
         Cookie: salesman1Cookie,
       },
       body: JSON.stringify({
-        organizationId: "MILL",
         customerId: retailerA.id,
         orderNumber: `SO-DRAFT-EDIT-${Date.now()}`,
         status: "DRAFT",
@@ -1040,7 +1055,6 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
           Cookie: salesman1Cookie,
         },
         body: JSON.stringify({
-          organizationId: "MILL",
           customerId: archivedCustomer.id,
           orderNumber: `SO-ARCH-${Date.now()}`,
           lines: [{ productVariantId: murukkuVariant.id, quantity: 5, unitPrice: 50 }],

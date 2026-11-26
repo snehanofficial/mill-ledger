@@ -64,6 +64,22 @@ describe("M6: Invoice generation, physical dispatch, reservation release, and cr
       where: { id: finishedGoodsItem.id },
       data: { currentStock: 238 },
     });
+    await prisma.warehouseStockBalance.upsert({
+      where: {
+        warehouseId_inventoryItemId: {
+          warehouseId: warehouse.id,
+          inventoryItemId: finishedGoodsItem.id,
+        },
+      },
+      update: { onHand: 238 },
+      create: {
+        organizationId: org.id,
+        warehouseId: warehouse.id,
+        inventoryItemId: finishedGoodsItem.id,
+        onHand: 238,
+        reserved: 0,
+      },
+    });
     await prisma.stockMovement.create({
       data: {
         inventoryItemId: finishedGoodsItem.id,
@@ -715,7 +731,7 @@ describe("M6: Invoice generation, physical dispatch, reservation release, and cr
     );
 
     const byCodeRes = await fetch(
-      `${baseUrl}/api/v1/finance/invoices?organizationId=MILL&limit=50&offset=0`,
+      `${baseUrl}/api/v1/finance/invoices?limit=50&offset=0`,
       {
         headers: { Cookie: adminCookie },
       },

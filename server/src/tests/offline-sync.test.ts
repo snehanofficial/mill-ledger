@@ -259,6 +259,22 @@ describe("M9: Offline synchronization and idempotency verification", () => {
       where: { id: finishedGoodsItem.id },
       data: { currentStock: 100 },
     });
+    await prisma.warehouseStockBalance.upsert({
+      where: {
+        warehouseId_inventoryItemId: {
+          warehouseId: warehouse.id,
+          inventoryItemId: finishedGoodsItem.id,
+        },
+      },
+      update: { onHand: 100, reserved: 0 },
+      create: {
+        organizationId: org.id,
+        warehouseId: warehouse.id,
+        inventoryItemId: finishedGoodsItem.id,
+        onHand: 100,
+        reserved: 0,
+      },
+    });
 
     const balances = await inventoryService.getInventoryBalances(
       org.id,

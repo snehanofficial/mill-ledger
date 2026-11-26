@@ -394,7 +394,7 @@ describe("M3: Purchases and inventory ledger integration", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          organizationId: "MILL",
+          
           supplierId: supplier.id,
           warehouseId: warehouse.id,
           receiptNumber: `PR-REV-DN-${Date.now()}`,

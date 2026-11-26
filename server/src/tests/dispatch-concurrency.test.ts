@@ -101,6 +101,16 @@ describe("F-008: Concurrency race condition in dispatch sequence generation", ()
     });
     createdInvItemIds.push(invItem.id);
 
+    await prisma.warehouseStockBalance.create({
+      data: {
+        organizationId: orgId,
+        warehouseId,
+        inventoryItemId: invItem.id,
+        onHand: 500.0,
+        reserved: 0,
+      },
+    });
+
     const prd = await prisma.product.create({
       data: {
         organizationId: orgId,

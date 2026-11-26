@@ -436,7 +436,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     );
 
     const balRes = await fetch(
-      `${baseUrl}/api/v1/inventory/balances?organizationId=MILL`,
+      `${baseUrl}/api/v1/inventory/balances`,
       { headers: { Cookie: productionCookie } },
     );
     expect(balRes.status).toBe(200);
@@ -447,7 +447,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     expect(flour).toBeDefined();
 
     const recipesRes = await fetch(
-      `${baseUrl}/api/v1/production-runs/recipes?organizationId=MILL`,
+      `${baseUrl}/api/v1/production-runs/recipes`,
       { headers: { Cookie: productionCookie } },
     );
     expect(recipesRes.status).toBe(200);
@@ -467,7 +467,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
         Cookie: productionCookie,
       },
       body: JSON.stringify({
-        organizationId: "MILL",
+        
         warehouseId: "WH-1",
         recipeId: murukkuRecipe.id,
         runNumber: "RUN-CODE-RES-001",
@@ -479,7 +479,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     expect(postRes.status).toBe(201);
 
     const listRes = await fetch(
-      `${baseUrl}/api/v1/production-runs?organizationId=MILL`,
+      `${baseUrl}/api/v1/production-runs`,
       { headers: { Cookie: productionCookie } },
     );
     expect(listRes.status).toBe(200);
@@ -502,7 +502,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     );
 
     const recipesRes = await fetch(
-      `${baseUrl}/api/v1/production-runs/recipes?organizationId=MILL`,
+      `${baseUrl}/api/v1/production-runs/recipes`,
       { headers: { Cookie: adminCookie } },
     );
     const { recipes } = (await recipesRes.json()) as {
@@ -536,7 +536,7 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
         Cookie: prodCookie,
       },
       body: JSON.stringify({
-        organizationId: "MILL",
+        
         warehouseId: "WH-1",
         recipeId: cloned.id,
         runNumber: `RUN-DRAFT-${Date.now()}`,

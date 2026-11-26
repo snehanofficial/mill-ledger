@@ -63,6 +63,22 @@ describe("M7: Payments, customer ledger, allocations, and costing", () => {
       where: { id: finishedGoodsItem.id },
       data: { currentStock: 238 },
     });
+    await prisma.warehouseStockBalance.upsert({
+      where: {
+        warehouseId_inventoryItemId: {
+          warehouseId: warehouse.id,
+          inventoryItemId: finishedGoodsItem.id,
+        },
+      },
+      update: { onHand: 238 },
+      create: {
+        organizationId: org.id,
+        warehouseId: warehouse.id,
+        inventoryItemId: finishedGoodsItem.id,
+        onHand: 238,
+        reserved: 0,
+      },
+    });
     await prisma.stockMovement.create({
       data: {
         inventoryItemId: finishedGoodsItem.id,

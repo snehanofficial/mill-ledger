@@ -62,7 +62,7 @@ describe("IMP-012: Inventory Items, UOMs, and Stock Adjustments", () => {
         Cookie: adminCookie,
       },
       body: JSON.stringify({
-        organizationId: "MILL",
+        
         sku: `RM-TEST-${Date.now()}`,
         name: "Test Sesame Seed",
         category: "RAW_MATERIAL",
@@ -85,7 +85,7 @@ describe("IMP-012: Inventory Items, UOMs, and Stock Adjustments", () => {
         Cookie: adminCookie,
       },
       body: JSON.stringify({
-        organizationId: "MILL",
+        
         inventoryItemId: item.id,
         quantity: 5,
         reason: "Found extra bag",
@@ -101,7 +101,7 @@ describe("IMP-012: Inventory Items, UOMs, and Stock Adjustments", () => {
         Cookie: adminCookie,
       },
       body: JSON.stringify({
-        organizationId: "MILL",
+        
         inventoryItemId: item.id,
         quantity: -50,
         reason: "Over-deduction test",
