@@ -1715,7 +1715,7 @@ export function AuthenticatedShell({
 
           <main
             id="main-content"
-            className="flex flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden pb-16 md:pb-0"
+            className="flex flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable] pb-16 md:pb-0"
             tabIndex={-1}
           >
             {children}
