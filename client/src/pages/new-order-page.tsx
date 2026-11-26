@@ -315,7 +315,7 @@ export function NewOrderPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col pb-52 md:pb-32">
+    <div className="flex flex-1 flex-col -mb-4 md:mb-0">
       {/* Top Navigation & Breadcrumb */}
       <div className="border-b bg-card/60 backdrop-blur px-4 py-3 sm:px-6">
         <div className="flex items-center justify-between">
@@ -355,7 +355,7 @@ export function NewOrderPage() {
         </div>
       </div>
 
-      <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full flex flex-col gap-6">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full flex-1 flex flex-col gap-6">
         {/* Page Header */}
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -522,7 +522,7 @@ export function NewOrderPage() {
                           : "border-border"
                       }`}
                     >
-                      <div className="flex flex-col gap-3">
+                      <div className="flex-1 flex flex-col gap-3">
                         {/* Visual Product Thumbnail with semantic img element */}
                         <div className="relative aspect-video w-full rounded-lg bg-muted/40 border border-border/60 overflow-hidden flex items-center justify-center p-2">
                           {product.imageUrl ? (
@@ -553,19 +553,19 @@ export function NewOrderPage() {
                     </div>
 
                     {/* Product Metadata */}
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-[11px] font-semibold text-muted-foreground tracking-wider uppercase">
+                        <span className="font-mono text-[11px] font-semibold text-muted-foreground tracking-wider uppercase truncate">
                           {product.sku}
                         </span>
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-[11px] text-muted-foreground shrink-0">
                           {product.hsnCode ? `HSN: ${product.hsnCode}` : "HSN: —"}
                         </span>
                       </div>
-                      <h3 className="text-base font-bold text-foreground mt-0.5">
+                      <h3 className="text-base font-bold text-foreground mt-0.5 line-clamp-2">
                         {product.name}
                       </h3>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground line-clamp-1">
                         {[product.productName, product.uom ? `(${product.uom})` : null]
                           .filter(Boolean)
                           .join(" ") || "—"}
@@ -573,7 +573,7 @@ export function NewOrderPage() {
                     </div>
 
                     {/* Pricing */}
-                    <div className="flex items-baseline justify-between pt-1 border-t border-border/50">
+                    <div className="mt-auto flex items-baseline justify-between pt-2 border-t border-border/50">
                       <div>
                         <span className="text-xs text-muted-foreground">Standard wholesale:</span>
                         <div className="text-lg font-extrabold text-foreground font-mono">
@@ -590,21 +590,8 @@ export function NewOrderPage() {
                     </div>
                   </div>
 
-                  {/* Quantity Stepper & Shortage Notice */}
+                  {/* Quantity Stepper, Line Total & Reserved Shortage Slot */}
                   <div className="mt-4 pt-3 border-t border-border flex flex-col gap-2">
-                    {isShort && (
-                      <div
-                        role="status"
-                        aria-live="polite"
-                        className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md p-2"
-                      >
-                        <AlertTriangleIcon className="size-3.5 shrink-0" aria-hidden="true" />
-                        <span>
-                          Shortage: {qty - availableStock} pkts exceeds stock
-                        </span>
-                      </div>
-                    )}
-
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-xs font-semibold text-muted-foreground">
                         Quantity:
@@ -646,14 +633,35 @@ export function NewOrderPage() {
                       </div>
                     </div>
 
-                    {qty > 0 && (
-                      <div className="flex items-center justify-between text-xs pt-1 text-muted-foreground">
-                        <span>Line Total:</span>
-                        <span className="font-mono font-bold text-foreground">
-                          {formatINR(qty * unitPrice * (1 + taxRate))} (incl. GST)
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between text-xs min-h-[20px] text-muted-foreground">
+                      <span>Line Total:</span>
+                      <span
+                        className={
+                          qty > 0
+                            ? "font-mono font-bold text-foreground"
+                            : "font-mono text-muted-foreground/70"
+                        }
+                      >
+                        {qty > 0
+                          ? `${formatINR(qty * unitPrice * (1 + taxRate))} (incl. GST)`
+                          : "—"}
+                      </span>
+                    </div>
+
+                    <div className="min-h-[34px] flex items-center">
+                      {isShort && (
+                        <div
+                          role="status"
+                          aria-live="polite"
+                          className="w-full flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md px-2 py-1.5"
+                        >
+                          <AlertTriangleIcon className="size-3.5 shrink-0" aria-hidden="true" />
+                          <span className="truncate">
+                            Shortage: {qty - availableStock} pkts exceeds stock
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </article>
               );
@@ -717,41 +725,36 @@ export function NewOrderPage() {
       </div>
 
       {/* Sticky Bottom Summary Checkout Bar */}
-      <footer className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 z-30 border-t bg-card/95 backdrop-blur-md px-4 py-3 sm:px-8 shadow-xl">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-start">
-            <div className="flex items-center gap-3">
-              <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <ShoppingCartIcon className="size-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-foreground">
-                    {totalItemCount} {totalItemCount === 1 ? "Packet" : "Packets"}
-                  </span>
-                  {anyShortage && (
-                    <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-700 border-amber-500/20">
-                      Shortage flagged
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>Subtotal: {formatINR(totalTaxable)}</span>
-                  <span>•</span>
-                  <span>GST: {formatINR(totalTax)}</span>
-                </div>
-              </div>
+      <footer className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-0 z-30 border-t bg-card/95 backdrop-blur-md px-3 py-2.5 sm:px-6 sm:py-3 shadow-xl">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="hidden sm:flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <ShoppingCartIcon className="size-5" aria-hidden="true" />
             </div>
-
-            <div className="sm:hidden text-right">
-              <span className="text-[10px] text-muted-foreground uppercase font-semibold">Total</span>
-              <div className="text-base font-extrabold text-foreground font-mono">
-                {formatINR(grandTotal)}
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <span className="text-sm font-bold text-foreground whitespace-nowrap">
+                  {totalItemCount} {totalItemCount === 1 ? "Packet" : "Packets"}
+                </span>
+                {anyShortage && (
+                  <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20">
+                    Shortage flagged
+                  </Badge>
+                )}
+              </div>
+              <div className="sm:hidden text-xs font-extrabold text-foreground font-mono">
+                {formatINR(grandTotal)}{" "}
+                <span className="font-sans font-normal text-muted-foreground">(incl. GST)</span>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+                <span>Subtotal: {formatINR(totalTaxable)}</span>
+                <span>•</span>
+                <span>GST: {formatINR(totalTax)}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-4 shrink-0">
             <div className="hidden sm:flex flex-col items-end">
               <span className="text-xs text-muted-foreground">Grand Total (incl. GST)</span>
               <span className="text-xl font-extrabold text-foreground font-mono">
@@ -763,16 +766,16 @@ export function NewOrderPage() {
               size="lg"
               onClick={handleSubmit}
               disabled={totalItemCount === 0 || isSubmitting || createOrderMutation.isPending}
-              className="w-full sm:w-auto h-12 min-w-[170px] px-6 text-sm font-bold gap-2 shadow-md cursor-pointer"
+              className="min-h-[44px] h-11 sm:h-12 sm:min-w-[170px] px-4 sm:px-6 text-sm font-bold gap-2 shadow-md cursor-pointer"
             >
               {isSubmitting || createOrderMutation.isPending ? (
                 <>
-                  <RefreshCwIcon className="size-4 animate-spin" />
+                  <RefreshCwIcon className="size-4 animate-spin" aria-hidden="true" />
                   <span>Submitting...</span>
                 </>
               ) : (
                 <>
-                  <CheckCircle2Icon className="size-4" />
+                  <CheckCircle2Icon className="size-4" aria-hidden="true" />
                   <span>{isOnline ? "Place Sales Order" : "Queue Offline Order"}</span>
                 </>
               )}

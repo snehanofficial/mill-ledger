@@ -1396,7 +1396,7 @@ function MobileBottomNav({ role }: { role: UserRole }) {
   return (
     <nav
       aria-label="Mobile navigation"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex h-14 items-center justify-around border-t border-border bg-background/95 backdrop-blur-xs px-2 pb-[env(safe-area-inset-bottom)] shadow-lg"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex min-h-14 h-[calc(3.5rem+env(safe-area-inset-bottom))] items-center justify-around border-t border-border bg-background/95 backdrop-blur-xs px-2 pb-[env(safe-area-inset-bottom)] shadow-lg"
     >
       {navItems.map((item, idx) => {
         const isActive = item.href && location.pathname === item.href;
@@ -1714,7 +1714,7 @@ export function AuthenticatedShell({
 
           <main
             id="main-content"
-            className="flex flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable] pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0"
+            className="flex flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable] pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0 scroll-pb-[calc(10rem+env(safe-area-inset-bottom))] md:scroll-pb-28"
             tabIndex={-1}
           >
             {children}
