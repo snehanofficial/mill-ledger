@@ -59,6 +59,9 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm --filter @mill-ledger/server exec prisma generate
 
+      - name: Build shared workspace package
+        run: pnpm --filter @mill-ledger/shared build
+
       - name: Run linter
         run: pnpm lint
 
