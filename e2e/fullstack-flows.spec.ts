@@ -85,10 +85,10 @@ test.describe("Full-Stack Integrated Flows", () => {
     await page.goto("/orders");
 
     await expect(
-      page.getByRole("heading", { name: "Orders" }),
+      page.getByRole("heading", { name: /Order inbox/i }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /New sales order/i }),
+      page.getByRole("button", { name: /New order/i }),
     ).toBeVisible();
   });
 });

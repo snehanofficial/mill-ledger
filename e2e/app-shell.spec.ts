@@ -43,7 +43,7 @@ test.describe("MillLedger Application Shell", () => {
     await expect(
       page.getByText("MillLedger", { exact: true }).first(),
     ).toBeVisible();
-    await expect(page.getByText("Production unit").first()).toBeVisible();
+    await expect(page.getByText("Operations desk").first()).toBeVisible();
 
     // Sidebar: expanded at 248px
     const sidebar = page.locator('[data-slot="sidebar"]');
@@ -52,15 +52,15 @@ test.describe("MillLedger Application Shell", () => {
     expect(Math.round(sidebarBox?.width ?? 0)).toBe(248);
 
     // Navigation sections & items
-    await expect(sidebar.getByRole("link", { name: "Overview" })).toBeVisible();
-    await expect(sidebar.getByRole("button", { name: "Orders" })).toBeVisible();
+    await expect(sidebar.getByRole("link", { name: "Work queue" })).toBeVisible();
+    await expect(sidebar.getByRole("link", { name: "Order inbox" })).toBeVisible();
     await expect(sidebar.getByRole("link", { name: "Stock" })).toBeVisible();
     await expect(sidebar.getByRole("link", { name: "Invoices" })).toBeVisible();
 
     // Breadcrumb on overview
     const breadcrumb = page.locator('nav[aria-label="Breadcrumb"]');
     await expect(breadcrumb).toBeVisible();
-    await expect(breadcrumb).toContainText("Overview");
+    await expect(breadcrumb).toContainText("Work queue");
 
     // Connection indicator
     await expect(page.getByText("Live")).toBeVisible();
@@ -133,14 +133,11 @@ test.describe("MillLedger Application Shell", () => {
     const breadcrumb = page.locator('nav[aria-label="Breadcrumb"]');
     await expect(breadcrumb).toContainText("Invoices");
 
-    // Collapsible group: expand Orders
-    const ordersBtn = page.getByRole("button", { name: "Orders" });
-    await ordersBtn.click();
-    const allOrdersLink = page.getByRole("link", { name: "All orders" });
-    await expect(allOrdersLink).toBeVisible();
-    await allOrdersLink.click();
+    // Direct leaf link: Order inbox
+    const orderInboxLink = page.getByRole("link", { name: "Order inbox" });
+    await orderInboxLink.click();
     await expect(page).toHaveURL(/\/orders$/);
-    await expect(page.locator("h1")).toContainText("Orders");
+    await expect(page.locator("h1")).toContainText("Order inbox");
     await expect(breadcrumb).toContainText("Orders");
 
     // Navigate to New Order
