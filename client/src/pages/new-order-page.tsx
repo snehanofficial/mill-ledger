@@ -315,7 +315,7 @@ export function NewOrderPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col -mb-4 md:mb-0">
+    <div className="flex flex-1 flex-col pb-28 sm:pb-24 md:pb-0">
       {/* Top Navigation & Breadcrumb */}
       <div className="border-b bg-card/60 backdrop-blur px-4 py-3 sm:px-6">
         <div className="flex items-center justify-between">
@@ -724,33 +724,40 @@ export function NewOrderPage() {
         </section>
       </div>
 
-      {/* Sticky Bottom Summary Checkout Bar */}
-      <footer className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-0 z-30 border-t bg-card/95 backdrop-blur-md px-3 py-2.5 sm:px-6 sm:py-3 shadow-xl">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 sm:gap-4">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="hidden sm:flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <ShoppingCartIcon className="size-5" aria-hidden="true" />
+      {/* Sticky / Docked Bottom Summary Checkout Bar */}
+      <footer className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 md:sticky md:bottom-0 border-t bg-card/95 backdrop-blur-md px-3 py-2 sm:px-6 sm:py-3 shadow-xl">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+          <div className="flex items-center justify-between gap-3 sm:justify-start min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="hidden sm:flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <ShoppingCartIcon className="size-5" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="text-sm font-bold text-foreground whitespace-nowrap">
+                    {totalItemCount} {totalItemCount === 1 ? "Packet" : "Packets"}
+                  </span>
+                  {anyShortage && (
+                    <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20">
+                      Shortage flagged
+                    </Badge>
+                  )}
+                </div>
+                <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>Subtotal: {formatINR(totalTaxable)}</span>
+                  <span>•</span>
+                  <span>GST: {formatINR(totalTax)}</span>
+                </div>
+              </div>
             </div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <span className="text-sm font-bold text-foreground whitespace-nowrap">
-                  {totalItemCount} {totalItemCount === 1 ? "Packet" : "Packets"}
-                </span>
-                {anyShortage && (
-                  <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20">
-                    Shortage flagged
-                  </Badge>
-                )}
-              </div>
-              <div className="sm:hidden text-xs font-extrabold text-foreground font-mono">
-                {formatINR(grandTotal)}{" "}
-                <span className="font-sans font-normal text-muted-foreground">(incl. GST)</span>
-              </div>
-              <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-                <span>Subtotal: {formatINR(totalTaxable)}</span>
-                <span>•</span>
-                <span>GST: {formatINR(totalTax)}</span>
-              </div>
+
+            <div className="sm:hidden text-right shrink-0">
+              <span className="text-sm font-extrabold text-foreground font-mono">
+                {formatINR(grandTotal)}
+              </span>
+              <span className="block text-[10px] text-muted-foreground leading-tight">
+                incl. GST
+              </span>
             </div>
           </div>
 
@@ -766,7 +773,7 @@ export function NewOrderPage() {
               size="lg"
               onClick={handleSubmit}
               disabled={totalItemCount === 0 || isSubmitting || createOrderMutation.isPending}
-              className="min-h-[44px] h-11 sm:h-12 sm:min-w-[170px] px-4 sm:px-6 text-sm font-bold gap-2 shadow-md cursor-pointer"
+              className="w-full sm:w-auto min-h-[44px] h-11 sm:h-12 sm:min-w-[170px] px-4 sm:px-6 text-sm font-bold gap-2 shadow-md cursor-pointer"
             >
               {isSubmitting || createOrderMutation.isPending ? (
                 <>
