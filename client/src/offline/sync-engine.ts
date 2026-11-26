@@ -65,7 +65,7 @@ export async function refreshMasterDataSnapshot(
       gstin: c.gstin ?? null,
       phone: c.phone ?? null,
       address: c.address ?? null,
-      organizationId: c.organizationId ?? "MILL",
+      organizationId: c.organizationId ?? "",
       updatedAt: now,
     }));
 
@@ -248,7 +248,9 @@ async function executeSyncLoop(
 
       try {
         const payload = {
-          organizationId: "MILL",
+          ...(order.organizationId
+            ? { organizationId: order.organizationId }
+            : {}),
           customerId: order.customerId,
           notes: order.notes,
           idempotencyKey: order.idempotencyKey,

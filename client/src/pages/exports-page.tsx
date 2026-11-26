@@ -185,7 +185,6 @@ export function ExportsPage() {
           format: selectedFormat,
           startDate,
           endDate,
-          organizationId: "MILL",
         },
         {
           responseType: "blob",

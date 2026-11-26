@@ -135,7 +135,7 @@ export function NewOrderPage() {
     queryFn: async () => {
       const offset = (page - 1) * pageSize;
       const res = await apiClient.get<ProductsResponse>(
-        `/sales/products?organizationId=MILL&limit=${pageSize}&offset=${offset}`,
+        `/sales/products?limit=${pageSize}&offset=${offset}`,
       );
       return res.data;
     },
@@ -146,9 +146,7 @@ export function NewOrderPage() {
   const { data: stockData } = useQuery<{ balances: StockBalance[] }>({
     queryKey: ["inventory-balances"],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/inventory/balances?organizationId=MILL",
-      );
+      const res = await apiClient.get("/inventory/balances");
       return res.data;
     },
   });
@@ -274,7 +272,6 @@ export function NewOrderPage() {
         throw new Error("Please select a customer before placing an order.");
       }
       const payload = {
-        organizationId: "MILL",
         customerId: activeCustomer.id,
         orderNumber: generateOrderNumber(),
         notes: orderNotes,

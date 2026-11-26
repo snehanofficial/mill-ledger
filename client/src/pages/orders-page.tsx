@@ -236,7 +236,7 @@ export function OrdersPage() {
     queryKey: ["sales-orders", page],
     queryFn: async () => {
       const res = await apiClient.get(
-        `/sales/orders?organizationId=MILL&limit=${pageSize}&offset=${(page - 1) * pageSize}`,
+        `/sales/orders?limit=${pageSize}&offset=${(page - 1) * pageSize}`,
       );
       return res.data;
     },
@@ -329,7 +329,7 @@ export function OrdersPage() {
     queryKey: ["inventory-balances"],
     queryFn: async () => {
       const res = await apiClient.get(
-        "/inventory/balances?organizationId=MILL",
+        "/inventory/balances",
       );
       return res.data;
     },
@@ -471,7 +471,6 @@ export function OrdersPage() {
         );
       }
       const res = await apiClient.post("/sales/orders", {
-        organizationId: "MILL",
         customerId: activeCustomer.id,
         status,
         notes: orderNotes,

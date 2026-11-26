@@ -154,6 +154,7 @@ export interface ShellUser {
   name: string;
   email: string;
   role: UserRole;
+  organizationId?: string;
   avatar?: string;
   initials: string;
 }

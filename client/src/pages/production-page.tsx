@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useWarehouses } from "@/hooks/use-warehouses";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { toast } from "sonner";
 import { useUrlState } from "@/hooks/use-url-state";
@@ -145,9 +146,15 @@ export function ProductionPage() {
   const [materialActuals, setMaterialActuals] = useState<
     Record<string, { actualQty: number; damagedQty: number }>
   >({});
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState("");
   const [laborCost, setLaborCost] = useState(1200);
   const [utilityCost, setUtilityCost] = useState(600);
   const [notes, setNotes] = useState("Murukku 200g production batch 1");
+
+  const { data: warehousesData } = useWarehouses();
+  const warehouses = warehousesData?.warehouses || [];
+  const activeWarehouse =
+    warehouses.find((w) => w.id === selectedWarehouseId) || warehouses[0];
 
   // Fetch production runs
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
@@ -155,7 +162,7 @@ export function ProductionPage() {
   }>({
     queryKey: ["production-runs"],
     queryFn: async () => {
-      const res = await apiClient.get("/production-runs?organizationId=MILL");
+      const res = await apiClient.get("/production-runs");
       return res.data;
     },
   });
@@ -173,9 +180,12 @@ export function ProductionPage() {
       baseUom: { id?: string; code: string; symbol: string };
     }>;
   }>({
-    queryKey: ["inventory-balances"],
+    queryKey: ["inventory-balances", activeWarehouse?.id ?? "all"],
     queryFn: async () => {
-      const res = await apiClient.get("/inventory/balances?organizationId=MILL");
+      const qs = activeWarehouse?.id
+        ? `?warehouseId=${encodeURIComponent(activeWarehouse.id)}`
+        : "";
+      const res = await apiClient.get(`/inventory/balances${qs}`);
       return res.data;
     },
   });
@@ -190,7 +200,7 @@ export function ProductionPage() {
     queryKey: ["masters-products"],
     enabled: canManageBom && showBomModal,
     queryFn: async () => {
-      const res = await apiClient.get("/masters/products?organizationId=MILL");
+      const res = await apiClient.get("/masters/products");
       return res.data;
     },
   });
@@ -201,7 +211,7 @@ export function ProductionPage() {
     queryKey: ["inventory-uoms"],
     enabled: canManageBom && showBomModal,
     queryFn: async () => {
-      const res = await apiClient.get("/inventory/uoms?organizationId=MILL");
+      const res = await apiClient.get("/inventory/uoms");
       return res.data;
     },
   });
@@ -227,9 +237,7 @@ export function ProductionPage() {
   }>({
     queryKey: ["production-recipes"],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/production-runs/recipes?organizationId=MILL",
-      );
+      const res = await apiClient.get("/production-runs/recipes");
       return res.data;
     },
   });
@@ -269,9 +277,12 @@ export function ProductionPage() {
         };
       });
 
+      if (!activeWarehouse) {
+        throw new Error("Production warehouse is required");
+      }
+
       const payload = {
-        organizationId: "MILL",
-        warehouseId: "WH-1",
+        warehouseId: activeWarehouse.id,
         recipeId: activeRecipe.id,
         runNumber: `RUN-2026-${Date.now().toString().slice(-4)}`,
         batchCount,
@@ -300,10 +311,11 @@ export function ProductionPage() {
   // Save draft production batch mutation (IMP-013)
   const saveDraftMutation = useMutation({
     mutationFn: async () => {
-      if (!activeRecipe) throw new Error("Recipe is required");
+      if (!activeRecipe || !activeWarehouse) {
+        throw new Error("Recipe and warehouse are required");
+      }
       const createdRes = await apiClient.post("/production-runs/draft", {
-        organizationId: "MILL",
-        warehouseId: "WH-1",
+        warehouseId: activeWarehouse.id,
         recipeId: activeRecipe.id,
         runNumber: `RUN-DRAFT-${Date.now().toString().slice(-5)}`,
         batchCount,
@@ -354,8 +366,7 @@ export function ProductionPage() {
   const postDraftMutation = useMutation({
     mutationFn: async (run: ProductionRun) => {
       const res = await apiClient.post(`/production-runs/${run.id}/post`, {
-        organizationId: "MILL",
-        warehouseId: "WH-1",
+        warehouseId: activeWarehouse?.id || "",
         recipeId: run.recipeId || activeRecipe?.id || "",
         runNumber: run.runNumber,
         batchCount: Number(run.batchCount) || 1,
@@ -391,7 +402,6 @@ export function ProductionPage() {
         throw new Error("Add at least one ingredient or packaging line");
       }
       const res = await apiClient.post("/production-runs/recipes", {
-        organizationId: "MILL",
         productVariantId: newBomVariantId,
         name: newBomName.trim(),
         standardBatchSize: Number(newBomBatchSize),
@@ -928,6 +938,31 @@ export function ProductionPage() {
                     {(recipesData?.recipes || []).map((r) => (
                       <SelectItem key={r.id} value={r.id}>
                         {r.name} · Target: {r.expectedOutputQty} pkts
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Warehouse selection */}
+              <div className="flex flex-col gap-1.5">
+                <Label
+                  htmlFor="production-warehouse-select"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
+                  Production Warehouse
+                </Label>
+                <Select
+                  value={activeWarehouse?.id || undefined}
+                  onValueChange={setSelectedWarehouseId}
+                >
+                  <SelectTrigger id="production-warehouse-select">
+                    <SelectValue placeholder="Select warehouse" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {warehouses.map((w) => (
+                      <SelectItem key={w.id} value={w.id}>
+                        {w.code} · {w.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useWarehouses } from "@/hooks/use-warehouses";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
@@ -43,6 +44,7 @@ import {
   RefreshCwIcon,
   PackageIcon,
   AlertTriangleIcon,
+  ArrowLeftRightIcon,
   BookOpenIcon,
   PlusCircleIcon,
   SlidersHorizontalIcon,
@@ -116,6 +118,17 @@ export function StockPage() {
   const [adjQty, setAdjQty] = useState(0);
   const [adjReason, setAdjReason] = useState("");
 
+  const { data: warehousesData } = useWarehouses();
+  const warehouses = warehousesData?.warehouses ?? [];
+  const [warehouseFilter, setWarehouseFilter] = useState<string>("ALL");
+  const [adjWarehouseId, setAdjWarehouseId] = useState<string>("");
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [trfFromWhId, setTrfFromWhId] = useState("");
+  const [trfToWhId, setTrfToWhId] = useState("");
+  const [trfItemId, setTrfItemId] = useState("");
+  const [trfQty, setTrfQty] = useState<number>(1);
+  const [trfNotes, setTrfNotes] = useState("");
+
   const { data: uomsData } = useQuery<{
     uoms: Array<{ id: string; code: string; name: string; symbol: string }>;
     conversions: Array<{
@@ -128,7 +141,7 @@ export function StockPage() {
     queryKey: ["inventory-uoms"],
     enabled: canManageInventory,
     queryFn: async () => {
-      const res = await apiClient.get("/inventory/uoms?organizationId=MILL");
+      const res = await apiClient.get("/inventory/uoms");
       return res.data;
     },
   });
@@ -136,7 +149,6 @@ export function StockPage() {
   const createUomMutation = useMutation({
     mutationFn: async () => {
       const res = await apiClient.post("/inventory/uoms", {
-        organizationId: "MILL",
         code: uomCode.trim(),
         name: uomName.trim(),
         symbol: uomSymbol.trim(),
@@ -195,13 +207,13 @@ export function StockPage() {
   const addItemMutation = useMutation({
     mutationFn: async () => {
       const res = await apiClient.post("/inventory/items", {
-        organizationId: "MILL",
         sku: itemSku.trim(),
         name: itemName.trim(),
         category: itemCategory,
         baseUomId: itemUomId,
         openingStock: Number(itemOpeningStock),
         openingUnitCost: Number(itemOpeningCost),
+        ...(warehouseFilter !== "ALL" ? { warehouseId: warehouseFilter } : {}),
       });
       return res.data;
     },
@@ -217,8 +229,11 @@ export function StockPage() {
 
   const adjustStockMutation = useMutation({
     mutationFn: async () => {
+      const targetWh =
+        adjWarehouseId ||
+        (warehouseFilter !== "ALL" ? warehouseFilter : warehouses[0]?.id);
       const res = await apiClient.post("/inventory/adjustments", {
-        organizationId: "MILL",
+        ...(targetWh ? { warehouseId: targetWh } : {}),
         inventoryItemId: adjItemId,
         quantity: Number(adjQty),
         reason: adjReason.trim(),
@@ -232,6 +247,27 @@ export function StockPage() {
     },
     onError: (err: unknown) => {
       toast.error(extractErrorMessage(err, "Failed to post stock adjustment"));
+    },
+  });
+
+  const transferStockMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiClient.post("/inventory/transfers", {
+        fromWarehouseId: trfFromWhId,
+        toWarehouseId: trfToWhId,
+        notes: trfNotes.trim() || undefined,
+        items: [{ inventoryItemId: trfItemId, quantity: Number(trfQty) }],
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-item-ledger"] });
+      setShowTransferModal(false);
+      toast.success("Inter-warehouse transfer posted.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to post stock transfer"));
     },
   });
 
@@ -255,11 +291,15 @@ export function StockPage() {
       postedAt: string;
     }>;
   }>({
-    queryKey: ["inventory-item-ledger", selectedLedgerItem?.id],
+    queryKey: ["inventory-item-ledger", selectedLedgerItem?.id, warehouseFilter],
     enabled: selectedLedgerItem !== null,
     queryFn: async () => {
+      const qs =
+        warehouseFilter !== "ALL"
+          ? `?warehouseId=${encodeURIComponent(warehouseFilter)}`
+          : "";
       const res = await apiClient.get(
-        `/inventory/items/${selectedLedgerItem!.id}/ledger`,
+        `/inventory/items/${selectedLedgerItem!.id}/ledger${qs}`,
       );
       return res.data;
     },
@@ -268,12 +308,13 @@ export function StockPage() {
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     balances: InventoryBalance[];
   }>({
-    queryKey: ["inventory-balances"],
+    queryKey: ["inventory-balances", warehouseFilter],
     queryFn: async () => {
-      // Benchmark organization code is "MILL"
-      const res = await apiClient.get(
-        "/inventory/balances?organizationId=MILL",
-      );
+      const qs =
+        warehouseFilter !== "ALL"
+          ? `?warehouseId=${encodeURIComponent(warehouseFilter)}`
+          : "";
+      const res = await apiClient.get(`/inventory/balances${qs}`);
       return res.data;
     },
   });
@@ -358,6 +399,11 @@ export function StockPage() {
                 size="sm"
                 onClick={() => {
                   setAdjItemId(balances[0]?.id || "");
+                  setAdjWarehouseId(
+                    warehouseFilter !== "ALL"
+                      ? warehouseFilter
+                      : warehouses[0]?.id || "",
+                  );
                   setAdjQty(0);
                   setAdjReason("");
                   setShowAdjustModal(true);
@@ -367,6 +413,27 @@ export function StockPage() {
               >
                 <SlidersHorizontalIcon className="size-4" aria-hidden="true" />
                 Stock Adjustment
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setTrfFromWhId(
+                    warehouseFilter !== "ALL"
+                      ? warehouseFilter
+                      : warehouses[0]?.id || "",
+                  );
+                  setTrfToWhId(warehouses[1]?.id || warehouses[0]?.id || "");
+                  setTrfItemId(balances[0]?.id || "");
+                  setTrfQty(1);
+                  setTrfNotes("");
+                  setShowTransferModal(true);
+                }}
+                disabled={balances.length === 0 || warehouses.length < 2}
+                className="gap-1.5"
+              >
+                <ArrowLeftRightIcon className="size-4" aria-hidden="true" />
+                Transfer Stock
               </Button>
               <Button
                 size="sm"
@@ -463,6 +530,25 @@ export function StockPage() {
               className="h-8 w-52 text-xs"
               aria-label="Search stock"
             />
+            <Select
+              value={warehouseFilter}
+              onValueChange={setWarehouseFilter}
+            >
+              <SelectTrigger
+                className="h-9 w-auto min-w-44 px-3 py-1 text-xs font-medium"
+                aria-label="Filter stock by warehouse"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Warehouses (Org Total)</SelectItem>
+                {warehouses.map((w) => (
+                  <SelectItem key={w.id} value={w.id}>
+                    {w.code} · {w.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select
               value={categoryFilter}
               onValueChange={setCategoryFilter}
@@ -1195,6 +1281,106 @@ export function StockPage() {
           <DialogFooter className="border-t pt-4">
             <Button variant="outline" size="sm" onClick={() => setShowUomsModal(false)}>
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Inter-Warehouse Stock Transfer Modal */}
+      <Dialog open={showTransferModal} onOpenChange={setShowTransferModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Inter-Warehouse Stock Transfer</DialogTitle>
+            <DialogDescription>
+              Move available inventory between active warehouses with traceable ledger movements.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="trf-from" className="text-xs font-semibold">From Warehouse</Label>
+                <Select value={trfFromWhId} onValueChange={setTrfFromWhId}>
+                  <SelectTrigger id="trf-from">
+                    <SelectValue placeholder="Source" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {warehouses.map((w) => (
+                      <SelectItem key={w.id} value={w.id}>
+                        {w.code} · {w.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="trf-to" className="text-xs font-semibold">To Warehouse</Label>
+                <Select value={trfToWhId} onValueChange={setTrfToWhId}>
+                  <SelectTrigger id="trf-to">
+                    <SelectValue placeholder="Destination" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {warehouses.map((w) => (
+                      <SelectItem key={w.id} value={w.id}>
+                        {w.code} · {w.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="trf-item" className="text-xs font-semibold">Inventory Item</Label>
+              <Select value={trfItemId} onValueChange={setTrfItemId}>
+                <SelectTrigger id="trf-item">
+                  <SelectValue placeholder="Select item" />
+                </SelectTrigger>
+                <SelectContent>
+                  {balances.map((b) => (
+                    <SelectItem key={b.id} value={b.id}>
+                      {b.sku} · {b.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="trf-qty" className="text-xs font-semibold">Quantity</Label>
+              <Input
+                id="trf-qty"
+                type="number"
+                min={0.000001}
+                step="any"
+                value={trfQty}
+                onChange={(e) => setTrfQty(Number(e.target.value))}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="trf-notes" className="text-xs font-semibold">Notes (Optional)</Label>
+              <Input
+                id="trf-notes"
+                value={trfNotes}
+                onChange={(e) => setTrfNotes(e.target.value)}
+                placeholder="Reason for transfer"
+              />
+            </div>
+          </div>
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" size="sm" onClick={() => setShowTransferModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={
+                transferStockMutation.isPending ||
+                !trfFromWhId ||
+                !trfToWhId ||
+                trfFromWhId === trfToWhId ||
+                !trfItemId ||
+                trfQty <= 0
+              }
+              onClick={() => transferStockMutation.mutate()}
+            >
+              {transferStockMutation.isPending ? "Posting..." : "Post Transfer"}
             </Button>
           </DialogFooter>
         </DialogContent>

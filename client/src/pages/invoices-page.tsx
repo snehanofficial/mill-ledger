@@ -189,7 +189,7 @@ export function InvoicesPage() {
     queryKey: ["sales-invoices", page],
     queryFn: async () => {
       const res = await apiClient.get(
-        `/finance/invoices?organizationId=MILL&limit=${pageSize}&offset=${(page - 1) * pageSize}`,
+        `/finance/invoices?limit=${pageSize}&offset=${(page - 1) * pageSize}`,
       );
       return res.data;
     },

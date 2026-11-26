@@ -26,6 +26,7 @@ export function mapAuthUserToShellUser(user: AuthUser): ShellUser {
     name: user.name || "User",
     email: user.email,
     role: user.role,
+    organizationId: user.organizationId,
     initials: getInitials(user.name || user.email),
     avatar: user.image || undefined,
   };

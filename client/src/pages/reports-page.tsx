@@ -115,7 +115,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   });
   const [auditActionFilter, setAuditActionFilter] = useUrlState("action", "ALL");
 
-  const filterParams = new URLSearchParams({ organizationId: "MILL" });
+  const filterParams = new URLSearchParams();
   if (startDate) filterParams.set("startDate", startDate);
   if (endDate) filterParams.set("endDate", endDate);
   if (customerIdFilter && customerIdFilter !== "ALL") {
@@ -223,7 +223,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   const { data: auditData, isError: isErrorAudit, error: errorAudit, refetch: refetchAudit } = useQuery({
     queryKey: ["report-audit"],
     queryFn: async () => {
-      const res = await apiClient.get("/reports/audit?organizationId=MILL");
+      const res = await apiClient.get("/reports/audit");
       return res.data;
     },
     enabled: effectiveTab === "audit",

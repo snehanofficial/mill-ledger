@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useWarehouses } from "@/hooks/use-warehouses";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
 import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
@@ -122,6 +123,7 @@ export function PurchasesPage() {
   // Form states
   const [selectedSupplierId, setSelectedSupplierId] = useState("");
   const [selectedItemId, setSelectedItemId] = useState("");
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState("");
   const [quantity, setQuantity] = useState<number>(60);
   const [unitPrice, setUnitPrice] = useState<number>(45);
   const [receiptNumber, setReceiptNumber] = useState(
@@ -130,15 +132,18 @@ export function PurchasesPage() {
   const [supplierInvoiceNumber, setSupplierInvoiceNumber] = useState("INV-MANDI-01");
   const [notes, setNotes] = useState("Direct mandi intake");
 
+  const { data: warehousesData } = useWarehouses();
+  const warehouses = warehousesData?.warehouses || [];
+  const activeWarehouse =
+    warehouses.find((w) => w.id === selectedWarehouseId) || warehouses[0];
+
   // Query receipts
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     receipts: PurchaseReceipt[];
   }>({
     queryKey: ["purchase-receipts"],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/inventory/purchase-receipts?organizationId=MILL",
-      );
+      const res = await apiClient.get("/inventory/purchase-receipts");
       return res.data;
     },
   });
@@ -147,9 +152,7 @@ export function PurchasesPage() {
   const { data: suppliersData } = useQuery<{ suppliers: Supplier[] }>({
     queryKey: ["inventory-suppliers"],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/inventory/suppliers?organizationId=MILL",
-      );
+      const res = await apiClient.get("/inventory/suppliers");
       return res.data;
     },
   });
@@ -158,9 +161,7 @@ export function PurchasesPage() {
   const { data: itemsData } = useQuery<{ balances: InventoryItemBalance[] }>({
     queryKey: ["inventory-balances"],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/inventory/balances?organizationId=MILL",
-      );
+      const res = await apiClient.get("/inventory/balances");
       return res.data;
     },
   });
@@ -169,9 +170,7 @@ export function PurchasesPage() {
   const { data: debitNotesData } = useQuery<{ debitNotes: DebitNoteItem[] }>({
     queryKey: ["debit-notes"],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/finance/debit-notes?organizationId=MILL",
-      );
+      const res = await apiClient.get("/finance/debit-notes");
       return res.data;
     },
   });
@@ -193,14 +192,13 @@ export function PurchasesPage() {
   // Submit purchase mutation
   const createReceiptMutation = useMutation({
     mutationFn: async () => {
-      if (!activeSupplier || !activeItem) {
-        throw new Error("Supplier and Inventory item are required");
+      if (!activeSupplier || !activeItem || !activeWarehouse) {
+        throw new Error("Supplier, warehouse, and inventory item are required");
       }
 
       const payload = {
-        organizationId: "MILL",
         supplierId: activeSupplier.id,
-        warehouseId: "WH-1",
+        warehouseId: activeWarehouse.id,
         receiptNumber,
         supplierInvoiceNumber: supplierInvoiceNumber || undefined,
         notes: notes || undefined,
@@ -585,6 +583,31 @@ export function PurchasesPage() {
                     {suppliers.map((s) => (
                       <SelectItem key={s.id} value={s.id}>
                         {s.name} ({s.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Warehouse selection */}
+              <div className="flex flex-col gap-1.5">
+                <Label
+                  htmlFor="purchase-warehouse-select"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
+                  Receiving Warehouse
+                </Label>
+                <Select
+                  value={activeWarehouse?.id || undefined}
+                  onValueChange={setSelectedWarehouseId}
+                >
+                  <SelectTrigger id="purchase-warehouse-select">
+                    <SelectValue placeholder="Select warehouse" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {warehouses.map((w) => (
+                      <SelectItem key={w.id} value={w.id}>
+                        {w.code} · {w.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

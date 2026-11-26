@@ -98,7 +98,7 @@ export function SuppliersPage() {
     queryKey: ["inventory-suppliers"],
     queryFn: async () => {
       const res = await apiClient.get(
-        "/inventory/suppliers?organizationId=MILL&includeInactive=true",
+        "/inventory/suppliers?includeInactive=true",
       );
       return res.data;
     },

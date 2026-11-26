@@ -108,7 +108,7 @@ export function DashboardPage() {
     useQuery<DashboardData>({
       queryKey: ["owner-dashboard"],
       queryFn: async () => {
-        const res = await apiClient.get("/dashboard?organizationId=MILL");
+        const res = await apiClient.get("/dashboard");
         return res.data;
       },
     });

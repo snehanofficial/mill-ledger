@@ -103,7 +103,7 @@ export function CustomersPage() {
   }>({
     queryKey: ["sales-customers"],
     queryFn: async () => {
-      const res = await apiClient.get("/sales/customers?organizationId=MILL");
+      const res = await apiClient.get("/sales/customers");
       return res.data;
     },
   });
@@ -120,7 +120,6 @@ export function CustomersPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       const res = await apiClient.post("/sales/customers", {
-        organizationId: "MILL",
         code: formCode.trim(),
         name: formName.trim(),
         state: formState.trim() || "Tamil Nadu",

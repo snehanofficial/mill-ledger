@@ -191,7 +191,7 @@ export function PaymentsPage() {
     enabled: allocatingPayment !== null,
     queryFn: async () => {
       const res = await apiClient.get(
-        `/finance/invoices?organizationId=MILL&customerId=${allocatingPayment?.customer?.id ?? ""}`,
+        `/finance/invoices?customerId=${allocatingPayment?.customer?.id ?? ""}`,
       );
       return res.data;
     },
@@ -257,7 +257,7 @@ export function PaymentsPage() {
   } = useQuery<{ payments: Payment[] }>({
     queryKey: ["payments"],
     queryFn: async () => {
-      const res = await apiClient.get("/payments?organizationId=MILL");
+      const res = await apiClient.get("/payments");
       return res.data;
     },
   });
@@ -271,7 +271,7 @@ export function PaymentsPage() {
     queryKey: ["receivables-summary"],
     queryFn: async () => {
       const res = await apiClient.get(
-        "/payments/receivables/summary?organizationId=MILL",
+        "/payments/receivables/summary",
       );
       return res.data;
     },

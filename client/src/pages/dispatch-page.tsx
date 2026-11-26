@@ -144,7 +144,7 @@ export function DispatchPage() {
   } = useQuery<{ dispatches: Dispatch[] }>({
     queryKey: ["dispatches"],
     queryFn: async () => {
-      const res = await apiClient.get("/sales/dispatches?organizationId=MILL");
+      const res = await apiClient.get("/sales/dispatches");
       return res.data;
     },
   });
@@ -153,7 +153,7 @@ export function DispatchPage() {
   const { data: ordersData } = useQuery<{ orders: EligibleOrder[] }>({
     queryKey: ["sales-orders", "eligible-dispatch"],
     queryFn: async () => {
-      const res = await apiClient.get("/sales/orders?organizationId=MILL");
+      const res = await apiClient.get("/sales/orders");
       return res.data;
     },
     enabled: showCreateModal,

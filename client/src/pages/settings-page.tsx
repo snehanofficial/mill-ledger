@@ -2,6 +2,12 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import {
+  useFacilities,
+  useWarehouses,
+  type FacilityRecord,
+  type WarehouseRecord,
+} from "@/hooks/use-warehouses";
 import { formatDate } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +47,7 @@ import {
   PauseIcon,
   PlayIcon,
   PencilIcon,
+  WarehouseIcon,
 } from "lucide-react";
 import { useMotion } from "@/hooks/use-motion";
 import { ErrorState } from "@/components/ui/loading-error-empty";
@@ -60,7 +67,128 @@ export function SettingsPage() {
   const queryClient = useQueryClient();
   const { user: currentUser } = useCurrentUser();
   const { isMotionPaused, toggleMotion } = useMotion();
-  const [activeTab, setActiveTab] = useState<"mill" | "users" | "dpdp">("mill");
+  const [activeTab, setActiveTab] = useState<
+    "mill" | "warehouses" | "users" | "dpdp"
+  >("mill");
+  const [showFacilityModal, setShowFacilityModal] = useState(false);
+  const [editingFacility, setEditingFacility] = useState<FacilityRecord | null>(
+    null,
+  );
+  const [facCode, setFacCode] = useState("");
+  const [facName, setFacName] = useState("");
+  const [facState, setFacState] = useState("Tamil Nadu");
+
+  const [showWarehouseModal, setShowWarehouseModal] = useState(false);
+  const [editingWarehouse, setEditingWarehouse] =
+    useState<WarehouseRecord | null>(null);
+  const [whCode, setWhCode] = useState("");
+  const [whName, setWhName] = useState("");
+  const [whFacilityId, setWhFacilityId] = useState("");
+
+  const { data: facilitiesData } = useFacilities(true);
+  const { data: warehousesData } = useWarehouses({ includeInactive: true });
+  const facilitiesList = facilitiesData?.facilities ?? [];
+  const warehousesList = warehousesData?.warehouses ?? [];
+
+  const saveFacilityMutation = useMutation({
+    mutationFn: async () => {
+      if (editingFacility) {
+        return (
+          await apiClient.put(`/masters/facilities/${editingFacility.id}`, {
+            name: facName.trim(),
+            state: facState.trim(),
+          })
+        ).data;
+      }
+      return (
+        await apiClient.post("/masters/facilities", {
+          code: facCode.trim().toUpperCase(),
+          name: facName.trim(),
+          state: facState.trim() || "Tamil Nadu",
+        })
+      ).data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["masters-facilities"] });
+      queryClient.invalidateQueries({ queryKey: ["masters-warehouses"] });
+      setShowFacilityModal(false);
+      setEditingFacility(null);
+      toast.success(editingFacility ? "Facility updated." : "Facility created.");
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to save facility"));
+    },
+  });
+
+  const toggleFacilityActiveMutation = useMutation({
+    mutationFn: async (f: FacilityRecord) => {
+      return (
+        await apiClient.put(`/masters/facilities/${f.id}`, {
+          isActive: !f.isActive,
+        })
+      ).data;
+    },
+    onSuccess: (_data, f) => {
+      queryClient.invalidateQueries({ queryKey: ["masters-facilities"] });
+      toast.success(
+        f.isActive ? "Facility deactivated." : "Facility reactivated.",
+      );
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Cannot update facility status"));
+    },
+  });
+
+  const saveWarehouseMutation = useMutation({
+    mutationFn: async () => {
+      if (editingWarehouse) {
+        return (
+          await apiClient.put(`/masters/warehouses/${editingWarehouse.id}`, {
+            facilityId: whFacilityId,
+            name: whName.trim(),
+          })
+        ).data;
+      }
+      return (
+        await apiClient.post("/masters/warehouses", {
+          facilityId: whFacilityId,
+          code: whCode.trim().toUpperCase(),
+          name: whName.trim(),
+        })
+      ).data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["masters-warehouses"] });
+      queryClient.invalidateQueries({ queryKey: ["masters-facilities"] });
+      setShowWarehouseModal(false);
+      setEditingWarehouse(null);
+      toast.success(
+        editingWarehouse ? "Warehouse updated." : "Warehouse created.",
+      );
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Failed to save warehouse"));
+    },
+  });
+
+  const toggleWarehouseActiveMutation = useMutation({
+    mutationFn: async (w: WarehouseRecord) => {
+      return (
+        await apiClient.put(`/masters/warehouses/${w.id}`, {
+          isActive: !w.isActive,
+        })
+      ).data;
+    },
+    onSuccess: (_data, w) => {
+      queryClient.invalidateQueries({ queryKey: ["masters-warehouses"] });
+      toast.success(
+        w.isActive ? "Warehouse deactivated." : "Warehouse reactivated.",
+      );
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err, "Cannot update warehouse status"));
+    },
+  });
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
   const [editUserName, setEditUserName] = useState("");
@@ -85,7 +213,7 @@ export function SettingsPage() {
   }>({
     queryKey: ["masters-organization"],
     queryFn: async () => {
-      const res = await apiClient.get("/masters/organization?organizationId=MILL");
+      const res = await apiClient.get("/masters/organization");
       return res.data;
     },
   });
@@ -103,7 +231,7 @@ export function SettingsPage() {
   }>({
     queryKey: ["finance-tax-rates"],
     queryFn: async () => {
-      const res = await apiClient.get("/finance/tax-rates?organizationId=MILL");
+      const res = await apiClient.get("/finance/tax-rates");
       return res.data;
     },
   });
@@ -112,7 +240,6 @@ export function SettingsPage() {
     mutationFn: async () => {
       return (
         await apiClient.put("/masters/organization", {
-          organizationId: "MILL",
           name: orgNameInput.trim(),
           state: orgStateInput.trim(),
           gstin: orgGstinInput.trim() || null,
@@ -134,7 +261,6 @@ export function SettingsPage() {
       const rate = Number(taxRateVal);
       return (
         await apiClient.post("/finance/tax-rates", {
-          organizationId: "MILL",
           hsnCode: taxHsn.trim(),
           rate,
           cgstRate: rate / 2,
@@ -314,6 +440,20 @@ export function SettingsPage() {
         <button
           type="button"
           role="tab"
+          aria-selected={activeTab === "warehouses"}
+          onClick={() => setActiveTab("warehouses")}
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
+            activeTab === "warehouses"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <WarehouseIcon className="size-4" aria-hidden="true" />
+          Facilities & Warehouses
+        </button>
+        <button
+          type="button"
+          role="tab"
           aria-selected={activeTab === "users"}
           onClick={() => setActiveTab("users")}
           className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
@@ -383,7 +523,7 @@ export function SettingsPage() {
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
                 <span className="text-xs text-muted-foreground font-semibold">Organization Code</span>
                 <span className="text-sm font-mono font-bold text-foreground">
-                  {orgData?.organization?.code || "MILL"}
+                  {orgData?.organization?.code || "—"}
                 </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
@@ -947,6 +1087,251 @@ export function SettingsPage() {
             </DialogFooter>
           </DialogContent>
         )}
+      </Dialog>
+
+      {/* TAB 2: Facilities & Warehouses */}
+      {activeTab === "warehouses" && (
+        <div className="flex flex-col gap-6">
+          {/* Facilities Card */}
+          <div className="rounded-xl border border-border/80 bg-card shadow-xs">
+            <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 sm:px-6">
+              <div>
+                <h2 className="text-base font-bold text-foreground">Facilities</h2>
+                <p className="text-xs text-muted-foreground">
+                  Physical mill plants and regional hubs within your organization
+                </p>
+              </div>
+              {canEditSettings && (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setEditingFacility(null);
+                    setFacCode("");
+                    setFacName("");
+                    setFacState("Tamil Nadu");
+                    setShowFacilityModal(true);
+                  }}
+                  className="h-8 gap-1.5 text-xs"
+                >
+                  <PlusIcon className="size-3.5" />
+                  Add Facility
+                </Button>
+              )}
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Facility Name</TableHead>
+                  <TableHead>State</TableHead>
+                  <TableHead className="text-right">Warehouses</TableHead>
+                  <TableHead>Status</TableHead>
+                  {canEditSettings && <TableHead className="text-right">Actions</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {facilitiesList.map((f) => (
+                  <TableRow key={f.id}>
+                    <TableCell className="font-mono text-xs font-semibold">{f.code}</TableCell>
+                    <TableCell className="font-medium">{f.name}</TableCell>
+                    <TableCell className="text-xs">{f.state}</TableCell>
+                    <TableCell className="text-right font-mono text-xs">{f._count?.warehouses ?? 0}</TableCell>
+                    <TableCell>
+                      <Badge variant={f.isActive ? "success" : "secondary"}>
+                        {f.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    {canEditSettings && (
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => {
+                              setEditingFacility(f);
+                              setFacCode(f.code);
+                              setFacName(f.name);
+                              setFacState(f.state);
+                              setShowFacilityModal(true);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => toggleFacilityActiveMutation.mutate(f)}
+                          >
+                            {f.isActive ? "Deactivate" : "Reactivate"}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Warehouses Card */}
+          <div className="rounded-xl border border-border/80 bg-card shadow-xs">
+            <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 sm:px-6">
+              <div>
+                <h2 className="text-base font-bold text-foreground">Warehouses</h2>
+                <p className="text-xs text-muted-foreground">
+                  Storage locations for raw materials, production output, and order fulfilment
+                </p>
+              </div>
+              {canEditSettings && (
+                <Button
+                  size="sm"
+                  disabled={facilitiesList.filter((f) => f.isActive).length === 0}
+                  onClick={() => {
+                    setEditingWarehouse(null);
+                    setWhCode("");
+                    setWhName("");
+                    setWhFacilityId(
+                      facilitiesList.find((f) => f.isActive)?.id || "",
+                    );
+                    setShowWarehouseModal(true);
+                  }}
+                  className="h-8 gap-1.5 text-xs"
+                >
+                  <PlusIcon className="size-3.5" />
+                  Add Warehouse
+                </Button>
+              )}
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Warehouse Name</TableHead>
+                  <TableHead>Facility</TableHead>
+                  <TableHead>Status</TableHead>
+                  {canEditSettings && <TableHead className="text-right">Actions</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {warehousesList.map((w) => (
+                  <TableRow key={w.id}>
+                    <TableCell className="font-mono text-xs font-semibold">{w.code}</TableCell>
+                    <TableCell className="font-medium">{w.name}</TableCell>
+                    <TableCell className="text-xs">
+                      {w.facility ? `${w.facility.code} · ${w.facility.name}` : "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={w.isActive ? "success" : "secondary"}>
+                        {w.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    {canEditSettings && (
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => {
+                              setEditingWarehouse(w);
+                              setWhCode(w.code);
+                              setWhName(w.name);
+                              setWhFacilityId(w.facilityId);
+                              setShowWarehouseModal(true);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => toggleWarehouseActiveMutation.mutate(w)}
+                          >
+                            {w.isActive ? "Deactivate" : "Reactivate"}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+
+      {/* Facility Modal */}
+      <Dialog open={showFacilityModal} onOpenChange={setShowFacilityModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingFacility ? "Edit Facility" : "Add Facility"}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            {!editingFacility && (
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="fac-code" className="text-xs">Code</Label>
+                <Input id="fac-code" value={facCode} onChange={(e) => setFacCode(e.target.value)} placeholder="FAC-2" />
+              </div>
+            )}
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="fac-name" className="text-xs">Name</Label>
+              <Input id="fac-name" value={facName} onChange={(e) => setFacName(e.target.value)} placeholder="Chennai Packaging Plant" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="fac-state" className="text-xs">State</Label>
+              <Input id="fac-state" value={facState} onChange={(e) => setFacState(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" size="sm" onClick={() => setShowFacilityModal(false)}>Cancel</Button>
+            <Button size="sm" disabled={saveFacilityMutation.isPending || !facName.trim() || (!editingFacility && !facCode.trim())} onClick={() => saveFacilityMutation.mutate()}>
+              Save Facility
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Warehouse Modal */}
+      <Dialog open={showWarehouseModal} onOpenChange={setShowWarehouseModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingWarehouse ? "Edit Warehouse" : "Add Warehouse"}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            {!editingWarehouse && (
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="wh-code" className="text-xs">Code</Label>
+                <Input id="wh-code" value={whCode} onChange={(e) => setWhCode(e.target.value)} placeholder="WH-2" />
+              </div>
+            )}
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="wh-name" className="text-xs">Name</Label>
+              <Input id="wh-name" value={whName} onChange={(e) => setWhName(e.target.value)} placeholder="Finished Goods Store" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="wh-facility" className="text-xs">Facility</Label>
+              <Select value={whFacilityId} onValueChange={setWhFacilityId}>
+                <SelectTrigger id="wh-facility" className="h-9 text-xs"><SelectValue placeholder="Select facility" /></SelectTrigger>
+                <SelectContent>
+                  {facilitiesList.filter((f) => f.isActive).map((f) => (
+                    <SelectItem key={f.id} value={f.id}>
+                      {f.code} · {f.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" size="sm" onClick={() => setShowWarehouseModal(false)}>Cancel</Button>
+            <Button size="sm" disabled={saveWarehouseMutation.isPending || !whName.trim() || !whFacilityId || (!editingWarehouse && !whCode.trim())} onClick={() => saveWarehouseMutation.mutate()}>
+              Save Warehouse
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </div>
   );
