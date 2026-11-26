@@ -343,6 +343,7 @@ html {
   color: var(--foreground);
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
+  scroll-padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 body {

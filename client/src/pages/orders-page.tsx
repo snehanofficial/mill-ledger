@@ -2153,7 +2153,7 @@ export function OrdersPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="draft-quantity-input" className="text-xs font-semibold text-muted-foreground">
                     Quantity (pkts)
@@ -2289,7 +2289,7 @@ export function OrdersPage() {
                         Quoted: {line.quotedQuantity} @ {formatINR(line.quotedUnitPrice)}
                       </span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div className="flex flex-col gap-1">
                         <Label htmlFor={`approve-qty-${line.lineId}`} className="text-2xs text-muted-foreground">
                           Approved Qty
@@ -2307,7 +2307,7 @@ export function OrdersPage() {
                               ),
                             );
                           }}
-                          className="h-8 text-xs"
+                          className="h-11 sm:h-9 text-base sm:text-xs"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
@@ -2328,7 +2328,7 @@ export function OrdersPage() {
                               ),
                             );
                           }}
-                          className="h-8 text-xs"
+                          className="h-11 sm:h-9 text-base sm:text-xs"
                         />
                       </div>
                     </div>

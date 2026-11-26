@@ -720,7 +720,7 @@ export function InvoicesPage() {
 
             <div className="mt-2 flex flex-col gap-6 text-sm">
               {/* Header Parties */}
-              <div className="grid grid-cols-2 gap-4 border-b pb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b pb-4">
                 <div>
                   <h4 className="text-xs font-semibold uppercase text-muted-foreground">
                     Supplier (Billed by)

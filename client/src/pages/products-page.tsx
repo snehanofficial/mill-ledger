@@ -1036,7 +1036,7 @@ export function ProductsPage() {
                 placeholder="Murukku"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="prod-hsn" className="text-xs">
                   HSN Code (4-12 chars)
@@ -1138,7 +1138,7 @@ export function ProductsPage() {
                 placeholder="Murukku 500 g"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="var-pack" className="text-xs">
                   Pack Size

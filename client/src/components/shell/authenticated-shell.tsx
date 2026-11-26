@@ -866,7 +866,6 @@ function GlobalSearch({ open, onOpenChange, sections }: GlobalSearchProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="p-0 max-w-lg overflow-hidden border border-border shadow-2xl"
-        showCloseButton={false}
         aria-label="Global search"
       >
         <DialogTitle className="sr-only">Search pages</DialogTitle>
@@ -1715,7 +1714,7 @@ export function AuthenticatedShell({
 
           <main
             id="main-content"
-            className="flex flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable] pb-16 md:pb-0"
+            className="flex flex-1 flex-col min-h-0 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable] pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0"
             tabIndex={-1}
           >
             {children}

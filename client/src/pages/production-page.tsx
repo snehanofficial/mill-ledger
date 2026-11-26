@@ -970,7 +970,7 @@ export function ProductionPage() {
               </div>
 
               {/* Output & Batch inputs */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="flex flex-col gap-1.5">
                   <Label
                     htmlFor="production-batch-count-input"
@@ -1072,7 +1072,7 @@ export function ProductionPage() {
                             )}
                           </span>
                         </div>
-                        <div className="grid grid-cols-3 gap-2 items-center">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-stretch sm:items-center">
                           <div className="flex flex-col gap-0.5">
                             <Label
                               htmlFor={`mat-actual-${item.inventoryItem.sku}`}
@@ -1162,7 +1162,7 @@ export function ProductionPage() {
               )}
 
               {/* Additional Costs */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <Label
                     htmlFor="production-labor-cost-input"
@@ -1388,7 +1388,7 @@ export function ProductionPage() {
                 onChange={(e) => setDraftEditGoodQty(Number(e.target.value))}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="draft-edit-labor" className="text-xs">Direct Labour (₹)</Label>
                 <Input
@@ -1479,7 +1479,7 @@ export function ProductionPage() {
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Create New BOM Recipe
                 </h3>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="flex flex-col gap-1">
                     <Label htmlFor="new-bom-variant" className="text-xs">Product Variant</Label>
                     <Select value={newBomVariantId} onValueChange={setNewBomVariantId}>
@@ -1507,7 +1507,7 @@ export function ProductionPage() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div className="flex flex-col gap-1">
                     <Label htmlFor="new-bom-batch" className="text-xs">Batch Size</Label>
                     <Input
@@ -1569,8 +1569,8 @@ export function ProductionPage() {
                     </Button>
                   </div>
                   {newBomLines.map((line, idx) => (
-                    <div key={idx} className="grid grid-cols-12 gap-2 items-center">
-                      <div className="col-span-5">
+                    <div key={idx} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-stretch sm:items-center">
+                      <div className="sm:col-span-5">
                         <Select
                           value={line.inventoryItemId}
                           onValueChange={(val) =>
@@ -1591,7 +1591,7 @@ export function ProductionPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-3">
+                      <div className="sm:col-span-3">
                         <Select
                           value={line.itemType}
                           onValueChange={(val) =>
@@ -1611,7 +1611,7 @@ export function ProductionPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-3">
+                      <div className="sm:col-span-3">
                         <Input
                           type="number"
                           min={0.001}
@@ -1624,10 +1624,10 @@ export function ProductionPage() {
                               ),
                             )
                           }
-                          className="h-8 text-xs"
+                          className="h-11 sm:h-9 text-base sm:text-xs"
                         />
                       </div>
-                      <div className="col-span-1 text-right">
+                      <div className="sm:col-span-1 text-right">
                         <Button
                           type="button"
                           variant="ghost"

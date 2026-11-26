@@ -1018,7 +1018,7 @@ export function StockPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-2">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-sku" className="text-xs">SKU</Label>
                 <Input id="item-sku" value={itemSku} onChange={(e) => setItemSku(e.target.value)} placeholder="RM-SUGAR" />
@@ -1050,7 +1050,7 @@ export function StockPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-open-qty" className="text-xs">Opening Stock</Label>
                 <Input id="item-open-qty" type="number" min={0} value={itemOpeningStock} onChange={(e) => setItemOpeningStock(Number(e.target.value))} />
@@ -1165,7 +1165,7 @@ export function StockPage() {
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Add Unit of Measure
               </h3>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="uom-code" className="text-xs">Code</Label>
                   <Input
@@ -1214,7 +1214,7 @@ export function StockPage() {
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Add Conversion Rule
               </h3>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="conv-from" className="text-xs">From UOM</Label>
                   <Select value={convFromId} onValueChange={setConvFromId}>
@@ -1296,7 +1296,7 @@ export function StockPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-2">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="trf-from" className="text-xs font-semibold">From Warehouse</Label>
                 <Select value={trfFromWhId} onValueChange={setTrfFromWhId}>
