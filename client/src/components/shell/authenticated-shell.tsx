@@ -706,19 +706,21 @@ function SidebarUserMenu({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                if (isMobile) setOpenMobile(false);
-                navigate("/settings/profile");
-              }}
-              className="cursor-pointer"
-            >
-              <SettingsIcon
-                className="mr-2 size-4 text-muted-foreground"
-                aria-hidden
-              />
-              {t("Account settings", "Account settings")}
-            </DropdownMenuItem>
+            {(user.role === "ADMIN" || user.role === "OWNER") && (
+              <DropdownMenuItem
+                onClick={() => {
+                  if (isMobile) setOpenMobile(false);
+                  navigate("/settings");
+                }}
+                className="cursor-pointer"
+              >
+                <SettingsIcon
+                  className="mr-2 size-4 text-muted-foreground"
+                  aria-hidden
+                />
+                {t("Settings", "Settings")}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               onClick={() => {
                 if (isMobile) setOpenMobile(false);
@@ -1048,6 +1050,7 @@ function StickyHeader({
   isInstallingApp,
   onInstallApp,
 }: StickyHeaderProps) {
+  const navigate = useNavigate();
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
   const { language, setLanguage, t } = useLanguage();
   const { resolvedTheme, toggleTheme } = useTheme();
@@ -1238,13 +1241,18 @@ function StickyHeader({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
-              <SettingsIcon
-                className="mr-2 size-4 text-muted-foreground"
-                aria-hidden
-              />
-              Account settings
-            </DropdownMenuItem>
+            {(user.role === "ADMIN" || user.role === "OWNER") && (
+              <DropdownMenuItem
+                onClick={() => navigate("/settings")}
+                className="cursor-pointer"
+              >
+                <SettingsIcon
+                  className="mr-2 size-4 text-muted-foreground"
+                  aria-hidden
+                />
+                {t("Settings", "Settings")}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={onOpenHelp} className="cursor-pointer">
               <BookOpenIcon
                 className="mr-2 size-4 text-muted-foreground"
@@ -1324,10 +1332,10 @@ function MobileBottomNav({ role }: { role: UserRole }) {
 
   if (role === "SALESMAN") {
     navItems = [
-      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      { label: t("nav.home", "My work"), href: "/orders", icon: HomeIcon },
       {
-        label: t("nav.orders", "Orders"),
-        href: "/orders",
+        label: t("nav.newOrder", "New order"),
+        href: "/orders/new",
         icon: ShoppingCartIcon,
       },
       {
@@ -1343,13 +1351,13 @@ function MobileBottomNav({ role }: { role: UserRole }) {
     ];
   } else if (role === "PRODUCTION") {
     navItems = [
-      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
-      { label: t("nav.stock", "Stock"), href: "/stock", icon: PackageIcon },
+      { label: t("nav.home", "Today"), href: "/production/today", icon: HomeIcon },
       {
-        label: t("nav.production", "Production"),
-        href: "/production/today",
+        label: t("nav.newRun", "New run"),
+        href: "/production/new",
         icon: PackageIcon,
       },
+      { label: t("nav.stock", "Stock"), href: "/stock", icon: PackageIcon },
       {
         label: t("nav.more", "More"),
         action: () => setOpenMobile(true),
@@ -1358,15 +1366,15 @@ function MobileBottomNav({ role }: { role: UserRole }) {
     ];
   } else if (role === "ACCOUNTANT") {
     navItems = [
-      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      { label: t("nav.home", "Reports"), href: "/reports", icon: HomeIcon },
       {
-        label: t("nav.orders", "Orders"),
-        href: "/orders",
+        label: t("nav.invoices", "Invoices"),
+        href: "/invoices",
         icon: ShoppingCartIcon,
       },
       {
-        label: t("nav.payments", "Payments"),
-        href: "/payments",
+        label: t("nav.receivables", "Balances"),
+        href: "/receivables",
         icon: PackageIcon,
       },
       {
@@ -1378,7 +1386,7 @@ function MobileBottomNav({ role }: { role: UserRole }) {
   } else {
     // ADMIN / OWNER
     navItems = [
-      { label: t("nav.home", "Home"), href: homeHref, icon: HomeIcon },
+      { label: t("nav.home", role === "ADMIN" ? "Queue" : "Overview"), href: homeHref, icon: HomeIcon },
       {
         label: t("nav.orders", "Orders"),
         href: "/orders",
@@ -1559,7 +1567,17 @@ export function AuthenticatedShell({
             <AppBrand
               href={getDefaultRouteForRole(user.role)}
               name="MillLedger"
-              description="Production unit"
+              description={
+                user.role === "SALESMAN"
+                  ? "Field sales"
+                  : user.role === "PRODUCTION"
+                    ? "Production floor"
+                    : user.role === "ACCOUNTANT"
+                      ? "Audit & finance"
+                      : user.role === "OWNER"
+                        ? "Business oversight"
+                        : "Operations desk"
+              }
             />
           </SidebarHeader>
 
