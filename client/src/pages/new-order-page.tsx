@@ -92,26 +92,13 @@ export function NewOrderPage() {
   const syncManager = useSyncManager(user?.id);
   const { isOnline, queueOrder } = syncManager;
 
-  const [selectedCustomerId, setSelectedCustomerId] = useState("CUST-RET-A");
-  const [quantities, setQuantities] = useState<Record<string, number>>({
-    "VAR-MURUKKU-200G": 150,
-  });
-  const [orderNotes, setOrderNotes] = useState("Wholesale store delivery");
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [orderNotes, setOrderNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 12;
-  const [productCache, setProductCache] = useState<Record<string, ProductItem>>({
-    "VAR-MURUKKU-200G": {
-      id: "VAR-MURUKKU-200G",
-      sku: "VAR-MURUKKU-200G",
-      name: "Murukku 200 g",
-      productName: "Murukku Standard Pack",
-      defaultPrice: 50.0,
-      taxRate: 5.0,
-      uom: "PKT",
-      imageUrl: "/products/murukku.svg",
-    },
-  });
+  const [productCache, setProductCache] = useState<Record<string, ProductItem>>({});
 
   // Fetch customers
   const { data: customersData } = useQuery<{ customers: CustomerItem[] }>({
@@ -151,24 +138,9 @@ export function NewOrderPage() {
     },
   });
 
-  const customersList: CustomerItem[] = (
-    customersData?.customers || [
-      {
-        id: "CUST-RET-A",
-        code: "CUST-RET-A",
-        name: "Retailer A",
-        state: "Tamil Nadu",
-        isActive: true,
-      },
-      {
-        id: "CUST-DIST-B",
-        code: "CUST-DIST-B",
-        name: "Distributor B",
-        state: "Karnataka",
-        isActive: true,
-      },
-    ]
-  ).filter((c) => c.isActive !== false);
+  const customersList: CustomerItem[] = (customersData?.customers ?? []).filter(
+    (c) => c.isActive !== false,
+  );
 
   const productsList: ProductItem[] = productsData?.products ?? [];
   const totalProducts = productsData?.pagination?.total ?? productsList.length;
@@ -190,9 +162,9 @@ export function NewOrderPage() {
   const activeCustomer =
     customersList.find(
       (c) => c.id === selectedCustomerId || c.code === selectedCustomerId,
-    ) || customersList[0];
+    ) ?? null;
 
-  const customerState = activeCustomer?.state || "Tamil Nadu";
+  const customerState = activeCustomer?.state || "";
   const isIntraState = customerState.trim().toLowerCase() === "tamil nadu";
 
   const getProductStock = (product: ProductItem) => {
@@ -237,9 +209,9 @@ export function NewOrderPage() {
       if (!product || seenProductIds.has(product.id)) return null;
       if (key === product.sku && quantities[product.id] !== undefined) return null;
       seenProductIds.add(product.id);
-      const unitPrice = Number(product.defaultPrice || 50.0);
+      const unitPrice = Number(product.defaultPrice ?? 0);
       const taxable = qty * unitPrice;
-      const taxRate = Number(product.taxRate || 5.0) / 100;
+      const taxRate = Number(product.taxRate ?? 0) / 100;
       const tax = taxable * taxRate;
       const total = taxable + tax;
       const stock = getProductStock(product);
@@ -421,11 +393,17 @@ export function NewOrderPage() {
                 </SelectContent>
               </Select>
               <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                <span>Place of Supply: <strong>{customerState}</strong></span>
-                <span>•</span>
-                <span className="text-primary font-medium">
-                  {isIntraState ? "Intra-state (CGST 2.5% + SGST 2.5%)" : "Inter-state (IGST 5.0%)"}
-                </span>
+                {activeCustomer ? (
+                  <>
+                    <span>Place of Supply: <strong>{customerState}</strong></span>
+                    <span>•</span>
+                    <span className="text-primary font-medium">
+                      {isIntraState ? "Intra-state (CGST 2.5% + SGST 2.5%)" : "Inter-state (IGST 5.0%)"}
+                    </span>
+                  </>
+                ) : (
+                  <span>Select a customer to determine place of supply and GST regime</span>
+                )}
               </div>
             </div>
 
@@ -529,7 +507,8 @@ export function NewOrderPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
                 {productsList.map((product) => {
                   const qty = quantities[product.id] ?? quantities[product.sku] ?? 0;
-                  const unitPrice = Number(product.defaultPrice || 50.0);
+                  const unitPrice = Number(product.defaultPrice ?? 0);
+                  const taxRate = Number(product.taxRate ?? 0) / 100;
                   const availableStock = getProductStock(product);
                   const isShort = qty > availableStock;
                   const hasOrder = qty > 0;
@@ -546,13 +525,17 @@ export function NewOrderPage() {
                       <div className="flex flex-col gap-3">
                         {/* Visual Product Thumbnail with semantic img element */}
                         <div className="relative aspect-video w-full rounded-lg bg-muted/40 border border-border/60 overflow-hidden flex items-center justify-center p-2">
-                          <img
-                            src={product.imageUrl || "/products/murukku.svg"}
-                            alt={`${product.name} packaging pouch`}
-                            width={112}
-                            height={112}
-                            className="h-28 w-28 object-contain transition-transform duration-(--ml-motion-fast) ease-enter group-hover:scale-105 drop-shadow-xs"
-                          />
+                          {product.imageUrl ? (
+                            <img
+                              src={product.imageUrl}
+                              alt={`${product.name} packaging pouch`}
+                              width={112}
+                              height={112}
+                              className="h-28 w-28 object-contain transition-transform duration-(--ml-motion-fast) ease-enter group-hover:scale-105 drop-shadow-xs"
+                            />
+                          ) : (
+                            <PackageIcon className="size-10 text-muted-foreground/50" aria-hidden="true" />
+                          )}
                       <div className="absolute top-2 right-2">
                         {availableStock > 0 ? (
                           <Badge
@@ -576,14 +559,16 @@ export function NewOrderPage() {
                           {product.sku}
                         </span>
                         <span className="text-[11px] text-muted-foreground">
-                          HSN: {product.hsnCode || "21069099"}
+                          {product.hsnCode ? `HSN: ${product.hsnCode}` : "HSN: —"}
                         </span>
                       </div>
                       <h3 className="text-base font-bold text-foreground mt-0.5">
                         {product.name}
                       </h3>
                       <p className="text-xs text-muted-foreground">
-                        {product.productName || "Standard Retail Milling Pack"} ({product.uom || "PKT"})
+                        {[product.productName, product.uom ? `(${product.uom})` : null]
+                          .filter(Boolean)
+                          .join(" ") || "—"}
                       </p>
                     </div>
 
@@ -665,7 +650,7 @@ export function NewOrderPage() {
                       <div className="flex items-center justify-between text-xs pt-1 text-muted-foreground">
                         <span>Line Total:</span>
                         <span className="font-mono font-bold text-foreground">
-                          {formatINR(qty * unitPrice * 1.05)} (incl. GST)
+                          {formatINR(qty * unitPrice * (1 + taxRate))} (incl. GST)
                         </span>
                       </div>
                     )}

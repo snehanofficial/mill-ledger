@@ -48,6 +48,7 @@ import {
   Trash2Icon,
   ClockIcon,
   PencilIcon,
+  PackageIcon,
 } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSyncManager } from "@/offline/use-offline";
@@ -210,21 +211,14 @@ export function OrdersPage() {
     setEditingDraftOrder(order);
     setDraftProductId(firstLine?.productVariantId || productsList[0]?.id || "");
     setDraftQuantity(Number(firstLine?.quotedQuantity || 1));
-    setDraftUnitPrice(Number(firstLine?.quotedUnitPrice || 50));
+    setDraftUnitPrice(Number(firstLine?.quotedUnitPrice ?? 0));
     setDraftNotes(order.notes || "");
   };
 
   // Form states
-  const [selectedCustomerId, setSelectedCustomerId] = useState("CUST-RET-A");
-  const [orderLines, setOrderLines] = useState<NewOrderLineInput[]>([
-    {
-      key: "line-initial",
-      productVariantId: "VAR-MURUKKU-200G",
-      quantity: 150,
-      discountPct: 0,
-    },
-  ]);
-  const [orderNotes, setOrderNotes] = useState("Benchmark wholesale order");
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [orderLines, setOrderLines] = useState<NewOrderLineInput[]>([]);
+  const [orderNotes, setOrderNotes] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 50;
 
@@ -279,42 +273,14 @@ export function OrdersPage() {
     },
   });
 
-  const customersList = customersData?.length
-    ? customersData
-    : [
-        {
-          id: "CUST-RET-A",
-          code: "CUST-RET-A",
-          name: "Retailer A",
-          state: "Tamil Nadu",
-        },
-        {
-          id: "CUST-DIST-B",
-          code: "CUST-DIST-B",
-          name: "Distributor B",
-          state: "Karnataka",
-        },
-      ];
+  const customersList = customersData ?? [];
 
-  const productsList = productsData?.length
-    ? productsData
-    : [
-        {
-          id: "VAR-MURUKKU-200G",
-          sku: "VAR-MURUKKU-200G",
-          name: "Murukku 200 g",
-          defaultPrice: 50.0,
-          taxRate: 5.0,
-          imageUrl: "/products/murukku.svg",
-          thumbnailUrl: "/products/murukku.svg",
-          thumbHash: "1QcSHQRnh493V4dIh4eXh1h4h4h4",
-        },
-      ];
+  const productsList = productsData ?? [];
 
   const activeCustomer =
     customersList.find(
       (c) => c.id === selectedCustomerId || c.code === selectedCustomerId,
-    ) || customersList[0];
+    ) ?? null;
 
   // Fetch current available stock for products
   const { data: stockData } = useQuery<{
@@ -345,22 +311,20 @@ export function OrdersPage() {
       (b) =>
         (product.finishedGoodsItemId && b.id === product.finishedGoodsItemId) ||
         (product.finishedGoodsSku && b.sku === product.finishedGoodsSku) ||
-        b.sku === product.sku ||
-        (b.sku === "FG-MURUKKU-200G" && product.sku.includes("MURUKKU")),
+        b.sku === product.sku,
     );
     return stock?.available ?? 0;
   };
 
   // Dynamic tax and per-line discount calculation
-  const customerState = activeCustomer?.state || "Tamil Nadu";
+  const customerState = activeCustomer?.state || "";
   const isIntraState = customerState.trim().toLowerCase() === "tamil nadu";
 
   const computedOrderLines = orderLines.map((line) => {
-    const product =
-      productsList.find(
-        (p) => p.id === line.productVariantId || p.sku === line.productVariantId,
-      ) || productsList[0];
-    const listPrice = Number(product?.defaultPrice ?? 50.0);
+    const product = productsList.find(
+      (p) => p.id === line.productVariantId || p.sku === line.productVariantId,
+    );
+    const listPrice = Number(product?.defaultPrice ?? 0);
     const discountPct = Number.isFinite(line.discountPct)
       ? line.discountPct
       : 0;
@@ -372,7 +336,7 @@ export function OrdersPage() {
     const isQuantityInvalid = quantity <= 0;
     const availablePackets = getAvailableStockForProduct(product);
     const shortage = Math.max(0, quantity - availablePackets);
-    const taxRatePct = Number(product?.taxRate ?? 5.0);
+    const taxRatePct = Number(product?.taxRate ?? 0);
     const taxable = quantity * unitPrice;
     const tax = taxable * (taxRatePct / 100);
     const lineTotal = taxable + tax;
@@ -416,31 +380,21 @@ export function OrdersPage() {
     computedOrderLines.some(
       (l) => !l.product || l.isQuantityInvalid || l.isDiscountInvalid,
     );
-  const remainingProducts = productsList.filter(
-    (p) => !orderLines.some((l) => l.productVariantId === p.id),
-  );
 
   const openNewOrderModal = () => {
-    const defaultProduct = productsList[0];
-    setOrderLines([
-      {
-        key: `line-${Date.now()}`,
-        productVariantId: defaultProduct?.id || "VAR-MURUKKU-200G",
-        quantity: 150,
-        discountPct: 0,
-      },
-    ]);
+    setSelectedCustomerId("");
+    setOrderLines([]);
+    setOrderNotes("");
     setShowNewOrderModal(true);
   };
 
   const addOrderLine = () => {
-    const nextProduct = remainingProducts[0];
-    if (!nextProduct) return;
+    if (orderLines.length >= productsList.length) return;
     setOrderLines((prev) => [
       ...prev,
       {
         key: `line-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        productVariantId: nextProduct.id,
+        productVariantId: "",
         quantity: 1,
         discountPct: 0,
       },
@@ -448,9 +402,7 @@ export function OrdersPage() {
   };
 
   const removeOrderLine = (key: string) => {
-    setOrderLines((prev) =>
-      prev.length > 1 ? prev.filter((l) => l.key !== key) : prev,
-    );
+    setOrderLines((prev) => prev.filter((l) => l.key !== key));
   };
 
   const updateOrderLine = (
@@ -924,15 +876,15 @@ export function OrdersPage() {
           </div>
           <div className="text-2xl font-bold font-mono">
             {formatQuantity(
-              getAvailableStockForProduct(
-                productsList.find((p) => p.sku.includes("MURUKKU")) ||
-                  productsList[0],
+              productsList.reduce(
+                (sum, p) => sum + getAvailableStockForProduct(p),
+                0,
               ),
               { unit: "pkts" },
             )}
           </div>
           <div className="text-xs text-muted-foreground">
-            Murukku 200g net of active reservations
+            Available finished goods net of active reservations
           </div>
         </div>
       </div>
@@ -1752,8 +1704,8 @@ export function OrdersPage() {
                 <SelectContent searchable searchPlaceholder="Search customers...">
                   {customersList.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.name} ({c?.state || "Tamil Nadu"},{" "}
-                      {c?.state?.trim().toLowerCase() === "tamil nadu"
+                      {c.name} ({c.state},{" "}
+                      {c.state?.trim().toLowerCase() === "tamil nadu"
                         ? "Intra-state"
                         : "Inter-state"}
                       )
@@ -1762,8 +1714,9 @@ export function OrdersPage() {
                 </SelectContent>
               </Select>
               <span className="text-xs text-muted-foreground">
-                Place of supply: {customerState} (
-                {isIntraState ? "CGST 2.5% + SGST 2.5%" : "IGST 5.0%"})
+                {activeCustomer
+                  ? `Place of supply: ${customerState} (${isIntraState ? "CGST 2.5% + SGST 2.5%" : "IGST 5.0%"})`
+                  : "Select a customer to determine place of supply"}
               </span>
             </div>
 
@@ -1778,7 +1731,7 @@ export function OrdersPage() {
                   variant="outline"
                   size="sm"
                   onClick={addOrderLine}
-                  disabled={remainingProducts.length === 0}
+                  disabled={orderLines.length >= productsList.length}
                   className="gap-1.5"
                 >
                   <PlusCircleIcon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -1787,6 +1740,11 @@ export function OrdersPage() {
               </div>
 
               <div className="flex flex-col gap-3">
+                {computedOrderLines.length === 0 && (
+                  <div className="rounded-lg border border-dashed bg-muted/20 p-4 text-center text-xs text-muted-foreground">
+                    No products added yet. Click &ldquo;Add product&rdquo; to select items.
+                  </div>
+                )}
                 {computedOrderLines.map((line, index) => {
                   const productSelectId = `order-product-select-${line.key}`;
                   const qtyInputId = `order-quantity-input-${line.key}`;
@@ -1808,15 +1766,19 @@ export function OrdersPage() {
                     >
                       <div className="flex items-start gap-3">
                         <div className="size-11 shrink-0 overflow-hidden rounded-md border bg-background flex items-center justify-center">
-                          <img
-                            src={line.product?.imageUrl || "/products/murukku.svg"}
-                            alt={line.product?.name || "Product Packaging"}
-                            width={44}
-                            height={44}
-                            loading="lazy"
-                            decoding="async"
-                            className="size-full object-contain"
-                          />
+                          {line.product?.imageUrl ? (
+                            <img
+                              src={line.product.imageUrl}
+                              alt={line.product.name || "Product Packaging"}
+                              width={44}
+                              height={44}
+                              loading="lazy"
+                              decoding="async"
+                              className="size-full object-contain"
+                            />
+                          ) : (
+                            <PackageIcon className="size-5 text-muted-foreground/50" aria-hidden="true" />
+                          )}
                         </div>
                         <div className="flex flex-1 flex-col gap-1 min-w-0">
                           <Label
@@ -1850,7 +1812,6 @@ export function OrdersPage() {
                             {line.product?.sku || "N/A"})
                           </span>
                         </div>
-                        {orderLines.length > 1 && (
                           <Button
                             type="button"
                             variant="ghost"
@@ -1861,7 +1822,6 @@ export function OrdersPage() {
                           >
                             <Trash2Icon className="h-4 w-4" aria-hidden="true" />
                           </Button>
-                        )}
                       </div>
 
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
