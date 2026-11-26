@@ -1,15 +1,14 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { Link, useNavigate } from "react-router-dom";
+import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { apiClient } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
-import { formatDateTime, formatQuantity } from "@/lib/formatters";
-import { useLanguage } from "@/lib/i18n";
-import {
-  EmptyState,
-  SkeletonTable,
-  ErrorState,
-} from "@/components/ui/loading-error-empty";
+import { formatDateTime } from "@/lib/formatters";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -18,47 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  TruckIcon,
-  RefreshCwIcon,
-  AlertTriangleIcon,
-  CheckCircle2Icon,
-  PlusCircleIcon,
-  PackageCheckIcon,
-  FileTextIcon,
-  RotateCcwIcon,
-} from "lucide-react";
-import { toast } from "sonner";
-
-interface DispatchLine {
-  id: string;
-  inventoryItemId: string;
-  quantity: number;
-  inventoryItem?: {
-    sku: string;
-    name: string;
-    unitOfMeasure: string;
-  };
-}
+import { RefreshCwIcon, SearchIcon, TruckIcon } from "lucide-react";
 
 interface Dispatch {
   id: string;
@@ -66,80 +25,23 @@ interface Dispatch {
   dispatchedAt: string;
   vehicleNumber: string | null;
   driverName: string | null;
-  driverPhone: string | null;
   status: "DRAFT" | "POSTED" | "CANCELLED";
-  notes: string | null;
   salesOrder?: {
     id: string;
     orderNumber: string;
-    fulfilmentStatus: string;
-    customer?: {
-      code: string;
-      name: string;
-      city: string;
-      state: string;
-    };
+    customer?: { name: string; state: string };
   };
-  salesInvoice?: {
-    id: string;
-    invoiceNumber: string;
-    totalAmount: number;
-  } | null;
-  lines: DispatchLine[];
-}
-
-interface EligibleOrder {
-  id: string;
-  orderNumber: string;
-  status: string;
-  fulfilmentStatus: string;
-  customer?: {
-    name: string;
-    state: string;
-  };
-  lines: Array<{
-    id: string;
-    approvedQuantity: number;
-    dispatchedQuantity: number;
-    productVariant?: {
-      name: string;
-      sku: string;
-    };
-  }>;
 }
 
 export function DispatchPage() {
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { user } = useCurrentUser();
-  const { t } = useLanguage();
-  const canRecordDispatch = user?.role === "ADMIN";
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedOrderId, setSelectedOrderId] = useState("");
-  const [vehicleNumber, setVehicleNumber] = useState("");
-  const [driverName, setDriverName] = useState("");
-  const [driverPhone, setDriverPhone] = useState("");
-  const [notes, setNotes] = useState("");
-  const [dispatchError, setDispatchError] = useState<string | null>(null);
-  const [dispatchStep, setDispatchStep] = useState<"form" | "confirm">("form");
-  const [lineDispatchQtys, setLineDispatchQtys] = useState<
-    Record<string, number>
-  >({});
-  const [returnTarget, setReturnTarget] = useState<Dispatch | null>(null);
-  const [returnQtys, setReturnQtys] = useState<Record<string, number>>({});
-  const [returnReason, setReturnReason] = useState("");
-  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
-    debounceMs: 250,
-  });
+  const canDispatch = user?.role === "ADMIN";
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", { debounceMs: 200 });
 
-  // 1. Fetch posted dispatches
-  const {
-    data: dispatchesData,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isFetching,
-  } = useQuery<{ dispatches: Dispatch[] }>({
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
+    dispatches: Dispatch[];
+  }>({
     queryKey: ["dispatches"],
     queryFn: async () => {
       const res = await apiClient.get("/sales/dispatches");
@@ -147,1025 +49,177 @@ export function DispatchPage() {
     },
   });
 
-  // 2. Fetch approved orders eligible for dispatch
-  const { data: ordersData } = useQuery<{ orders: EligibleOrder[] }>({
+  const { data: ordersData } = useQuery<{
+    orders: Array<{
+      id: string;
+      orderNumber: string;
+      status: string;
+      fulfilmentStatus: string;
+      customer?: { name: string };
+    }>;
+  }>({
     queryKey: ["sales-orders", "eligible-dispatch"],
     queryFn: async () => {
       const res = await apiClient.get("/sales/orders");
       return res.data;
     },
-    enabled: showCreateModal,
+    enabled: canDispatch,
   });
 
-  const eligibleOrders = (ordersData?.orders ?? []).filter(
+  const readyToDispatch = (ordersData?.orders ?? []).filter(
     (o) => o.status === "APPROVED" && o.fulfilmentStatus !== "FULFILLED",
   );
 
-  // 3. Create dispatch mutation (F-067: Optimistic update with cache rollback)
-  const dispatchMutation = useMutation({
-    mutationFn: async (payload: {
-      salesOrderId: string;
-      vehicleNumber?: string;
-      driverName?: string;
-      driverPhone?: string;
-      notes?: string;
-      lines?: Array<{ salesOrderLineId: string; quantity: number }>;
-    }) => {
-      const res = await apiClient.post("/sales/dispatches", payload);
-      return res.data;
-    },
-    onMutate: async (payload) => {
-      await queryClient.cancelQueries({ queryKey: ["sales-orders"] });
-      await queryClient.cancelQueries({ queryKey: ["dispatches"] });
-      const previousOrders = queryClient.getQueryData<{ orders: EligibleOrder[] }>([
-        "sales-orders",
-      ]);
-      const previousDispatches = queryClient.getQueryData<{
-        dispatches: Dispatch[];
-      }>(["dispatches"]);
-
-      queryClient.setQueryData<{ orders: EligibleOrder[] }>(
-        ["sales-orders"],
-        (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            orders: old.orders.map((o) =>
-              o.id === payload.salesOrderId
-                ? { ...o, fulfilmentStatus: "FULFILLED" }
-                : o,
-            ),
-          };
-        },
-      );
-      setDispatchStep("form");
-      setShowCreateModal(false);
-      return { previousOrders, previousDispatches };
-    },
-    onError: (err: any, _payload, context) => {
-      if (context?.previousOrders) {
-        queryClient.setQueryData(["sales-orders"], context.previousOrders);
-      }
-      if (context?.previousDispatches) {
-        queryClient.setQueryData(["dispatches"], context.previousDispatches);
-      }
-      const errorMsg =
-        err.response?.data?.message ||
-        err.message ||
-        "Failed to record dispatch. Reverted to previous state.";
-      setDispatchError(errorMsg);
-      toast.error(errorMsg);
-    },
-    onSuccess: () => {
-      toast.success("Dispatch recorded successfully");
-      setSelectedOrderId("");
-      setVehicleNumber("");
-      setDriverName("");
-      setDriverPhone("");
-      setNotes("");
-      setDispatchError(null);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["dispatches"] });
-      queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory-items"] });
-    },
-  });
-
-  const salesReturnMutation = useMutation({
-    mutationFn: async (payload: {
-      dispatchId: string;
-      reason: string;
-      lines: Array<{ inventoryItemId: string; quantity: number }>;
-    }) => {
-      const res = await apiClient.post("/sales/returns", payload);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dispatches"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
-      setReturnTarget(null);
-      toast.success("Sales return recorded and stock restored.");
-    },
-    onError: (err: any) => {
-      toast.error(
-        err.response?.data?.message || err.message || "Failed to record return",
-      );
-    },
-  });
-
-  const dispatches = dispatchesData?.dispatches ?? [];
-
-  const filteredDispatches = dispatches.filter((d) => {
+  const dispatches = data?.dispatches ?? [];
+  const filtered = dispatches.filter((d) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase().trim();
     return (
       d.dispatchNumber.toLowerCase().includes(q) ||
-      (d.salesOrder?.orderNumber && d.salesOrder.orderNumber.toLowerCase().includes(q)) ||
-      (d.salesOrder?.customer?.name && d.salesOrder.customer.name.toLowerCase().includes(q)) ||
-      (d.vehicleNumber && d.vehicleNumber.toLowerCase().includes(q)) ||
-      (d.driverName && d.driverName.toLowerCase().includes(q))
+      (d.salesOrder?.orderNumber ?? "").toLowerCase().includes(q) ||
+      (d.salesOrder?.customer?.name ?? "").toLowerCase().includes(q)
     );
   });
 
-  // Summary counts
-  const totalDispatches = dispatches.length;
-  const totalUnitsDispatched = dispatches.reduce((acc, d) => {
-    return (
-      acc + d.lines.reduce((lacc, line) => lacc + Number(line.quantity || 0), 0)
-    );
-  }, 0);
-
-  const handleSubmitDispatch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedOrderId) {
-      setDispatchError("Please select an approved sales order to dispatch");
-      return;
-    }
-    setDispatchError(null);
-    setDispatchStep("confirm");
-  };
-
-  const handleExecuteDispatch = () => {
-    setDispatchStep("form");
-    const selectedOrder = eligibleOrders.find((o) => o.id === selectedOrderId);
-    const linesPayload = selectedOrder
-      ? selectedOrder.lines
-          .map((l) => ({
-            salesOrderLineId: l.id,
-            quantity:
-              lineDispatchQtys[l.id] ??
-              Math.max(0, l.approvedQuantity - l.dispatchedQuantity),
-          }))
-          .filter((l) => l.quantity > 0)
-      : undefined;
-
-    dispatchMutation.mutate({
-      salesOrderId: selectedOrderId,
-      vehicleNumber: vehicleNumber.trim() || undefined,
-      driverName: driverName.trim() || undefined,
-      driverPhone: driverPhone.trim() || undefined,
-      notes: notes.trim() || undefined,
-      lines: linesPayload,
-    });
-  };
-
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {t("Dispatch")}
-            </h1>
-          </div>
-          <p className="max-w-[60ch] text-sm text-muted-foreground">
-            {t("Physical stock movements, reservation release, and warehouse fulfillment records")}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+    <div className="flex flex-1 flex-col gap-5 p-4 sm:p-6 lg:p-8">
+      <PageHeader
+        title="Ready to dispatch"
+        description="Physical finished-goods dispatches, partial fulfilment, and sales returns."
+        primaryAction={
+          canDispatch ? (
+            <Button
+              variant="primary"
+              onClick={() => navigate("/dispatch/new")}
+              className="gap-1.5"
+            >
+              <TruckIcon className="size-4" aria-hidden="true" />
+              Prepare dispatch
+            </Button>
+          ) : null
+        }
+        secondaryActions={
           <Button
             variant="outline"
             size="sm"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="gap-2"
+            className="gap-1.5"
           >
             <RefreshCwIcon
-              className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+              className={`size-4 ${isFetching ? "animate-spin" : ""}`}
+              aria-hidden="true"
             />
-            {t("Refresh")}
+            Refresh
           </Button>
-          {canRecordDispatch && (
-            <Button
-              size="sm"
-              onClick={() => {
-                setDispatchError(null);
-                setShowCreateModal(true);
-              }}
-              className="gap-2"
-            >
-              <PlusCircleIcon className="h-4 w-4" />
-              {t("Record dispatch")}
-            </Button>
-          )}
-        </div>
-      </div>
+        }
+      />
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium uppercase tracking-wider">
-              {t("Total dispatches")}
-            </span>
-            <TruckIcon className="h-4 w-4" />
+      {canDispatch && readyToDispatch.length > 0 && (
+        <section className="rounded-lg border border-amber-300 bg-amber-50/60 p-3.5 dark:border-amber-800 dark:bg-amber-950/30 space-y-2">
+          <div className="text-xs font-semibold text-amber-900 dark:text-amber-200">
+            Orders awaiting physical dispatch ({readyToDispatch.length})
           </div>
-          <div className="text-2xl font-bold">{totalDispatches}</div>
-          <div className="text-xs text-muted-foreground">
-            Completed warehouse dispatches
+          <div className="flex flex-wrap gap-2">
+            {readyToDispatch.map((ord) => (
+              <Link
+                key={ord.id}
+                to={`/dispatch/new?orderId=${ord.id}`}
+                className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium hover:border-primary/50"
+              >
+                <span>{ord.orderNumber}</span>
+                <span className="text-muted-foreground">{ord.customer?.name}</span>
+                <Badge variant="outline" className="h-4 text-[10px]">
+                  {ord.fulfilmentStatus.replaceAll("_", " ")}
+                </Badge>
+              </Link>
+            ))}
           </div>
-        </div>
+        </section>
+      )}
 
-        <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium uppercase tracking-wider">
-              Quantity dispatched
-            </span>
-            <PackageCheckIcon className="h-4 w-4" />
-          </div>
-          <div className="text-2xl font-bold">
-            {formatQuantity(totalUnitsDispatched, { unit: "units" })}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Deducted from finished goods stock
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-1 rounded-xl border bg-card p-4 shadow-xs">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium uppercase tracking-wider">
-              Reservations released
-            </span>
-            <CheckCircle2Icon className="h-4 w-4 text-emerald-600" />
-          </div>
-          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            {formatQuantity(totalUnitsDispatched, { unit: "units" })}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Atomic reservation release on dispatch
-          </div>
-        </div>
-      </div>
-
-      {/* Dispatches Table */}
-      <div className="rounded-xl border bg-card shadow-xs">
-        <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold text-foreground">
-              {t("Dispatches ledger")}
-            </h2>
-            <span className="text-xs text-muted-foreground">
-              ({filteredDispatches.length} of {dispatches.length})
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder={t("Search dispatches...")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 w-56 text-xs"
-              aria-label="Search dispatches"
-            />
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="p-4">
-            <SkeletonTable rows={5} columns={8} />
-          </div>
-        ) : isError ? (
-          <div className="p-4">
-            <ErrorState
-              title={t("Failed to load dispatches", "Failed to load dispatches")}
-              description={
-                error instanceof Error ? error.message : "Failed to load dispatches."
-              }
-              error={error}
-              onRetry={() => refetch()}
-            />
-          </div>
-        ) : dispatches.length === 0 ? (
-          <EmptyState
-            icon={TruckIcon}
-            title="No dispatches yet"
-            description="Record a physical dispatch for an approved sales order to deduct inventory."
-            action={
-              canRecordDispatch ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowCreateModal(true)}
-                  className="gap-1.5"
-                >
-                  <PlusCircleIcon className="h-4 w-4" aria-hidden="true" />
-                  Record Dispatch
-                </Button>
-              ) : undefined
-            }
+      <div className="flex justify-end">
+        <div className="relative w-full sm:w-64">
+          <SearchIcon
+            className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground"
+            aria-hidden="true"
           />
-        ) : (
-          <>
-            {/* Mobile Card Layout (<md viewports per F-047) */}
-            <div
-              className="divide-y divide-border md:hidden"
-              data-slot="mobile-cards"
-            >
-              {filteredDispatches.length === 0 && dispatches.length > 0 && (
-                <EmptyState
-                  title={t("No dispatches match the search query.")}
-                  description="Clear the search query to view all dispatches."
-                  action={
-                    <Button
-                      variant="tertiary"
-                      size="sm"
-                      onClick={() => setSearchQuery("")}
-                    >
-                      Clear search
-                    </Button>
-                  }
-                />
-              )}
-              {filteredDispatches.map((disp) => (
-                <div key={disp.id} className="p-4 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-sm font-semibold text-foreground">
-                      {disp.dispatchNumber}
-                    </span>
-                    <Badge
-                      variant={disp.status === "POSTED" ? "success" : "default"}
-                    >
-                      {disp.status}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-baseline text-xs">
-                    <div>
-                      <span className="font-medium text-foreground">
-                        {disp.salesOrder?.customer?.name ?? "Unknown"}
-                      </span>
-                      <span className="ml-1 text-muted-foreground">
-                        ({disp.salesOrder?.customer?.city})
-                      </span>
-                    </div>
-                    <span className="text-muted-foreground font-mono text-2xs">
-                      {formatDateTime(disp.dispatchedAt)}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-2.5 text-xs">
-                    <div>
-                      <span className="text-muted-foreground text-2xs uppercase">
-                        Order & Invoice
-                      </span>
-                      <p className="font-mono font-medium text-foreground">
-                        SO: {disp.salesOrder?.orderNumber ?? "N/A"}
-                      </p>
-                      {disp.salesInvoice ? (
-                        <p className="font-mono text-2xs text-emerald-600 dark:text-emerald-400">
-                          INV: {disp.salesInvoice.invoiceNumber}
-                        </p>
-                      ) : (
-                        <p className="text-2xs text-muted-foreground">Direct dispatch</p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <span className="text-muted-foreground text-2xs uppercase">
-                        Vehicle / Driver
-                      </span>
-                      <p className="font-mono font-medium text-foreground">
-                        {disp.vehicleNumber || "None"}
-                      </p>
-                      {disp.driverName && (
-                        <p className="text-2xs text-muted-foreground">
-                          {disp.driverName}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  {disp.lines.length > 0 && (
-                    <div className="text-2xs text-muted-foreground pt-1">
-                      <span className="font-medium">Items: </span>
-                      {disp.lines.map((l) => (
-                        <span key={l.id} className="inline-block bg-muted px-2 py-0.5 rounded mr-1">
-                          {l.inventoryItem?.name} × {l.quantity}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Desktop Table View (md+ viewports) */}
-            <div className="hidden md:block overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("Dispatch number")}</TableHead>
-                    <TableHead>{t("Date and time")}</TableHead>
-                    <TableHead>{t("Sales order")}</TableHead>
-                    <TableHead>{t("Customer")}</TableHead>
-                    <TableHead>{t("Vehicle and driver")}</TableHead>
-                    <TableHead>{t("Dispatched items")}</TableHead>
-                    <TableHead>{t("Invoice link")}</TableHead>
-                    <TableHead className="text-right">{t("Status")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredDispatches.length === 0 && dispatches.length > 0 && (
-                    <TableRow>
-                      <TableCell colSpan={8} className="p-0">
-                        <EmptyState
-                          title={t("No dispatches match the search query.")}
-                          description="Clear the search query to view all dispatches."
-                          className="min-h-32 py-6"
-                          action={
-                            <Button
-                              variant="tertiary"
-                              size="sm"
-                              onClick={() => setSearchQuery("")}
-                            >
-                              Clear search
-                            </Button>
-                          }
-                        />
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {filteredDispatches.map((disp) => (
-                    <TableRow key={disp.id}>
-                      <TableCell className="font-mono text-sm font-semibold text-foreground">
-                        {disp.dispatchNumber}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {formatDateTime(disp.dispatchedAt)}
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-mono text-xs font-medium">
-                          {disp.salesOrder?.orderNumber ?? "N/A"}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">
-                            {disp.salesOrder?.customer?.name ?? "Unknown"}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {disp.salesOrder?.customer?.city},{" "}
-                            {disp.salesOrder?.customer?.state}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col text-xs">
-                          <span className="font-mono font-medium">
-                            {disp.vehicleNumber || "No vehicle specified"}
-                          </span>
-                          {disp.driverName && (
-                            <span className="text-muted-foreground">
-                              {disp.driverName}
-                              {disp.driverPhone ? ` (${disp.driverPhone})` : ""}
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          {disp.lines.map((line) => (
-                            <div
-                              key={line.id}
-                              className="flex items-center gap-1.5 text-xs"
-                            >
-                              <span className="font-medium">
-                                {line.inventoryItem?.name || "Product"}
-                              </span>
-                              <span className="font-mono text-muted-foreground">
-                                x {line.quantity}{" "}
-                                {line.inventoryItem?.unitOfMeasure || "units"}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {disp.salesInvoice ? (
-                          <div className="flex items-center gap-1 font-mono text-xs text-emerald-600 dark:text-emerald-400">
-                            <FileTextIcon className="h-3 w-3" />
-                            {disp.salesInvoice.invoiceNumber}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">
-                            Direct dispatch
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Badge
-                            variant={
-                              disp.status === "POSTED" ? "success" : "default"
-                            }
-                          >
-                            {disp.status}
-                          </Badge>
-                          {disp.status === "POSTED" && canRecordDispatch && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setReturnTarget(disp);
-                                const init: Record<string, number> = {};
-                                disp.lines.forEach((l) => {
-                                  init[l.inventoryItemId] = Number(l.quantity);
-                                });
-                                setReturnQtys(init);
-                                setReturnReason("");
-                              }}
-                              className="h-7 px-2 text-xs gap-1"
-                            >
-                              <RotateCcwIcon className="size-3" />
-                              Return
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </>
-        )}
+          <Input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search dispatch # or order #..."
+            aria-label="Search dispatches"
+            className="h-9 pl-8"
+          />
+        </div>
       </div>
 
-      {/* Record Dispatch Modal (single-dialog two-step flow) */}
-      <Dialog
-        open={showCreateModal}
-        onOpenChange={(open) => {
-          setShowCreateModal(open);
-          if (!open) setDispatchStep("form");
-        }}
-      >
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <div className="flex items-center gap-2">
-              {dispatchStep === "confirm" ? (
-                <AlertTriangleIcon className="h-5 w-5 text-amber-500" aria-hidden="true" />
-              ) : (
-                <TruckIcon className="h-5 w-5 text-foreground" aria-hidden="true" />
-              )}
-              <DialogTitle>
-                {dispatchStep === "confirm"
-                  ? "Confirm Physical Dispatch?"
-                  : "Record physical dispatch"}
-              </DialogTitle>
-            </div>
-            <DialogDescription className={dispatchStep === "confirm" ? undefined : "sr-only"}>
-              {dispatchStep === "confirm"
-                ? "This action will permanently deduct finished goods from physical inventory and generate an immutable dispatch record."
-                : "Record physical dispatch and warehouse inventory deduction"}
-            </DialogDescription>
-          </DialogHeader>
-
-          {dispatchStep === "form" ? (
-            <form
-              onSubmit={handleSubmitDispatch}
-              className="mt-2 flex flex-col gap-4"
-            >
-              {dispatchError && (
-                <div
-                  role="alert"
-                  aria-live="assertive"
-                  className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive"
-                >
-                  <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span>{dispatchError}</span>
-                </div>
-              )}
-
-              <div className="flex flex-col gap-1.5">
-                <Label
-                  htmlFor="dispatch-order-select"
-                  className="text-xs font-semibold text-foreground"
-                >
-                  Select approved sales order *
-                </Label>
-                {eligibleOrders.length === 0 ? (
-                  <div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
-                    No approved orders ready for dispatch. Please approve an
-                    order first.
-                  </div>
-                ) : (
-                  <Select
-                    value={selectedOrderId || undefined}
-                    onValueChange={(orderId) => {
-                      setSelectedOrderId(orderId);
-                      const ord = eligibleOrders.find((o) => o.id === orderId);
-                      if (ord) {
-                        const next: Record<string, number> = {};
-                        ord.lines.forEach((l) => {
-                          next[l.id] = Math.max(
-                            0,
-                            l.approvedQuantity - l.dispatchedQuantity,
-                          );
-                        });
-                        setLineDispatchQtys(next);
-                      }
-                    }}
-                    required
-                  >
-                    <SelectTrigger
-                      id="dispatch-order-select"
-                      className="font-medium"
+      {isLoading ? (
+        <SkeletonTable rows={5} columns={5} />
+      ) : isError ? (
+        <ErrorState
+          title="Failed to load dispatches"
+          description={extractErrorMessage(error)}
+          onRetry={() => refetch()}
+        />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          title="No dispatches recorded"
+          description="Posted dispatches will appear here once approved orders are fulfilled."
+        />
+      ) : (
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Dispatch #</TableHead>
+                <TableHead>Order #</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Vehicle / Driver</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Dispatched at</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((d) => (
+                <TableRow key={d.id}>
+                  <TableCell className="font-medium tabular-nums">
+                    <Link
+                      to={`/dispatch/${d.id}`}
+                      className="text-primary hover:underline"
                     >
-                      <SelectValue placeholder="Choose an order to dispatch..." />
-                    </SelectTrigger>
-                    <SelectContent searchable searchPlaceholder="Search orders or customers...">
-                      {eligibleOrders.map((order) => {
-                        const totalQty = order.lines.reduce(
-                          (sum, l) =>
-                            sum + (l.approvedQuantity - l.dispatchedQuantity),
-                          0,
-                        );
-                        return (
-                          <SelectItem key={order.id} value={order.id}>
-                            {order.orderNumber} (
-                            {order.customer?.name || "Customer"}) | Remaining:{" "}
-                            {totalQty} units
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-
-              {/* Partial Dispatch Per-Line Quantities (IMP-014) */}
-              {selectedOrderId && (() => {
-                const ord = eligibleOrders.find((o) => o.id === selectedOrderId);
-                if (!ord) return null;
-                return (
-                  <div className="rounded-lg border bg-muted/20 p-3 flex flex-col gap-2">
-                    <span className="text-xs font-semibold text-foreground">
-                      Dispatch quantities (supports partial dispatch)
-                    </span>
-                    {ord.lines.map((l) => {
-                      const remaining = Math.max(
-                        0,
-                        l.approvedQuantity - l.dispatchedQuantity,
-                      );
-                      const val = lineDispatchQtys[l.id] ?? remaining;
-                      return (
-                        <div
-                          key={l.id}
-                          className="flex items-center justify-between gap-3 text-xs"
-                        >
-                          <div className="flex flex-col">
-                            <span className="font-medium">
-                              {l.productVariant?.name || "Item"}
-                            </span>
-                            <span className="text-muted-foreground">
-                              Remaining: {remaining} pkts
-                            </span>
-                          </div>
-                          <Input
-                            type="number"
-                            min={0}
-                            max={remaining}
-                            value={val}
-                            onChange={(e) =>
-                              setLineDispatchQtys((prev) => ({
-                                ...prev,
-                                [l.id]: Math.min(
-                                  remaining,
-                                  Math.max(0, Number(e.target.value)),
-                                ),
-                              }))
-                            }
-                            className="h-8 w-24 text-right font-mono text-xs"
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor="dispatch-vehicle-input"
-                    className="text-xs font-semibold text-foreground"
-                  >
-                    Vehicle number
-                  </Label>
-                  <Input
-                    id="dispatch-vehicle-input"
-                    placeholder="e.g. TN 38 AB 1234"
-                    value={vehicleNumber}
-                    onChange={(e) => setVehicleNumber(e.target.value)}
-                    className="font-mono text-sm"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor="dispatch-driver-name-input"
-                    className="text-xs font-semibold text-foreground"
-                  >
-                    Driver name
-                  </Label>
-                  <Input
-                    id="dispatch-driver-name-input"
-                    placeholder="e.g. Ravi Kumar"
-                    value={driverName}
-                    onChange={(e) => setDriverName(e.target.value)}
-                    className="text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <Label
-                  htmlFor="dispatch-driver-phone-input"
-                  className="text-xs font-semibold text-foreground"
-                >
-                  Driver phone number
-                </Label>
-                <Input
-                  id="dispatch-driver-phone-input"
-                  placeholder="e.g. 9876543210"
-                  value={driverPhone}
-                  onChange={(e) => setDriverPhone(e.target.value)}
-                  className="font-mono text-sm"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <Label
-                  htmlFor="dispatch-notes-input"
-                  className="text-xs font-semibold text-foreground"
-                >
-                  Dispatch notes
-                </Label>
-                <Input
-                  id="dispatch-notes-input"
-                  placeholder="e.g. Dispatched via standard carrier"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="text-sm"
-                />
-              </div>
-
-              <div className="mt-2 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-                <div className="font-semibold text-foreground">
-                  Inventory impact notice:
-                </div>
-                Posting this dispatch will deduct finished goods from stock on
-                hand and release active stock reservations atomically.
-              </div>
-
-              <DialogFooter className="border-t pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    setDispatchStep("form");
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={
-                    dispatchMutation.isPending || eligibleOrders.length === 0
-                  }
-                  className="gap-2"
-                >
-                  {dispatchMutation.isPending ? (
-                    <RefreshCwIcon className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <TruckIcon className="h-4 w-4" />
-                  )}
-                  Review & confirm
-                </Button>
-              </DialogFooter>
-            </form>
-          ) : (
-            <>
-              <div className="mt-2 space-y-3 text-sm text-foreground">
-                <div className="rounded-lg bg-muted/60 p-3 text-xs space-y-1">
-                  {eligibleOrders.find((o) => o.id === selectedOrderId) && (
-                    <>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Sales Order:</span>
-                        <span className="font-mono font-medium text-foreground">
-                          {
-                            eligibleOrders.find((o) => o.id === selectedOrderId)
-                              ?.orderNumber
-                          }
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Customer:</span>
-                        <span className="font-medium text-foreground">
-                          {
-                            eligibleOrders.find((o) => o.id === selectedOrderId)
-                              ?.customer?.name
-                          }
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          Quantity to Deduct:
-                        </span>
-                        <span className="font-semibold text-foreground">
-                          {eligibleOrders
-                            .find((o) => o.id === selectedOrderId)
-                            ?.lines.reduce(
-                              (sum, l) =>
-                                sum +
-                                (lineDispatchQtys[l.id] ??
-                                  Math.max(
-                                    0,
-                                    l.approvedQuantity - l.dispatchedQuantity,
-                                  )),
-                              0,
-                            )}{" "}
-                          packets
-                        </span>
-                      </div>
-                    </>
-                  )}
-                  {vehicleNumber.trim() && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Vehicle:</span>
-                      <span className="font-mono text-foreground">
-                        {vehicleNumber.trim()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Partial Dispatch Per-Line Quantities (IMP-014) */}
-                {selectedOrderId && (() => {
-                  const ord = eligibleOrders.find((o) => o.id === selectedOrderId);
-                  if (!ord) return null;
-                  return (
-                    <div className="rounded-lg border bg-muted/20 p-3 flex flex-col gap-2">
-                      <span className="text-xs font-semibold text-foreground">
-                        Dispatch quantities (supports partial dispatch)
-                      </span>
-                      {ord.lines.map((l) => {
-                        const remaining = Math.max(
-                          0,
-                          l.approvedQuantity - l.dispatchedQuantity,
-                        );
-                        const val = lineDispatchQtys[l.id] ?? remaining;
-                        return (
-                          <div
-                            key={l.id}
-                            className="flex items-center justify-between gap-3 text-xs"
-                          >
-                            <div className="flex flex-col">
-                              <span className="font-medium">
-                                {l.productVariant?.name || "Item"}
-                              </span>
-                              <span className="text-muted-foreground">
-                                Remaining: {remaining} pkts
-                              </span>
-                            </div>
-                            <Input
-                              type="number"
-                              min={0}
-                              max={remaining}
-                              value={val}
-                              onChange={(e) =>
-                                setLineDispatchQtys((prev) => ({
-                                  ...prev,
-                                  [l.id]: Math.min(
-                                    remaining,
-                                    Math.max(0, Number(e.target.value)),
-                                  ),
-                                }))
-                              }
-                              className="h-8 w-24 text-right font-mono text-xs"
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-                <div className="rounded-md bg-destructive/10 p-2.5 text-xs font-medium text-destructive border border-destructive/20">
-                  Warning: This operational action cannot be undone. Physical on-hand stock balances will be deducted immediately.
-                </div>
-              </div>
-
-              <DialogFooter className="mt-4 border-t pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDispatchStep("form")}
-                  disabled={dispatchMutation.isPending}
-                >
-                  Review details
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  disabled={dispatchMutation.isPending}
-                  onClick={handleExecuteDispatch}
-                >
-                  {dispatchMutation.isPending
-                    ? "Dispatching..."
-                    : "Confirm & Deduct Stock"}
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Sales Return Modal (IMP-014) */}
-      <Dialog
-        open={returnTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) setReturnTarget(null);
-        }}
-      >
-        {returnTarget && (
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Record Sales Return</DialogTitle>
-              <DialogDescription>
-                Restore returned stock from {returnTarget.dispatchNumber} into inventory.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col gap-3 py-2">
-              {returnTarget.lines.map((l) => (
-                <div
-                  key={l.id}
-                  className="flex items-center justify-between gap-2 text-xs"
-                >
-                  <span className="font-medium">
-                    {l.inventoryItem?.name || "Item"} (Dispatched: {l.quantity})
-                  </span>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={Number(l.quantity)}
-                    value={returnQtys[l.inventoryItemId] ?? 0}
-                    onChange={(e) =>
-                      setReturnQtys((prev) => ({
-                        ...prev,
-                        [l.inventoryItemId]: Number(e.target.value),
-                      }))
-                    }
-                    className="h-8 w-24 text-right font-mono text-xs"
-                  />
-                </div>
+                      {d.dispatchNumber}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="tabular-nums">
+                    {d.salesOrder ? (
+                      <Link
+                        to={`/orders/${d.salesOrder.id}`}
+                        className="hover:underline"
+                      >
+                        {d.salesOrder.orderNumber}
+                      </Link>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell>{d.salesOrder?.customer?.name ?? "—"}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {d.vehicleNumber || "—"} {d.driverName ? `(${d.driverName})` : ""}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{d.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground tabular-nums">
+                    {formatDateTime(d.dispatchedAt)}
+                  </TableCell>
+                </TableRow>
               ))}
-              <div className="flex flex-col gap-1">
-                <Label htmlFor="return-reason" className="text-xs">
-                  Return Reason
-                </Label>
-                <Input
-                  id="return-reason"
-                  value={returnReason}
-                  onChange={(e) => setReturnReason(e.target.value)}
-                  placeholder="Damaged in transit / customer return"
-                />
-              </div>
-            </div>
-            <DialogFooter className="border-t pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setReturnTarget(null)}
-              >
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                disabled={salesReturnMutation.isPending || !returnReason.trim()}
-                onClick={() => {
-                  const lines = Object.entries(returnQtys)
-                    .filter(([, q]) => q > 0)
-                    .map(([inventoryItemId, quantity]) => ({
-                      inventoryItemId,
-                      quantity,
-                    }));
-                  salesReturnMutation.mutate({
-                    dispatchId: returnTarget.id,
-                    reason: returnReason.trim(),
-                    lines,
-                  });
-                }}
-              >
-                Post Return
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        )}
-      </Dialog>
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { useState, useId } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useId, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   useQuery,
   useMutation,
@@ -92,12 +92,55 @@ export function NewOrderPage() {
   const syncManager = useSyncManager(user?.id);
   const { isOnline, queueOrder } = syncManager;
 
-  const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [searchParams] = useSearchParams();
+  const draftId = searchParams.get("draftId") ?? "";
+  const prefillCustomerId = searchParams.get("customerId") ?? "";
+
+  const [selectedCustomerId, setSelectedCustomerId] = useState(prefillCustomerId);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [orderNotes, setOrderNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 12;
+
+  // Load existing draft if ?draftId= is provided
+  const { data: draftData } = useQuery<{
+    order: {
+      id: string;
+      status: string;
+      customerId: string;
+      notes: string | null;
+      lines: Array<{
+        productVariantId: string;
+        quotedQuantity: number;
+        productVariant: ProductItem;
+      }>;
+    };
+  }>({
+    queryKey: ["sales-order", draftId],
+    queryFn: async () => {
+      const res = await apiClient.get(`/sales/orders/${draftId}`);
+      return res.data;
+    },
+    enabled: Boolean(draftId),
+  });
+
+  useEffect(() => {
+    const draft = draftData?.order;
+    if (!draft || draft.status !== "DRAFT") return;
+    setSelectedCustomerId(draft.customerId);
+    setOrderNotes(draft.notes ?? "");
+    const nextQty: Record<string, number> = {};
+    const nextCache: Record<string, ProductItem> = {};
+    for (const line of draft.lines) {
+      nextQty[line.productVariantId] = Number(line.quotedQuantity);
+      if (line.productVariant) {
+        nextCache[line.productVariantId] = line.productVariant;
+      }
+    }
+    setQuantities(nextQty);
+    setProductCache((prev) => ({ ...prev, ...nextCache }));
+  }, [draftData]);
   const [productCache, setProductCache] = useState<Record<string, ProductItem>>({});
 
   // Fetch customers
@@ -237,9 +280,9 @@ export function NewOrderPage() {
   const grandTotal = totalTaxable + totalTax;
   const anyShortage = orderLines.some((l) => l.shortage > 0);
 
-  // Submit order mutation
+  // Submit or save draft order mutation
   const createOrderMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (submitAsDraft: boolean) => {
       if (!activeCustomer) {
         throw new Error("Please select a customer before placing an order.");
       }
@@ -247,27 +290,44 @@ export function NewOrderPage() {
         customerId: activeCustomer.id,
         orderNumber: generateOrderNumber(),
         notes: orderNotes,
+        status: submitAsDraft ? "DRAFT" : "SUBMITTED",
         lines: orderLines.map((l) => ({
           productVariantId: l.product.id,
           quantity: l.quantity,
           unitPrice: l.unitPrice,
         })),
       };
+      if (draftId) {
+        const res = await apiClient.put(`/sales/orders/${draftId}`, {
+          notes: orderNotes,
+          status: submitAsDraft ? "DRAFT" : "SUBMITTED",
+          lines: payload.lines,
+        });
+        return res.data;
+      }
       const res = await apiClient.post("/sales/orders", payload);
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (resData, submitAsDraft) => {
       queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
       queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
-      toast.success("Sales order placed successfully!");
-      navigate("/orders");
+      if (draftId) {
+        queryClient.invalidateQueries({ queryKey: ["sales-order", draftId] });
+      }
+      const orderId = resData?.order?.id ?? resData?.id ?? draftId;
+      toast.success(
+        submitAsDraft
+          ? "Order draft saved."
+          : "Sales order submitted successfully!",
+      );
+      navigate(orderId ? `/orders/${orderId}` : "/orders");
     },
     onError: (err: unknown) => {
-      toast.error(`Order failed: ${extractErrorMessage(err, "Failed to place order")}`);
+      toast.error(`Order failed: ${extractErrorMessage(err, "Failed to save order")}`);
     },
   });
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (submitAsDraft = false) => {
     if (!activeCustomer) {
       toast.error("Please select a customer before placing an order.");
       return;
@@ -278,6 +338,9 @@ export function NewOrderPage() {
     }
 
     if (!isOnline) {
+      if (submitAsDraft) {
+        toast.info("Offline mode: saving to device outbox for automatic sync when online.");
+      }
       // Offline queueing in Dexie outbox
       try {
         await queueOrder(
@@ -308,7 +371,7 @@ export function NewOrderPage() {
 
     setIsSubmitting(true);
     try {
-      await createOrderMutation.mutateAsync();
+      await createOrderMutation.mutateAsync(submitAsDraft);
     } finally {
       setIsSubmitting(false);
     }
@@ -769,9 +832,21 @@ export function NewOrderPage() {
               </span>
             </div>
 
+            {isOnline && (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleSubmit(true)}
+                disabled={totalItemCount === 0 || isSubmitting || createOrderMutation.isPending}
+                className="min-h-[44px] h-11 sm:h-12 px-4 text-sm font-medium cursor-pointer"
+              >
+                Save draft
+              </Button>
+            )}
+
             <Button
               size="lg"
-              onClick={handleSubmit}
+              onClick={() => handleSubmit(false)}
               disabled={totalItemCount === 0 || isSubmitting || createOrderMutation.isPending}
               className="w-full sm:w-auto min-h-[44px] h-11 sm:h-12 sm:min-w-[170px] px-4 sm:px-6 text-sm font-bold gap-2 shadow-md cursor-pointer"
             >
