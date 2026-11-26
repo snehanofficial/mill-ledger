@@ -29,7 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
   Dialog,
   DialogContent,
@@ -121,8 +120,7 @@ export function DispatchPage() {
   const [driverPhone, setDriverPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [dispatchError, setDispatchError] = useState<string | null>(null);
-  const [showConfirmDispatchDialog, setShowConfirmDispatchDialog] =
-    useState(false);
+  const [dispatchStep, setDispatchStep] = useState<"form" | "confirm">("form");
   const [lineDispatchQtys, setLineDispatchQtys] = useState<
     Record<string, number>
   >({});
@@ -200,7 +198,7 @@ export function DispatchPage() {
           };
         },
       );
-      setShowConfirmDispatchDialog(false);
+      setDispatchStep("form");
       setShowCreateModal(false);
       return { previousOrders, previousDispatches };
     },
@@ -285,11 +283,11 @@ export function DispatchPage() {
       return;
     }
     setDispatchError(null);
-    setShowConfirmDispatchDialog(true);
+    setDispatchStep("confirm");
   };
 
   const handleExecuteDispatch = () => {
-    setShowConfirmDispatchDialog(false);
+    setDispatchStep("form");
     const selectedOrder = eligibleOrders.find((o) => o.id === selectedOrderId);
     const linesPayload = selectedOrder
       ? selectedOrder.lines
@@ -692,23 +690,40 @@ export function DispatchPage() {
         )}
       </div>
 
-      {/* Record Dispatch Modal */}
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+      {/* Record Dispatch Modal (single-dialog two-step flow) */}
+      <Dialog
+        open={showCreateModal}
+        onOpenChange={(open) => {
+          setShowCreateModal(open);
+          if (!open) setDispatchStep("form");
+        }}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <div className="flex items-center gap-2">
-              <TruckIcon className="h-5 w-5 text-foreground" />
-              <DialogTitle>Record physical dispatch</DialogTitle>
+              {dispatchStep === "confirm" ? (
+                <AlertTriangleIcon className="h-5 w-5 text-amber-500" aria-hidden="true" />
+              ) : (
+                <TruckIcon className="h-5 w-5 text-foreground" aria-hidden="true" />
+              )}
+              <DialogTitle>
+                {dispatchStep === "confirm"
+                  ? "Confirm Physical Dispatch?"
+                  : "Record physical dispatch"}
+              </DialogTitle>
             </div>
-            <DialogDescription className="sr-only">
-              Record physical dispatch and warehouse inventory deduction
+            <DialogDescription className={dispatchStep === "confirm" ? undefined : "sr-only"}>
+              {dispatchStep === "confirm"
+                ? "This action will permanently deduct finished goods from physical inventory and generate an immutable dispatch record."
+                : "Record physical dispatch and warehouse inventory deduction"}
             </DialogDescription>
           </DialogHeader>
 
-          <form
-            onSubmit={handleSubmitDispatch}
-            className="mt-2 flex flex-col gap-4"
-          >
+          {dispatchStep === "form" ? (
+            <form
+              onSubmit={handleSubmitDispatch}
+              className="mt-2 flex flex-col gap-4"
+            >
               {dispatchError && (
                 <div
                   role="alert"
@@ -907,7 +922,10 @@ export function DispatchPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setDispatchStep("form");
+                  }}
                 >
                   Cancel
                 </Button>
@@ -924,149 +942,147 @@ export function DispatchPage() {
                   ) : (
                     <TruckIcon className="h-4 w-4" />
                   )}
-                  Confirm dispatch
+                  Review & confirm
                 </Button>
               </DialogFooter>
             </form>
+          ) : (
+            <>
+              <div className="mt-2 space-y-3 text-sm text-foreground">
+                <div className="rounded-lg bg-muted/60 p-3 text-xs space-y-1">
+                  {eligibleOrders.find((o) => o.id === selectedOrderId) && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Sales Order:</span>
+                        <span className="font-mono font-medium text-foreground">
+                          {
+                            eligibleOrders.find((o) => o.id === selectedOrderId)
+                              ?.orderNumber
+                          }
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Customer:</span>
+                        <span className="font-medium text-foreground">
+                          {
+                            eligibleOrders.find((o) => o.id === selectedOrderId)
+                              ?.customer?.name
+                          }
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Quantity to Deduct:
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {eligibleOrders
+                            .find((o) => o.id === selectedOrderId)
+                            ?.lines.reduce(
+                              (sum, l) =>
+                                sum +
+                                (lineDispatchQtys[l.id] ??
+                                  Math.max(
+                                    0,
+                                    l.approvedQuantity - l.dispatchedQuantity,
+                                  )),
+                              0,
+                            )}{" "}
+                          packets
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  {vehicleNumber.trim() && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Vehicle:</span>
+                      <span className="font-mono text-foreground">
+                        {vehicleNumber.trim()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Partial Dispatch Per-Line Quantities (IMP-014) */}
+                {selectedOrderId && (() => {
+                  const ord = eligibleOrders.find((o) => o.id === selectedOrderId);
+                  if (!ord) return null;
+                  return (
+                    <div className="rounded-lg border bg-muted/20 p-3 flex flex-col gap-2">
+                      <span className="text-xs font-semibold text-foreground">
+                        Dispatch quantities (supports partial dispatch)
+                      </span>
+                      {ord.lines.map((l) => {
+                        const remaining = Math.max(
+                          0,
+                          l.approvedQuantity - l.dispatchedQuantity,
+                        );
+                        const val = lineDispatchQtys[l.id] ?? remaining;
+                        return (
+                          <div
+                            key={l.id}
+                            className="flex items-center justify-between gap-3 text-xs"
+                          >
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {l.productVariant?.name || "Item"}
+                              </span>
+                              <span className="text-muted-foreground">
+                                Remaining: {remaining} pkts
+                              </span>
+                            </div>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={remaining}
+                              value={val}
+                              onChange={(e) =>
+                                setLineDispatchQtys((prev) => ({
+                                  ...prev,
+                                  [l.id]: Math.min(
+                                    remaining,
+                                    Math.max(0, Number(e.target.value)),
+                                  ),
+                                }))
+                              }
+                              className="h-8 w-24 text-right font-mono text-xs"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+                <div className="rounded-md bg-destructive/10 p-2.5 text-xs font-medium text-destructive border border-destructive/20">
+                  Warning: This operational action cannot be undone. Physical on-hand stock balances will be deducted immediately.
+                </div>
+              </div>
+
+              <DialogFooter className="mt-4 border-t pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDispatchStep("form")}
+                  disabled={dispatchMutation.isPending}
+                >
+                  Review details
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  disabled={dispatchMutation.isPending}
+                  onClick={handleExecuteDispatch}
+                >
+                  {dispatchMutation.isPending
+                    ? "Dispatching..."
+                    : "Confirm & Deduct Stock"}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
-
-      {/* Confirmation Dialog for Irreversible Dispatch (F-048) */}
-      {showConfirmDispatchDialog && (
-        <ConfirmationDialog
-          open={showConfirmDispatchDialog}
-          onOpenChange={setShowConfirmDispatchDialog}
-          title={
-            <div className="flex items-center gap-2 text-foreground font-semibold">
-              <AlertTriangleIcon className="h-5 w-5 text-amber-500" />
-              Confirm Physical Dispatch?
-            </div>
-          }
-          description={
-            <div className="space-y-3 pt-1 text-sm text-foreground">
-              <p>
-                This action will permanently deduct finished goods from physical
-                inventory and generate an immutable dispatch record.
-              </p>
-              <div className="rounded-lg bg-muted/60 p-3 text-xs space-y-1">
-                {eligibleOrders.find((o) => o.id === selectedOrderId) && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Sales Order:</span>
-                      <span className="font-mono font-medium text-foreground">
-                        {
-                          eligibleOrders.find((o) => o.id === selectedOrderId)
-                            ?.orderNumber
-                        }
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Customer:</span>
-                      <span className="font-medium text-foreground">
-                        {
-                          eligibleOrders.find((o) => o.id === selectedOrderId)
-                            ?.customer?.name
-                        }
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        Quantity to Deduct:
-                      </span>
-                      <span className="font-semibold text-foreground">
-                        {eligibleOrders
-                          .find((o) => o.id === selectedOrderId)
-                          ?.lines.reduce(
-                            (sum, l) =>
-                              sum +
-                              (lineDispatchQtys[l.id] ??
-                                Math.max(
-                                  0,
-                                  l.approvedQuantity - l.dispatchedQuantity,
-                                )),
-                            0,
-                          )}{" "}
-                        packets
-                      </span>
-                    </div>
-                  </>
-                )}
-                {vehicleNumber.trim() && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Vehicle:</span>
-                    <span className="font-mono text-foreground">
-                      {vehicleNumber.trim()}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Partial Dispatch Per-Line Quantities (IMP-014) */}
-              {selectedOrderId && (() => {
-                const ord = eligibleOrders.find((o) => o.id === selectedOrderId);
-                if (!ord) return null;
-                return (
-                  <div className="rounded-lg border bg-muted/20 p-3 flex flex-col gap-2">
-                    <span className="text-xs font-semibold text-foreground">
-                      Dispatch quantities (supports partial dispatch)
-                    </span>
-                    {ord.lines.map((l) => {
-                      const remaining = Math.max(
-                        0,
-                        l.approvedQuantity - l.dispatchedQuantity,
-                      );
-                      const val = lineDispatchQtys[l.id] ?? remaining;
-                      return (
-                        <div
-                          key={l.id}
-                          className="flex items-center justify-between gap-3 text-xs"
-                        >
-                          <div className="flex flex-col">
-                            <span className="font-medium">
-                              {l.productVariant?.name || "Item"}
-                            </span>
-                            <span className="text-muted-foreground">
-                              Remaining: {remaining} pkts
-                            </span>
-                          </div>
-                          <Input
-                            type="number"
-                            min={0}
-                            max={remaining}
-                            value={val}
-                            onChange={(e) =>
-                              setLineDispatchQtys((prev) => ({
-                                ...prev,
-                                [l.id]: Math.min(
-                                  remaining,
-                                  Math.max(0, Number(e.target.value)),
-                                ),
-                              }))
-                            }
-                            className="h-8 w-24 text-right font-mono text-xs"
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-              <div className="rounded-md bg-destructive/10 p-2.5 text-xs font-medium text-destructive border border-destructive/20">
-                Warning: This operational action cannot be undone. Physical on-hand stock balances will be deducted immediately.
-              </div>
-            </div>
-          }
-          confirmLabel={
-            dispatchMutation.isPending
-              ? "Dispatching..."
-              : "Confirm & Deduct Stock"
-          }
-          cancelLabel="Review details"
-          onConfirm={handleExecuteDispatch}
-          disabled={dispatchMutation.isPending}
-          destructive
-        />
-      )}
 
       {/* Sales Return Modal (IMP-014) */}
       <Dialog

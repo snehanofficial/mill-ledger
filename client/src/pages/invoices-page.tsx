@@ -47,7 +47,6 @@ import {
   PlusCircleIcon,
   AlertTriangleIcon,
 } from "lucide-react";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 interface SalesInvoiceLine {
   id: string;
@@ -102,12 +101,11 @@ export function InvoicesPage() {
     null,
   );
   const [showCreditNoteModal, setShowCreditNoteModal] = useState(false);
+  const [creditNoteStep, setCreditNoteStep] = useState<"form" | "confirm">("form");
   const [creditNoteReason, setCreditNoteReason] = useState("Damage allowance");
   const [creditNoteAmount, setCreditNoteAmount] = useState<number>(0);
   const [showCreateInvoiceModal, setShowCreateInvoiceModal] = useState(false);
-  const [showConfirmCreditNote, setShowConfirmCreditNote] = useState(false);
-  const [showConfirmCreateInvoice, setShowConfirmCreateInvoice] =
-    useState(false);
+  const [createInvoiceStep, setCreateInvoiceStep] = useState<"form" | "confirm">("form");
   const [selectedOrderIdForInvoice, setSelectedOrderIdForInvoice] =
     useState<string>("");
   const [invoiceNotes, setInvoiceNotes] = useState("");
@@ -164,7 +162,7 @@ export function InvoicesPage() {
       queryClient.invalidateQueries({
         queryKey: ["approved-orders-for-invoice"],
       });
-      setShowConfirmCreateInvoice(false);
+      setCreateInvoiceStep("form");
       setShowCreateInvoiceModal(false);
       setSelectedOrderIdForInvoice("");
       setInvoiceNotes("");
@@ -217,7 +215,7 @@ export function InvoicesPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sales-invoices"] });
-      setShowConfirmCreditNote(false);
+      setCreditNoteStep("form");
       setShowCreditNoteModal(false);
       setSelectedInvoice(null);
       toast.success("GST credit note posted successfully");
@@ -937,12 +935,13 @@ export function InvoicesPage() {
         )}
       </Dialog>
 
-      {/* Credit Note Modal */}
+      {/* Credit Note Modal (single-dialog two-step flow) */}
       <Dialog
         open={showCreditNoteModal && selectedInvoice !== null}
         onOpenChange={(open) => {
           if (!open) {
             setShowCreditNoteModal(false);
+            setCreditNoteStep("form");
             setCreditNoteReason("");
           }
         }}
@@ -950,95 +949,185 @@ export function InvoicesPage() {
         {showCreditNoteModal && selectedInvoice && (
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Issue credit note</DialogTitle>
+              <DialogTitle className={creditNoteStep === "confirm" ? "flex items-center gap-2 text-destructive" : undefined}>
+                {creditNoteStep === "confirm" ? (
+                  <>
+                    <AlertTriangleIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                    <span>Confirm GST Credit Note Issuance</span>
+                  </>
+                ) : (
+                  "Issue credit note"
+                )}
+              </DialogTitle>
               <DialogDescription>
-                Adjust invoice {selectedInvoice.invoiceNumber} without deleting
-                the immutable record.
+                {creditNoteStep === "confirm"
+                  ? `Review details before posting an immutable Credit Note against ${selectedInvoice.invoiceNumber}.`
+                  : `Adjust invoice ${selectedInvoice.invoiceNumber} without deleting the immutable record.`}
               </DialogDescription>
             </DialogHeader>
 
-            <div className="mt-2 flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <Label
-                  htmlFor="credit-note-reason"
-                  className="text-xs font-semibold text-muted-foreground"
-                >
-                  Reason for credit note
-                </Label>
-                <Input
-                  id="credit-note-reason"
-                  type="text"
-                  value={creditNoteReason}
-                  onChange={(e) => setCreditNoteReason(e.target.value)}
-                />
-              </div>
+            {creditNoteStep === "form" ? (
+              <>
+                <div className="mt-2 flex flex-col gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <Label
+                      htmlFor="credit-note-reason"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
+                      Reason for credit note
+                    </Label>
+                    <Input
+                      id="credit-note-reason"
+                      type="text"
+                      value={creditNoteReason}
+                      onChange={(e) => setCreditNoteReason(e.target.value)}
+                    />
+                  </div>
 
-              <div className="flex flex-col gap-1.5">
-                <Label
-                  htmlFor="credit-note-amount"
-                  className="text-xs font-semibold text-muted-foreground"
-                >
-                  Adjustment amount (₹)
-                </Label>
-                <Input
-                  id="credit-note-amount"
-                  type="number"
-                  value={creditNoteAmount}
-                  onChange={(e) => setCreditNoteAmount(Number(e.target.value))}
-                  className="font-semibold"
-                />
-                <span className="text-xs text-muted-foreground">
-                  Maximum adjustable:{" "}
-                  {formatINR(selectedInvoice.outstandingAmount)}
-                </span>
-              </div>
-            </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label
+                      htmlFor="credit-note-amount"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
+                      Adjustment amount (₹)
+                    </Label>
+                    <Input
+                      id="credit-note-amount"
+                      type="number"
+                      value={creditNoteAmount}
+                      onChange={(e) => setCreditNoteAmount(Number(e.target.value))}
+                      className="font-semibold"
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      Maximum adjustable:{" "}
+                      {formatINR(selectedInvoice.outstandingAmount)}
+                    </span>
+                  </div>
+                </div>
 
-            <DialogFooter className="mt-6 border-t pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setShowCreditNoteModal(false);
-                  setSelectedInvoice(null);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  if (creditNoteAmount <= 0) {
-                    toast.error(
-                      "Please enter a valid adjustment amount greater than zero",
-                    );
-                    return;
-                  }
-                  if (creditNoteAmount > selectedInvoice.outstandingAmount) {
-                    toast.error(
-                      `Adjustment amount cannot exceed outstanding amount (${formatINR(selectedInvoice.outstandingAmount)})`,
-                    );
-                    return;
-                  }
-                  setShowConfirmCreditNote(true);
-                }}
-                disabled={creditNoteMutation.isPending}
-                className="gap-2"
-              >
-                <FileCheck2Icon className="h-4 w-4" />
-                Review & confirm
-              </Button>
-            </DialogFooter>
+                <DialogFooter className="mt-6 border-t pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowCreditNoteModal(false);
+                      setCreditNoteStep("form");
+                      setSelectedInvoice(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      if (creditNoteAmount <= 0) {
+                        toast.error(
+                          "Please enter a valid adjustment amount greater than zero",
+                        );
+                        return;
+                      }
+                      if (creditNoteAmount > selectedInvoice.outstandingAmount) {
+                        toast.error(
+                          `Adjustment amount cannot exceed outstanding amount (${formatINR(selectedInvoice.outstandingAmount)})`,
+                        );
+                        return;
+                      }
+                      setCreditNoteStep("confirm");
+                    }}
+                    disabled={creditNoteMutation.isPending}
+                    className="gap-2"
+                  >
+                    <FileCheck2Icon className="h-4 w-4" />
+                    Review & confirm
+                  </Button>
+                </DialogFooter>
+              </>
+            ) : (
+              <>
+                <div className="mt-2 flex flex-col gap-3">
+                  <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Customer:</span>
+                      <span className="font-medium text-foreground">
+                        {selectedInvoice.customer?.name}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Original Total:</span>
+                      <span className="font-mono">
+                        {formatINR(selectedInvoice.totalAmount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        Outstanding Before:
+                      </span>
+                      <span className="font-mono">
+                        {formatINR(selectedInvoice.outstandingAmount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-t border-border/50 pt-1 font-semibold">
+                      <span className="text-destructive">Credit Adjustment:</span>
+                      <span className="font-mono text-destructive">
+                        -{formatINR(creditNoteAmount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Reason:</span>
+                      <span className="italic">{creditNoteReason}</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Statutory warning: Issuing this credit note permanently reduces
+                    legal GST tax liabilities and accounts receivable in the general
+                    ledger. This sequential document cannot be altered or deleted
+                    once committed.
+                  </p>
+                </div>
+
+                <DialogFooter className="mt-6 border-t pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCreditNoteStep("form")}
+                    disabled={creditNoteMutation.isPending}
+                  >
+                    Back to Edit
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    disabled={creditNoteMutation.isPending}
+                    onClick={() =>
+                      creditNoteMutation.mutate({
+                        invoiceId: selectedInvoice.id,
+                        reason: creditNoteReason,
+                        totalAmount: creditNoteAmount,
+                      })
+                    }
+                  >
+                    {creditNoteMutation.isPending
+                      ? "Issuing..."
+                      : "Confirm & Post Credit Note"}
+                  </Button>
+                </DialogFooter>
+              </>
+            )}
           </DialogContent>
         )}
       </Dialog>
 
-      {/* Generate Invoice Modal (F-037) */}
+      {/* Generate Invoice Modal (F-037, single-dialog two-step flow) */}
       <Dialog
         open={showCreateInvoiceModal}
         onOpenChange={(open) => {
           if (!open) {
             setShowCreateInvoiceModal(false);
+            setCreateInvoiceStep("form");
             setSelectedOrderIdForInvoice("");
             setInvoiceNotes("");
           }
@@ -1046,254 +1135,192 @@ export function InvoicesPage() {
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Generate GST Sales Invoice</DialogTitle>
+            <DialogTitle className={createInvoiceStep === "confirm" ? "flex items-center gap-2" : undefined}>
+              {createInvoiceStep === "confirm" ? (
+                <>
+                  <FileCheck2Icon className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                  <span>Confirm GST Sales Invoice Generation</span>
+                </>
+              ) : (
+                "Generate GST Sales Invoice"
+              )}
+            </DialogTitle>
             <DialogDescription>
-              Select an approved order to calculate statutory taxes and post an
-              immutable sales invoice.
+              {createInvoiceStep === "confirm"
+                ? `Review invoice details for order ${eligibleOrders.find((o) => o.id === selectedOrderIdForInvoice)?.orderNumber ?? ""}.`
+                : "Select an approved order to calculate statutory taxes and post an immutable sales invoice."}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-2 flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label
-                htmlFor="invoice-order-select"
-                className="text-xs font-semibold text-muted-foreground"
-              >
-                Approved Sales Order *
-              </Label>
-              {isLoadingApprovedOrders ? (
-                <div className="py-2 text-xs text-muted-foreground">
-                  Loading approved orders...
-                </div>
-              ) : eligibleOrders.length === 0 ? (
-                <div className="rounded-md border border-dashed p-3 text-center text-xs text-muted-foreground">
-                  No approved orders awaiting invoicing.
-                </div>
-              ) : (
-                <Select
-                  value={selectedOrderIdForInvoice || undefined}
-                  onValueChange={setSelectedOrderIdForInvoice}
-                >
-                  <SelectTrigger
-                    id="invoice-order-select"
-                    className="font-medium"
+          {createInvoiceStep === "form" ? (
+            <>
+              <div className="mt-2 flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <Label
+                    htmlFor="invoice-order-select"
+                    className="text-xs font-semibold text-muted-foreground"
                   >
-                    <SelectValue placeholder="Select an approved order..." />
-                  </SelectTrigger>
-                  <SelectContent searchable searchPlaceholder="Search orders or customers...">
-                    {eligibleOrders.map((ord) => (
-                      <SelectItem key={ord.id} value={ord.id}>
-                        {ord.orderNumber} · {ord.customer.name} (
-                        {formatINR(ord.totalAmount)})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
+                    Approved Sales Order *
+                  </Label>
+                  {isLoadingApprovedOrders ? (
+                    <div className="py-2 text-xs text-muted-foreground">
+                      Loading approved orders...
+                    </div>
+                  ) : eligibleOrders.length === 0 ? (
+                    <div className="rounded-md border border-dashed p-3 text-center text-xs text-muted-foreground">
+                      No approved orders awaiting invoicing.
+                    </div>
+                  ) : (
+                    <Select
+                      value={selectedOrderIdForInvoice || undefined}
+                      onValueChange={setSelectedOrderIdForInvoice}
+                    >
+                      <SelectTrigger
+                        id="invoice-order-select"
+                        className="font-medium"
+                      >
+                        <SelectValue placeholder="Select an approved order..." />
+                      </SelectTrigger>
+                      <SelectContent searchable searchPlaceholder="Search orders or customers...">
+                        {eligibleOrders.map((ord) => (
+                          <SelectItem key={ord.id} value={ord.id}>
+                            {ord.orderNumber} · {ord.customer.name} (
+                            {formatINR(ord.totalAmount)})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
 
-            <div className="flex flex-col gap-1.5">
-              <Label
-                htmlFor="invoice-notes-input"
-                className="text-xs font-semibold text-muted-foreground"
-              >
-                Invoice Notes (Optional)
-              </Label>
-              <Input
-                id="invoice-notes-input"
-                type="text"
-                placeholder="e.g. Standard 30 days payment term"
-                value={invoiceNotes}
-                onChange={(e) => setInvoiceNotes(e.target.value)}
-                className="font-medium"
-              />
-            </div>
-          </div>
-
-          <DialogFooter className="mt-6 border-t pt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setShowCreateInvoiceModal(false);
-                setSelectedOrderIdForInvoice("");
-                setInvoiceNotes("");
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              disabled={
-                !selectedOrderIdForInvoice || createInvoiceMutation.isPending
-              }
-              onClick={() => setShowConfirmCreateInvoice(true)}
-              className="gap-2"
-            >
-              <FileCheck2Icon className="h-4 w-4" />
-              Review & confirm
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Credit Note Irreversible Financial Action Confirmation (F-058) */}
-      {selectedInvoice && (
-        <ConfirmationDialog
-          open={showConfirmCreditNote}
-          onOpenChange={setShowConfirmCreditNote}
-          title={
-            <div className="flex items-center gap-2 text-destructive font-semibold">
-              <AlertTriangleIcon className="h-5 w-5" />
-              <span>Confirm GST Credit Note Issuance</span>
-            </div>
-          }
-          description={
-            <div className="flex flex-col gap-3 text-left">
-              <p className="text-sm text-foreground">
-                You are about to issue an immutable Credit Note against invoice{" "}
-                <strong className="font-mono">
-                  {selectedInvoice.invoiceNumber}
-                </strong>
-                .
-              </p>
-              <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Customer:</span>
-                  <span className="font-medium text-foreground">
-                    {selectedInvoice.customer?.name}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Original Total:</span>
-                  <span className="font-mono">
-                    {formatINR(selectedInvoice.totalAmount)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    Outstanding Before:
-                  </span>
-                  <span className="font-mono">
-                    {formatINR(selectedInvoice.outstandingAmount)}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t border-border/50 pt-1 font-semibold">
-                  <span className="text-destructive">Credit Adjustment:</span>
-                  <span className="font-mono text-destructive">
-                    -{formatINR(creditNoteAmount)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Reason:</span>
-                  <span className="italic">{creditNoteReason}</span>
+                <div className="flex flex-col gap-1.5">
+                  <Label
+                    htmlFor="invoice-notes-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
+                    Invoice Notes (Optional)
+                  </Label>
+                  <Input
+                    id="invoice-notes-input"
+                    type="text"
+                    placeholder="e.g. Standard 30 days payment term"
+                    value={invoiceNotes}
+                    onChange={(e) => setInvoiceNotes(e.target.value)}
+                    className="font-medium"
+                  />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Statutory warning: Issuing this credit note permanently reduces
-                legal GST tax liabilities and accounts receivable in the general
-                ledger. This sequential document cannot be altered or deleted
-                once committed.
-              </p>
-            </div>
-          }
-          confirmLabel={
-            creditNoteMutation.isPending
-              ? "Issuing..."
-              : "Confirm & Post Credit Note"
-          }
-          cancelLabel="Back to Edit"
-          destructive
-          disabled={creditNoteMutation.isPending}
-          onConfirm={() =>
-            creditNoteMutation.mutate({
-              invoiceId: selectedInvoice.id,
-              reason: creditNoteReason,
-              totalAmount: creditNoteAmount,
-            })
-          }
-        />
-      )}
 
-      {/* Create Invoice Irreversible Financial Action Confirmation (F-058) */}
-      {selectedOrderIdForInvoice && (
-        <ConfirmationDialog
-          open={showConfirmCreateInvoice}
-          onOpenChange={setShowConfirmCreateInvoice}
-          title={
-            <div className="flex items-center gap-2 font-semibold">
-              <FileCheck2Icon className="h-5 w-5 text-primary" />
-              <span>Confirm GST Sales Invoice Generation</span>
-            </div>
-          }
-          description={
-            <div className="flex flex-col gap-3 text-left">
-              <p className="text-sm text-foreground">
-                You are about to generate and post a legal GST Sales Invoice for
-                order{" "}
-                <strong className="font-mono">
-                  {
-                    eligibleOrders.find(
-                      (o) => o.id === selectedOrderIdForInvoice,
-                    )?.orderNumber
+              <DialogFooter className="mt-6 border-t pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowCreateInvoiceModal(false);
+                    setCreateInvoiceStep("form");
+                    setSelectedOrderIdForInvoice("");
+                    setInvoiceNotes("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={
+                    !selectedOrderIdForInvoice || createInvoiceMutation.isPending
                   }
-                </strong>
-                .
-              </p>
-              <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Customer:</span>
-                  <span className="font-medium text-foreground">
-                    {
-                      eligibleOrders.find(
-                        (o) => o.id === selectedOrderIdForInvoice,
-                      )?.customer?.name
-                    }
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    Total Taxable & Taxes:
-                  </span>
-                  <span className="font-mono font-semibold text-foreground">
-                    {formatINR(
-                      eligibleOrders.find(
-                        (o) => o.id === selectedOrderIdForInvoice,
-                      )?.totalAmount || 0,
-                    )}
-                  </span>
-                </div>
-                {invoiceNotes && (
+                  onClick={() => setCreateInvoiceStep("confirm")}
+                  className="gap-2"
+                >
+                  <FileCheck2Icon className="h-4 w-4" />
+                  Review & confirm
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <div className="mt-2 flex flex-col gap-3">
+                <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Sales Order:</span>
+                    <span className="font-mono font-medium text-foreground">
+                      {
+                        eligibleOrders.find(
+                          (o) => o.id === selectedOrderIdForInvoice,
+                        )?.orderNumber
+                      }
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Customer:</span>
+                    <span className="font-medium text-foreground">
+                      {
+                        eligibleOrders.find(
+                          (o) => o.id === selectedOrderIdForInvoice,
+                        )?.customer?.name
+                      }
+                    </span>
+                  </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      Invoice Notes:
+                      Total Taxable & Taxes:
                     </span>
-                    <span className="italic">{invoiceNotes}</span>
+                    <span className="font-mono font-semibold text-foreground">
+                      {formatINR(
+                        eligibleOrders.find(
+                          (o) => o.id === selectedOrderIdForInvoice,
+                        )?.totalAmount || 0,
+                      )}
+                    </span>
                   </div>
-                )}
+                  {invoiceNotes && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        Invoice Notes:
+                      </span>
+                      <span className="italic">{invoiceNotes}</span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Financial warning: This posts an immutable sequential tax
+                  invoice to the ledger and books accounts receivable. Stock
+                  allocations will be permanently committed.
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Financial warning: This posts an immutable sequential tax
-                invoice to the ledger and books accounts receivable. Stock
-                allocations will be permanently committed.
-              </p>
-            </div>
-          }
-          confirmLabel={
-            createInvoiceMutation.isPending
-              ? "Generating..."
-              : "Confirm & Post Invoice"
-          }
-          cancelLabel="Back to Review"
-          disabled={createInvoiceMutation.isPending}
-          onConfirm={() =>
-            createInvoiceMutation.mutate({
-              salesOrderId: selectedOrderIdForInvoice,
-              notes: invoiceNotes || undefined,
-            })
-          }
-        />
-      )}
+
+              <DialogFooter className="mt-6 border-t pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCreateInvoiceStep("form")}
+                  disabled={createInvoiceMutation.isPending}
+                >
+                  Back to Review
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={createInvoiceMutation.isPending}
+                  onClick={() =>
+                    createInvoiceMutation.mutate({
+                      salesOrderId: selectedOrderIdForInvoice,
+                      notes: invoiceNotes || undefined,
+                    })
+                  }
+                >
+                  {createInvoiceMutation.isPending
+                    ? "Generating..."
+                    : "Confirm & Post Invoice"}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

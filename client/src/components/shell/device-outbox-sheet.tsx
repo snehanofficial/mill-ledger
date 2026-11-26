@@ -23,7 +23,6 @@ import {
 import { useSyncManager } from "@/offline/use-offline";
 import type { OfflineOrder } from "@/offline/db";
 import type { PwaStatus } from "@/hooks/use-pwa-status";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { toast } from "sonner";
 import { formatINR, formatTime } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
@@ -347,7 +346,7 @@ export function DeviceOutboxSheet({
                         {t("action.sync_now", "Sync this")}
                       </Button>
                     )}
-                    {ord.status !== "syncing" && (
+                    {ord.status !== "syncing" && orderToDiscard?.id !== ord.id && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -359,79 +358,47 @@ export function DeviceOutboxSheet({
                       </Button>
                     )}
                   </div>
+
+                  {orderToDiscard?.id === ord.id && (
+                    <div
+                      role="alert"
+                      className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-2.5 text-xs"
+                    >
+                      <p className="font-medium text-destructive">
+                        Discard this offline order? It exists only on this device and cannot be recovered.
+                      </p>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setOrderToDiscard(null)}
+                          className="h-8 min-h-[32px] px-2.5 text-xs"
+                        >
+                          Keep Order
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            removeOrder(ord.id);
+                            toast.info(`Offline order for ${ord.customerName} discarded.`);
+                            setOrderToDiscard(null);
+                          }}
+                          className="h-8 min-h-[32px] px-2.5 text-xs"
+                        >
+                          Yes, Discard Order
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })
           )}
         </div>
       </SheetContent>
-
-      {/* Discard Offline Order Confirmation Dialog (F-081) */}
-      {orderToDiscard && (
-        <ConfirmationDialog
-          open={orderToDiscard !== null}
-          onOpenChange={(open) => {
-            if (!open) setOrderToDiscard(null);
-          }}
-          title={
-            <div className="flex items-center gap-2 text-destructive font-semibold">
-              <AlertTriangleIcon className="h-5 w-5" />
-              <span>Discard Offline Order</span>
-            </div>
-          }
-          description={
-            <div className="flex flex-col gap-2.5 text-left">
-              <p className="text-sm text-foreground">
-                Are you sure you want to discard this offline order for{" "}
-                <strong>{orderToDiscard.customerName}</strong>?
-              </p>
-              <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Customer:</span>
-                  <span className="font-semibold text-foreground">
-                    {orderToDiscard.customerName} ({orderToDiscard.customerState})
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Items:</span>
-                  <span>
-                    {orderToDiscard.items.reduce((s, i) => s + i.quantity, 0)} packets (
-                    {orderToDiscard.items.length} product lines)
-                  </span>
-                </div>
-                <div className="flex justify-between border-t border-border/50 pt-1 font-semibold">
-                  <span className="text-destructive">Order Value:</span>
-                  <span className="font-mono text-destructive">
-                    {formatINR(
-                      orderToDiscard.items.reduce(
-                        (s, i) => s + i.quantity * i.quotedUnitPrice,
-                        0,
-                      ),
-                    )}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Created:</span>
-                  <span>{new Date(orderToDiscard.createdAt).toLocaleString()}</span>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Warning: This uncommitted order exists only in your local device storage. Discarding will permanently erase it and it cannot be recovered.
-              </p>
-            </div>
-          }
-          confirmLabel="Yes, Discard Order"
-          cancelLabel="Keep Order"
-          destructive
-          onConfirm={() => {
-            if (orderToDiscard) {
-              removeOrder(orderToDiscard.id);
-              toast.info(`Offline order for ${orderToDiscard.customerName} discarded.`);
-              setOrderToDiscard(null);
-            }
-          }}
-        />
-      )}
     </Sheet>
   );
 }

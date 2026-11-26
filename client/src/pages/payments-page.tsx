@@ -30,7 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import { toast } from "sonner";
 import {
@@ -236,7 +235,7 @@ export function PaymentsPage() {
   >({});
   const [useManualAllocation, setUseManualAllocation] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [showConfirmPayment, setShowConfirmPayment] = useState(false);
+  const [paymentStep, setPaymentStep] = useState<"form" | "confirm">("form");
   const [pendingPaymentPayload, setPendingPaymentPayload] = useState<{
     customerId: string;
     amount: number;
@@ -323,7 +322,7 @@ export function PaymentsPage() {
       queryClient.invalidateQueries({ queryKey: ["receivables-summary"] });
       queryClient.invalidateQueries({ queryKey: ["sales-invoices"] });
       queryClient.invalidateQueries({ queryKey: ["customer-ledger"] });
-      setShowConfirmPayment(false);
+      setPaymentStep("form");
       setShowPaymentModal(false);
       setPendingPaymentPayload(null);
       setSelectedCustomerId("");
@@ -428,7 +427,7 @@ export function PaymentsPage() {
       notes: notes.trim() || undefined,
       allocations: allocationsToSend,
     });
-    setShowConfirmPayment(true);
+    setPaymentStep("confirm");
   };
 
   return (
@@ -1269,23 +1268,43 @@ export function PaymentsPage() {
         )}
       </Dialog>
 
-      {/* Record Payment Modal */}
-      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+      {/* Record Payment Modal (single-dialog two-step flow) */}
+      <Dialog
+        open={showPaymentModal}
+        onOpenChange={(open) => {
+          setShowPaymentModal(open);
+          if (!open) setPaymentStep("form");
+        }}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <div className="flex items-center gap-2">
-              <CreditCardIcon className="h-5 w-5 text-foreground" />
-              <DialogTitle>Record customer payment</DialogTitle>
+              <CreditCardIcon
+                className={
+                  paymentStep === "confirm"
+                    ? "h-5 w-5 text-emerald-600 dark:text-emerald-400"
+                    : "h-5 w-5 text-foreground"
+                }
+                aria-hidden="true"
+              />
+              <DialogTitle>
+                {paymentStep === "confirm"
+                  ? "Confirm Customer Payment Posting"
+                  : "Record customer payment"}
+              </DialogTitle>
             </div>
-            <DialogDescription className="sr-only">
-              Record receipt of customer payment and allocate against outstanding invoices
+            <DialogDescription className={paymentStep === "confirm" ? undefined : "sr-only"}>
+              {paymentStep === "confirm"
+                ? "Review the payment receipt details before posting to the accounting ledger."
+                : "Record receipt of customer payment and allocate against outstanding invoices"}
             </DialogDescription>
           </DialogHeader>
 
-          <form
-            onSubmit={handleRecordPaymentSubmit}
-            className="mt-2 flex flex-col gap-4"
-          >
+          {paymentStep === "form" ? (
+            <form
+              onSubmit={handleRecordPaymentSubmit}
+              className="mt-2 flex flex-col gap-4"
+            >
               {paymentError && (
                 <div
                   role="alert"
@@ -1498,7 +1517,10 @@ export function PaymentsPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowPaymentModal(false)}
+                  onClick={() => {
+                    setShowPaymentModal(false);
+                    setPaymentStep("form");
+                  }}
                 >
                   Cancel
                 </Button>
@@ -1513,74 +1535,84 @@ export function PaymentsPage() {
                 </Button>
               </DialogFooter>
             </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Payment Irreversible Financial Action Confirmation (F-058) */}
-      {pendingPaymentPayload && (
-        <ConfirmationDialog
-          open={showConfirmPayment}
-          onOpenChange={setShowConfirmPayment}
-          title={
-            <div className="flex items-center gap-2 font-semibold">
-              <CreditCardIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              <span>Confirm Customer Payment Posting</span>
-            </div>
-          }
-          description={
-            <div className="flex flex-col gap-3 text-left">
-              <p className="text-sm text-foreground">
-                You are about to post a permanent payment receipt into the accounting ledger.
-              </p>
-              <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Customer:</span>
-                  <span className="font-semibold text-foreground">
-                    {receivables.find((r) => r.customerId === pendingPaymentPayload.customerId)?.customerName ?? "Customer"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Payment Amount:</span>
-                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                    {formatINR(pendingPaymentPayload.amount)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Payment Mode:</span>
-                  <span className="font-medium text-foreground">{pendingPaymentPayload.paymentMode}</span>
-                </div>
-                {pendingPaymentPayload.referenceNumber && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Reference / Cheque #:</span>
-                    <span className="font-mono">{pendingPaymentPayload.referenceNumber}</span>
+          ) : pendingPaymentPayload ? (
+            <>
+              <div className="mt-2 flex flex-col gap-3">
+                {paymentError && (
+                  <div
+                    role="alert"
+                    aria-live="assertive"
+                    className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive"
+                  >
+                    <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span>{paymentError}</span>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Allocation Strategy:</span>
-                  <span className="font-medium text-foreground">
-                    {pendingPaymentPayload.allocations !== undefined
-                      ? pendingPaymentPayload.allocations.length > 0
-                        ? `Manual: ${pendingPaymentPayload.allocations.length} invoice(s) allocated`
-                        : "Unallocated customer advance (credit)"
-                      : "Automatic FIFO allocation across open invoices"}
-                  </span>
+                <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Customer:</span>
+                    <span className="font-semibold text-foreground">
+                      {receivables.find((r) => r.customerId === pendingPaymentPayload.customerId)?.customerName ?? "Customer"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Payment Amount:</span>
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      {formatINR(pendingPaymentPayload.amount)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Payment Mode:</span>
+                    <span className="font-medium text-foreground">{pendingPaymentPayload.paymentMode}</span>
+                  </div>
+                  {pendingPaymentPayload.referenceNumber && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Reference / Cheque #:</span>
+                      <span className="font-mono">{pendingPaymentPayload.referenceNumber}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Allocation Strategy:</span>
+                    <span className="font-medium text-foreground">
+                      {pendingPaymentPayload.allocations !== undefined
+                        ? pendingPaymentPayload.allocations.length > 0
+                          ? `Manual: ${pendingPaymentPayload.allocations.length} invoice(s) allocated`
+                          : "Unallocated customer advance (credit)"
+                        : "Automatic FIFO allocation across open invoices"}
+                    </span>
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Financial notice: This entry will immediately settle outstanding customer receivables and update cash/bank ledgers. This transaction cannot be deleted.
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Financial notice: This entry will immediately settle outstanding customer receivables and update cash/bank ledgers. This transaction cannot be deleted.
-              </p>
-            </div>
-          }
-          confirmLabel={paymentMutation.isPending ? "Posting..." : "Confirm & Post Payment"}
-          cancelLabel="Back to Edit"
-          disabled={paymentMutation.isPending}
-          onConfirm={() => {
-            if (pendingPaymentPayload) {
-              paymentMutation.mutate(pendingPaymentPayload);
-            }
-          }}
-        />
-      )}
+              <DialogFooter className="border-t pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPaymentStep("form")}
+                  disabled={paymentMutation.isPending}
+                >
+                  Back to Edit
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={paymentMutation.isPending}
+                  onClick={() => {
+                    if (pendingPaymentPayload) {
+                      paymentMutation.mutate(pendingPaymentPayload);
+                    }
+                  }}
+                >
+                  {paymentMutation.isPending ? "Posting..." : "Confirm & Post Payment"}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       {/* Allocate Unallocated Cash Modal (IMP-018) */}
       <Dialog
