@@ -9,12 +9,7 @@ import {
   formatNumber,
   formatPercent,
 } from "@mill-ledger/shared";
-import {
-  i18n,
-  I18N_NAMESPACES,
-  resources,
-  setI18nLocale,
-} from "./index";
+import { i18n, I18N_NAMESPACES, resources, setI18nLocale } from "./index";
 
 function collectLeafKeys(
   obj: Record<string, unknown>,

@@ -56,7 +56,10 @@ test.describe("System-Wide Tamil & English (i18n) Verification", () => {
     await expect(page).toHaveURL(/\/dashboard$/);
 
     // Switch to Tamil via authenticated header LanguageSelector
-    await page.getByRole("button", { name: /English|தமிழ்/i }).first().click();
+    await page
+      .getByRole("button", { name: /English|தமிழ்/i })
+      .first()
+      .click();
     await page.getByRole("menuitemradio", { name: "தமிழ்" }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "ta-IN");
 
@@ -86,7 +89,10 @@ test.describe("System-Wide Tamil & English (i18n) Verification", () => {
     }
 
     // Switch back to English via header LanguageSelector
-    await page.getByRole("button", { name: /தமிழ்|English/i }).first().click();
+    await page
+      .getByRole("button", { name: /தமிழ்|English/i })
+      .first()
+      .click();
     await page.getByRole("menuitemradio", { name: "English" }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "en-IN");
 
@@ -112,7 +118,10 @@ test.describe("System-Wide Tamil & English (i18n) Verification", () => {
       expect(enOverflow, `Overflow on / in en-IN at ${vp.name}`).toBe(false);
 
       // Switch to Tamil
-      await page.getByRole("button", { name: /English|தமிழ்/i }).first().click();
+      await page
+        .getByRole("button", { name: /English|தமிழ்/i })
+        .first()
+        .click();
       await page.getByRole("menuitemradio", { name: "தமிழ்" }).click();
       await expect(page.locator("html")).toHaveAttribute("lang", "ta-IN");
 

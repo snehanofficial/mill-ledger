@@ -30,9 +30,7 @@ const STATUS_KEY_MAP: Record<string, string> = {
 };
 
 const tCommon = (key: string): string =>
-  (
-    i18n.t as unknown as (k: string, opts?: { ns?: string }) => string
-  )(key, {
+  (i18n.t as unknown as (k: string, opts?: { ns?: string }) => string)(key, {
     ns: "common",
   });
 

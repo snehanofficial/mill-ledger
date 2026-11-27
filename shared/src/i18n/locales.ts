@@ -48,8 +48,6 @@ export function localeToShortCode(locale: SupportedLocale): ShortLanguageCode {
   return locale === "ta-IN" ? "ta" : "en";
 }
 
-export function shortCodeToLocale(
-  code?: string | null,
-): SupportedLocale {
+export function shortCodeToLocale(code?: string | null): SupportedLocale {
   return normalizeLocale(code);
 }

@@ -491,7 +491,9 @@ export function OrdersPage() {
                   <span className="font-semibold text-foreground tabular-nums">
                     {order.orderNumber}
                   </span>
-                  <Badge variant="outline">{getStatusLabel(order.status)}</Badge>
+                  <Badge variant="outline">
+                    {getStatusLabel(order.status)}
+                  </Badge>
                 </div>
                 <div className="text-sm text-foreground">
                   {order.customer.name}

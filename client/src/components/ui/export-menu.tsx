@@ -102,7 +102,9 @@ export function ExportMenu({
               aria-hidden="true"
             />
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-medium">{t("exportMenu.pdfTitle")}</span>
+              <span className="text-sm font-medium">
+                {t("exportMenu.pdfTitle")}
+              </span>
               <span className="text-[11px] text-muted-foreground">
                 {t("exportMenu.pdfDesc")}
               </span>
@@ -138,7 +140,9 @@ export function ExportMenu({
               aria-hidden="true"
             />
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-medium">{t("exportMenu.csvTitle")}</span>
+              <span className="text-sm font-medium">
+                {t("exportMenu.csvTitle")}
+              </span>
               <span className="text-[11px] text-muted-foreground">
                 {t("exportMenu.csvDesc")}
               </span>

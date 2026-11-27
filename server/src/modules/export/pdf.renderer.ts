@@ -152,9 +152,7 @@ export function drawStandardPdfHeader(
   let rightY = headerY;
   const docTypeText = translateExportLabel(meta.documentType, meta.locale);
   const titleText = translateExportLabel(meta.title, meta.locale);
-  doc
-    .fontSize(8)
-    .fillColor(EXPORT_THEME.colors.pineAction);
+  doc.fontSize(8).fillColor(EXPORT_THEME.colors.pineAction);
   drawLocalizedPdfText(
     doc,
     fonts,
@@ -169,9 +167,7 @@ export function drawStandardPdfHeader(
   );
   rightY = doc.y + 1;
 
-  doc
-    .fontSize(14)
-    .fillColor(EXPORT_THEME.colors.pine950);
+  doc.fontSize(14).fillColor(EXPORT_THEME.colors.pine950);
   drawLocalizedPdfText(doc, fonts, titleText, rightX, rightY, {
     width: rightWidth,
     align: "right",
@@ -445,7 +441,10 @@ export async function renderTabularPdf(
 
         let curX = margin;
         section.columns.forEach((col, i) => {
-          const translatedHeader = translateExportLabel(col.header, meta.locale);
+          const translatedHeader = translateExportLabel(
+            col.header,
+            meta.locale,
+          );
           const label = col.unit
             ? `${translatedHeader} (${col.unit})`
             : translatedHeader;

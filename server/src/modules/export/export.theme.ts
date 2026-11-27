@@ -39,7 +39,8 @@ export const EXPORT_THEME = {
 const DEJAVU_REGULAR = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
 const DEJAVU_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf";
 const DEJAVU_MONO = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf";
-const TAMIL_REGULAR = "/usr/share/fonts/truetype/noto/NotoSansTamil-Regular.ttf";
+const TAMIL_REGULAR =
+  "/usr/share/fonts/truetype/noto/NotoSansTamil-Regular.ttf";
 const TAMIL_BOLD = "/usr/share/fonts/truetype/noto/NotoSansTamil-Bold.ttf";
 
 export interface PdfFontSet {

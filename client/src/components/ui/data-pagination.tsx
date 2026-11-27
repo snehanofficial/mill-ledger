@@ -142,7 +142,9 @@ export function DataPagination({
                 )}
               >
                 <ChevronLeftIcon className="size-4" aria-hidden="true" />
-                <span className="hidden sm:inline">{t("pagination.previous")}</span>
+                <span className="hidden sm:inline">
+                  {t("pagination.previous")}
+                </span>
               </button>
             </PaginationItem>
 

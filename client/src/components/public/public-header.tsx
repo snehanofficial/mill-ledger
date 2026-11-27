@@ -33,7 +33,10 @@ export function PublicHeader() {
       </a>
 
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2.5 min-h-[44px] shrink-0">
+        <Link
+          to="/"
+          className="flex items-center gap-2.5 min-h-[44px] shrink-0"
+        >
           <BrandLogo size="nav" />
           <div className="flex flex-col">
             <span className="font-bold tracking-tight text-foreground text-sm sm:text-base">

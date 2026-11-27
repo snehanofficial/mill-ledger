@@ -79,7 +79,10 @@ export function LanguageSelector({
             className,
           )}
         >
-          <GlobeIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+          <GlobeIcon
+            className="size-4 shrink-0 text-muted-foreground"
+            aria-hidden
+          />
           <LangPart lang={locale} className="whitespace-nowrap">
             {LOCALE_LABELS[locale].native}
           </LangPart>
@@ -105,7 +108,10 @@ export function LanguageSelector({
                 {info.native}
               </LangPart>
               {isActive && (
-                <CheckIcon className="size-4 text-primary shrink-0" aria-hidden />
+                <CheckIcon
+                  className="size-4 text-primary shrink-0"
+                  aria-hidden
+                />
               )}
             </DropdownMenuItem>
           );

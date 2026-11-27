@@ -4,11 +4,12 @@ import { renderTabularPdf } from "../modules/export/pdf.renderer.js";
 import type { ExportColumn } from "../modules/export/export.types.js";
 
 describe("Bilingual Exports (en-IN & ta-IN)", () => {
-  const columns: ExportColumn<{ code: string; name: string; total: number }>[] = [
-    { key: "code", header: "Code", type: "text" },
-    { key: "name", header: "Customer Name", type: "text" },
-    { key: "total", header: "Total Amount", type: "currency" },
-  ];
+  const columns: ExportColumn<{ code: string; name: string; total: number }>[] =
+    [
+      { key: "code", header: "Code", type: "text" },
+      { key: "name", header: "Customer Name", type: "text" },
+      { key: "total", header: "Total Amount", type: "currency" },
+    ];
 
   const rows = [
     { code: "CUST-001", name: "Sri Murugan Stores", total: 14500.5 },

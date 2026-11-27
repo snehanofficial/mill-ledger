@@ -55,10 +55,7 @@ const DEFAULT_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
 const numberFormatCache = new Map<string, Intl.NumberFormat>();
 const dateFormatCache = new Map<string, Intl.DateTimeFormat>();
 
-function resolveFormattingLocale(
-  locale?: string,
-  lang?: "en" | "ta",
-): string {
+function resolveFormattingLocale(locale?: string, lang?: "en" | "ta"): string {
   if (lang === "ta" || locale === "ta" || locale === "ta-IN") {
     return "ta-IN-u-nu-latn-ca-gregory";
   }
@@ -300,7 +297,9 @@ export function formatNumber(
     lang,
   } = options;
   if (value === null || value === undefined) return fallback;
-  const num = Number(typeof value === "object" ? value.toString().trim() : String(value).trim());
+  const num = Number(
+    typeof value === "object" ? value.toString().trim() : String(value).trim(),
+  );
   if (Number.isNaN(num) || !Number.isFinite(num)) return fallback;
   return getNumberFormatter(resolveFormattingLocale(locale, lang), {
     minimumFractionDigits,
@@ -320,7 +319,9 @@ export function formatPercent(
     lang,
   } = options;
   if (value === null || value === undefined) return fallback;
-  const num = Number(typeof value === "object" ? value.toString().trim() : String(value).trim());
+  const num = Number(
+    typeof value === "object" ? value.toString().trim() : String(value).trim(),
+  );
   if (Number.isNaN(num) || !Number.isFinite(num)) return fallback;
   return getNumberFormatter(resolveFormattingLocale(locale, lang), {
     style: "percent",

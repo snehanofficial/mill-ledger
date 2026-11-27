@@ -141,7 +141,9 @@ function ErrorState({
         aria-hidden="true"
       />
       <div className="max-w-md">
-        <p className="text-sm font-semibold text-destructive">{resolvedTitle}</p>
+        <p className="text-sm font-semibold text-destructive">
+          {resolvedTitle}
+        </p>
         <p className="mt-1 text-xs text-muted-foreground">{description}</p>
         {activeRequestId && (
           <div className="mt-2.5 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">

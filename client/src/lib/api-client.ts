@@ -31,10 +31,7 @@ apiClient.interceptors.response.use(
  * Extracts a human-readable error message from API errors across Axios response
  * structures or standard Error instances.
  */
-export function extractErrorMessage(
-  error: unknown,
-  fallback?: string,
-): string {
+export function extractErrorMessage(error: unknown, fallback?: string): string {
   const defaultFallback = fallback || i18n.t("errors:generic");
   if (error instanceof ApiContractError) {
     return error.message;
