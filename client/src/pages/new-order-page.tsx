@@ -104,19 +104,20 @@ export function NewOrderPage() {
   const pageSize = 12;
 
   // Load existing draft if ?draftId= is provided
-  const { data: draftData } = useQuery<{
-    order: {
-      id: string;
-      status: string;
-      customerId: string;
-      notes: string | null;
-      lines: Array<{
-        productVariantId: string;
-        quotedQuantity: number;
-        productVariant: ProductItem;
-      }>;
-    };
-  }>({
+  type DraftOrderPayload = {
+    id: string;
+    status: string;
+    customerId: string;
+    notes: string | null;
+    lines: Array<{
+      productVariantId: string;
+      quotedQuantity: number;
+      productVariant: ProductItem;
+    }>;
+  };
+  const { data: draftData } = useQuery<
+    DraftOrderPayload | { order: DraftOrderPayload }
+  >({
     queryKey: ["sales-order", draftId],
     queryFn: async () => {
       const res = await apiClient.get(`/sales/orders/${draftId}`);
@@ -126,7 +127,8 @@ export function NewOrderPage() {
   });
 
   useEffect(() => {
-    const draft = draftData?.order;
+    const draft =
+      draftData && "order" in draftData ? draftData.order : draftData;
     if (!draft || draft.status !== "DRAFT") return;
     setSelectedCustomerId(draft.customerId);
     setOrderNotes(draft.notes ?? "");

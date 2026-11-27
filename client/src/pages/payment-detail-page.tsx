@@ -39,7 +39,8 @@ import { toast } from "sonner";
 
 interface PaymentDetail {
   id: string;
-  receiptNumber: string;
+  paymentNumber?: string;
+  receiptNumber?: string;
   paymentDate: string;
   paymentMode: string;
   referenceNumber: string | null;
@@ -73,9 +74,9 @@ export function PaymentDetailPage() {
   const [bounceOpen, setBounceOpen] = useState(false);
   const [bounceReason, setBounceReason] = useState("");
 
-  const { data, isLoading, isError, error, refetch } = useQuery<{
-    payment: PaymentDetail;
-  }>({
+  const { data, isLoading, isError, error, refetch } = useQuery<
+    PaymentDetail | { payment: PaymentDetail }
+  >({
     queryKey: ["payment", paymentId],
     queryFn: async () => {
       const res = await apiClient.get(`/payments/${paymentId}`);
@@ -84,7 +85,7 @@ export function PaymentDetailPage() {
     enabled: Boolean(paymentId),
   });
 
-  const payment = data?.payment;
+  const payment = data && "payment" in data ? data.payment : data;
 
   const { data: openInvoicesData } = useQuery<{
     invoices: Array<{
@@ -180,7 +181,7 @@ export function PaymentDetailPage() {
       <RecordHeader
         backTo="/payments"
         backLabel="Back to Payments"
-        reference={payment.receiptNumber}
+        reference={payment.paymentNumber ?? payment.receiptNumber ?? payment.id}
         subtitle={`${payment.customer.name} • ${payment.paymentMode} • ${formatDateTime(payment.paymentDate)}`}
         statuses={
           <>

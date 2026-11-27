@@ -97,9 +97,9 @@ export function InvoiceDetailPage() {
   const [creditReason, setCreditReason] = useState("");
   const [creditAmount, setCreditAmount] = useState("");
 
-  const { data, isLoading, isError, error, refetch } = useQuery<{
-    invoice: InvoiceDetail;
-  }>({
+  const { data, isLoading, isError, error, refetch } = useQuery<
+    InvoiceDetail | { invoice: InvoiceDetail }
+  >({
     queryKey: ["sales-invoice", invoiceId],
     queryFn: async () => {
       const res = await apiClient.get(`/finance/invoices/${invoiceId}`);
@@ -108,7 +108,7 @@ export function InvoiceDetailPage() {
     enabled: Boolean(invoiceId),
   });
 
-  const invoice = data?.invoice;
+  const invoice = data && "invoice" in data ? data.invoice : data;
 
   const creditNoteMutation = useMutation({
     mutationFn: async () => {
