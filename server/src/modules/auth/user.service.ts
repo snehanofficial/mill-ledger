@@ -3,6 +3,10 @@ import { auth } from "../../lib/auth.js";
 import { AppError } from "../../middleware/error.middleware.js";
 import { auditService } from "../reporting/audit.service.js";
 import type { Role } from "@mill-ledger/shared";
+import {
+  buildPaginationMeta,
+  normalizePaginationOptions,
+} from "../../utils/pagination.js";
 
 export interface CreateUserInput {
   name: string;
@@ -57,6 +61,63 @@ export class UserService {
     });
 
     return users;
+  }
+
+  async getUsersPaginated(
+    filter?: UserFilter & {
+      q?: string;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const where: Record<string, unknown> = {};
+    if (filter?.organizationId) {
+      where.organizationId = filter.organizationId;
+    }
+    if (filter?.role) {
+      where.role = filter.role;
+    }
+    if (filter?.isActive !== undefined) {
+      where.isActive = filter.isActive;
+    }
+    if (filter?.q?.trim()) {
+      const q = filter.q.trim();
+      where.OR = [
+        { name: { contains: q, mode: "insensitive" } },
+        { email: { contains: q, mode: "insensitive" } },
+      ];
+    }
+
+    const { limit, offset } = normalizePaginationOptions(filter, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isActive: true,
+          organizationId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { createdAt: "asc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    return {
+      users,
+      pagination: buildPaginationMeta(limit, offset, users.length, total),
+    };
   }
 
   /**

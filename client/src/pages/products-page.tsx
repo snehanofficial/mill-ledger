@@ -1,9 +1,12 @@
 import { useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
+import { usePagination } from "@/hooks/use-pagination";
 import { formatINR } from "@/lib/formatters";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import {
   Table,
@@ -117,6 +120,8 @@ export function ProductsPage() {
   const [statusFilter, setStatusFilter] = useUrlState<
     "ALL" | "ACTIVE" | "ARCHIVED"
   >("status", "ACTIVE");
+  const { page, pageSize, offset, setPage, setPageSize, resetPage } =
+    usePagination({ defaultPageSize: 20 });
 
   // Product modal state
   const [showProductModal, setShowProductModal] = useState(false);
@@ -163,12 +168,22 @@ export function ProductsPage() {
     uoms: UomItem[];
     finishedGoodsItems: FinishedGoodsItem[];
     priceLists: PriceList[];
+    pagination: PaginationMeta;
   }>({
-    queryKey: ["masters-products"],
+    queryKey: ["masters-products", page, pageSize, statusFilter, searchQuery.trim()],
     queryFn: async () => {
-      const res = await apiClient.get("/masters/products");
+      const params = new URLSearchParams({
+        limit: String(pageSize),
+        offset: String(offset),
+        status: statusFilter,
+      });
+      if (searchQuery.trim()) {
+        params.set("q", searchQuery.trim());
+      }
+      const res = await apiClient.get(`/masters/products?${params.toString()}`);
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   const products = useMemo(() => data?.products ?? [], [data?.products]);
@@ -559,16 +574,20 @@ export function ProductsPage() {
             <Input
               aria-label="Search products, SKUs, or HSN codes"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                resetPage();
+              }}
               placeholder="Search product, SKU, HSN..."
               className="h-9 pl-8 text-sm"
             />
           </div>
           <Select
             value={statusFilter}
-            onValueChange={(v) =>
-              setStatusFilter(v as "ALL" | "ACTIVE" | "ARCHIVED")
-            }
+            onValueChange={(v) => {
+              setStatusFilter(v as "ALL" | "ACTIVE" | "ARCHIVED");
+              resetPage();
+            }}
           >
             <SelectTrigger
               aria-label="Filter by status"
@@ -852,6 +871,16 @@ export function ProductsPage() {
                 </div>
               </div>
             ))}
+
+            <DataPagination
+              pagination={data?.pagination}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              isFetching={isFetching}
+              itemLabel="products"
+            />
           </div>
         )
       ) : priceLists.length === 0 ? (

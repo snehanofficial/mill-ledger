@@ -17,6 +17,7 @@ import {
   handleGetPurchaseReceipts,
   handleGetSuppliers,
 } from "./purchase.routes.js";
+import { parsePaginationQuery } from "../../utils/pagination.js";
 
 export const inventoryRouter = Router();
 
@@ -162,13 +163,19 @@ inventoryRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-
-      const warehouseId = req.query.warehouseId as string | undefined;
-      const balances = await inventoryService.getInventoryBalances(
+      const warehouseId =
+        typeof req.query.warehouseId === "string"
+          ? req.query.warehouseId
+          : undefined;
+      const category =
+        typeof req.query.category === "string" ? req.query.category : undefined;
+      const q = typeof req.query.q === "string" ? req.query.q : undefined;
+      const { limit, offset } = parsePaginationQuery(req.query);
+      const result = await inventoryService.getInventoryBalancesPaginated(
         orgId,
-        warehouseId,
+        { warehouseId, category, q, limit, offset },
       );
-      res.json({ balances });
+      res.json(result);
     } catch (err) {
       next(err);
     }
@@ -194,13 +201,15 @@ inventoryRouter.get(
         typeof req.query.warehouseId === "string"
           ? req.query.warehouseId
           : undefined;
+      const { limit, offset } = parsePaginationQuery(req.query);
 
-      const ledger = await inventoryService.getItemLedger(
-        itemId,
+      const result = await inventoryService.getItemLedgerPaginated(itemId, {
         warehouseId,
-        orgId,
-      );
-      res.json({ ledger });
+        organizationId: orgId,
+        limit,
+        offset,
+      });
+      res.json(result);
     } catch (err) {
       next(err);
     }
@@ -274,8 +283,12 @@ inventoryRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const transfers = await inventoryService.getStockTransfers(orgId);
-      res.json({ transfers });
+      const { limit, offset } = parsePaginationQuery(req.query);
+      const result = await inventoryService.getStockTransfersPaginated(orgId, {
+        limit,
+        offset,
+      });
+      res.json(result);
     } catch (err) {
       next(err);
     }

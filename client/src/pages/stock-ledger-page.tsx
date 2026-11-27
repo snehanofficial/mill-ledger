@@ -1,8 +1,11 @@
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { usePagination } from "@/hooks/use-pagination";
 import { formatINR, formatQuantity, formatDateTime } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { ErrorState, EmptyState, SkeletonTable } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -58,24 +61,31 @@ function getSourceDocHref(type: string | null, id: string | null): string | null
 
 export function StockLedgerPage() {
   const { itemId } = useParams<{ itemId: string }>();
+  const { page, pageSize, offset, setPage, setPageSize } = usePagination({
+    defaultPageSize: 20,
+  });
 
   const { data: balancesData } = useQuery<{ balances: StockBalance[] }>({
-    queryKey: ["inventory-balances"],
+    queryKey: ["inventory-balances", "all-for-ledger"],
     queryFn: async () => {
-      const res = await apiClient.get("/inventory/balances");
+      const res = await apiClient.get("/inventory/balances?limit=100");
       return res.data;
     },
   });
 
-  const { data, isLoading, isError, error, refetch } = useQuery<{
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     ledger: LedgerMovement[];
+    pagination: PaginationMeta;
   }>({
-    queryKey: ["inventory-item-ledger", itemId],
+    queryKey: ["inventory-item-ledger", itemId, page, pageSize],
     queryFn: async () => {
-      const res = await apiClient.get(`/inventory/items/${itemId}/ledger`);
+      const res = await apiClient.get(
+        `/inventory/items/${itemId}/ledger?limit=${pageSize}&offset=${offset}`,
+      );
       return res.data;
     },
     enabled: Boolean(itemId),
+    placeholderData: keepPreviousData,
   });
 
   const item = balancesData?.balances.find((b) => b.id === itemId);
@@ -156,69 +166,81 @@ export function StockLedgerPage() {
           description="Movements will appear here as purchases, production runs, dispatches, or adjustments are posted."
         />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Posted at</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Warehouse</TableHead>
-                <TableHead className="text-right">Quantity</TableHead>
-                <TableHead className="text-right">Unit cost</TableHead>
-                <TableHead className="text-right">Running balance</TableHead>
-                <TableHead>Source document</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {ledger.map((mov) => {
-                const href = getSourceDocHref(
-                  mov.referenceDocumentType,
-                  mov.referenceDocumentId,
-                );
-                return (
-                  <TableRow key={mov.id}>
-                    <TableCell className="text-xs text-muted-foreground tabular-nums">
-                      {formatDateTime(mov.postedAt)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {mov.movementType.replaceAll("_", " ")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs">{mov.warehouseName}</TableCell>
-                    <TableCell
-                      className={`text-right font-medium tabular-nums ${
-                        mov.quantity >= 0
-                          ? "text-emerald-700 dark:text-emerald-400"
-                          : "text-destructive"
-                      }`}
-                    >
-                      {mov.quantity >= 0 ? "+" : ""}
-                      {formatQuantity(mov.quantity, { unit })}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatINR(mov.unitCost)}
-                    </TableCell>
-                    <TableCell className="text-right font-semibold tabular-nums">
-                      {formatQuantity(mov.runningBalance, { unit })}
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      {href ? (
-                        <Link to={href} className="text-primary hover:underline">
-                          {mov.referenceDocumentType?.replaceAll("_", " ")}
-                        </Link>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          {mov.notes || mov.referenceDocumentType || "—"}
-                        </span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+        <>
+          <div className="overflow-x-auto rounded-lg border border-border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Posted at</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Warehouse</TableHead>
+                  <TableHead className="text-right">Quantity</TableHead>
+                  <TableHead className="text-right">Unit cost</TableHead>
+                  <TableHead className="text-right">Running balance</TableHead>
+                  <TableHead>Source document</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {ledger.map((mov) => {
+                  const href = getSourceDocHref(
+                    mov.referenceDocumentType,
+                    mov.referenceDocumentId,
+                  );
+                  return (
+                    <TableRow key={mov.id}>
+                      <TableCell className="text-xs text-muted-foreground tabular-nums">
+                        {formatDateTime(mov.postedAt)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {mov.movementType.replaceAll("_", " ")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs">{mov.warehouseName}</TableCell>
+                      <TableCell
+                        className={`text-right font-medium tabular-nums ${
+                          mov.quantity >= 0
+                            ? "text-emerald-700 dark:text-emerald-400"
+                            : "text-destructive"
+                        }`}
+                      >
+                        {mov.quantity >= 0 ? "+" : ""}
+                        {formatQuantity(mov.quantity, { unit })}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatINR(mov.unitCost)}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold tabular-nums">
+                        {formatQuantity(mov.runningBalance, { unit })}
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        {href ? (
+                          <Link to={href} className="text-primary hover:underline">
+                            {mov.referenceDocumentType?.replaceAll("_", " ")}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {mov.notes || mov.referenceDocumentType || "—"}
+                          </span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          <DataPagination
+            pagination={data?.pagination}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            isFetching={isFetching}
+            itemLabel="movements"
+          />
+        </>
       )}
     </div>
   );

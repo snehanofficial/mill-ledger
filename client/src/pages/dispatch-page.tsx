@@ -1,10 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
+import { usePagination } from "@/hooks/use-pagination";
 import { formatDateTime } from "@/lib/formatters";
 import { PageHeader } from "@/components/ui/page-header";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,15 +41,26 @@ export function DispatchPage() {
   const { user } = useCurrentUser();
   const canDispatch = user?.role === "ADMIN";
   const [searchQuery, setSearchQuery] = useUrlState("q", "", { debounceMs: 200 });
+  const { page, pageSize, offset, setPage, setPageSize, resetPage } =
+    usePagination({ defaultPageSize: 20 });
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     dispatches: Dispatch[];
+    pagination: PaginationMeta;
   }>({
-    queryKey: ["dispatches"],
+    queryKey: ["dispatches", page, pageSize, searchQuery.trim()],
     queryFn: async () => {
-      const res = await apiClient.get("/sales/dispatches");
+      const params = new URLSearchParams({
+        limit: String(pageSize),
+        offset: String(offset),
+      });
+      if (searchQuery.trim()) {
+        params.set("q", searchQuery.trim());
+      }
+      const res = await apiClient.get(`/sales/dispatches?${params.toString()}`);
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   const { data: ordersData } = useQuery<{
@@ -71,15 +85,7 @@ export function DispatchPage() {
   );
 
   const dispatches = data?.dispatches ?? [];
-  const filtered = dispatches.filter((d) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase().trim();
-    return (
-      d.dispatchNumber.toLowerCase().includes(q) ||
-      (d.salesOrder?.orderNumber ?? "").toLowerCase().includes(q) ||
-      (d.salesOrder?.customer?.name ?? "").toLowerCase().includes(q)
-    );
-  });
+  const filtered = dispatches;
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4 sm:p-6 lg:p-8">
@@ -147,7 +153,10 @@ export function DispatchPage() {
           <Input
             type="search"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              resetPage();
+            }}
             placeholder="Search dispatch # or order #..."
             aria-label="Search dispatches"
             className="h-9 pl-8"
@@ -169,56 +178,68 @@ export function DispatchPage() {
           description="Posted dispatches will appear here once approved orders are fulfilled."
         />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Dispatch #</TableHead>
-                <TableHead>Order #</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Vehicle / Driver</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Dispatched at</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((d) => (
-                <TableRow key={d.id}>
-                  <TableCell className="font-medium tabular-nums">
-                    <Link
-                      to={`/dispatch/${d.id}`}
-                      className="text-primary hover:underline"
-                    >
-                      {d.dispatchNumber}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="tabular-nums">
-                    {d.salesOrder ? (
-                      <Link
-                        to={`/orders/${d.salesOrder.id}`}
-                        className="hover:underline"
-                      >
-                        {d.salesOrder.orderNumber}
-                      </Link>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                  <TableCell>{d.salesOrder?.customer?.name ?? "—"}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {d.vehicleNumber || "—"} {d.driverName ? `(${d.driverName})` : ""}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{d.status}</Badge>
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground tabular-nums">
-                    {formatDateTime(d.dispatchedAt)}
-                  </TableCell>
+        <>
+          <div className="overflow-x-auto rounded-lg border border-border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Dispatch #</TableHead>
+                  <TableHead>Order #</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Vehicle / Driver</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Dispatched at</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((d) => (
+                  <TableRow key={d.id}>
+                    <TableCell className="font-medium tabular-nums">
+                      <Link
+                        to={`/dispatch/${d.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {d.dispatchNumber}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {d.salesOrder ? (
+                        <Link
+                          to={`/orders/${d.salesOrder.id}`}
+                          className="hover:underline"
+                        >
+                          {d.salesOrder.orderNumber}
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                    <TableCell>{d.salesOrder?.customer?.name ?? "—"}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {d.vehicleNumber || "—"} {d.driverName ? `(${d.driverName})` : ""}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{d.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground tabular-nums">
+                      {formatDateTime(d.dispatchedAt)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <DataPagination
+            pagination={data?.pagination}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            isFetching={isFetching}
+            itemLabel="dispatches"
+          />
+        </>
       )}
     </div>
   );

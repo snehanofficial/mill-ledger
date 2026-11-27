@@ -9,7 +9,10 @@ import { salesService } from "./sales.service.js";
 import { dispatchService } from "./dispatch.service.js";
 import { AppError } from "../../middleware/error.middleware.js";
 import { prisma } from "../../db/client.js";
-import { OrderStatus } from "@prisma/client";
+import {
+  buildPaginationMeta,
+  parsePaginationQuery,
+} from "../../utils/pagination.js";
 import {
   createCustomerSchema,
   updateCustomerSchema,
@@ -30,8 +33,19 @@ salesRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const customers = await salesService.getCustomers(orgId, req.user!);
-      res.json({ customers });
+      const { limit, offset } = parsePaginationQuery(req.query);
+      const q = typeof req.query.q === "string" ? req.query.q : undefined;
+      const includeInactive =
+        req.query.includeInactive === undefined
+          ? undefined
+          : req.query.includeInactive === "true";
+      const result = await salesService.getCustomersPaginated(orgId, req.user!, {
+        q,
+        includeInactive,
+        limit,
+        offset,
+      });
+      res.json(result);
     } catch (err) {
       next(err);
     }
@@ -242,28 +256,17 @@ salesRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const limit =
-        req.query.limit !== undefined ? Number(req.query.limit) : undefined;
-      const effectiveLimit =
-        limit !== undefined && Number.isFinite(limit)
-          ? Math.min(Math.max(Math.floor(limit), 1), 100)
-          : 50;
-      const offset =
-        req.query.offset !== undefined
-          ? Number(req.query.offset)
-          : req.query.page !== undefined
-            ? (Math.max(Number(req.query.page) || 1, 1) - 1) * effectiveLimit
-            : undefined;
+      const { limit, offset } = parsePaginationQuery(req.query);
 
       const result = await salesService.getProducts(orgId, { limit, offset });
       res.json({
         products: result.products,
-        pagination: {
-          limit: result.limit,
-          offset: result.offset,
-          count: result.products.length,
-          total: result.total,
-        },
+        pagination: buildPaginationMeta(
+          result.limit,
+          result.offset,
+          result.products.length,
+          result.total,
+        ),
       });
     } catch (err) {
       next(err);
@@ -279,31 +282,17 @@ salesRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const status = req.query.status as OrderStatus | undefined;
-      const limit =
-        req.query.limit !== undefined ? Number(req.query.limit) : undefined;
-      const offset =
-        req.query.offset !== undefined
-          ? Number(req.query.offset)
-          : req.query.page && req.query.limit
-            ? (Math.max(Number(req.query.page), 1) - 1) *
-              Number(req.query.limit)
-            : undefined;
+      const status =
+        typeof req.query.status === "string" ? req.query.status : undefined;
+      const q = typeof req.query.q === "string" ? req.query.q : undefined;
+      const { limit, offset } = parsePaginationQuery(req.query);
 
-      const orders = await salesService.getSalesOrders(
+      const result = await salesService.getSalesOrdersPaginated(
         orgId,
         req.user!,
-        status,
-        { limit, offset },
+        { status, q, limit, offset },
       );
-      res.json({
-        orders,
-        pagination: {
-          limit: limit ?? 50,
-          offset: offset ?? 0,
-          count: orders.length,
-        },
-      });
+      res.json(result);
     } catch (err) {
       next(err);
     }
@@ -516,8 +505,16 @@ salesRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const dispatches = await dispatchService.getDispatches(orgId, req.user);
-      res.json({ dispatches });
+      const { limit, offset } = parsePaginationQuery(req.query);
+      const q = typeof req.query.q === "string" ? req.query.q : undefined;
+      const status =
+        typeof req.query.status === "string" ? req.query.status : undefined;
+      const result = await dispatchService.getDispatchesPaginated(
+        orgId,
+        req.user,
+        { q, status, limit, offset },
+      );
+      res.json(result);
     } catch (err) {
       next(err);
     }

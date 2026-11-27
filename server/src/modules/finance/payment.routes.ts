@@ -8,6 +8,7 @@ import {
 import { paymentService } from "./payment.service.js";
 import { AppError } from "../../middleware/error.middleware.js";
 import { recordPaymentSchema, bouncePaymentSchema } from "@mill-ledger/shared";
+import { parsePaginationQuery } from "../../utils/pagination.js";
 
 export const paymentRouter = Router();
 
@@ -19,29 +20,28 @@ paymentRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const customerId = req.query.customerId as string | undefined;
-      const limit =
-        req.query.limit !== undefined ? Number(req.query.limit) : undefined;
-      const offset =
-        req.query.offset !== undefined
-          ? Number(req.query.offset)
-          : req.query.page && req.query.limit
-            ? (Math.max(Number(req.query.page), 1) - 1) *
-              Number(req.query.limit)
-            : undefined;
+      const customerId =
+        typeof req.query.customerId === "string"
+          ? req.query.customerId
+          : undefined;
+      const paymentMode =
+        typeof req.query.paymentMode === "string"
+          ? req.query.paymentMode
+          : undefined;
+      const status =
+        typeof req.query.status === "string" ? req.query.status : undefined;
+      const q = typeof req.query.q === "string" ? req.query.q : undefined;
+      const { limit, offset } = parsePaginationQuery(req.query);
 
-      const payments = await paymentService.getPayments(orgId, customerId, {
+      const result = await paymentService.getPaymentsPaginated(orgId, {
+        customerId,
+        paymentMode,
+        status,
+        q,
         limit,
         offset,
       });
-      res.json({
-        payments,
-        pagination: {
-          limit: limit ?? 50,
-          offset: offset ?? 0,
-          count: payments.length,
-        },
-      });
+      res.json(result);
     } catch (err) {
       next(err);
     }
@@ -56,8 +56,16 @@ paymentRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const summary = await paymentService.getReceivablesSummary(orgId);
-      res.json({ receivables: summary });
+      const q = typeof req.query.q === "string" ? req.query.q : undefined;
+      const onlyDue = req.query.due === "DUE" || req.query.onlyDue === "true";
+      const { limit, offset } = parsePaginationQuery(req.query);
+      const result = await paymentService.getReceivablesSummaryPaginated(orgId, {
+        q,
+        onlyDue,
+        limit,
+        offset,
+      });
+      res.json(result);
     } catch (err) {
       next(err);
     }

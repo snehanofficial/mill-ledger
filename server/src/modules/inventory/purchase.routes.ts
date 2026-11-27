@@ -11,6 +11,7 @@ import {
   createSupplierSchema,
   updateSupplierSchema,
 } from "@mill-ledger/shared";
+import { parsePaginationQuery } from "../../utils/pagination.js";
 
 export { createPurchaseReceiptSchema, createSupplierSchema, updateSupplierSchema };
 
@@ -44,8 +45,14 @@ export async function handleGetPurchaseReceipts(
 ) {
   try {
     const orgId = getSessionOrgId(req);
-    const receipts = await inventoryService.getPurchaseReceipts(orgId);
-    res.json({ receipts });
+    const { limit, offset } = parsePaginationQuery(req.query);
+    const q = typeof req.query.q === "string" ? req.query.q : undefined;
+    const result = await inventoryService.getPurchaseReceiptsPaginated(orgId, {
+      q,
+      limit,
+      offset,
+    });
+    res.json(result);
   } catch (err) {
     next(err);
   }
@@ -59,8 +66,18 @@ export async function handleGetSuppliers(
   try {
     const orgId = getSessionOrgId(req);
     const includeInactive = req.query.includeInactive === "true";
-    const suppliers = await inventoryService.getSuppliers(orgId, includeInactive);
-    res.json({ suppliers });
+    const status =
+      typeof req.query.status === "string" ? req.query.status : undefined;
+    const q = typeof req.query.q === "string" ? req.query.q : undefined;
+    const { limit, offset } = parsePaginationQuery(req.query);
+    const result = await inventoryService.getSuppliersPaginated(orgId, {
+      includeInactive,
+      status,
+      q,
+      limit,
+      offset,
+    });
+    res.json(result);
   } catch (err) {
     next(err);
   }

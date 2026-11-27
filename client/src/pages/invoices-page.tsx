@@ -1,10 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
+import { usePagination } from "@/hooks/use-pagination";
 import { formatINR, formatDateTime } from "@/lib/formatters";
 import { PageHeader } from "@/components/ui/page-header";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,15 +42,29 @@ export function InvoicesPage() {
   const canCreateInvoice = user?.role === "ADMIN";
   const [searchQuery, setSearchQuery] = useUrlState("q", "", { debounceMs: 200 });
   const [statusFilter, setStatusFilter] = useUrlState("status", "ALL");
+  const { page, pageSize, offset, setPage, setPageSize, resetPage } =
+    usePagination({ defaultPageSize: 20 });
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     invoices: SalesInvoice[];
+    pagination: PaginationMeta;
   }>({
-    queryKey: ["sales-invoices"],
+    queryKey: ["sales-invoices", page, pageSize, statusFilter, searchQuery.trim()],
     queryFn: async () => {
-      const res = await apiClient.get("/finance/invoices?limit=100&offset=0");
+      const params = new URLSearchParams({
+        limit: String(pageSize),
+        offset: String(offset),
+      });
+      if (statusFilter !== "ALL") {
+        params.set("status", statusFilter);
+      }
+      if (searchQuery.trim()) {
+        params.set("q", searchQuery.trim());
+      }
+      const res = await apiClient.get(`/finance/invoices?${params.toString()}`);
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   const { data: approvedOrdersData } = useQuery<{
@@ -72,19 +89,7 @@ export function InvoicesPage() {
   );
 
   const invoices = data?.invoices ?? [];
-  const filtered = invoices.filter((inv) => {
-    if (statusFilter !== "ALL" && inv.status !== statusFilter) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      if (
-        !inv.invoiceNumber.toLowerCase().includes(q) &&
-        !inv.customerNameSnapshot.toLowerCase().includes(q)
-      ) {
-        return false;
-      }
-    }
-    return true;
-  });
+  const filtered = invoices;
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4 sm:p-6 lg:p-8">
@@ -151,7 +156,10 @@ export function InvoicesPage() {
                 key={st}
                 variant={statusFilter === st ? "primary" : "outline"}
                 size="sm"
-                onClick={() => setStatusFilter(st)}
+                onClick={() => {
+                  setStatusFilter(st);
+                  resetPage();
+                }}
                 className="h-8 text-xs"
               >
                 {st === "ALL" ? "All" : st.replaceAll("_", " ")}
@@ -167,7 +175,10 @@ export function InvoicesPage() {
           <Input
             type="search"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              resetPage();
+            }}
             placeholder="Search invoice # or customer..."
             aria-label="Search invoices"
             className="h-9 pl-8"
@@ -189,6 +200,7 @@ export function InvoicesPage() {
           description="Posted GST invoices will appear here."
         />
       ) : (
+        <>
         <div className="overflow-x-auto rounded-lg border border-border bg-card">
           <Table>
             <TableHeader>
@@ -244,6 +256,17 @@ export function InvoicesPage() {
             </TableBody>
           </Table>
         </div>
+
+        <DataPagination
+          pagination={data?.pagination}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          isFetching={isFetching}
+          itemLabel="invoices"
+        />
+        </>
       )}
     </div>
   );

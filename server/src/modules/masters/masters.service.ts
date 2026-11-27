@@ -2,6 +2,11 @@ import { prisma } from "../../db/client.js";
 import { AppError } from "../../middleware/error.middleware.js";
 import type { UserContext } from "@mill-ledger/shared";
 import { auditService } from "../reporting/audit.service.js";
+import type { Prisma } from "@prisma/client";
+import {
+  buildPaginationMeta,
+  normalizePaginationOptions,
+} from "../../utils/pagination.js";
 
 export class MastersService {
   private async resolveOrgId(orgCodeOrId = "MILL"): Promise<string> {
@@ -59,6 +64,101 @@ export class MastersService {
     ]);
 
     return { products, uoms, finishedGoodsItems, priceLists };
+  }
+
+  async getProductsMasterPaginated(
+    organizationId = "MILL",
+    options?: {
+      status?: string;
+      q?: string;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const where: Prisma.ProductWhereInput = { organizationId: orgId };
+    if (options?.status === "ACTIVE") {
+      where.isActive = true;
+    } else if (options?.status === "ARCHIVED") {
+      where.isActive = false;
+    }
+
+    if (options?.q?.trim()) {
+      const q = options.q.trim();
+      where.OR = [
+        { code: { contains: q, mode: "insensitive" } },
+        { name: { contains: q, mode: "insensitive" } },
+        { hsnCode: { contains: q, mode: "insensitive" } },
+        {
+          variants: {
+            some: {
+              OR: [
+                { sku: { contains: q, mode: "insensitive" } },
+                { name: { contains: q, mode: "insensitive" } },
+              ],
+            },
+          },
+        },
+      ];
+    }
+
+    const { limit, offset } = normalizePaginationOptions(options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    const [products, total, uoms, finishedGoodsItems, priceLists] =
+      await Promise.all([
+        prisma.product.findMany({
+          where,
+          include: {
+            variants: {
+              include: {
+                uom: true,
+                inventoryItem: true,
+                priceLines: {
+                  include: { priceList: true },
+                },
+              },
+              orderBy: { sku: "asc" },
+            },
+          },
+          orderBy: { name: "asc" },
+          take: limit,
+          skip: offset,
+        }),
+        prisma.product.count({ where }),
+        prisma.unitOfMeasure.findMany({
+          where: { organizationId: orgId },
+          orderBy: { code: "asc" },
+        }),
+        prisma.inventoryItem.findMany({
+          where: { organizationId: orgId, category: "FINISHED_GOODS" },
+          orderBy: { name: "asc" },
+        }),
+        prisma.priceList.findMany({
+          where: { organizationId: orgId },
+          include: {
+            lines: {
+              include: {
+                productVariant: {
+                  include: { product: true },
+                },
+              },
+            },
+          },
+          orderBy: [{ isDefault: "desc" }, { name: "asc" }],
+        }),
+      ]);
+
+    return {
+      products,
+      uoms,
+      finishedGoodsItems,
+      priceLists,
+      pagination: buildPaginationMeta(limit, offset, products.length, total),
+    };
   }
 
   async createProduct(

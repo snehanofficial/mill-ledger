@@ -14,6 +14,7 @@ import {
   debitNoteSchema,
   setTaxRateSchema,
 } from "@mill-ledger/shared";
+import { parsePaginationQuery } from "../../utils/pagination.js";
 
 export const financeRouter = Router();
 
@@ -25,29 +26,23 @@ financeRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const customerId = req.query.customerId as string | undefined;
-      const limit =
-        req.query.limit !== undefined ? Number(req.query.limit) : undefined;
-      const offset =
-        req.query.offset !== undefined
-          ? Number(req.query.offset)
-          : req.query.page && req.query.limit
-            ? (Math.max(Number(req.query.page), 1) - 1) *
-              Number(req.query.limit)
-            : undefined;
+      const customerId =
+        typeof req.query.customerId === "string"
+          ? req.query.customerId
+          : undefined;
+      const status =
+        typeof req.query.status === "string" ? req.query.status : undefined;
+      const q = typeof req.query.q === "string" ? req.query.q : undefined;
+      const { limit, offset } = parsePaginationQuery(req.query);
 
-      const invoices = await financeService.getInvoices(orgId, customerId, {
+      const result = await financeService.getInvoicesPaginated(orgId, {
+        customerId,
+        status,
+        q,
         limit,
         offset,
       });
-      res.json({
-        invoices,
-        pagination: {
-          limit: limit ?? 50,
-          offset: offset ?? 0,
-          count: invoices.length,
-        },
-      });
+      res.json(result);
     } catch (err) {
       next(err);
     }
@@ -195,9 +190,19 @@ financeRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const supplierId = req.query.supplierId as string | undefined;
-      const debitNotes = await financeService.getDebitNotes(orgId, supplierId);
-      res.json({ debitNotes });
+      const supplierId =
+        typeof req.query.supplierId === "string"
+          ? req.query.supplierId
+          : undefined;
+      const q = typeof req.query.q === "string" ? req.query.q : undefined;
+      const { limit, offset } = parsePaginationQuery(req.query);
+      const result = await financeService.getDebitNotesPaginated(orgId, {
+        supplierId,
+        q,
+        limit,
+        offset,
+      });
+      res.json(result);
     } catch (err) {
       next(err);
     }

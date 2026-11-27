@@ -7,6 +7,7 @@ import {
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
 import { AppError } from "../../middleware/error.middleware.js";
+import { parsePaginationQuery } from "../../utils/pagination.js";
 import { mastersService } from "./masters.service.js";
 import {
   createFacilitySchema,
@@ -69,7 +70,16 @@ mastersRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const data = await mastersService.getProductsMaster(orgId);
+      const { limit, offset } = parsePaginationQuery(req.query);
+      const status =
+        typeof req.query.status === "string" ? req.query.status : undefined;
+      const q = typeof req.query.q === "string" ? req.query.q : undefined;
+      const data = await mastersService.getProductsMasterPaginated(orgId, {
+        status,
+        q,
+        limit,
+        offset,
+      });
       res.json(data);
     } catch (err) {
       next(err);

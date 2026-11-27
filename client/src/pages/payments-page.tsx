@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
+import { usePagination } from "@/hooks/use-pagination";
 import { formatDate, formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
+import { DataPagination } from "@/components/ui/data-pagination";
 import {
   EmptyState,
   SkeletonTable,
@@ -246,6 +249,17 @@ export function PaymentsPage() {
   } | null>(null);
 
   // 1. Fetch payments
+  const { page, pageSize, offset, setPage, setPageSize, resetPage } =
+    usePagination({ defaultPageSize: 20 });
+  const {
+    page: recPage,
+    pageSize: recPageSize,
+    offset: recOffset,
+    setPage: setRecPage,
+    setPageSize: setRecPageSize,
+    resetPage: resetRecPage,
+  } = usePagination({ defaultPageSize: 20, prefix: "rec" });
+
   const {
     data: paymentsData,
     isLoading: loadingPayments,
@@ -253,27 +267,51 @@ export function PaymentsPage() {
     error: paymentsError,
     refetch: refetchPayments,
     isFetching: fetchingPayments,
-  } = useQuery<{ payments: Payment[] }>({
-    queryKey: ["payments"],
+  } = useQuery<{ payments: Payment[]; pagination: PaginationMeta }>({
+    queryKey: ["payments", page, pageSize, modeFilter, searchQuery.trim()],
     queryFn: async () => {
-      const res = await apiClient.get("/payments");
+      const params = new URLSearchParams({
+        limit: String(pageSize),
+        offset: String(offset),
+      });
+      if (modeFilter !== "ALL") {
+        params.set("paymentMode", modeFilter);
+      }
+      if (searchQuery.trim()) {
+        params.set("q", searchQuery.trim());
+      }
+      const res = await apiClient.get(`/payments?${params.toString()}`);
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   // 2. Fetch receivables summary
   const {
     data: receivablesData,
     isLoading: loadingReceivables,
+    isFetching: fetchingReceivables,
     refetch: refetchReceivables,
-  } = useQuery<{ receivables: CustomerReceivable[] }>({
-    queryKey: ["receivables-summary"],
+  } = useQuery<{
+    receivables: CustomerReceivable[];
+    totalOutstanding?: number;
+    pagination: PaginationMeta;
+  }>({
+    queryKey: ["receivables-summary", recPage, recPageSize, searchQuery.trim()],
     queryFn: async () => {
+      const params = new URLSearchParams({
+        limit: String(recPageSize),
+        offset: String(recOffset),
+      });
+      if (searchQuery.trim()) {
+        params.set("q", searchQuery.trim());
+      }
       const res = await apiClient.get(
-        "/payments/receivables/summary",
+        `/payments/receivables/summary?${params.toString()}`,
       );
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   // 3. Fetch customer ledger when a customer is inspected
@@ -568,13 +606,20 @@ export function PaymentsPage() {
               <Input
                 placeholder={t("Search payments...")}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  resetPage();
+                  resetRecPage();
+                }}
                 className="h-8 w-44 text-xs"
                 aria-label="Search payments"
               />
               <Select
                 value={modeFilter}
-                onValueChange={setModeFilter}
+                onValueChange={(val) => {
+                  setModeFilter(val);
+                  resetPage();
+                }}
               >
                 <SelectTrigger
                   className="h-9 w-auto min-w-36 px-3 py-1 text-xs font-medium"
@@ -879,6 +924,16 @@ export function PaymentsPage() {
                 </TableBody>
               </Table>
             </div>
+            <DataPagination
+              pagination={paymentsData?.pagination}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              isFetching={fetchingPayments}
+              itemLabel="payments"
+              className="m-4"
+            />
           </>
         )}
         </div>
@@ -901,7 +956,11 @@ export function PaymentsPage() {
               <Input
                 placeholder={t("Search customer receivables...")}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  resetPage();
+                  resetRecPage();
+                }}
                 className="h-8 w-56 text-xs"
                 aria-label="Search customer receivables"
               />
@@ -1106,6 +1165,16 @@ export function PaymentsPage() {
                 </TableBody>
               </Table>
             </div>
+            <DataPagination
+              pagination={receivablesData?.pagination}
+              page={recPage}
+              pageSize={recPageSize}
+              onPageChange={setRecPage}
+              onPageSizeChange={setRecPageSize}
+              isFetching={fetchingReceivables}
+              itemLabel="customers"
+              className="m-4"
+            />
           </>
         )}
         </div>

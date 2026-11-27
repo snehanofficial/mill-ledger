@@ -10,6 +10,11 @@ import type {
 import { auditService } from "../reporting/audit.service.js";
 import { sequenceService } from "../finance/sequence.service.js";
 import {
+  buildPaginationMeta,
+  normalizePaginationOptions,
+  paginateArray,
+} from "../../utils/pagination.js";
+import {
   adjustWarehouseOnHand,
   getWarehouseItemBalance,
   requireActiveOrgWarehouse,
@@ -506,6 +511,68 @@ export class InventoryService {
   }
 
   /**
+   * Paginated inventory balances with server-side search, category filter, and summary totals.
+   */
+  async getInventoryBalancesPaginated(
+    organizationId: string,
+    options?: {
+      warehouseId?: string;
+      category?: string;
+      q?: string;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const allBalances = await this.getInventoryBalances(
+      organizationId,
+      options?.warehouseId,
+    );
+
+    const summary = {
+      totalItems: allBalances.length,
+      rawMaterialCount: allBalances.filter((b) => b.category === "RAW_MATERIAL")
+        .length,
+      packagingCount: allBalances.filter((b) => b.category === "PACKAGING")
+        .length,
+      finishedGoodsCount: allBalances.filter(
+        (b) => b.category === "FINISHED_GOODS",
+      ).length,
+      totalInventoryValue: allBalances.reduce(
+        (sum, b) => sum + b.onHand * b.weightedAverageCost,
+        0,
+      ),
+    };
+
+    const filtered = allBalances.filter((item) => {
+      if (
+        options?.category &&
+        options.category !== "ALL" &&
+        item.category !== options.category
+      ) {
+        return false;
+      }
+      if (options?.q?.trim()) {
+        const q = options.q.toLowerCase().trim();
+        if (
+          !item.sku.toLowerCase().includes(q) &&
+          !item.name.toLowerCase().includes(q)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    const { items: balances, pagination } = paginateArray(filtered, options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    return { balances, summary, pagination };
+  }
+
+  /**
    * Retrieve chronological stock ledger movements for an item
    */
   async getItemLedger(
@@ -560,6 +627,31 @@ export class InventoryService {
   }
 
   /**
+   * Paginated item ledger preserving accurate chronological running balance.
+   */
+  async getItemLedgerPaginated(
+    itemId: string,
+    options?: {
+      warehouseId?: string;
+      organizationId?: string;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const fullLedger = await this.getItemLedger(
+      itemId,
+      options?.warehouseId,
+      options?.organizationId,
+    );
+    const { items: ledger, pagination } = paginateArray(fullLedger, options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+    return { ledger, pagination };
+  }
+
+  /**
    * List purchase receipts with vendor and line details
    */
   async getPurchaseReceipts(organizationId: string) {
@@ -583,6 +675,62 @@ export class InventoryService {
   }
 
   /**
+   * Paginated purchase receipts list with server-side search and total count.
+   */
+  async getPurchaseReceiptsPaginated(
+    organizationId: string,
+    options?: {
+      q?: string;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const where: Prisma.PurchaseReceiptWhereInput = { organizationId: orgId };
+    if (options?.q?.trim()) {
+      const q = options.q.trim();
+      where.OR = [
+        { receiptNumber: { contains: q, mode: "insensitive" } },
+        { supplier: { name: { contains: q, mode: "insensitive" } } },
+        { supplier: { code: { contains: q, mode: "insensitive" } } },
+      ];
+    }
+
+    const { limit, offset } = normalizePaginationOptions(options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    const [receipts, total] = await Promise.all([
+      prisma.purchaseReceipt.findMany({
+        where,
+        include: {
+          supplier: true,
+          warehouse: true,
+          lines: {
+            include: {
+              inventoryItem: {
+                include: { baseUom: true },
+              },
+              uom: true,
+            },
+          },
+        },
+        orderBy: { postedAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.purchaseReceipt.count({ where }),
+    ]);
+
+    return {
+      receipts,
+      pagination: buildPaginationMeta(limit, offset, receipts.length, total),
+    };
+  }
+
+  /**
    * List suppliers
    */
   async getSuppliers(organizationId: string, includeInactive = false) {
@@ -595,6 +743,61 @@ export class InventoryService {
       where,
       orderBy: { name: "asc" },
     });
+  }
+
+  /**
+   * Paginated suppliers list with server-side search, status filter, and total count.
+   */
+  async getSuppliersPaginated(
+    organizationId: string,
+    options?: {
+      includeInactive?: boolean;
+      status?: string;
+      q?: string;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const where: Prisma.SupplierWhereInput = { organizationId: orgId };
+    if (options?.status === "ACTIVE") {
+      where.isActive = true;
+    } else if (options?.status === "INACTIVE") {
+      where.isActive = false;
+    } else if (!options?.includeInactive) {
+      where.isActive = true;
+    }
+
+    if (options?.q?.trim()) {
+      const q = options.q.trim();
+      where.OR = [
+        { code: { contains: q, mode: "insensitive" } },
+        { name: { contains: q, mode: "insensitive" } },
+        { state: { contains: q, mode: "insensitive" } },
+        { gstin: { contains: q, mode: "insensitive" } },
+      ];
+    }
+
+    const { limit, offset } = normalizePaginationOptions(options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    const [suppliers, total] = await Promise.all([
+      prisma.supplier.findMany({
+        where,
+        orderBy: { name: "asc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.supplier.count({ where }),
+    ]);
+
+    return {
+      suppliers,
+      pagination: buildPaginationMeta(limit, offset, suppliers.length, total),
+    };
   }
 
   /**
@@ -1417,6 +1620,44 @@ export class InventoryService {
       },
       orderBy: { postedAt: "desc" },
     });
+  }
+
+  async getStockTransfersPaginated(
+    organizationId: string,
+    options?: { limit?: number; offset?: number; page?: number },
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const where: Prisma.StockTransferWhereInput = { organizationId: orgId };
+    const { limit, offset } = normalizePaginationOptions(options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    const [transfers, total] = await Promise.all([
+      prisma.stockTransfer.findMany({
+        where,
+        include: {
+          fromWarehouse: { select: { id: true, code: true, name: true } },
+          toWarehouse: { select: { id: true, code: true, name: true } },
+          lines: {
+            include: {
+              inventoryItem: {
+                select: { id: true, sku: true, name: true, baseUom: true },
+              },
+            },
+          },
+        },
+        orderBy: { postedAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.stockTransfer.count({ where }),
+    ]);
+
+    return {
+      transfers,
+      pagination: buildPaginationMeta(limit, offset, transfers.length, total),
+    };
   }
 
   /**

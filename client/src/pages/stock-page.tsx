@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWarehouses } from "@/hooks/use-warehouses";
 import { useUrlState } from "@/hooks/use-url-state";
+import { usePagination } from "@/hooks/use-pagination";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
+import { DataPagination } from "@/components/ui/data-pagination";
 import {
   EmptyState,
   SkeletonTable,
@@ -306,49 +309,66 @@ export function StockPage() {
     },
   });
 
+  const { page, pageSize, offset, setPage, setPageSize, resetPage } =
+    usePagination({ defaultPageSize: 20 });
+
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     balances: InventoryBalance[];
+    summary?: {
+      totalItems: number;
+      rawMaterialCount: number;
+      packagingCount: number;
+      finishedGoodsCount: number;
+      totalInventoryValue: number;
+    };
+    pagination: PaginationMeta;
   }>({
-    queryKey: ["inventory-balances", warehouseFilter],
+    queryKey: [
+      "inventory-balances",
+      warehouseFilter,
+      categoryFilter,
+      searchQuery.trim(),
+      page,
+      pageSize,
+    ],
     queryFn: async () => {
-      const qs =
-        warehouseFilter !== "ALL"
-          ? `?warehouseId=${encodeURIComponent(warehouseFilter)}`
-          : "";
-      const res = await apiClient.get(`/inventory/balances${qs}`);
+      const params = new URLSearchParams({
+        limit: String(pageSize),
+        offset: String(offset),
+      });
+      if (warehouseFilter !== "ALL") {
+        params.set("warehouseId", warehouseFilter);
+      }
+      if (categoryFilter !== "ALL") {
+        params.set("category", categoryFilter);
+      }
+      if (searchQuery.trim()) {
+        params.set("q", searchQuery.trim());
+      }
+      const res = await apiClient.get(`/inventory/balances?${params.toString()}`);
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   const balances = data?.balances ?? [];
+  const filteredBalances = balances;
 
-  const filteredBalances = balances.filter((item) => {
-    if (categoryFilter !== "ALL" && item.category !== categoryFilter) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      const matchSku = item.sku.toLowerCase().includes(q);
-      const matchName = item.name.toLowerCase().includes(q);
-      if (!matchSku && !matchName) return false;
-    }
-    return true;
-  });
+  // Computed summary metrics (prefer server-side totals across all pages)
+  const totalItems = data?.summary?.totalItems ?? balances.length;
+  const rawMaterialCount =
+    data?.summary?.rawMaterialCount ??
+    balances.filter((b) => b.category === "RAW_MATERIAL").length;
+  const packagingCount =
+    data?.summary?.packagingCount ??
+    balances.filter((b) => b.category === "PACKAGING").length;
+  const finishedGoodsCount =
+    data?.summary?.finishedGoodsCount ??
+    balances.filter((b) => b.category === "FINISHED_GOODS").length;
 
-  // Computed summary metrics
-  const totalItems = balances.length;
-  const rawMaterialCount = balances.filter(
-    (b) => b.category === "RAW_MATERIAL",
-  ).length;
-  const packagingCount = balances.filter(
-    (b) => b.category === "PACKAGING",
-  ).length;
-  const finishedGoodsCount = balances.filter(
-    (b) => b.category === "FINISHED_GOODS",
-  ).length;
-
-  const totalInventoryValue = balances.reduce(
-    (sum, b) => sum + b.onHand * b.weightedAverageCost,
-    0,
-  );
+  const totalInventoryValue =
+    data?.summary?.totalInventoryValue ??
+    balances.reduce((sum, b) => sum + b.onHand * b.weightedAverageCost, 0);
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -527,13 +547,19 @@ export function StockPage() {
             <Input
               placeholder={t("Search items by SKU or name...")}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                resetPage();
+              }}
               className="h-8 w-52 text-xs"
               aria-label="Search stock"
             />
             <Select
               value={warehouseFilter}
-              onValueChange={setWarehouseFilter}
+              onValueChange={(val) => {
+                setWarehouseFilter(val);
+                resetPage();
+              }}
             >
               <SelectTrigger
                 className="h-9 w-auto min-w-44 px-3 py-1 text-xs font-medium"
@@ -552,7 +578,10 @@ export function StockPage() {
             </Select>
             <Select
               value={categoryFilter}
-              onValueChange={setCategoryFilter}
+              onValueChange={(val) => {
+                setCategoryFilter(val);
+                resetPage();
+              }}
             >
               <SelectTrigger
                 className="h-9 w-auto min-w-36 px-3 py-1 text-xs font-medium"
@@ -914,6 +943,17 @@ export function StockPage() {
                 </TableBody>
               </Table>
             </div>
+
+            <DataPagination
+              pagination={data?.pagination}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              isFetching={isFetching}
+              itemLabel="items"
+              className="m-4"
+            />
           </>
         )}
       </div>

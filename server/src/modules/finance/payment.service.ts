@@ -9,6 +9,11 @@ import { AppError } from "../../middleware/error.middleware.js";
 import type { UserContext } from "@mill-ledger/shared";
 import { sequenceService } from "./sequence.service.js";
 import { auditService } from "../reporting/audit.service.js";
+import {
+  buildPaginationMeta,
+  normalizePaginationOptions,
+  paginateArray,
+} from "../../utils/pagination.js";
 
 export interface PaymentAllocationInput {
   salesInvoiceId: string;
@@ -548,6 +553,70 @@ export class PaymentService {
   }
 
   /**
+   * Paginated payments list with server-side search, filters, and total count.
+   */
+  async getPaymentsPaginated(
+    organizationId: string,
+    options?: {
+      customerId?: string;
+      paymentMode?: string;
+      status?: string;
+      q?: string;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const where: Prisma.PaymentWhereInput = {
+      organizationId: orgId,
+      ...(options?.customerId ? { customerId: options.customerId } : {}),
+      ...(options?.paymentMode && options.paymentMode !== "ALL"
+        ? { paymentMode: options.paymentMode as PaymentMode }
+        : {}),
+      ...(options?.status && options.status !== "ALL"
+        ? { status: options.status as PaymentStatus }
+        : {}),
+    };
+
+    if (options?.q?.trim()) {
+      const q = options.q.trim();
+      where.OR = [
+        { paymentNumber: { contains: q, mode: "insensitive" } },
+        { referenceNumber: { contains: q, mode: "insensitive" } },
+        { customer: { name: { contains: q, mode: "insensitive" } } },
+        { customer: { code: { contains: q, mode: "insensitive" } } },
+      ];
+    }
+
+    const { limit, offset } = normalizePaginationOptions(options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    const [payments, total] = await Promise.all([
+      prisma.payment.findMany({
+        where,
+        include: {
+          customer: true,
+          allocations: {
+            include: { salesInvoice: true },
+          },
+        },
+        orderBy: { paymentDate: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.payment.count({ where }),
+    ]);
+
+    return {
+      payments,
+      pagination: buildPaginationMeta(limit, offset, payments.length, total),
+    };
+  }
+
+  /**
    * Get single payment by ID
    */
   async getPaymentById(id: string) {
@@ -792,6 +861,54 @@ export class PaymentService {
         openInvoicesCount,
       };
     });
+  }
+
+  /**
+   * Paginated receivables summary with server-side search, due filter, and totalOutstanding.
+   */
+  async getReceivablesSummaryPaginated(
+    organizationId: string,
+    options?: {
+      q?: string;
+      onlyDue?: boolean;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const allRows = await this.getReceivablesSummary(organizationId);
+    const totalOutstanding = allRows.reduce(
+      (sum, r) => sum + Number(r.netOutstanding || 0),
+      0,
+    );
+
+    const filtered = allRows.filter((row) => {
+      if (options?.onlyDue && Number(row.netOutstanding) <= 0) {
+        return false;
+      }
+      if (options?.q?.trim()) {
+        const q = options.q.toLowerCase().trim();
+        if (
+          !row.customerName.toLowerCase().includes(q) &&
+          !row.customerCode.toLowerCase().includes(q)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    const { items: receivables, pagination } = paginateArray(
+      filtered,
+      options,
+      { limit: 50, maxLimit: 100 },
+    );
+
+    return {
+      receivables,
+      totalOutstanding,
+      pagination,
+    };
   }
 
   /**

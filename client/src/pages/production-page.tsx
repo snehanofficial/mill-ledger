@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWarehouses } from "@/hooks/use-warehouses";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { toast } from "sonner";
 import { useUrlState } from "@/hooks/use-url-state";
+import { usePagination } from "@/hooks/use-pagination";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
+import { DataPagination } from "@/components/ui/data-pagination";
 import {
   EmptyState,
   SkeletonTable,
@@ -158,14 +161,26 @@ export function ProductionPage() {
     warehouses.find((w) => w.id === selectedWarehouseId) || warehouses[0];
 
   // Fetch production runs
+  const { page, pageSize, offset, setPage, setPageSize, resetPage } =
+    usePagination({ defaultPageSize: 20 });
+
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     runs: ProductionRun[];
+    pagination: PaginationMeta;
   }>({
-    queryKey: ["production-runs"],
+    queryKey: ["production-runs", page, pageSize, searchQuery.trim()],
     queryFn: async () => {
-      const res = await apiClient.get("/production-runs");
+      const params = new URLSearchParams({
+        limit: String(pageSize),
+        offset: String(offset),
+      });
+      if (searchQuery.trim()) {
+        params.set("q", searchQuery.trim());
+      }
+      const res = await apiClient.get(`/production-runs?${params.toString()}`);
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   // Fetch live inventory balances for stock availability & WAC costing
@@ -678,7 +693,10 @@ export function ProductionPage() {
             <Input
               placeholder={t("Search production batches...")}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                resetPage();
+              }}
               className="h-8 w-56 text-xs"
               aria-label="Search production batches"
             />
@@ -905,6 +923,16 @@ export function ProductionPage() {
           </div>
         )}
       </div>
+
+      <DataPagination
+        pagination={data?.pagination}
+        page={page}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        isFetching={isFetching}
+        itemLabel="runs"
+      />
 
       {/* New Batch Modal */}
       <Dialog

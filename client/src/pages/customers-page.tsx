@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
+import { usePagination } from "@/hooks/use-pagination";
 import { useLanguage } from "@/lib/i18n";
+import { DataPagination } from "@/components/ui/data-pagination";
 import {
   EmptyState,
   SkeletonTable,
@@ -83,6 +86,8 @@ export function CustomersPage() {
   const [searchQuery, setSearchQuery] = useUrlState("q", "", {
     debounceMs: 250,
   });
+  const { page, pageSize, offset, setPage, setPageSize, resetPage } =
+    usePagination({ defaultPageSize: 20 });
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -100,12 +105,21 @@ export function CustomersPage() {
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     customers: Customer[];
+    pagination: PaginationMeta;
   }>({
-    queryKey: ["sales-customers"],
+    queryKey: ["sales-customers", page, pageSize, searchQuery.trim()],
     queryFn: async () => {
-      const res = await apiClient.get("/sales/customers");
+      const params = new URLSearchParams({
+        limit: String(pageSize),
+        offset: String(offset),
+      });
+      if (searchQuery.trim()) {
+        params.set("q", searchQuery.trim());
+      }
+      const res = await apiClient.get(`/sales/customers?${params.toString()}`);
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   const { data: salesmenData } = useQuery<{ salesmen: SalesmanRef[] }>({
@@ -319,7 +333,10 @@ export function CustomersPage() {
             <Input
               placeholder={t("Search customers...")}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                resetPage();
+              }}
               className="h-8 w-56 text-xs"
               aria-label="Search customers"
             />
@@ -518,6 +535,16 @@ export function CustomersPage() {
           </div>
         )}
       </div>
+
+      <DataPagination
+        pagination={data?.pagination}
+        page={page}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        isFetching={isFetching}
+        itemLabel="customers"
+      />
 
       {/* Create / Edit Customer Modal */}
       <Dialog

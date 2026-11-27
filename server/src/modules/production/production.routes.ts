@@ -12,6 +12,7 @@ import {
   postProductionRunSchema,
   reverseRunSchema,
 } from "@mill-ledger/shared";
+import { parsePaginationQuery } from "../../utils/pagination.js";
 
 export const productionRouter = Router();
 
@@ -23,9 +24,18 @@ productionRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
+      const { limit, offset } = parsePaginationQuery(req.query);
+      const status =
+        typeof req.query.status === "string" ? req.query.status : undefined;
+      const q = typeof req.query.q === "string" ? req.query.q : undefined;
 
-      const runs = await productionService.getProductionRuns(orgId);
-      res.json({ runs });
+      const result = await productionService.getProductionRunsPaginated(orgId, {
+        status,
+        q,
+        limit,
+        offset,
+      });
+      res.json(result);
     } catch (err) {
       next(err);
     }

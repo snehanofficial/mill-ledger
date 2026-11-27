@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
+import { usePagination } from "@/hooks/use-pagination";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { formatDate, formatDateTime, formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import { EmptyState, ErrorState, SkeletonTable } from "@/components/ui/loading-error-empty";
@@ -114,6 +117,13 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     debounceMs: 250,
   });
   const [auditActionFilter, setAuditActionFilter] = useUrlState("action", "ALL");
+  const {
+    page: auditPage,
+    pageSize: auditPageSize,
+    offset: auditOffset,
+    setPage: setAuditPage,
+    setPageSize: setAuditPageSize,
+  } = usePagination({ defaultPageSize: 20, prefix: "audit" });
 
   const filterParams = new URLSearchParams();
   if (startDate) filterParams.set("startDate", startDate);
@@ -220,13 +230,24 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   });
 
   // 6. Audit Report
-  const { data: auditData, isError: isErrorAudit, error: errorAudit, refetch: refetchAudit } = useQuery({
-    queryKey: ["report-audit"],
+  const { data: auditData, isFetching: isFetchingAudit, isError: isErrorAudit, error: errorAudit, refetch: refetchAudit } = useQuery<{
+    logs: any[];
+    pagination: PaginationMeta;
+  }>({
+    queryKey: ["report-audit", auditPage, auditPageSize, auditActionFilter],
     queryFn: async () => {
-      const res = await apiClient.get("/reports/audit");
+      const params = new URLSearchParams({
+        limit: String(auditPageSize),
+        offset: String(auditOffset),
+      });
+      if (auditActionFilter !== "ALL") {
+        params.set("action", auditActionFilter);
+      }
+      const res = await apiClient.get(`/reports/audit?${params.toString()}`);
       return res.data;
     },
     enabled: effectiveTab === "audit",
+    placeholderData: keepPreviousData,
   });
 
   const activeReportError = (() => {
@@ -1123,6 +1144,16 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
               </TableBody>
             </Table>
           </div>
+          <DataPagination
+            pagination={auditData?.pagination}
+            page={auditPage}
+            pageSize={auditPageSize}
+            onPageChange={setAuditPage}
+            onPageSizeChange={setAuditPageSize}
+            isFetching={isFetchingAudit}
+            itemLabel="audit logs"
+            className="m-4"
+          />
         </div>
       )}
         </>

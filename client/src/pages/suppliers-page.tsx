@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
+import { usePagination } from "@/hooks/use-pagination";
 import { useLanguage } from "@/lib/i18n";
+import { DataPagination } from "@/components/ui/data-pagination";
 import {
   EmptyState,
   SkeletonTable,
@@ -92,16 +95,32 @@ export function SuppliersPage() {
   const [isActive, setIsActive] = useState(true);
 
   // Fetch suppliers
+  const { page, pageSize, offset, setPage, setPageSize, resetPage } =
+    usePagination({ defaultPageSize: 20 });
+
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     suppliers: Supplier[];
+    pagination: PaginationMeta;
   }>({
-    queryKey: ["inventory-suppliers"],
+    queryKey: ["inventory-suppliers", page, pageSize, statusFilter, searchQuery.trim()],
     queryFn: async () => {
+      const params = new URLSearchParams({
+        includeInactive: "true",
+        limit: String(pageSize),
+        offset: String(offset),
+      });
+      if (statusFilter !== "ALL") {
+        params.set("status", statusFilter);
+      }
+      if (searchQuery.trim()) {
+        params.set("q", searchQuery.trim());
+      }
       const res = await apiClient.get(
-        "/inventory/suppliers?includeInactive=true",
+        `/inventory/suppliers?${params.toString()}`,
       );
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   // Create supplier mutation
@@ -180,19 +199,7 @@ export function SuppliersPage() {
   };
 
   const suppliers = data?.suppliers ?? [];
-
-  const filteredSuppliers = suppliers.filter((s) => {
-    if (statusFilter === "ACTIVE" && !s.isActive) return false;
-    if (statusFilter === "INACTIVE" && s.isActive) return false;
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return true;
-    return (
-      s.code.toLowerCase().includes(q) ||
-      s.name.toLowerCase().includes(q) ||
-      s.state.toLowerCase().includes(q) ||
-      (s.gstin && s.gstin.toLowerCase().includes(q))
-    );
-  });
+  const filteredSuppliers = suppliers;
 
   const totalSuppliers = suppliers.length;
   const activeSuppliers = suppliers.filter((s) => s.isActive).length;
@@ -294,13 +301,19 @@ export function SuppliersPage() {
             placeholder="Search suppliers by name, code, state, GSTIN..."
             aria-label="Search suppliers by name, code, state, GSTIN"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              resetPage();
+            }}
             className="h-10 pl-9 pr-3"
           />
         </div>
         <Select
           value={statusFilter}
-          onValueChange={setStatusFilter}
+          onValueChange={(val) => {
+            setStatusFilter(val);
+            resetPage();
+          }}
         >
           <SelectTrigger
             className="h-10 w-auto min-w-36 px-3.5 py-1.5 text-sm"
@@ -499,6 +512,16 @@ export function SuppliersPage() {
           </Table>
         )}
       </div>
+
+      <DataPagination
+        pagination={data?.pagination}
+        page={page}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        isFetching={isFetching}
+        itemLabel="suppliers"
+      />
 
       {/* Add Supplier Modal */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>

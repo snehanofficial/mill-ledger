@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { usePagination } from "@/hooks/use-pagination";
+import { DataPagination } from "@/components/ui/data-pagination";
 import {
   useFacilities,
   useWarehouses,
@@ -307,20 +310,33 @@ export function SettingsPage() {
 
   // Query users
   const {
+    page: usersPage,
+    pageSize: usersPageSize,
+    offset: usersOffset,
+    setPage: setUsersPage,
+    setPageSize: setUsersPageSize,
+  } = usePagination({ defaultPageSize: 20, prefix: "users" });
+
+  const {
     data: usersData,
     isLoading: isLoadingUsers,
+    isFetching: isFetchingUsers,
     isError: isErrorUsers,
     error: errorUsers,
     refetch: refetchUsers,
   } = useQuery<{
     users: UserRecord[];
+    pagination: PaginationMeta;
   }>({
-    queryKey: ["admin-users"],
+    queryKey: ["admin-users", usersPage, usersPageSize],
     queryFn: async () => {
-      const res = await apiClient.get("/users");
+      const res = await apiClient.get(
+        `/users?limit=${usersPageSize}&offset=${usersOffset}`,
+      );
       return res.data;
     },
     enabled: activeTab === "users",
+    placeholderData: keepPreviousData,
   });
 
   const usersList = usersData?.users || [];
@@ -842,6 +858,16 @@ export function SettingsPage() {
             </Table>
             )}
           </div>
+          <DataPagination
+            pagination={usersData?.pagination}
+            page={usersPage}
+            pageSize={usersPageSize}
+            onPageChange={setUsersPage}
+            onPageSizeChange={setUsersPageSize}
+            isFetching={isFetchingUsers}
+            itemLabel="users"
+            className="m-4"
+          />
         </div>
       )}
 

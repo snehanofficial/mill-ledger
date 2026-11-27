@@ -8,6 +8,7 @@ import {
 import { reportingService } from "./reporting.service.js";
 import { auditService } from "./audit.service.js";
 import { AppError } from "../../middleware/error.middleware.js";
+import { paginateArray, parsePaginationQuery } from "../../utils/pagination.js";
 
 export const reportingRouter = Router();
 
@@ -47,21 +48,24 @@ reportingRouter.get(
       const orgId = getSessionOrgId(req);
       const entity = req.query.entity as string | undefined;
       const action = req.query.action as string | undefined;
-      const limit = req.query.limit
-        ? parseInt(req.query.limit as string, 10)
-        : 100;
+      const { limit, offset } = parsePaginationQuery(req.query, {
+        limit: 50,
+        maxLimit: 100,
+      });
 
-      const logs = await auditService.getLogs({
+      const { logs, pagination } = await auditService.getLogsPaginated({
         organizationId: orgId,
         entity,
         action,
         limit,
+        offset,
       });
 
       res.json({
         reportTitle: "System Audit Log",
         generatedAt: new Date(),
         logs,
+        pagination,
       });
     } catch (err) {
       next(err);
@@ -347,6 +351,39 @@ reportingRouter.get(
           break;
         default:
           throw new AppError(`Unknown report: ${reportType}`, 400);
+      }
+
+      if (
+        req.query.limit !== undefined ||
+        req.query.page !== undefined ||
+        req.query.offset !== undefined
+      ) {
+        const paginationParams = parsePaginationQuery(req.query, {
+          limit: 50,
+          maxLimit: 100,
+        });
+        const record = result as Record<string, unknown>;
+        const arrayKey = [
+          "rows",
+          "items",
+          "entries",
+          "movements",
+          "runs",
+          "invoices",
+          "receivables",
+        ].find((k) => Array.isArray(record[k]));
+        if (arrayKey) {
+          const { items, pagination } = paginateArray(
+            record[arrayKey] as unknown[],
+            paginationParams,
+          );
+          res.json({
+            ...record,
+            [arrayKey]: items,
+            pagination,
+          });
+          return;
+        }
       }
 
       res.json(result);

@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWarehouses } from "@/hooks/use-warehouses";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
+import { usePagination } from "@/hooks/use-pagination";
 import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
+import { DataPagination } from "@/components/ui/data-pagination";
 import {
   EmptyState,
   SkeletonTable,
@@ -137,41 +140,68 @@ export function PurchasesPage() {
     warehouses.find((w) => w.id === selectedWarehouseId) || warehouses[0];
 
   // Query receipts
+  const { page, pageSize, offset, setPage, setPageSize, resetPage } =
+    usePagination({ defaultPageSize: 20 });
+  const {
+    page: dnPage,
+    pageSize: dnPageSize,
+    offset: dnOffset,
+    setPage: setDnPage,
+    setPageSize: setDnPageSize,
+  } = usePagination({ defaultPageSize: 10, prefix: "dn" });
+
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     receipts: PurchaseReceipt[];
+    pagination: PaginationMeta;
   }>({
-    queryKey: ["purchase-receipts"],
+    queryKey: ["purchase-receipts", page, pageSize, searchQuery.trim()],
     queryFn: async () => {
-      const res = await apiClient.get("/inventory/purchase-receipts");
+      const params = new URLSearchParams({
+        limit: String(pageSize),
+        offset: String(offset),
+      });
+      if (searchQuery.trim()) {
+        params.set("q", searchQuery.trim());
+      }
+      const res = await apiClient.get(
+        `/inventory/purchase-receipts?${params.toString()}`,
+      );
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   // Query suppliers
   const { data: suppliersData } = useQuery<{ suppliers: Supplier[] }>({
-    queryKey: ["inventory-suppliers"],
+    queryKey: ["inventory-suppliers", "all-for-select"],
     queryFn: async () => {
-      const res = await apiClient.get("/inventory/suppliers");
+      const res = await apiClient.get("/inventory/suppliers?limit=100");
       return res.data;
     },
   });
 
   // Query inventory items for raw materials
   const { data: itemsData } = useQuery<{ balances: InventoryItemBalance[] }>({
-    queryKey: ["inventory-balances"],
+    queryKey: ["inventory-balances", "all-for-select"],
     queryFn: async () => {
-      const res = await apiClient.get("/inventory/balances");
+      const res = await apiClient.get("/inventory/balances?limit=100");
       return res.data;
     },
   });
 
   // Query debit notes
-  const { data: debitNotesData } = useQuery<{ debitNotes: DebitNoteItem[] }>({
-    queryKey: ["debit-notes"],
+  const { data: debitNotesData, isFetching: isFetchingDebitNotes } = useQuery<{
+    debitNotes: DebitNoteItem[];
+    pagination: PaginationMeta;
+  }>({
+    queryKey: ["debit-notes", dnPage, dnPageSize],
     queryFn: async () => {
-      const res = await apiClient.get("/finance/debit-notes");
+      const res = await apiClient.get(
+        `/finance/debit-notes?limit=${dnPageSize}&offset=${dnOffset}`,
+      );
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   const debitNotes = debitNotesData?.debitNotes || [];
@@ -321,7 +351,10 @@ export function PurchasesPage() {
             <Input
               placeholder={t("Search receipts...")}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                resetPage();
+              }}
               className="h-8 w-56 text-xs"
               aria-label="Search purchase receipts"
             />
@@ -482,6 +515,16 @@ export function PurchasesPage() {
         )}
       </div>
 
+      <DataPagination
+        pagination={data?.pagination}
+        page={page}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        isFetching={isFetching}
+        itemLabel="receipts"
+      />
+
       {/* Issued Supplier Debit Notes */}
       {debitNotes.length > 0 && (
         <div className="rounded-xl border border-border bg-card shadow-xs">
@@ -532,6 +575,16 @@ export function PurchasesPage() {
               ))}
             </TableBody>
           </Table>
+          <DataPagination
+            pagination={debitNotesData?.pagination}
+            page={dnPage}
+            pageSize={dnPageSize}
+            onPageChange={setDnPage}
+            onPageSizeChange={setDnPageSize}
+            isFetching={isFetchingDebitNotes}
+            itemLabel="debit notes"
+            className="m-4"
+          />
         </div>
       )}
 

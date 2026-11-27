@@ -6,6 +6,10 @@ import { calculateLineTax } from "../finance/tax.util.js";
 import { sequenceService } from "../finance/sequence.service.js";
 import { auditService } from "../reporting/audit.service.js";
 import {
+  buildPaginationMeta,
+  normalizePaginationOptions,
+} from "../../utils/pagination.js";
+import {
   adjustWarehouseReserved,
   getWarehouseItemBalance,
   requireActiveOrgWarehouse,
@@ -1131,6 +1135,108 @@ export class SalesService {
     const refTime = new Date();
     await this.expireStaleReservations(refTime);
 
+    return this.enrichOrdersWithShortage(orders, refTime);
+  }
+
+  /**
+   * Paginated orders list with server-side search, status filtering, and total count.
+   */
+  async getSalesOrdersPaginated(
+    organizationId: string,
+    user: UserContext,
+    options?: {
+      status?: string;
+      q?: string;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const where: Prisma.SalesOrderWhereInput = {
+      organizationId: orgId,
+    };
+
+    if (options?.status && options.status !== "ALL") {
+      if (options.status === "NEEDS_REVIEW") {
+        where.status = { in: [OrderStatus.SUBMITTED, OrderStatus.UNDER_REVIEW] };
+      } else if (options.status.includes(",")) {
+        const statuses = options.status
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean) as OrderStatus[];
+        if (statuses.length > 0) {
+          where.status = { in: statuses };
+        }
+      } else {
+        where.status = options.status as OrderStatus;
+      }
+    }
+
+    if (options?.q?.trim()) {
+      const q = options.q.trim();
+      where.OR = [
+        { orderNumber: { contains: q, mode: "insensitive" } },
+        { customer: { name: { contains: q, mode: "insensitive" } } },
+        { customer: { code: { contains: q, mode: "insensitive" } } },
+      ];
+    }
+
+    if (user.role === "SALESMAN") {
+      where.salesmanId = user.id;
+    }
+
+    const { limit, offset } = normalizePaginationOptions(options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    const [orders, total] = await Promise.all([
+      prisma.salesOrder.findMany({
+        where,
+        include: {
+          lines: {
+            include: {
+              productVariant: true,
+            },
+          },
+          customer: true,
+          salesman: true,
+          reservations: true,
+          invoices: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.salesOrder.count({ where }),
+    ]);
+
+    const refTime = new Date();
+    await this.expireStaleReservations(refTime);
+    const enriched = await this.enrichOrdersWithShortage(orders, refTime);
+
+    return {
+      orders: enriched,
+      pagination: buildPaginationMeta(limit, offset, enriched.length, total),
+    };
+  }
+
+  private async enrichOrdersWithShortage(
+    orders: Array<
+      Prisma.SalesOrderGetPayload<{
+        include: {
+          lines: { include: { productVariant: true } };
+          customer: true;
+          salesman: true;
+          reservations: true;
+          invoices: true;
+        };
+      }>
+    >,
+    refTime: Date,
+  ) {
+
     // Collect all unique inventory item IDs across all orders and lines
     const allItemIds = Array.from(
       new Set(
@@ -1453,6 +1559,72 @@ export class SalesService {
       },
       orderBy: { name: "asc" },
     });
+  }
+
+  /**
+   * Paginated customers list with ABAC scoping and server-side search.
+   */
+  async getCustomersPaginated(
+    organizationId: string,
+    user: UserContext,
+    options?: {
+      q?: string;
+      includeInactive?: boolean;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const org = await this.resolveOrgId(organizationId);
+    const where: Prisma.CustomerWhereInput = {
+      organizationId: org,
+    };
+
+    if (user.role === "SALESMAN") {
+      where.isActive = true;
+      where.assignments = {
+        some: { salesmanId: user.id },
+      };
+    } else if (options?.includeInactive === false) {
+      where.isActive = true;
+    }
+
+    if (options?.q?.trim()) {
+      const q = options.q.trim();
+      where.OR = [
+        { code: { contains: q, mode: "insensitive" } },
+        { name: { contains: q, mode: "insensitive" } },
+        { state: { contains: q, mode: "insensitive" } },
+        { gstin: { contains: q, mode: "insensitive" } },
+      ];
+    }
+
+    const { limit, offset } = normalizePaginationOptions(options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    const [customers, total] = await Promise.all([
+      prisma.customer.findMany({
+        where,
+        include: {
+          assignments: {
+            include: {
+              salesman: { select: { id: true, name: true, email: true } },
+            },
+          },
+        },
+        orderBy: { name: "asc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.customer.count({ where }),
+    ]);
+
+    return {
+      customers,
+      pagination: buildPaginationMeta(limit, offset, customers.length, total),
+    };
   }
 
   /**

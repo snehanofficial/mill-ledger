@@ -5,6 +5,10 @@ import { sequenceService } from "./sequence.service.js";
 import { calculateLineTax } from "./tax.util.js";
 import type { UserContext } from "@mill-ledger/shared";
 import { auditService } from "../reporting/audit.service.js";
+import {
+  buildPaginationMeta,
+  normalizePaginationOptions,
+} from "../../utils/pagination.js";
 
 export interface CreateInvoiceInput {
   salesOrderId: string;
@@ -472,6 +476,65 @@ export class FinanceService {
   }
 
   /**
+   * Paginated invoices list with server-side search, status filter, and total count.
+   */
+  async getInvoicesPaginated(
+    organizationId: string,
+    options?: {
+      customerId?: string;
+      status?: string;
+      q?: string;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const where: Prisma.SalesInvoiceWhereInput = {
+      organizationId: orgId,
+    };
+    if (options?.customerId) {
+      where.customerId = options.customerId;
+    }
+    if (options?.status && options.status !== "ALL") {
+      where.status = options.status as InvoiceStatus;
+    }
+    if (options?.q?.trim()) {
+      const q = options.q.trim();
+      where.OR = [
+        { invoiceNumber: { contains: q, mode: "insensitive" } },
+        { customerNameSnapshot: { contains: q, mode: "insensitive" } },
+      ];
+    }
+
+    const { limit, offset } = normalizePaginationOptions(options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    const [invoices, total] = await Promise.all([
+      prisma.salesInvoice.findMany({
+        where,
+        include: {
+          customer: true,
+          lines: true,
+          dispatches: true,
+          creditNotes: true,
+        },
+        orderBy: { postedAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.salesInvoice.count({ where }),
+    ]);
+
+    return {
+      invoices,
+      pagination: buildPaginationMeta(limit, offset, invoices.length, total),
+    };
+  }
+
+  /**
    * Get single invoice by ID
    */
   async getInvoiceById(invoiceId: string) {
@@ -641,6 +704,59 @@ export class FinanceService {
       },
       orderBy: { postedAt: "desc" },
     });
+  }
+
+  /**
+   * Paginated debit notes list with server-side search and total count.
+   */
+  async getDebitNotesPaginated(
+    organizationId: string,
+    options?: {
+      supplierId?: string;
+      q?: string;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const where: Prisma.DebitNoteWhereInput = {
+      organizationId: orgId,
+      ...(options?.supplierId ? { supplierId: options.supplierId } : {}),
+    };
+    if (options?.q?.trim()) {
+      const q = options.q.trim();
+      where.OR = [
+        { debitNoteNumber: { contains: q, mode: "insensitive" } },
+        { supplier: { name: { contains: q, mode: "insensitive" } } },
+        { purchaseReceipt: { receiptNumber: { contains: q, mode: "insensitive" } } },
+      ];
+    }
+
+    const { limit, offset } = normalizePaginationOptions(options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    const [debitNotes, total] = await Promise.all([
+      prisma.debitNote.findMany({
+        where,
+        include: {
+          supplier: true,
+          purchaseReceipt: true,
+          lines: true,
+        },
+        orderBy: { postedAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.debitNote.count({ where }),
+    ]);
+
+    return {
+      debitNotes,
+      pagination: buildPaginationMeta(limit, offset, debitNotes.length, total),
+    };
   }
 
   /**

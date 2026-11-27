@@ -11,6 +11,10 @@ import { sequenceService } from "../finance/sequence.service.js";
 import type { UserContext } from "@mill-ledger/shared";
 import { auditService } from "../reporting/audit.service.js";
 import {
+  buildPaginationMeta,
+  normalizePaginationOptions,
+} from "../../utils/pagination.js";
+import {
   adjustWarehouseOnHand,
   adjustWarehouseReserved,
   requireActiveOrgWarehouse,
@@ -375,6 +379,81 @@ export class DispatchService {
       },
       orderBy: { dispatchedAt: "desc" },
     });
+  }
+
+  /**
+   * Paginated dispatches list with server-side search and status filtering.
+   */
+  async getDispatchesPaginated(
+    organizationId: string,
+    user?: UserContext,
+    options?: {
+      q?: string;
+      status?: string;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const org = await prisma.organization.findFirst({
+      where: { OR: [{ id: organizationId }, { code: organizationId }] },
+      select: { id: true },
+    });
+    const resolvedOrgId = org ? org.id : organizationId;
+    const where: Prisma.DispatchWhereInput = { organizationId: resolvedOrgId };
+
+    if (user?.role === "SALESMAN") {
+      where.salesOrder = {
+        salesmanId: user.id,
+      };
+    }
+
+    if (options?.status && options.status !== "ALL") {
+      where.status = options.status as DispatchStatus;
+    }
+
+    if (options?.q?.trim()) {
+      const q = options.q.trim();
+      where.OR = [
+        { dispatchNumber: { contains: q, mode: "insensitive" } },
+        { salesOrder: { orderNumber: { contains: q, mode: "insensitive" } } },
+        {
+          salesOrder: {
+            customer: { name: { contains: q, mode: "insensitive" } },
+          },
+        },
+      ];
+    }
+
+    const { limit, offset } = normalizePaginationOptions(options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    const [dispatches, total] = await Promise.all([
+      prisma.dispatch.findMany({
+        where,
+        include: {
+          lines: {
+            include: { inventoryItem: true },
+          },
+          salesOrder: {
+            include: { customer: true },
+          },
+          salesInvoice: true,
+          warehouse: true,
+        },
+        orderBy: { dispatchedAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.dispatch.count({ where }),
+    ]);
+
+    return {
+      dispatches,
+      pagination: buildPaginationMeta(limit, offset, dispatches.length, total),
+    };
   }
 
   /**

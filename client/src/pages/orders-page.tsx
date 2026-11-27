@@ -1,11 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
+import { usePagination } from "@/hooks/use-pagination";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSyncManager } from "@/offline/use-offline";
 import { formatINR, formatDateTime } from "@/lib/formatters";
 import { PageHeader } from "@/components/ui/page-header";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -82,38 +85,36 @@ export function OrdersPage() {
   const { pendingCount, conflictCount } = useSyncManager(user?.id);
   const [statusFilter, setStatusFilter] = useUrlState("status", "ALL");
   const [searchQuery, setSearchQuery] = useUrlState("q", "", { debounceMs: 200 });
+  const { page, pageSize, offset, setPage, setPageSize, resetPage } =
+    usePagination({ defaultPageSize: 20 });
+
+  const serverStatus =
+    statusFilter === "SUBMITTED" ? "NEEDS_REVIEW" : statusFilter;
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery<{
     orders: SalesOrder[];
+    pagination: PaginationMeta;
   }>({
-    queryKey: ["sales-orders"],
+    queryKey: ["sales-orders", page, pageSize, serverStatus, searchQuery.trim()],
     queryFn: async () => {
-      const res = await apiClient.get("/sales/orders");
+      const params = new URLSearchParams({
+        limit: String(pageSize),
+        offset: String(offset),
+      });
+      if (serverStatus !== "ALL") {
+        params.set("status", serverStatus);
+      }
+      if (searchQuery.trim()) {
+        params.set("q", searchQuery.trim());
+      }
+      const res = await apiClient.get(`/sales/orders?${params.toString()}`);
       return res.data;
     },
+    placeholderData: keepPreviousData,
   });
 
   const orders = data?.orders ?? [];
-  const filteredOrders = orders.filter((order) => {
-    if (statusFilter !== "ALL") {
-      if (statusFilter === "SUBMITTED") {
-        if (order.status !== "SUBMITTED" && order.status !== "UNDER_REVIEW") {
-          return false;
-        }
-      } else if (order.status !== statusFilter) {
-        return false;
-      }
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      const matchNum = order.orderNumber.toLowerCase().includes(q);
-      const matchCust =
-        order.customer.name.toLowerCase().includes(q) ||
-        order.customer.code.toLowerCase().includes(q);
-      if (!matchNum && !matchCust) return false;
-    }
-    return true;
-  });
+  const filteredOrders = orders;
 
   const draftOrders = orders.filter((o) => o.status === "DRAFT");
   const submittedCount = orders.filter(
@@ -201,7 +202,10 @@ export function OrdersPage() {
               key={f.value}
               variant={statusFilter === f.value ? "primary" : "outline"}
               size="sm"
-              onClick={() => setStatusFilter(f.value)}
+              onClick={() => {
+                setStatusFilter(f.value);
+                resetPage();
+              }}
               className="h-8 text-xs"
             >
               {f.label}
@@ -216,7 +220,10 @@ export function OrdersPage() {
           <Input
             type="search"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              resetPage();
+            }}
             placeholder="Search order # or customer..."
             aria-label="Search orders"
             className="h-9 pl-8"
@@ -354,6 +361,16 @@ export function OrdersPage() {
               </TableBody>
             </Table>
           </div>
+
+          <DataPagination
+            pagination={data?.pagination}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            isFetching={isFetching}
+            itemLabel="orders"
+          />
         </>
       )}
     </div>

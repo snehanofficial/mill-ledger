@@ -10,6 +10,10 @@ import { AppError } from "../../middleware/error.middleware.js";
 import type { UserContext } from "@mill-ledger/shared";
 import { auditService } from "../reporting/audit.service.js";
 import {
+  buildPaginationMeta,
+  normalizePaginationOptions,
+} from "../../utils/pagination.js";
+import {
   adjustWarehouseOnHand,
   requireActiveOrgWarehouse,
 } from "../inventory/warehouse-balance.helper.js";
@@ -936,6 +940,75 @@ export class ProductionService {
       },
       orderBy: { createdAt: "desc" },
     });
+  }
+
+  /**
+   * Paginated production runs list with server-side search, status filter, and total count.
+   */
+  async getProductionRunsPaginated(
+    organizationId: string,
+    options?: {
+      status?: string;
+      q?: string;
+      limit?: number;
+      offset?: number;
+      page?: number;
+    },
+  ) {
+    const resolvedOrgId = await this.resolveOrgId(organizationId);
+    const where: Prisma.ProductionRunWhereInput = {
+      organizationId: resolvedOrgId,
+    };
+
+    if (options?.status && options.status !== "ALL") {
+      where.status = options.status as ProductionRunStatus;
+    }
+
+    if (options?.q?.trim()) {
+      const q = options.q.trim();
+      where.OR = [
+        { runNumber: { contains: q, mode: "insensitive" } },
+        {
+          recipe: {
+            productVariant: { name: { contains: q, mode: "insensitive" } },
+          },
+        },
+        {
+          recipe: {
+            productVariant: { sku: { contains: q, mode: "insensitive" } },
+          },
+        },
+      ];
+    }
+
+    const { limit, offset } = normalizePaginationOptions(options, {
+      limit: 50,
+      maxLimit: 100,
+    });
+
+    const [runs, total] = await Promise.all([
+      prisma.productionRun.findMany({
+        where,
+        include: {
+          recipe: {
+            include: { productVariant: true },
+          },
+          warehouse: true,
+          materials: {
+            include: { inventoryItem: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.productionRun.count({ where }),
+    ]);
+
+    return {
+      runs,
+      pagination: buildPaginationMeta(limit, offset, runs.length, total),
+    };
   }
 
   /**

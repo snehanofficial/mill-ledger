@@ -7,6 +7,7 @@ import {
 } from "../../middleware/auth.middleware.js";
 import { userService } from "./user.service.js";
 import { auditService } from "../reporting/audit.service.js";
+import { parsePaginationQuery } from "../../utils/pagination.js";
 
 export const userRouter = Router();
 
@@ -20,15 +21,20 @@ userRouter.get(
     try {
       const orgId = getSessionOrgId(req);
       const { role, isActive } = req.query;
-      const users = await userService.getUsers({
+      const q = typeof req.query.q === "string" ? req.query.q : undefined;
+      const { limit, offset } = parsePaginationQuery(req.query);
+      const result = await userService.getUsersPaginated({
         role: role as string | undefined,
         isActive:
           isActive === undefined
             ? undefined
             : isActive === "true" || isActive === "1",
         organizationId: orgId,
+        q,
+        limit,
+        offset,
       });
-      res.json({ users });
+      res.json(result);
     } catch (err) {
       next(err);
     }

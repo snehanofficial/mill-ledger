@@ -7,11 +7,13 @@ import {
   keepPreviousData,
 } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { usePagination } from "@/hooks/use-pagination";
 import { useSyncManager } from "@/offline/use-offline";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
+import { DataPagination } from "@/components/ui/data-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,8 +34,6 @@ import {
   PlusIcon,
   MinusIcon,
   PackageIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -100,8 +100,9 @@ export function NewOrderPage() {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [orderNotes, setOrderNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [page, setPage] = useState(1);
-  const pageSize = 12;
+  const { page, pageSize, offset, setPage, setPageSize } = usePagination({
+    defaultPageSize: 12,
+  });
 
   // Load existing draft if ?draftId= is provided
   type DraftOrderPayload = {
@@ -190,17 +191,8 @@ export function NewOrderPage() {
   const productsList: ProductItem[] = productsData?.products ?? [];
   const totalProducts = productsData?.pagination?.total ?? productsList.length;
   const totalPages = Math.max(1, Math.ceil(totalProducts / pageSize));
-  const rangeStart = totalProducts === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeStart = totalProducts === 0 ? 0 : offset + 1;
   const rangeEnd = Math.min(page * pageSize, totalProducts);
-
-  const visiblePageNumbers = (() => {
-    const maxButtons = 5;
-    if (totalPages <= maxButtons) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
-    }
-    const start = Math.max(1, Math.min(page - 2, totalPages - maxButtons + 1));
-    return Array.from({ length: maxButtons }, (_, i) => start + i);
-  })();
 
   const balances = stockData?.balances || [];
 
@@ -733,57 +725,25 @@ export function NewOrderPage() {
             })}
               </div>
 
-              {totalPages > 1 && (
-                <nav
-                  aria-label="Product catalog pagination"
-                  className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3"
-                >
-                  <div className="text-xs text-muted-foreground">
-                    Page <span className="font-semibold text-foreground">{page}</span> of{" "}
-                    <span className="font-semibold text-foreground">{totalPages}</span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page <= 1 || isProductsFetching}
-                      aria-label="Go to previous page"
-                      className="min-h-[44px] px-3 gap-1 cursor-pointer disabled:cursor-not-allowed"
-                    >
-                      <ChevronLeftIcon className="size-4" aria-hidden="true" />
-                      <span>Previous</span>
-                    </Button>
-
-                    {visiblePageNumbers.map((pageNum) => (
-                      <Button
-                        key={pageNum}
-                        type="button"
-                        variant={pageNum === page ? "primary" : "outline"}
-                        onClick={() => setPage(pageNum)}
-                        disabled={isProductsFetching}
-                        aria-label={`Go to page ${pageNum}`}
-                        aria-current={pageNum === page ? "page" : undefined}
-                        className="min-w-[44px] min-h-[44px] px-3 cursor-pointer disabled:cursor-not-allowed"
-                      >
-                        {pageNum}
-                      </Button>
-                    ))}
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={page >= totalPages || isProductsFetching}
-                      aria-label="Go to next page"
-                      className="min-h-[44px] px-3 gap-1 cursor-pointer disabled:cursor-not-allowed"
-                    >
-                      <span>Next</span>
-                      <ChevronRightIcon className="size-4" aria-hidden="true" />
-                    </Button>
-                  </div>
-                </nav>
-              )}
+              <DataPagination
+                pagination={
+                  productsData?.pagination ?? {
+                    limit: pageSize,
+                    offset,
+                    count: productsList.length,
+                    total: totalProducts,
+                    page,
+                    totalPages,
+                  }
+                }
+                page={page}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+                pageSizeOptions={[12, 24, 48, 96]}
+                isFetching={isProductsFetching}
+                itemLabel="products"
+              />
             </>
           )}
         </section>
