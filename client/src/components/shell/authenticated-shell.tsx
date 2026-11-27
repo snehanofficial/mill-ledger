@@ -138,6 +138,7 @@ import {
   type UserRole,
   getNavSections,
   getAllLinks,
+  getActiveNavHref,
 } from "./nav-config";
 import { getDefaultRouteForRole } from "@/lib/role-routing";
 import { useBreadcrumbs } from "./use-breadcrumbs";
@@ -166,27 +167,6 @@ interface ShellProps {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function isActiveHref(href: string, pathname: string): boolean {
-  if (href === pathname) return true;
-  return href !== "/" && pathname.startsWith(`${href.replace(/\/$/, "")}/`);
-}
-
-function getActiveChildHref(
-  items: { href: string }[],
-  pathname: string,
-): string | undefined {
-  let bestHref: string | undefined;
-  for (const child of items) {
-    if (
-      isActiveHref(child.href, pathname) &&
-      (!bestHref || child.href.length > bestHref.length)
-    ) {
-      bestHref = child.href;
-    }
-  }
-  return bestHref;
-}
 
 function getInitials(name: string): string {
   return name
@@ -366,9 +346,10 @@ function AppBrand({
 interface NavItemProps {
   item: NavSection["items"][number];
   pathname: string;
+  activeHref: string | undefined;
 }
 
-function AppNavItem({ item, pathname }: NavItemProps) {
+function AppNavItem({ item, pathname, activeHref }: NavItemProps) {
   const { state, isMobile, setOpenMobile } = useSidebar();
   const { t } = useLanguage();
   const isCollapsed = state === "collapsed" && !isMobile;
@@ -377,10 +358,9 @@ function AppNavItem({ item, pathname }: NavItemProps) {
     if (isMobile) setOpenMobile(false);
   }, [isMobile, setOpenMobile]);
 
-  const activeChildHref = item.items
-    ? getActiveChildHref(item.items, pathname)
-    : undefined;
-  const childActive = activeChildHref !== undefined;
+  const childActive =
+    activeHref !== undefined &&
+    Boolean(item.items?.some((child) => child.href === activeHref));
   const [expanded, setExpanded] = useState(childActive);
   const [prevChildActive, setPrevChildActive] = useState(childActive);
 
@@ -395,7 +375,7 @@ function AppNavItem({ item, pathname }: NavItemProps) {
 
   // No subitems: render as link with directed tooltip in collapsed mode
   if (!item.items?.length) {
-    const active = item.href !== undefined && isActiveHref(item.href, pathname);
+    const active = item.href !== undefined && item.href === activeHref;
     return (
       <SidebarMenuItem>
         <SidebarMenuButton
@@ -453,7 +433,7 @@ function AppNavItem({ item, pathname }: NavItemProps) {
             <DropdownMenuSeparator />
             {item.items.map((child) => {
               const childLabel = t(child.label, child.label);
-              const isChildActive = activeChildHref === child.href;
+              const isChildActive = child.href === activeHref;
               return (
                 <DropdownMenuItem
                   key={child.href}
@@ -519,7 +499,7 @@ function AppNavItem({ item, pathname }: NavItemProps) {
                 <SidebarMenuSubItem key={child.href}>
                   <SidebarMenuSubButton
                     asChild
-                    isActive={activeChildHref === child.href}
+                    isActive={child.href === activeHref}
                   >
                     <Link
                       to={child.href}
@@ -558,6 +538,10 @@ const AppNav = memo(function AppNav({
   pathname: string;
 }) {
   const { t } = useLanguage();
+  const activeHref = useMemo(
+    () => getActiveNavHref(sections, pathname),
+    [sections, pathname],
+  );
   return (
     <>
       {sections.map((section, index) => (
@@ -569,7 +553,12 @@ const AppNav = memo(function AppNav({
           )}
           <SidebarMenu>
             {section.items.map((item) => (
-              <AppNavItem key={item.label} item={item} pathname={pathname} />
+              <AppNavItem
+                key={item.label}
+                item={item}
+                pathname={pathname}
+                activeHref={activeHref}
+              />
             ))}
           </SidebarMenu>
         </SidebarGroup>

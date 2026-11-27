@@ -445,3 +445,42 @@ export function getAllLinks(role: UserRole): NavLink[] {
   }
   return links;
 }
+
+/** Returns whether `href` matches `pathname` exactly or as a path-segment prefix. */
+export function isActiveHref(href: string, pathname: string): boolean {
+  if (href === pathname) return true;
+  return href !== "/" && pathname.startsWith(`${href.replace(/\/$/, "")}/`);
+}
+
+/**
+ * Resolves the single most specific matching nav `href` across all sections
+ * so parent routes (e.g. `/orders`, `/reports`) are not highlighted alongside
+ * more specific sibling or child routes (e.g. `/orders/new`, `/reports/sales`).
+ */
+export function getActiveNavHref(
+  sections: NavSection[],
+  pathname: string,
+): string | undefined {
+  let bestHref: string | undefined;
+  const consider = (href: string | undefined) => {
+    if (
+      href &&
+      isActiveHref(href, pathname) &&
+      (!bestHref || href.length > bestHref.length)
+    ) {
+      bestHref = href;
+    }
+  };
+
+  for (const section of sections) {
+    for (const item of section.items) {
+      consider(item.href);
+      if (item.items) {
+        for (const child of item.items) {
+          consider(child.href);
+        }
+      }
+    }
+  }
+  return bestHref;
+}
