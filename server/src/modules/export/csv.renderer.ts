@@ -1,6 +1,7 @@
 import { serializeCsv } from "@mill-ledger/shared";
 import type { ExportColumn } from "./export.types.js";
 import { toFiniteNumber } from "./export.theme.js";
+import { translateExportLabel } from "./export.i18n.js";
 
 function formatCsvDate(val: unknown, includeTime: boolean): string {
   if (!val) return "";
@@ -70,10 +71,12 @@ export function formatCsvCellValue(
 export function renderTabularCsv<T = Record<string, unknown>>(
   columns: ExportColumn<T>[],
   rows: T[],
+  locale?: string | null,
 ): string {
-  const headers = columns.map((c) =>
-    c.unit ? `${c.header} (${c.unit})` : c.header,
-  );
+  const headers = columns.map((c) => {
+    const h = translateExportLabel(c.header, locale);
+    return c.unit ? `${h} (${c.unit})` : h;
+  });
   const csvRows = rows.map((row) =>
     columns.map((col) => {
       const raw = col.value

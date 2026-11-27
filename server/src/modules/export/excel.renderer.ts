@@ -9,6 +9,7 @@ import {
   formatExportDateTime,
   toFiniteNumber,
 } from "./export.theme.js";
+import { translateExportLabel } from "./export.i18n.js";
 
 const FORMULA_INJECTION_RE = /^[\s\u0000-\u001F]*[=+\-@\t\r]/;
 
@@ -198,7 +199,11 @@ export async function renderExcelWorkbook(
       meta.organization?.state || null,
     ].filter(Boolean);
 
-    const titleRow = sheet.addRow([sheetDef.title || meta.title]);
+    const titleText = translateExportLabel(
+      sheetDef.title || meta.title,
+      meta.locale,
+    );
+    const titleRow = sheet.addRow([titleText]);
     titleRow.font = {
       name: "Calibri",
       size: 14,
@@ -250,9 +255,10 @@ export async function renderExcelWorkbook(
     if (sheetDef.columns.length === 0 || sheetDef.rows.length === 0) {
       if (sheetDef.columns.length > 0) {
         const headerRow = sheet.addRow(
-          sheetDef.columns.map((c) =>
-            c.unit ? `${c.header} (${c.unit})` : c.header,
-          ),
+          sheetDef.columns.map((c) => {
+            const h = translateExportLabel(c.header, meta.locale);
+            return c.unit ? `${h} (${c.unit})` : h;
+          }),
         );
         headerRow.height = 22;
         headerRow.eachCell((cell) => {

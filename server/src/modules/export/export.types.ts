@@ -1,3 +1,5 @@
+import type { SupportedLocale } from "@mill-ledger/shared";
+
 export interface ExportOrganization {
   id?: string;
   code?: string;
@@ -45,6 +47,7 @@ export interface ExportDocumentMeta {
   organization?: ExportOrganization | null;
   summaryItems?: ExportSummaryItem[];
   footerNote?: string;
+  locale?: SupportedLocale;
 }
 
 export interface ExportTableSection<T = Record<string, unknown>> {

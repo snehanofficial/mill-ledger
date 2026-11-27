@@ -13,6 +13,51 @@ import {
   registerPdfFonts,
   type PdfFontSet,
 } from "./export.theme.js";
+import { translateExportLabel } from "./export.i18n.js";
+
+const TAMIL_CHAR_RE = /[\u0B80-\u0BFF]/;
+const TAMIL_RUN_SPLIT_RE = /([\u0B80-\u0BFF\u200C\u200D]+)/;
+
+/**
+ * Renders text that may contain mixed Tamil and Latin/₹ characters by switching
+ * between Noto Sans Tamil and DejaVu Sans per script run via PDFKit `continued`.
+ */
+export function drawLocalizedPdfText(
+  doc: PDFKit.PDFDocument,
+  fonts: PdfFontSet,
+  text: string,
+  x: number,
+  y: number,
+  options: PDFKit.Mixins.TextOptions & { bold?: boolean } = {},
+): void {
+  const { bold = false, ...textOpts } = options;
+  const baseFont = bold ? fonts.bold : fonts.regular;
+  const tamilFont = bold
+    ? (fonts.tamilBold ?? fonts.bold)
+    : (fonts.tamilRegular ?? fonts.regular);
+
+  if (!fonts.supportsTamil || !TAMIL_CHAR_RE.test(text)) {
+    doc.font(baseFont).text(text, x, y, textOpts);
+    return;
+  }
+
+  const parts = text.split(TAMIL_RUN_SPLIT_RE).filter((p) => p.length > 0);
+  if (parts.length === 1) {
+    doc.font(tamilFont).text(parts[0], x, y, textOpts);
+    return;
+  }
+
+  parts.forEach((part, idx) => {
+    const isLast = idx === parts.length - 1;
+    const isTamil = TAMIL_CHAR_RE.test(part);
+    doc.font(isTamil ? tamilFont : baseFont);
+    if (idx === 0) {
+      doc.text(part, x, y, { ...textOpts, continued: !isLast });
+    } else {
+      doc.text(part, { ...textOpts, continued: !isLast });
+    }
+  });
+}
 
 export interface PdfRenderContext {
   doc: PDFKit.PDFDocument;
@@ -105,24 +150,33 @@ export function drawStandardPdfHeader(
 
   // Right: Document Type & Title
   let rightY = headerY;
+  const docTypeText = translateExportLabel(meta.documentType, meta.locale);
+  const titleText = translateExportLabel(meta.title, meta.locale);
   doc
-    .font(fonts.bold)
     .fontSize(8)
-    .fillColor(EXPORT_THEME.colors.pineAction)
-    .text(meta.documentType.toUpperCase(), rightX, rightY, {
+    .fillColor(EXPORT_THEME.colors.pineAction);
+  drawLocalizedPdfText(
+    doc,
+    fonts,
+    meta.locale === "ta-IN" ? docTypeText : docTypeText.toUpperCase(),
+    rightX,
+    rightY,
+    {
       width: rightWidth,
       align: "right",
-    });
+      bold: true,
+    },
+  );
   rightY = doc.y + 1;
 
   doc
-    .font(fonts.bold)
     .fontSize(14)
-    .fillColor(EXPORT_THEME.colors.pine950)
-    .text(meta.title, rightX, rightY, {
-      width: rightWidth,
-      align: "right",
-    });
+    .fillColor(EXPORT_THEME.colors.pine950);
+  drawLocalizedPdfText(doc, fonts, titleText, rightX, rightY, {
+    width: rightWidth,
+    align: "right",
+    bold: true,
+  });
   rightY = doc.y + 2;
 
   const metaLines: string[] = [];
@@ -391,16 +445,24 @@ export async function renderTabularPdf(
 
         let curX = margin;
         section.columns.forEach((col, i) => {
-          const label = col.unit ? `${col.header} (${col.unit})` : col.header;
+          const translatedHeader = translateExportLabel(col.header, meta.locale);
+          const label = col.unit
+            ? `${translatedHeader} (${col.unit})`
+            : translatedHeader;
           const align = isNumericCol(col) ? "right" : col.align || "left";
-          doc
-            .font(fonts.bold)
-            .fontSize(7.5)
-            .fillColor(EXPORT_THEME.colors.white)
-            .text(label, curX + cellPadX, y + cellPadY, {
+          doc.fontSize(7.5).fillColor(EXPORT_THEME.colors.white);
+          drawLocalizedPdfText(
+            doc,
+            fonts,
+            label,
+            curX + cellPadX,
+            y + cellPadY,
+            {
               width: Math.max(12, colWidths[i] - cellPadX * 2),
               align,
-            });
+              bold: true,
+            },
+          );
           curX += colWidths[i];
         });
         return y + maxHeaderH;
