@@ -306,16 +306,39 @@ export class FinanceService {
       });
 
       if (result) {
+        const relatedEntities = [
+          {
+            entityType: "Customer",
+            entityId: result.customerId,
+            label: result.customer?.name || result.customerNameSnapshot,
+            role: "customer",
+          },
+          ...(result.salesOrderId
+            ? [
+                {
+                  entityType: "SalesOrder",
+                  entityId: result.salesOrderId,
+                  label: result.salesOrder?.orderNumber || result.salesOrderId,
+                  role: "source_order",
+                },
+              ]
+            : []),
+        ];
         await auditService.log({
           organizationId: result.organizationId,
           userId: user?.id,
           userEmail: user?.email,
+          actorName: user?.name,
           action: "POST",
+          eventType: "INVOICE_POSTED",
           entity: "SalesInvoice",
           entityId: result.id,
+          summary: `Invoice ${result.invoiceNumber} posted for ₹${Number(result.totalAmount).toFixed(2)}`,
+          relatedEntities,
           details: {
             invoiceNumber: result.invoiceNumber,
             salesOrderId: result.salesOrderId,
+            salesOrderNumber: result.salesOrder?.orderNumber,
             customerId: result.customerId,
             totalAmount: result.totalAmount,
           },
@@ -421,10 +444,20 @@ export class FinanceService {
         organizationId: creditNote.organizationId,
         userId: user?.id,
         userEmail: user?.email,
+        actorName: user?.name,
         action: "CREATE",
+        eventType: "CREDIT_NOTE_ISSUED",
         entity: "CreditNote",
         entityId: creditNote.id,
         reason: input.reason,
+        summary: `Credit note ${creditNote.creditNoteNumber} issued for ₹${Number(creditNote.totalAmount).toFixed(2)}`,
+        relatedEntities: [
+          {
+            entityType: "SalesInvoice",
+            entityId: creditNote.salesInvoiceId,
+            role: "invoice",
+          },
+        ],
         details: {
           creditNoteNumber: creditNote.creditNoteNumber,
           salesInvoiceId: creditNote.salesInvoiceId,

@@ -59,6 +59,23 @@ productionRouter.get(
   },
 );
 
+// GET /api/v1/production-runs/recipes/:id - Get single BOM recipe
+productionRouter.get(
+  "/recipes/:id",
+  requireAuth,
+  authorize("production_run", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const recipeId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const recipe = await productionService.getRecipeById(orgId, recipeId);
+      res.json({ recipe });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /api/v1/production-runs/:id - Get single run
 productionRouter.get(
   "/:id",

@@ -161,6 +161,41 @@ export class MastersService {
     };
   }
 
+  async getProductById(organizationId: string, id: string) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const product = await prisma.product.findFirst({
+      where: { id, organizationId: orgId },
+      include: {
+        variants: {
+          include: {
+            uom: true,
+            inventoryItem: {
+              select: { id: true, sku: true, name: true, currentStock: true },
+            },
+            priceLines: {
+              include: { priceList: true },
+            },
+            recipes: {
+              select: {
+                id: true,
+                name: true,
+                version: true,
+                isActive: true,
+                expectedOutputQty: true,
+              },
+              orderBy: { version: "desc" },
+            },
+          },
+          orderBy: { sku: "asc" },
+        },
+      },
+    });
+    if (!product) {
+      throw new AppError(`Product ${id} not found`, 404);
+    }
+    return product;
+  }
+
   async createProduct(
     input: {
       organizationId?: string;
@@ -196,10 +231,13 @@ export class MastersService {
       organizationId: orgId,
       userId: user.id,
       userEmail: user.email,
+      actorName: user.name,
       action: "CREATE",
+      eventType: "PRODUCT_CREATED",
       entity: "Product",
       entityId: product.id,
-      details: { code: product.code, name: product.name, hsnCode: product.hsnCode },
+      summary: `Product ${product.name} (${product.code}) created`,
+      details: { code: product.code, name: product.name, hsnCode: product.hsnCode, taxRate: Number(product.taxRate) },
     });
 
     return product;
@@ -231,14 +269,79 @@ export class MastersService {
       include: { variants: true },
     });
 
+    const productChanges: Array<{
+      field: string;
+      label: string;
+      kind: "changed";
+      previousValue: unknown;
+      newValue: unknown;
+    }> = [];
+    if (input.name !== undefined && existing.name !== updated.name) {
+      productChanges.push({
+        field: "name",
+        label: "Product Name",
+        kind: "changed",
+        previousValue: existing.name,
+        newValue: updated.name,
+      });
+    }
+    if (input.hsnCode !== undefined && existing.hsnCode !== updated.hsnCode) {
+      productChanges.push({
+        field: "hsnCode",
+        label: "HSN Code",
+        kind: "changed",
+        previousValue: existing.hsnCode,
+        newValue: updated.hsnCode,
+      });
+    }
+    if (input.taxRate !== undefined && Number(existing.taxRate) !== Number(updated.taxRate)) {
+      productChanges.push({
+        field: "taxRate",
+        label: "GST Rate",
+        kind: "changed",
+        previousValue: `${Number(existing.taxRate)}%`,
+        newValue: `${Number(updated.taxRate)}%`,
+      });
+    }
+    if (input.isActive !== undefined && existing.isActive !== updated.isActive) {
+      productChanges.push({
+        field: "isActive",
+        label: "Product Status",
+        kind: "changed",
+        previousValue: existing.isActive ? "Active" : "Archived",
+        newValue: updated.isActive ? "Active" : "Archived",
+      });
+    }
+
+    const productAction =
+      input.isActive !== undefined && existing.isActive !== updated.isActive
+        ? updated.isActive
+          ? "RESTORE"
+          : "ARCHIVE"
+        : "UPDATE";
+
     await auditService.log({
       organizationId: existing.organizationId,
       userId: user.id,
       userEmail: user.email,
-      action: "UPDATE",
+      actorName: user.name,
+      action: productAction,
+      eventType:
+        productAction === "ARCHIVE"
+          ? "PRODUCT_ARCHIVED"
+          : productAction === "RESTORE"
+            ? "PRODUCT_RESTORED"
+            : "PRODUCT_UPDATED",
       entity: "Product",
       entityId: updated.id,
-      details: { name: updated.name, isActive: updated.isActive },
+      summary:
+        productAction === "ARCHIVE"
+          ? `Product ${updated.name} archived`
+          : productAction === "RESTORE"
+            ? `Product ${updated.name} restored`
+            : `Product ${updated.name} updated`,
+      changes: productChanges,
+      details: { name: updated.name, hsnCode: updated.hsnCode, taxRate: Number(updated.taxRate), isActive: updated.isActive },
     });
 
     return updated;
@@ -308,10 +411,21 @@ export class MastersService {
       organizationId: product.organizationId,
       userId: user.id,
       userEmail: user.email,
+      actorName: user.name,
       action: "CREATE",
+      eventType: "PRODUCT_VARIANT_CREATED",
       entity: "ProductVariant",
       entityId: variant.id,
-      details: { sku: variant.sku, name: variant.name, packSize: input.packSize },
+      summary: `Variant ${variant.name} (${variant.sku}) added to ${product.name}`,
+      relatedEntities: [
+        {
+          entityType: "Product",
+          entityId: product.id,
+          label: product.name,
+          role: "product",
+        },
+      ],
+      details: { productId: product.id, sku: variant.sku, name: variant.name, packSize: input.packSize },
     });
 
     return variant;
@@ -354,14 +468,61 @@ export class MastersService {
       include: { uom: true, inventoryItem: true },
     });
 
+    const variantChanges: Array<{
+      field: string;
+      label: string;
+      kind: "changed";
+      previousValue: unknown;
+      newValue: unknown;
+    }> = [];
+    if (input.name !== undefined && existing.name !== updated.name) {
+      variantChanges.push({
+        field: "name",
+        label: "Variant Name",
+        kind: "changed",
+        previousValue: existing.name,
+        newValue: updated.name,
+      });
+    }
+    if (input.packSize !== undefined && Number(existing.packSize) !== Number(updated.packSize)) {
+      variantChanges.push({
+        field: "packSize",
+        label: "Pack Size",
+        kind: "changed",
+        previousValue: Number(existing.packSize),
+        newValue: Number(updated.packSize),
+      });
+    }
+    if (input.isActive !== undefined && existing.isActive !== updated.isActive) {
+      variantChanges.push({
+        field: "isActive",
+        label: "Variant Status",
+        kind: "changed",
+        previousValue: existing.isActive ? "Active" : "Archived",
+        newValue: updated.isActive ? "Active" : "Archived",
+      });
+    }
+
     await auditService.log({
       organizationId: existing.product.organizationId,
       userId: user.id,
       userEmail: user.email,
+      actorName: user.name,
       action: "UPDATE",
+      eventType: "PRODUCT_VARIANT_UPDATED",
       entity: "ProductVariant",
       entityId: updated.id,
-      details: { sku: updated.sku, isActive: updated.isActive },
+      summary: `Variant ${updated.name} (${updated.sku}) updated`,
+      changes: variantChanges,
+      relatedEntities: [
+        {
+          entityType: "Product",
+          entityId: existing.productId,
+          label: existing.product.name,
+          role: "product",
+        },
+      ],
+      details: { productId: existing.productId, sku: updated.sku, isActive: updated.isActive },
     });
 
     return updated;
@@ -457,6 +618,15 @@ export class MastersService {
       throw new AppError("Price cannot be negative", 400);
     }
 
+    const existingLine = await prisma.priceListLine.findUnique({
+      where: {
+        priceListId_productVariantId: {
+          priceListId,
+          productVariantId: input.productVariantId,
+        },
+      },
+    });
+
     const line = await prisma.priceListLine.upsert({
       where: {
         priceListId_productVariantId: {
@@ -470,19 +640,51 @@ export class MastersService {
         productVariantId: input.productVariantId,
         price: input.price,
       },
-      include: { productVariant: true },
+      include: {
+        productVariant: {
+          include: { product: true },
+        },
+      },
     });
 
     await auditService.log({
       organizationId: priceList.organizationId,
       userId: user.id,
       userEmail: user.email,
+      actorName: user.name,
       action: "UPSERT_PRICE",
+      eventType: "PRICE_UPDATED",
       entity: "PriceListLine",
       entityId: line.id,
+      summary: `Price for ${line.productVariant.sku} on ${priceList.name} set to ₹${Number(input.price).toFixed(2)}`,
+      changes: [
+        {
+          field: "price",
+          label: `${priceList.name} Rate`,
+          kind: existingLine ? "changed" : "added",
+          previousValue: existingLine ? `₹${Number(existingLine.price).toFixed(2)}` : "Not set",
+          newValue: `₹${Number(input.price).toFixed(2)}`,
+        },
+      ],
+      relatedEntities: [
+        {
+          entityType: "Product",
+          entityId: line.productVariant.productId,
+          label: line.productVariant.product?.name,
+          role: "product",
+        },
+        {
+          entityType: "ProductVariant",
+          entityId: line.productVariantId,
+          label: line.productVariant.sku,
+          role: "variant",
+        },
+      ],
       details: {
         priceListCode: priceList.code,
+        priceListName: priceList.name,
         variantSku: line.productVariant.sku,
+        productId: line.productVariant.productId,
         price: input.price,
       },
     });

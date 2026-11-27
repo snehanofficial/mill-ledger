@@ -657,14 +657,31 @@ export class SalesService {
         organizationId: user.organizationId ?? undefined,
         userId: user.id,
         userEmail: user.email,
+        actorName: user.name,
         action: "CREATE",
+        eventType: "ORDER_CREATED",
         entity: "SalesOrder",
         entityId: txResult.order.id,
+        summary: `Order ${txResult.order.orderNumber} created (${txResult.order.status}) for ₹${Number(txResult.order.totalAmount).toFixed(2)}`,
+        relatedEntities: [
+          {
+            entityType: "Customer",
+            entityId: txResult.order.customerId,
+            label: txResult.order.customer?.name,
+            role: "customer",
+          },
+          ...txResult.order.lines.map((line) => ({
+            entityType: "ProductVariant",
+            entityId: line.productVariantId,
+            role: "order_line_variant",
+          })),
+        ],
         details: {
           orderNumber: txResult.order.orderNumber,
           status: txResult.order.status,
           customerId: txResult.order.customerId,
           totalAmount: txResult.order.totalAmount,
+          lineCount: txResult.order.lines.length,
         },
       });
 
@@ -972,9 +989,30 @@ export class SalesService {
       organizationId: adminUser.organizationId ?? undefined,
       userId: adminUser.id,
       userEmail: adminUser.email,
+      actorName: adminUser.name,
       action: "APPROVE",
+      eventType: "ORDER_APPROVED",
       entity: "SalesOrder",
       entityId: updatedOrder.id,
+      reason: input.overrideReason,
+      summary: `Order ${updatedOrder.orderNumber} approved for ₹${Number(updatedOrder.totalAmount).toFixed(2)}`,
+      changes: [
+        {
+          field: "status",
+          label: "Order Status",
+          kind: "changed",
+          previousValue: "UNDER_REVIEW",
+          newValue: updatedOrder.status,
+        },
+      ],
+      relatedEntities: [
+        {
+          entityType: "Customer",
+          entityId: updatedOrder.customerId,
+          label: updatedOrder.customer?.name,
+          role: "customer",
+        },
+      ],
       details: {
         orderNumber: updatedOrder.orderNumber,
         status: updatedOrder.status,
@@ -1068,10 +1106,30 @@ export class SalesService {
       organizationId: adminUser.organizationId ?? undefined,
       userId: adminUser.id,
       userEmail: adminUser.email,
+      actorName: adminUser.name,
       action: "REJECT",
+      eventType: "ORDER_REJECTED",
       entity: "SalesOrder",
       entityId: rejected.id,
       reason: input.reason,
+      summary: `Order ${rejected.orderNumber} rejected`,
+      changes: [
+        {
+          field: "status",
+          label: "Order Status",
+          kind: "changed",
+          previousValue: "SUBMITTED",
+          newValue: rejected.status,
+        },
+      ],
+      relatedEntities: [
+        {
+          entityType: "Customer",
+          entityId: rejected.customerId,
+          label: rejected.customer?.name,
+          role: "customer",
+        },
+      ],
       details: {
         orderNumber: rejected.orderNumber,
         status: rejected.status,
@@ -1509,13 +1567,28 @@ export class SalesService {
       organizationId: user.organizationId ?? undefined,
       userId: user.id,
       userEmail: user.email,
-      action: "UPDATE",
+      actorName: user.name,
+      action: updated.status !== OrderStatus.DRAFT ? "SUBMIT" : "UPDATE",
+      eventType:
+        updated.status !== OrderStatus.DRAFT ? "ORDER_SUBMITTED" : "ORDER_UPDATED",
       entity: "SalesOrder",
       entityId: updated.id,
+      summary:
+        updated.status !== OrderStatus.DRAFT
+          ? `Order ${updated.orderNumber} submitted (${updated.status})`
+          : `Draft order ${updated.orderNumber} updated`,
+      relatedEntities: [
+        {
+          entityType: "Customer",
+          entityId: updated.customerId,
+          role: "customer",
+        },
+      ],
       details: {
         orderNumber: updated.orderNumber,
         status: updated.status,
         notes: updated.notes,
+        totalAmount: updated.totalAmount,
       },
     });
 
@@ -1831,13 +1904,96 @@ export class SalesService {
       },
     });
 
+    const customerChanges: Array<{
+      field: string;
+      label: string;
+      kind: "changed";
+      previousValue: unknown;
+      newValue: unknown;
+    }> = [];
+    if (data.name !== undefined && customer.name !== updated.name) {
+      customerChanges.push({
+        field: "name",
+        label: "Customer Name",
+        kind: "changed",
+        previousValue: customer.name,
+        newValue: updated.name,
+      });
+    }
+    if (data.phone !== undefined && customer.phone !== updated.phone) {
+      customerChanges.push({
+        field: "phone",
+        label: "Phone",
+        kind: "changed",
+        previousValue: customer.phone ?? "None",
+        newValue: updated.phone ?? "None",
+      });
+    }
+    if (data.email !== undefined && customer.email !== updated.email) {
+      customerChanges.push({
+        field: "email",
+        label: "Email",
+        kind: "changed",
+        previousValue: customer.email ?? "None",
+        newValue: updated.email ?? "None",
+      });
+    }
+    if (data.state !== undefined && customer.state !== updated.state) {
+      customerChanges.push({
+        field: "state",
+        label: "State",
+        kind: "changed",
+        previousValue: customer.state,
+        newValue: updated.state,
+      });
+    }
+    if (data.gstin !== undefined && customer.gstin !== updated.gstin) {
+      customerChanges.push({
+        field: "gstin",
+        label: "GSTIN",
+        kind: "changed",
+        previousValue: customer.gstin ?? "Unregistered",
+        newValue: updated.gstin ?? "Unregistered",
+      });
+    }
+    if (data.isActive !== undefined && customer.isActive !== updated.isActive) {
+      customerChanges.push({
+        field: "isActive",
+        label: "Account Status",
+        kind: "changed",
+        previousValue: customer.isActive ? "Active" : "Archived",
+        newValue: updated.isActive ? "Active" : "Archived",
+      });
+    }
+
+    const actionVerb =
+      data.isActive !== undefined && customer.isActive !== updated.isActive
+        ? updated.isActive
+          ? "RESTORE"
+          : "ARCHIVE"
+        : "UPDATE";
+
     await auditService.log({
       organizationId: customer.organizationId,
       userId: user.id,
       userEmail: user.email,
-      action: "UPDATE",
+      actorName: user.name,
+      action: actionVerb,
+      eventType:
+        actionVerb === "ARCHIVE"
+          ? "CUSTOMER_ARCHIVED"
+          : actionVerb === "RESTORE"
+            ? "CUSTOMER_RESTORED"
+            : "CUSTOMER_UPDATED",
       entity: "Customer",
       entityId: updated.id,
+      summary:
+        actionVerb === "ARCHIVE"
+          ? `Customer ${updated.name} archived`
+          : actionVerb === "RESTORE"
+            ? `Customer ${updated.name} restored`
+            : `Customer ${updated.name} profile updated`,
+      changes: customerChanges,
       details: {
         name: updated.name,
         gstin: updated.gstin,

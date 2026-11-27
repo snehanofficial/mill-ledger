@@ -17,6 +17,7 @@ import { financeRouter } from "./modules/finance/finance.routes.js";
 import { paymentRouter } from "./modules/finance/payment.routes.js";
 import { reportingRouter } from "./modules/reporting/reporting.routes.js";
 import { mastersRouter } from "./modules/masters/masters.routes.js";
+import { timelineRouter } from "./modules/timeline/timeline.routes.js";
 import { errorHandler, sendErrorResponse } from "./middleware/error.middleware.js";
 import { isAllowedOrigin } from "./lib/origins.js";
 import { requestIdMiddleware } from "./middleware/request-id.middleware.js";
@@ -121,6 +122,7 @@ export function createApp() {
   app.use("/api/v1/reports", reportingRouter);
   app.use("/api/v1/dashboard", reportingRouter);
   app.use("/api/v1/masters", mastersRouter);
+  app.use("/api/v1/timeline", timelineRouter);
 
   // Backward compatibility alias for health check
   app.use("/api/health", healthRouter);

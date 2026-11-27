@@ -308,9 +308,30 @@ export class DispatchService {
         organizationId: result.organizationId,
         userId: user?.id,
         userEmail: user?.email,
+        actorName: user?.name,
         action: "DISPATCH",
+        eventType: "DISPATCH_POSTED",
         entity: "Dispatch",
         entityId: result.id,
+        summary: `Dispatch ${result.dispatchNumber} posted (${result.lines?.length ?? 0} line${(result.lines?.length ?? 0) === 1 ? "" : "s"})`,
+        relatedEntities: [
+          {
+            entityType: "SalesOrder",
+            entityId: result.salesOrderId,
+            label: result.salesOrder?.orderNumber,
+            role: "order",
+          },
+          ...(result.salesInvoiceId
+            ? [
+                {
+                  entityType: "SalesInvoice",
+                  entityId: result.salesInvoiceId,
+                  label: result.salesInvoice?.invoiceNumber,
+                  role: "invoice",
+                },
+              ]
+            : []),
+        ],
         details: {
           dispatchNumber: result.dispatchNumber,
           salesOrderId: result.salesOrderId,

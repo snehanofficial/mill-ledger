@@ -290,21 +290,83 @@ export class PaymentService {
       });
 
       if (payment) {
+        const allocatedInvoices = payment.allocations.map((a) => ({
+          entityType: "SalesInvoice",
+          entityId: a.salesInvoiceId,
+          label: a.salesInvoice.invoiceNumber,
+          role: "allocated_invoice",
+        }));
         await auditService.log({
           organizationId: payment.organizationId,
           userId: user?.id,
           userEmail: user?.email,
+          actorName: user?.name,
           action: "CREATE",
+          eventType: "PAYMENT_RECORDED",
           entity: "Payment",
           entityId: payment.id,
+          summary: `Payment ${payment.paymentNumber} recorded for ₹${Number(payment.amount).toFixed(2)} via ${payment.paymentMode}`,
+          relatedEntities: [
+            {
+              entityType: "Customer",
+              entityId: payment.customerId,
+              label: payment.customer?.name,
+              role: "customer",
+            },
+            ...allocatedInvoices,
+          ],
           details: {
             paymentNumber: payment.paymentNumber,
             customerId: payment.customerId,
             amount: payment.amount,
             unallocatedAmount: payment.unallocatedAmount,
             paymentMode: payment.paymentMode,
+            referenceNumber: payment.referenceNumber,
           },
         });
+
+        for (const alloc of payment.allocations) {
+          await auditService.log({
+            organizationId: payment.organizationId,
+            userId: user?.id,
+            userEmail: user?.email,
+            actorName: user?.name,
+            action: "PAYMENT_ALLOCATED",
+            eventType: "PAYMENT_ALLOCATED",
+            entity: "Payment",
+            entityId: payment.id,
+            summary: `₹${Number(alloc.amount).toFixed(2)} allocated to Invoice #${alloc.salesInvoice.invoiceNumber}`,
+            changes: [
+              {
+                field: `allocation.${alloc.salesInvoice.invoiceNumber}`,
+                label: `Allocated to ${alloc.salesInvoice.invoiceNumber}`,
+                kind: "changed",
+                previousValue: "₹0.00",
+                newValue: `₹${Number(alloc.amount).toFixed(2)}`,
+              },
+            ],
+            relatedEntities: [
+              {
+                entityType: "SalesInvoice",
+                entityId: alloc.salesInvoiceId,
+                label: alloc.salesInvoice.invoiceNumber,
+                role: "allocated_invoice",
+              },
+              {
+                entityType: "Customer",
+                entityId: payment.customerId,
+                label: payment.customer?.name,
+                role: "customer",
+              },
+            ],
+            details: {
+              paymentNumber: payment.paymentNumber,
+              salesInvoiceId: alloc.salesInvoiceId,
+              invoiceNumber: alloc.salesInvoice.invoiceNumber,
+              allocatedAmount: Number(alloc.amount).toFixed(2),
+            },
+          });
+        }
       }
 
       return payment;
@@ -448,26 +510,56 @@ export class PaymentService {
         },
       });
 
-      await tx.auditLog.create({
-        data: {
+      await auditService.log(
+        {
           organizationId: payment.organizationId,
           userId: user?.id,
           userEmail: user?.email,
+          actorName: user?.name,
           action:
             targetStatus === PaymentStatus.BOUNCED
               ? "PAYMENT_BOUNCED"
               : "PAYMENT_REVERSED",
-          entity: "payment",
+          eventType:
+            targetStatus === PaymentStatus.BOUNCED
+              ? "PAYMENT_BOUNCED"
+              : "PAYMENT_REVERSED",
+          entity: "Payment",
           entityId: payment.id,
           reason: input.reason,
-          details: JSON.stringify({
+          summary: `Payment ${payment.paymentNumber} marked as ${targetStatus.toLowerCase()}`,
+          changes: [
+            {
+              field: "status",
+              label: "Payment Status",
+              kind: "changed",
+              previousValue: payment.status,
+              newValue: targetStatus,
+            },
+          ],
+          relatedEntities: [
+            {
+              entityType: "Customer",
+              entityId: payment.customerId,
+              label: updatedPayment.customer?.name,
+              role: "customer",
+            },
+            ...updatedPayment.allocations.map((a) => ({
+              entityType: "SalesInvoice",
+              entityId: a.salesInvoiceId,
+              label: a.salesInvoice.invoiceNumber,
+              role: "affected_invoice",
+            })),
+          ],
+          details: {
             paymentNumber: payment.paymentNumber,
             amount: Number(payment.amount),
             reversalReference: input.referenceNumber || input.idempotencyKey,
             reversedAt: reversalDate.toISOString(),
-          }),
+          },
         },
-      });
+        tx,
+      );
 
       return updatedPayment;
     });
@@ -1047,21 +1139,59 @@ export class PaymentService {
         },
       });
 
-      await tx.auditLog.create({
-        data: {
+      const allocatedInvoicesSummary = updated.allocations
+        .filter((a) => allocations.some((reqA) => reqA.salesInvoiceId === a.salesInvoiceId))
+        .map((a) => a.salesInvoice.invoiceNumber)
+        .join(", ");
+
+      await auditService.log(
+        {
           organizationId: payment.organizationId,
           userId: user?.id,
           userEmail: user?.email,
+          actorName: user?.name,
           action: "PAYMENT_ALLOCATED",
-          entity: "payment",
+          eventType: "PAYMENT_ALLOCATED",
+          entity: "Payment",
           entityId: payment.id,
-          details: JSON.stringify({
+          summary: `₹${totalToAllocate.toFixed(2)} allocated to ${allocatedInvoicesSummary || "invoice(s)"}`,
+          changes: [
+            {
+              field: "unallocatedAmount",
+              label: "Unallocated Balance",
+              kind: "changed",
+              previousValue: `₹${unallocated.toFixed(2)}`,
+              newValue: `₹${nextUnallocated.toFixed(2)}`,
+            },
+          ],
+          relatedEntities: [
+            {
+              entityType: "Customer",
+              entityId: payment.customerId,
+              label: updated.customer?.name,
+              role: "customer",
+            },
+            ...updated.allocations
+              .filter((a) => allocations.some((reqA) => reqA.salesInvoiceId === a.salesInvoiceId))
+              .map((a) => ({
+                entityType: "SalesInvoice",
+                entityId: a.salesInvoiceId,
+                label: a.salesInvoice.invoiceNumber,
+                role: "allocated_invoice",
+              })),
+          ],
+          details: {
             paymentNumber: payment.paymentNumber,
             allocatedAmount: totalToAllocate.toFixed(2),
             remainingUnallocated: nextUnallocated.toFixed(2),
-          }),
+            allocations: allocations.map((a) => ({
+              salesInvoiceId: a.salesInvoiceId,
+              amount: a.amount,
+            })),
+          },
         },
-      });
+        tx,
+      );
 
       return updated;
     });
@@ -1143,22 +1273,50 @@ export class PaymentService {
         },
       });
 
-      await tx.auditLog.create({
-        data: {
+      await auditService.log(
+        {
           organizationId: allocation.payment.organizationId,
           userId: user?.id,
           userEmail: user?.email,
+          actorName: user?.name,
           action: "PAYMENT_ALLOCATION_REVERSED",
-          entity: "payment",
+          eventType: "PAYMENT_ALLOCATION_REVERSED",
+          entity: "Payment",
           entityId: paymentId,
           reason: reason.trim(),
-          details: JSON.stringify({
+          summary: `Allocation of ₹${allocAmount.toFixed(2)} to Invoice #${inv.invoiceNumber} reversed`,
+          changes: [
+            {
+              field: `allocation.${inv.invoiceNumber}`,
+              label: `Allocated to ${inv.invoiceNumber}`,
+              kind: "changed",
+              previousValue: `₹${allocAmount.toFixed(2)}`,
+              newValue: "₹0.00",
+            },
+          ],
+          relatedEntities: [
+            {
+              entityType: "SalesInvoice",
+              entityId: inv.id,
+              label: inv.invoiceNumber,
+              role: "affected_invoice",
+            },
+            {
+              entityType: "Customer",
+              entityId: allocation.payment.customerId,
+              label: updated.customer?.name,
+              role: "customer",
+            },
+          ],
+          details: {
             allocationId,
+            salesInvoiceId: inv.id,
             invoiceNumber: inv.invoiceNumber,
             amount: allocAmount.toFixed(2),
-          }),
+          },
         },
-      });
+        tx,
+      );
 
       return updated;
     });

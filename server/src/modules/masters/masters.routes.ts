@@ -87,6 +87,22 @@ mastersRouter.get(
   },
 );
 
+mastersRouter.get(
+  "/products/:id",
+  requireAuth,
+  authorize("inventory", "read"),
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const orgId = getSessionOrgId(req);
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const product = await mastersService.getProductById(orgId, id);
+      res.json({ product });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 mastersRouter.post(
   "/products",
   requireAuth,

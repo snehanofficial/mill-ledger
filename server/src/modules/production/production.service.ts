@@ -723,12 +723,25 @@ export class ProductionService {
         organizationId: result.run.organizationId,
         userId: user?.id,
         userEmail: user?.email,
+        actorName: user?.name,
         action: "POST",
+        eventType: "PRODUCTION_RUN_POSTED",
         entity: "ProductionRun",
         entityId: result.run.id,
+        summary: `Production run ${result.run.runNumber} posted (${Number(result.run.actualGoodQty)} good units produced using recipe v${result.run.recipeVersion})`,
+        relatedEntities: [
+          {
+            entityType: "Recipe",
+            entityId: result.run.recipeId,
+            label: `Recipe v${result.run.recipeVersion}`,
+            role: "recipe",
+          },
+        ],
         details: {
           runNumber: result.run.runNumber,
           status: result.run.status,
+          recipeId: result.run.recipeId,
+          recipeVersion: result.run.recipeVersion,
           actualYieldQuantity: Number(result.run.actualGoodQty),
           totalCost: Number(result.run.totalRunCost),
         },
@@ -908,13 +921,26 @@ export class ProductionService {
         organizationId: reversed.organizationId,
         userId: user?.id ?? input.reversedByUserId,
         userEmail: user?.email,
+        actorName: user?.name,
         action: "REVERSE",
+        eventType: "PRODUCTION_RUN_REVERSED",
         entity: "ProductionRun",
         entityId: reversed.id,
         reason: input.reason,
+        summary: `Production run ${reversed.runNumber} reversed`,
+        relatedEntities: [
+          {
+            entityType: "Recipe",
+            entityId: reversed.recipeId,
+            label: `Recipe v${reversed.recipeVersion}`,
+            role: "recipe",
+          },
+        ],
         details: {
           runNumber: reversed.runNumber,
           status: reversed.status,
+          recipeId: reversed.recipeId,
+          recipeVersion: reversed.recipeVersion,
         },
       });
     }
@@ -1135,6 +1161,55 @@ export class ProductionService {
   }
 
   /**
+   * Get single BOM recipe with items, variant, and recent production runs
+   */
+  async getRecipeById(organizationId: string, recipeId: string) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const recipe = await prisma.recipe.findFirst({
+      where: { id: recipeId, organizationId: orgId },
+      include: {
+        productVariant: {
+          include: {
+            product: { select: { id: true, code: true, name: true } },
+            uom: true,
+            recipes: {
+              select: { id: true, name: true, version: true, isActive: true, createdAt: true },
+              orderBy: { version: "desc" },
+            },
+          },
+        },
+        outputUom: true,
+        items: {
+          include: {
+            inventoryItem: {
+              select: { id: true, sku: true, name: true, currentStock: true, weightedAverageCost: true },
+            },
+            uom: true,
+          },
+        },
+        productionRuns: {
+          select: {
+            id: true,
+            runNumber: true,
+            recipeVersion: true,
+            status: true,
+            batchCount: true,
+            actualGoodQty: true,
+            postedAt: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 20,
+        },
+      },
+    });
+    if (!recipe) {
+      throw new AppError(`Recipe ${recipeId} not found`, 404);
+    }
+    return recipe;
+  }
+
+  /**
    * Create a new BOM recipe (IMP-011)
    */
   async createRecipe(
@@ -1191,10 +1266,32 @@ export class ProductionService {
       organizationId: orgId,
       userId: user?.id,
       userEmail: user?.email,
+      actorName: user?.name,
       action: "CREATE",
+      eventType: "RECIPE_CREATED",
       entity: "Recipe",
       entityId: recipe.id,
-      details: { name: recipe.name, version: recipe.version },
+      summary: `Recipe ${recipe.name} (v${recipe.version}) created for ${recipe.productVariant.name}`,
+      relatedEntities: [
+        {
+          entityType: "ProductVariant",
+          entityId: recipe.productVariantId,
+          label: recipe.productVariant.sku,
+          role: "variant",
+        },
+        {
+          entityType: "Product",
+          entityId: recipe.productVariant.productId,
+          role: "product",
+        },
+      ],
+      details: {
+        name: recipe.name,
+        version: recipe.version,
+        productVariantId: recipe.productVariantId,
+        expectedOutputQty: Number(recipe.expectedOutputQty),
+        itemCount: recipe.items.length,
+      },
     });
 
     return recipe;
@@ -1252,10 +1349,41 @@ export class ProductionService {
       organizationId: existing.organizationId,
       userId: user?.id,
       userEmail: user?.email,
+      actorName: user?.name,
       action: "CREATE_VERSION",
+      eventType: "RECIPE_VERSION_CREATED",
       entity: "Recipe",
       entityId: cloned.id,
-      details: { fromRecipeId: existing.id, version: cloned.version },
+      summary: `Recipe ${cloned.name} (v${cloned.version}) cloned from v${existing.version}`,
+      changes: [
+        {
+          field: "version",
+          label: "Recipe Version",
+          kind: "changed",
+          previousValue: `v${existing.version}`,
+          newValue: `v${cloned.version}`,
+        },
+      ],
+      relatedEntities: [
+        {
+          entityType: "Recipe",
+          entityId: existing.id,
+          label: `${existing.name} (v${existing.version})`,
+          role: "source_recipe",
+        },
+        {
+          entityType: "ProductVariant",
+          entityId: cloned.productVariantId,
+          label: cloned.productVariant.sku,
+          role: "variant",
+        },
+        {
+          entityType: "Product",
+          entityId: cloned.productVariant.productId,
+          role: "product",
+        },
+      ],
+      details: { fromRecipeId: existing.id, version: cloned.version, productVariantId: cloned.productVariantId },
     });
 
     return cloned;
@@ -1281,10 +1409,29 @@ export class ProductionService {
       organizationId: existing.organizationId,
       userId: user?.id,
       userEmail: user?.email,
+      actorName: user?.name,
       action: isActive ? "RESTORE" : "ARCHIVE",
+      eventType: isActive ? "RECIPE_RESTORED" : "RECIPE_ARCHIVED",
       entity: "Recipe",
       entityId: updated.id,
-      details: { name: updated.name, isActive },
+      summary: `Recipe ${updated.name} (v${updated.version}) ${isActive ? "restored" : "archived"}`,
+      changes: [
+        {
+          field: "isActive",
+          label: "Recipe Status",
+          kind: "changed",
+          previousValue: existing.isActive ? "Active" : "Archived",
+          newValue: isActive ? "Active" : "Archived",
+        },
+      ],
+      relatedEntities: [
+        {
+          entityType: "ProductVariant",
+          entityId: existing.productVariantId,
+          role: "variant",
+        },
+      ],
+      details: { name: updated.name, version: updated.version, isActive },
     });
 
     return updated;
