@@ -64,3 +64,8 @@ Idempotency records include key scope, actor, operation, request hash, response 
 ## Posting operations
 
 Purchase, production, approval/reservation, dispatch, invoice, payment, and reversal operations are database transactions. If an operation fails after a movement or audit write is attempted, the transaction must leave no partial business state.
+
+## Unified Entity 360° Lifecycle Timeline
+
+- `GET /api/v1/timeline/:entityType/:entityId` (authenticated; `entityType` in `product | order | invoice | payment | customer | recipe`; query params `filter=ALL|DIRECT|RELATED|FINANCIAL|OPERATIONAL`, `limit`, `offset`)
+- Returns chronological (newest-first), relationship-aware events aggregated from `AuditLog` and pre-audit record baselines, filtered by tenant isolation, RBAC, and ABAC on both primary and related records.
