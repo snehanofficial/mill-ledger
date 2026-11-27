@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   AlertTriangleIcon,
   RefreshCwIcon,
@@ -11,14 +12,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { extractRequestId } from "@/lib/api-client";
 
-function LoadingState({ label = "Loading" }: { label?: string }) {
+function LoadingState({ label }: { label?: string }) {
+  const { t } = useTranslation("common");
   return (
     <div
       role="status"
       className="flex min-h-32 flex-col items-center justify-center gap-3 rounded-xl border border-border bg-card p-6"
     >
       <Spinner className="size-5" />
-      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm text-muted-foreground">
+        {label ?? t("states.loading")}
+      </span>
     </div>
   );
 }
@@ -93,7 +97,7 @@ function SkeletonKPIs({
 }
 
 function ErrorState({
-  title = "Could not load records",
+  title,
   description,
   error,
   requestId,
@@ -107,8 +111,10 @@ function ErrorState({
   onRetry?: () => void;
   className?: string;
 }) {
+  const { t } = useTranslation("common");
   const [copied, setCopied] = useState(false);
   const activeRequestId = requestId || extractRequestId(error);
+  const resolvedTitle = title ?? t("states.errorTitle");
 
   const handleCopy = () => {
     if (
@@ -135,11 +141,11 @@ function ErrorState({
         aria-hidden="true"
       />
       <div className="max-w-md">
-        <p className="text-sm font-semibold text-destructive">{title}</p>
+        <p className="text-sm font-semibold text-destructive">{resolvedTitle}</p>
         <p className="mt-1 text-xs text-muted-foreground">{description}</p>
         {activeRequestId && (
           <div className="mt-2.5 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-            <span className="font-medium">Request ID:</span>
+            <span className="font-medium">{t("states.requestId")}</span>
             <code className="rounded bg-muted px-1.5 py-0.5 text-2xs font-mono font-medium text-foreground select-all">
               {activeRequestId}
             </code>
@@ -168,8 +174,8 @@ function ErrorState({
           onClick={onRetry}
           className="gap-1.5 mt-1 cursor-pointer"
         >
-          <RefreshCwIcon className="size-3.5" />
-          Retry
+          <RefreshCwIcon className="size-3.5" aria-hidden="true" />
+          {t("states.retryAction")}
         </Button>
       ) : null}
     </div>

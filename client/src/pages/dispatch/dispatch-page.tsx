@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
@@ -8,7 +9,8 @@ import { assertCollectionResponse } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
-import { formatDateTime } from "@/lib/formatters";
+import { useFormatters } from "@/hooks/use-formatters";
+import { getStatusLabel } from "@/lib/enum-labels";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataPagination } from "@/components/ui/data-pagination";
 import {
@@ -41,6 +43,8 @@ interface Dispatch {
 }
 
 export function DispatchPage() {
+  const { t } = useTranslation(["finance", "common"]);
+  const { formatDateTime } = useFormatters();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const canDispatch = user?.role === "ADMIN";
@@ -103,7 +107,10 @@ export function DispatchPage() {
         accessorKey: "dispatchNumber",
         enableHiding: false,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Dispatch #" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("finance:dispatch.dispatchNumber")}
+          />
         ),
         cell: ({ row }) => (
           <Link
@@ -113,13 +120,18 @@ export function DispatchPage() {
             {row.original.dispatchNumber}
           </Link>
         ),
-        meta: { label: "Dispatch #" } satisfies DataTableColumnMeta<Dispatch>,
+        meta: {
+          label: t("finance:dispatch.dispatchNumber"),
+        } satisfies DataTableColumnMeta<Dispatch>,
       },
       {
         id: "orderNumber",
         accessorFn: (row) => row.salesOrder?.orderNumber ?? "",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Order #" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.orderNumber")}
+          />
         ),
         cell: ({ row }) =>
           row.original.salesOrder ? (
@@ -132,25 +144,35 @@ export function DispatchPage() {
           ) : (
             "—"
           ),
-        meta: { label: "Order #" } satisfies DataTableColumnMeta<Dispatch>,
+        meta: {
+          label: t("common:terms.orderNumber"),
+        } satisfies DataTableColumnMeta<Dispatch>,
       },
       {
         id: "customer",
         accessorFn: (row) => row.salesOrder?.customer?.name ?? "",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Customer" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.customer")}
+          />
         ),
         cell: ({ row }) => (
           <span>{row.original.salesOrder?.customer?.name ?? "—"}</span>
         ),
-        meta: { label: "Customer" } satisfies DataTableColumnMeta<Dispatch>,
+        meta: {
+          label: t("common:terms.customer"),
+        } satisfies DataTableColumnMeta<Dispatch>,
       },
       {
         id: "vehicleDriver",
         accessorFn: (row) =>
           `${row.vehicleNumber || ""} ${row.driverName || ""}`.trim(),
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Vehicle / Driver" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("finance:dispatch.vehicleDriver")}
+          />
         ),
         cell: ({ row }) => (
           <span className="text-xs text-muted-foreground">
@@ -159,26 +181,34 @@ export function DispatchPage() {
           </span>
         ),
         meta: {
-          label: "Vehicle / Driver",
+          label: t("finance:dispatch.vehicleDriver"),
         } satisfies DataTableColumnMeta<Dispatch>,
       },
       {
         accessorKey: "status",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Status" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.status")}
+          />
         ),
         cell: ({ row }) => (
           <Badge variant="outline" className="whitespace-nowrap">
-            {row.original.status}
+            {getStatusLabel(row.original.status)}
           </Badge>
         ),
-        meta: { label: "Status" } satisfies DataTableColumnMeta<Dispatch>,
+        meta: {
+          label: t("common:terms.status"),
+        } satisfies DataTableColumnMeta<Dispatch>,
       },
       {
         id: "dispatchedAt",
         accessorFn: (row) => new Date(row.dispatchedAt).getTime() || 0,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Dispatched at" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("finance:dispatch.dispatchedAt")}
+          />
         ),
         cell: ({ row }) => (
           <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
@@ -186,19 +216,19 @@ export function DispatchPage() {
           </span>
         ),
         meta: {
-          label: "Dispatched at",
+          label: t("finance:dispatch.dispatchedAt"),
           exportValue: (r) => formatDateTime(r.dispatchedAt),
         } satisfies DataTableColumnMeta<Dispatch>,
       },
     ],
-    [],
+    [t, formatDateTime],
   );
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4 sm:p-6 lg:p-8">
       <PageHeader
-        title="Ready to dispatch"
-        description="Physical finished-goods dispatches, partial fulfilment, and sales returns."
+        title={t("finance:dispatch.readyTitle")}
+        description={t("finance:dispatch.subtitle")}
         primaryAction={
           canDispatch ? (
             <Button
@@ -207,7 +237,7 @@ export function DispatchPage() {
               className="gap-1.5"
             >
               <TruckIcon className="size-4" aria-hidden="true" />
-              Prepare dispatch
+              {t("finance:dispatch.prepareBtn")}
             </Button>
           ) : null
         }
@@ -223,7 +253,7 @@ export function DispatchPage() {
               className={`size-4 ${isFetching ? "animate-spin" : ""}`}
               aria-hidden="true"
             />
-            Refresh
+            {t("common:actions.refresh")}
           </Button>
         }
       />
@@ -231,7 +261,9 @@ export function DispatchPage() {
       {canDispatch && readyToDispatch.length > 0 && (
         <section className="rounded-lg border border-amber-300 bg-amber-50/60 p-3.5 dark:border-amber-800 dark:bg-amber-950/30 space-y-2">
           <div className="text-xs font-semibold text-amber-900 dark:text-amber-200">
-            Orders awaiting physical dispatch ({readyToDispatch.length})
+            {t("finance:dispatch.awaitingDispatch", {
+              count: readyToDispatch.length,
+            })}
           </div>
           <div className="flex flex-wrap gap-2">
             {readyToDispatch.map((ord) => (
@@ -245,7 +277,7 @@ export function DispatchPage() {
                   {ord.customer?.name}
                 </span>
                 <Badge variant="outline" className="h-4 text-[10px]">
-                  {ord.fulfilmentStatus.replaceAll("_", " ")}
+                  {getStatusLabel(ord.fulfilmentStatus)}
                 </Badge>
               </Link>
             ))}
@@ -266,8 +298,8 @@ export function DispatchPage() {
               setSearchQuery(e.target.value);
               resetPage();
             }}
-            placeholder="Search dispatch # or order #..."
-            aria-label="Search dispatches"
+            placeholder={t("finance:dispatch.searchPlaceholder")}
+            aria-label={t("finance:dispatch.searchPlaceholder")}
             className="h-9 pl-8"
           />
         </div>
@@ -277,14 +309,14 @@ export function DispatchPage() {
         <SkeletonTable rows={5} columns={5} />
       ) : isError ? (
         <ErrorState
-          title="Failed to load dispatches"
+          title={t("finance:dispatch.failedToLoad")}
           description={extractErrorMessage(error)}
           onRetry={() => refetch()}
         />
       ) : filtered.length === 0 ? (
         <EmptyState
-          title="No dispatches recorded"
-          description="Posted dispatches will appear here once approved orders are fulfilled."
+          title={t("finance:dispatch.noDispatches")}
+          description={t("finance:dispatch.noDispatchesDesc")}
         />
       ) : (
         <>
@@ -293,7 +325,7 @@ export function DispatchPage() {
             data={filtered}
             columns={dispatchColumns}
             getRowId={(r) => r.id}
-            ariaLabel="Dispatches"
+            ariaLabel={t("finance:dispatch.header")}
             csvFilename="dispatches"
           />
 
@@ -304,7 +336,7 @@ export function DispatchPage() {
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
             isFetching={isFetching}
-            itemLabel="dispatches"
+            itemLabel={t("finance:dispatch.itemLabel")}
           />
         </>
       )}

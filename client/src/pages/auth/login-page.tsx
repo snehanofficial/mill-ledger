@@ -2,6 +2,8 @@ import * as React from "react";
 import { useState } from "react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "@/components/ui/language-selector";
 import { authClient } from "@/lib/auth-client";
 import {
   useCurrentUser,
@@ -19,7 +21,6 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Alert } from "@/components/ui/alert";
-import { useLanguage } from "@/lib/i18n";
 import { getDefaultRouteForRole } from "@/lib/role-routing";
 import { LockIcon, MailIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { BrandLogo } from "@/components/ui/brand-logo";
@@ -81,7 +82,7 @@ export function LoginPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { language, setLanguage } = useLanguage();
+  const { t } = useTranslation("auth");
 
   React.useEffect(() => {
     document.title = "Sign In | MillLedger";
@@ -147,27 +148,18 @@ export function LoginPage() {
     const nextFieldErrors: { email?: string; password?: string } = {};
 
     if (!cleanEmail) {
-      nextFieldErrors.email =
-        language === "ta" ? "மின்னஞ்சல் தேவை" : "Email address is required";
+      nextFieldErrors.email = t("login.emailRequiredField");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      nextFieldErrors.email =
-        language === "ta"
-          ? "சரியான மின்னஞ்சலை உள்ளிடவும்"
-          : "Enter a valid email address";
+      nextFieldErrors.email = t("login.emailInvalidField");
     }
 
     if (!password) {
-      nextFieldErrors.password =
-        language === "ta" ? "கடவுச்சொல் தேவை" : "Password is required";
+      nextFieldErrors.password = t("login.passwordRequiredField");
     }
 
     if (nextFieldErrors.email || nextFieldErrors.password) {
       setFieldErrors(nextFieldErrors);
-      setErrorMessage(
-        language === "ta"
-          ? "மின்னஞ்சல் மற்றும் கடவுச்சொல் தேவை"
-          : "Email and password are required",
-      );
+      setErrorMessage(t("login.emailRequired"));
       if (nextFieldErrors.email) {
         document.getElementById("email")?.focus();
       } else if (nextFieldErrors.password) {
@@ -200,11 +192,7 @@ export function LoginPage() {
       if (err instanceof Error) {
         setErrorMessage(err.message);
       } else {
-        setErrorMessage(
-          language === "ta"
-            ? "உள்நுழைவு தோல்வியடைந்தது. சரியான விவரங்களை உள்ளிடவும்."
-            : "Authentication failed. Please verify credentials.",
-        );
+        setErrorMessage(t("login.authFailed"));
       }
     }
   };
@@ -231,20 +219,7 @@ export function LoginPage() {
     >
       {/* Top utility row: language switch */}
       <div className="absolute top-4 right-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setLanguage(language === "en" ? "ta" : "en")}
-          aria-label={
-            language === "en"
-              ? "தமிழ் (Switch language to Tamil)"
-              : "English (ஆங்கிலத்திற்கு மாற்று)"
-          }
-        >
-          <span lang={language === "en" ? "ta" : "en"}>
-            {language === "en" ? "தமிழ்" : "English"}
-          </span>
-        </Button>
+        <LanguageSelector variant="segmented" />
       </div>
 
       <div className="w-full max-w-md space-y-6">
@@ -252,12 +227,10 @@ export function LoginPage() {
         <div className="text-center">
           <BrandLogo size="lg" className="mx-auto shadow-xs" />
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-foreground">
-            {language === "ta" ? "ஆலை ஏடு உள்நுழைவு" : "Sign in to MillLedger"}
+            {t("login.title")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {language === "ta"
-              ? "உணவு பதப்படுத்தும் ஆலைக்கான உற்பத்தி மற்றும் கணக்குப்பதிவு"
-              : "Food manufacturing & mill operations ledger"}
+            {t("login.subtitle")}
           </p>
         </div>
 
@@ -265,13 +238,9 @@ export function LoginPage() {
         <Card className="border-border shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg">
-              {language === "ta" ? "பயனர் அடையாளம்" : "Credentials"}
+              {t("login.credentialsTitle")}
             </CardTitle>
-            <CardDescription>
-              {language === "ta"
-                ? "உங்கள் ஆலை மின்னஞ்சல் மற்றும் கடவுச்சொல்லை உள்ளிடவும்"
-                : "Enter your assigned mill email and password to proceed"}
-            </CardDescription>
+            <CardDescription>{t("login.credentialsDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -279,11 +248,7 @@ export function LoginPage() {
                 <Alert
                   variant="danger"
                   role="alert"
-                  title={
-                    language === "ta"
-                      ? "உள்நுழைவு தோல்வியடைந்தது"
-                      : "Sign in failed"
-                  }
+                  title={t("login.signInFailed")}
                 >
                   {errorMessage}
                 </Alert>
@@ -293,13 +258,9 @@ export function LoginPage() {
                 <Alert
                   variant="warning"
                   role="status"
-                  title={
-                    language === "ta" ? "அமர்வு காலாவதியானது" : "Session Expired"
-                  }
+                  title={t("login.sessionExpiredTitle")}
                 >
-                  {language === "ta"
-                    ? "செயலற்ற தன்மை காரணமாக உங்கள் அமர்வு காலாவதியானது. உங்கள் வேலையைத் தொடர மீண்டும் உள்நுழையவும்."
-                    : "Your session expired due to inactivity. Please sign in to resume your work."}
+                  {t("login.sessionExpiredDesc")}
                 </Alert>
               )}
 
@@ -308,7 +269,7 @@ export function LoginPage() {
                   htmlFor="email"
                   className="block text-sm font-medium text-foreground"
                 >
-                  {language === "ta" ? "மின்னஞ்சல்" : "Email address"}
+                  {t("login.emailLabel")}
                 </Label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
@@ -358,7 +319,7 @@ export function LoginPage() {
                   htmlFor="password"
                   className="block text-sm font-medium text-foreground"
                 >
-                  {language === "ta" ? "கடவுச்சொல்" : "Password"}
+                  {t("login.passwordLabel")}
                 </Label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
@@ -394,12 +355,8 @@ export function LoginPage() {
                     aria-pressed={showPassword}
                     aria-label={
                       showPassword
-                        ? language === "ta"
-                          ? "கடவுச்சொல்லை மறை"
-                          : "Hide password"
-                        : language === "ta"
-                          ? "கடவுச்சொல்லைக் காட்டு"
-                          : "Show password"
+                        ? t("login.hidePassword")
+                        : t("login.showPassword")
                     }
                   >
                     {showPassword ? (
@@ -435,12 +392,10 @@ export function LoginPage() {
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
                     <span className="size-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                    {language === "ta" ? "சரிபார்க்கிறது..." : "Signing in..."}
+                    {t("login.signingIn")}
                   </span>
-                ) : language === "ta" ? (
-                  "உள்நுழைக"
                 ) : (
-                  "Sign in"
+                  t("login.submit")
                 )}
               </Button>
             </form>
@@ -450,13 +405,7 @@ export function LoginPage() {
         {/* Demo Fast-Switch Cards */}
         <div className="rounded-control border border-border bg-card p-4 text-xs">
           <p className="font-semibold text-foreground">
-            {language === "ta" ? (
-              <>
-                சோதனை கணக்குகள் (<span lang="en">Demo Roles</span>):
-              </>
-            ) : (
-              "Benchmark Demo Roles:"
-            )}
+            {t("login.demoAccounts")}
           </p>
           <div className="mt-2 grid grid-cols-2 gap-2">
             {SEED_ACCOUNTS.map((acc) => (

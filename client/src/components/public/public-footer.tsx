@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { BrandLogo } from "@/components/ui/brand-logo";
-import { useLanguage } from "@/lib/i18n";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 export function PublicFooter() {
-  const { language } = useLanguage();
+  const { t } = useTranslation("public");
 
   return (
     <footer
@@ -22,21 +22,19 @@ export function PublicFooter() {
               </span>
             </div>
             <p className="max-w-sm text-xs text-muted-foreground leading-relaxed">
-              {language === "ta"
-                ? "சிறிய உணவு உற்பத்தி ஆலைகளுக்கான ஆர்டர்-டு-ஆடிட் ERP மற்றும் சரக்கு கணக்கு மென்பொருள்."
-                : "Order-to-audit ERP and shop floor ledger software for small food manufacturing mills in India."}
+              {t("footer.tagline")}
             </p>
             <p className="text-xs text-muted-foreground">
-              <strong className="text-foreground">Contact:</strong>{" "}
+              <strong className="text-foreground">
+                {t("footer.contactLabel")}
+              </strong>{" "}
               hello@mill-ledger.com
             </p>
           </div>
 
           <div className="space-y-2 text-xs">
             <h2 className="font-semibold text-foreground text-sm">
-              {language === "ta"
-                ? "தயாரிப்பு & செயல்முறை"
-                : "Product & Evaluation"}
+              {t("footer.product")}
             </h2>
             <ul className="space-y-2 text-muted-foreground">
               <li>
@@ -44,7 +42,7 @@ export function PublicFooter() {
                   to="/features"
                   className="hover:text-primary transition-colors"
                 >
-                  ERP Features
+                  {t("footer.erpFeatures")}
                 </Link>
               </li>
               <li>
@@ -52,7 +50,7 @@ export function PublicFooter() {
                   to="/workflows"
                   className="hover:text-primary transition-colors"
                 >
-                  Order-to-Audit Workflows
+                  {t("footer.orderToAudit")}
                 </Link>
               </li>
               <li>
@@ -60,7 +58,7 @@ export function PublicFooter() {
                   to="/spreadsheet-alternative"
                   className="hover:text-primary transition-colors"
                 >
-                  Spreadsheet Alternative
+                  {t("footer.spreadsheetAlt")}
                 </Link>
               </li>
               <li>
@@ -68,7 +66,7 @@ export function PublicFooter() {
                   to="/security"
                   className="hover:text-primary transition-colors"
                 >
-                  Security &amp; RBAC
+                  {t("footer.securityRbac")}
                 </Link>
               </li>
             </ul>
@@ -76,7 +74,7 @@ export function PublicFooter() {
 
           <div className="space-y-2 text-xs">
             <h2 className="font-semibold text-foreground text-sm">
-              {language === "ta" ? "வளங்கள் & தொடர்பு" : "Resources & Access"}
+              {t("footer.resourcesHeading")}
             </h2>
             <ul className="space-y-2 text-muted-foreground">
               <li>
@@ -84,7 +82,7 @@ export function PublicFooter() {
                   to="/resources"
                   className="hover:text-primary transition-colors"
                 >
-                  Mill Accounting Guides
+                  {t("footer.millGuides")}
                 </Link>
               </li>
               <li>
@@ -92,7 +90,7 @@ export function PublicFooter() {
                   to="/about"
                   className="hover:text-primary transition-colors"
                 >
-                  About MillLedger
+                  {t("footer.aboutMillLedger")}
                 </Link>
               </li>
               <li>
@@ -100,7 +98,7 @@ export function PublicFooter() {
                   to="/demo"
                   className="hover:text-primary transition-colors"
                 >
-                  Request Product Demo
+                  {t("footer.requestDemo")}
                 </Link>
               </li>
               <li>
@@ -108,7 +106,7 @@ export function PublicFooter() {
                   to="/contact"
                   className="hover:text-primary transition-colors"
                 >
-                  Contact Team
+                  {t("footer.contactTeam")}
                 </Link>
               </li>
               <li>
@@ -116,7 +114,7 @@ export function PublicFooter() {
                   to="/auth/login"
                   className="hover:text-primary transition-colors"
                 >
-                  Staff ERP Login
+                  {t("footer.staffLogin")}
                 </Link>
               </li>
             </ul>
@@ -124,11 +122,8 @@ export function PublicFooter() {
         </div>
 
         <div className="mt-8 border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-          <p lang="en">
-            © {CURRENT_YEAR} MillLedger. Order-to-Audit ERP for Food
-            Manufacturing Mills.
-          </p>
-          <p>English &amp; தமிழ் (Tamil) bilingual operations</p>
+          <p>{t("footer.copyright", { year: CURRENT_YEAR })}</p>
+          <p>{t("footer.bilingualNote")}</p>
         </div>
       </div>
     </footer>

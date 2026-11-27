@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowLeftIcon, ClockIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatTime } from "@/lib/formatters";
+import { useFormatters } from "@/hooks/use-formatters";
 import { Badge } from "@/components/ui/badge";
 
 interface PageHeaderProps {
@@ -30,6 +31,8 @@ export function PageHeader({
   badge,
   className,
 }: PageHeaderProps) {
+  const { t } = useTranslation("common");
+  const { formatTime } = useFormatters();
   return (
     <div
       className={cn(
@@ -55,7 +58,7 @@ export function PageHeader({
           {asOf && (
             <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground mr-1">
               <ClockIcon className="size-3.5 shrink-0" aria-hidden="true" />
-              <span>As of {formatTime(asOf)}</span>
+              <span>{t("states.asOf", { time: formatTime(asOf) })}</span>
             </span>
           )}
           {secondaryActions}

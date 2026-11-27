@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
@@ -8,7 +9,8 @@ import { assertCollectionResponse } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
-import { formatINR, formatDateTime } from "@/lib/formatters";
+import { useFormatters } from "@/hooks/use-formatters";
+import { getStatusLabel } from "@/lib/enum-labels";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataPagination } from "@/components/ui/data-pagination";
 import {
@@ -43,6 +45,8 @@ interface SalesInvoice {
 }
 
 export function InvoicesPage() {
+  const { t } = useTranslation(["finance", "common"]);
+  const { formatINR, formatDateTime } = useFormatters();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const canCreateInvoice = user?.role === "ADMIN";
@@ -115,7 +119,10 @@ export function InvoicesPage() {
         accessorKey: "invoiceNumber",
         enableHiding: false,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Invoice #" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.invoiceNumber")}
+          />
         ),
         cell: ({ row }) => (
           <Link
@@ -126,25 +133,33 @@ export function InvoicesPage() {
           </Link>
         ),
         meta: {
-          label: "Invoice #",
+          label: t("common:terms.invoiceNumber"),
         } satisfies DataTableColumnMeta<SalesInvoice>,
       },
       {
         accessorKey: "customerNameSnapshot",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Customer" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.customer")}
+          />
         ),
         cell: ({ row }) => (
           <span className="font-medium min-w-[160px] block">
             {row.original.customerNameSnapshot}
           </span>
         ),
-        meta: { label: "Customer" } satisfies DataTableColumnMeta<SalesInvoice>,
+        meta: {
+          label: t("common:terms.customer"),
+        } satisfies DataTableColumnMeta<SalesInvoice>,
       },
       {
         accessorKey: "deliveryStateSnapshot",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Place of supply" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.placeOfSupply")}
+          />
         ),
         cell: ({ row }) => (
           <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -152,22 +167,25 @@ export function InvoicesPage() {
           </span>
         ),
         meta: {
-          label: "Place of supply",
+          label: t("common:terms.placeOfSupply"),
         } satisfies DataTableColumnMeta<SalesInvoice>,
       },
       {
         accessorKey: "status",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Status" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.status")}
+          />
         ),
         cell: ({ row }) => (
           <Badge variant="outline" className="whitespace-nowrap">
-            {row.original.status.replaceAll("_", " ")}
+            {getStatusLabel(row.original.status)}
           </Badge>
         ),
         meta: {
-          label: "Status",
-          exportValue: (r) => r.status.replaceAll("_", " "),
+          label: t("common:terms.status"),
+          exportValue: (r) => getStatusLabel(r.status),
         } satisfies DataTableColumnMeta<SalesInvoice>,
       },
       {
@@ -176,7 +194,7 @@ export function InvoicesPage() {
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title="Taxable"
+            title={t("common:terms.taxable")}
             align="right"
           />
         ),
@@ -186,7 +204,7 @@ export function InvoicesPage() {
           </span>
         ),
         meta: {
-          label: "Taxable",
+          label: t("common:terms.taxable"),
           align: "right",
           exportValue: (r) => Number(r.taxableAmount),
         } satisfies DataTableColumnMeta<SalesInvoice>,
@@ -195,7 +213,11 @@ export function InvoicesPage() {
         id: "totalTaxAmount",
         accessorFn: (row) => Number(row.totalTaxAmount) || 0,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Tax" align="right" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.tax")}
+            align="right"
+          />
         ),
         cell: ({ row }) => (
           <span className="tabular-nums whitespace-nowrap">
@@ -203,7 +225,7 @@ export function InvoicesPage() {
           </span>
         ),
         meta: {
-          label: "Tax",
+          label: t("common:terms.tax"),
           align: "right",
           exportValue: (r) => Number(r.totalTaxAmount),
         } satisfies DataTableColumnMeta<SalesInvoice>,
@@ -212,7 +234,11 @@ export function InvoicesPage() {
         id: "totalAmount",
         accessorFn: (row) => Number(row.totalAmount) || 0,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Total" align="right" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.total")}
+            align="right"
+          />
         ),
         cell: ({ row }) => (
           <span className="font-medium tabular-nums whitespace-nowrap">
@@ -220,7 +246,7 @@ export function InvoicesPage() {
           </span>
         ),
         meta: {
-          label: "Total",
+          label: t("common:terms.total"),
           align: "right",
           exportValue: (r) => Number(r.totalAmount),
         } satisfies DataTableColumnMeta<SalesInvoice>,
@@ -231,7 +257,7 @@ export function InvoicesPage() {
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title="Outstanding"
+            title={t("common:terms.outstanding")}
             align="right"
           />
         ),
@@ -241,7 +267,7 @@ export function InvoicesPage() {
           </span>
         ),
         meta: {
-          label: "Outstanding",
+          label: t("common:terms.outstanding"),
           align: "right",
           exportValue: (r) => Number(r.outstandingAmount),
         } satisfies DataTableColumnMeta<SalesInvoice>,
@@ -250,7 +276,10 @@ export function InvoicesPage() {
         id: "postedAt",
         accessorFn: (row) => new Date(row.postedAt).getTime() || 0,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Posted" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("finance:invoices.postedAt")}
+          />
         ),
         cell: ({ row }) => (
           <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
@@ -258,19 +287,19 @@ export function InvoicesPage() {
           </span>
         ),
         meta: {
-          label: "Posted",
+          label: t("finance:invoices.postedAt"),
           exportValue: (r) => formatDateTime(r.postedAt),
         } satisfies DataTableColumnMeta<SalesInvoice>,
       },
     ],
-    [],
+    [t, formatINR, formatDateTime],
   );
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4 sm:p-6 lg:p-8">
       <PageHeader
-        title="Invoices"
-        description="Immutable GST tax invoices and approved orders awaiting billing."
+        title={t("finance:invoices.header")}
+        description={t("finance:invoices.description")}
         primaryAction={
           canCreateInvoice ? (
             <Button
@@ -279,7 +308,7 @@ export function InvoicesPage() {
               className="gap-1.5"
             >
               <PlusCircleIcon className="size-4" aria-hidden="true" />
-              Create invoice
+              {t("finance:invoices.createInvoice")}
             </Button>
           ) : null
         }
@@ -297,7 +326,7 @@ export function InvoicesPage() {
                 className={`size-4 ${isFetching ? "animate-spin" : ""}`}
                 aria-hidden="true"
               />
-              Refresh
+              {t("common:actions.refresh")}
             </Button>
           </div>
         }
@@ -306,7 +335,9 @@ export function InvoicesPage() {
       {canCreateInvoice && awaitingInvoice.length > 0 && (
         <section className="rounded-lg border border-amber-300 bg-amber-50/60 p-3.5 dark:border-amber-800 dark:bg-amber-950/30 space-y-2">
           <div className="text-xs font-semibold text-amber-900 dark:text-amber-200">
-            Approved orders awaiting GST invoice ({awaitingInvoice.length})
+            {t("finance:invoices.awaitingInvoice", {
+              count: awaitingInvoice.length,
+            })}
           </div>
           <div className="flex flex-wrap gap-2">
             {awaitingInvoice.map((ord) => (
@@ -347,7 +378,7 @@ export function InvoicesPage() {
               }}
               className="h-8 text-xs"
             >
-              {st === "ALL" ? "All" : st.replaceAll("_", " ")}
+              {st === "ALL" ? t("common:actions.all") : getStatusLabel(st)}
             </Button>
           ))}
         </div>
@@ -363,8 +394,8 @@ export function InvoicesPage() {
               setSearchQuery(e.target.value);
               resetPage();
             }}
-            placeholder="Search invoice # or customer..."
-            aria-label="Search invoices"
+            placeholder={t("finance:invoices.searchPlaceholder")}
+            aria-label={t("finance:invoices.searchPlaceholder")}
             className="h-9 pl-8"
           />
         </div>
@@ -374,14 +405,14 @@ export function InvoicesPage() {
         <SkeletonTable rows={6} columns={6} />
       ) : isError ? (
         <ErrorState
-          title="Failed to load invoices"
+          title={t("finance:invoices.failedToLoad")}
           description={extractErrorMessage(error)}
           onRetry={() => refetch()}
         />
       ) : filtered.length === 0 ? (
         <EmptyState
-          title="No invoices found"
-          description="Posted GST invoices will appear here."
+          title={t("finance:invoices.noInvoices")}
+          description={t("finance:invoices.noInvoicesDesc")}
         />
       ) : (
         <>
@@ -390,7 +421,7 @@ export function InvoicesPage() {
             data={filtered}
             columns={invoiceColumns}
             getRowId={(r) => r.id}
-            ariaLabel="Sales invoices"
+            ariaLabel={t("finance:invoices.title")}
             csvFilename="sales-invoices"
           />
 
@@ -401,7 +432,7 @@ export function InvoicesPage() {
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
             isFetching={isFetching}
-            itemLabel="invoices"
+            itemLabel={t("finance:invoices.itemLabel")}
           />
         </>
       )}

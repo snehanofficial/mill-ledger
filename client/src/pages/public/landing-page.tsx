@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { PublicLayout } from "@/layouts/public-layout";
-import { useLanguage } from "@/lib/i18n";
 
 const ORDER_TO_AUDIT_STAGES = [
   {
@@ -77,7 +77,7 @@ const WORKSPACE_ROLES = [
 ];
 
 export function LandingPage() {
-  const { language } = useLanguage();
+  const { t } = useTranslation("public");
 
   return (
     <PublicLayout showBreadcrumbs={false}>
@@ -87,15 +87,11 @@ export function LandingPage() {
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
             <div className="lg:col-span-7 space-y-6">
               <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-                {language === "ta"
-                  ? "சிறிய உணவு ஆலைகளுக்கான ஆர்டர்-டு-ஆடிட் ERP மற்றும் சரக்கு கணக்கு"
-                  : "Order-to-Audit ERP and Shop Floor Ledger for Small Food Manufacturing Mills"}
+                {t("landing.heroTitle")}
               </h1>
 
               <p className="max-w-2xl text-base text-muted-foreground leading-relaxed sm:text-lg">
-                {language === "ta"
-                  ? "கொள்முதல், BOM உற்பத்தி, ஆஃப்லைன் விற்பனையாளர் ஆர்டர்கள், இருப்பு முன்பதிவு, GST பில்லிங் மற்றும் தணிக்கை அறிக்கைகளை ஒரே அமைப்பில் இணைக்கும் மென்பொருள்."
-                  : "MillLedger replaces disconnected spreadsheets with a single transactional system covering raw material purchases, BOM production costing, offline field sales orders, stock reservations, Indian GST invoicing, and FIFO payment tracking."}
+                {t("landing.heroDesc")}
               </p>
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -107,11 +103,7 @@ export function LandingPage() {
                     className: "min-h-[44px] gap-2 px-6",
                   })}
                 >
-                  <span>
-                    {language === "ta"
-                      ? "நேரடி டெமோ கோருக"
-                      : "Request a Live Demo"}
-                  </span>
+                  <span>{t("nav.requestDemo")}</span>
                   <ArrowRightIcon className="size-4" aria-hidden="true" />
                 </Link>
                 <Link
@@ -122,9 +114,7 @@ export function LandingPage() {
                     className: "min-h-[44px] px-6",
                   })}
                 >
-                  {language === "ta"
-                    ? "ERP வசதிகளைப் பார்க்க"
-                    : "Explore ERP Features"}
+                  {t("footer.erpFeatures")}
                 </Link>
               </div>
             </div>
