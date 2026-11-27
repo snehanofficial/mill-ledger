@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import {
+  assertCollectionResponse,
+  assertEntityResponse,
+} from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatINR, formatDateTime } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
@@ -75,18 +79,21 @@ export function PaymentDetailPage() {
   const [bounceOpen, setBounceOpen] = useState(false);
   const [bounceReason, setBounceReason] = useState("");
 
-  const { data, isLoading, isError, error, refetch } = useQuery<
-    PaymentDetail | { payment: PaymentDetail }
-  >({
-    queryKey: ["payment", paymentId],
-    queryFn: async () => {
-      const res = await apiClient.get(`/payments/${paymentId}`);
-      return res.data;
-    },
-    enabled: Boolean(paymentId),
-  });
-
-  const payment = data && "payment" in data ? data.payment : data;
+  const { data: payment, isLoading, isError, error, refetch } =
+    useQuery<PaymentDetail>({
+      queryKey: ["payment", paymentId],
+      queryFn: async () => {
+        const endpoint = `/payments/${paymentId}`;
+        const res = await apiClient.get(endpoint);
+        return assertEntityResponse<PaymentDetail & Record<string, unknown>>(
+          res.data,
+          "payment",
+          ["allocations"],
+          endpoint,
+        );
+      },
+      enabled: Boolean(paymentId),
+    });
 
   const { data: openInvoicesData } = useQuery<{
     invoices: Array<{
@@ -100,9 +107,16 @@ export function PaymentDetailPage() {
       const res = await apiClient.get(
         `/finance/invoices?customerId=${payment!.customer.id}`,
       );
+      const validated = assertCollectionResponse<{
+        invoices: Array<{
+          id: string;
+          invoiceNumber: string;
+          outstandingAmount: number;
+        }>;
+      }>(res.data, "invoices", "/finance/invoices");
       return {
-        invoices: (res.data.invoices ?? []).filter(
-          (i: { outstandingAmount: number }) => Number(i.outstandingAmount) > 0,
+        invoices: validated.invoices.filter(
+          (i) => Number(i.outstandingAmount) > 0,
         ),
       };
     },

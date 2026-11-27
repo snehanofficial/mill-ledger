@@ -2,6 +2,10 @@ import { useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import {
+  assertCollectionResponse,
+  assertEntityResponse,
+} from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
@@ -151,7 +155,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     queryKey: ["report-filter-customers"],
     queryFn: async () => {
       const res = await apiClient.get("/sales/customers");
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "customers",
+        "/sales/customers",
+      );
     },
   });
 
@@ -166,7 +174,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     queryKey: ["report-sales", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/sales?${filterQs}`);
-      return res.data;
+      return assertCollectionResponse<{ rows: any[]; summary?: any }>(
+        res.data,
+        "rows",
+        "/reports/sales",
+      );
     },
     enabled: effectiveTab === "sales",
   });
@@ -176,7 +188,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     queryKey: ["report-gst", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/gst?${filterQs}`);
-      return res.data;
+      return assertEntityResponse<{
+        summary?: any;
+        rateBreakup: any[];
+        hsnSummary: any[];
+      }>(res.data, null, ["rateBreakup", "hsnSummary"], "/reports/gst");
     },
     enabled: effectiveTab === "gst",
   });
@@ -186,7 +202,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     queryKey: ["report-stock", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/stock?${filterQs}`);
-      return res.data;
+      return assertCollectionResponse<{ rows: any[]; summary?: any }>(
+        res.data,
+        "rows",
+        "/reports/stock",
+      );
     },
     enabled: effectiveTab === "stock",
   });
@@ -196,7 +216,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     queryKey: ["report-production", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/production?${filterQs}`);
-      return res.data;
+      return assertCollectionResponse<{ rows: any[]; summary?: any }>(
+        res.data,
+        "rows",
+        "/reports/production",
+      );
     },
     enabled: effectiveTab === "production",
   });
@@ -206,7 +230,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     queryKey: ["report-receivables", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/receivables?${filterQs}`);
-      return res.data;
+      return assertCollectionResponse<{ rows: any[]; summary?: any }>(
+        res.data,
+        "rows",
+        "/reports/receivables",
+      );
     },
     enabled: effectiveTab === "receivables",
   });
@@ -216,7 +244,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     queryKey: ["report-customer-sales", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/customer-sales?${filterQs}`);
-      return res.data;
+      return assertCollectionResponse<{ rows: any[] }>(
+        res.data,
+        "rows",
+        "/reports/customer-sales",
+      );
     },
     enabled: effectiveTab === "customer-sales",
   });
@@ -226,7 +258,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     queryKey: ["report-product-sales", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/product-sales?${filterQs}`);
-      return res.data;
+      return assertCollectionResponse<{ rows: any[] }>(
+        res.data,
+        "rows",
+        "/reports/product-sales",
+      );
     },
     enabled: effectiveTab === "product-sales",
   });
@@ -236,7 +272,11 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     queryKey: ["report-stock-ledger", filterQs],
     queryFn: async () => {
       const res = await apiClient.get(`/reports/stock-ledger?${filterQs}`);
-      return res.data;
+      return assertCollectionResponse<{ rows: any[] }>(
+        res.data,
+        "rows",
+        "/reports/stock-ledger",
+      );
     },
     enabled: effectiveTab === "stock-ledger",
   });
@@ -256,7 +296,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
         params.set("action", auditActionFilter);
       }
       const res = await apiClient.get(`/reports/audit?${params.toString()}`);
-      return res.data;
+      return assertCollectionResponse(res.data, "logs", "/reports/audit");
     },
     enabled: effectiveTab === "audit",
     placeholderData: keepPreviousData,

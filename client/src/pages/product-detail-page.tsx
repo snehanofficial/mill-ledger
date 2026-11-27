@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertEntityResponse } from "@/lib/api-contracts";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
 import { ErrorState, SkeletonTable } from "@/components/ui/loading-error-empty";
@@ -55,12 +56,15 @@ interface ProductDetailResponse {
 export function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>();
 
-  const { data, isLoading, isError, error, refetch } =
-    useQuery<ProductDetailResponse>({
+  const { data: product, isLoading, isError, error, refetch } =
+    useQuery<ProductDetailResponse["product"]>({
       queryKey: ["product-detail", productId],
       queryFn: async () => {
-        const res = await apiClient.get(`/masters/products/${productId}`);
-        return res.data;
+        const endpoint = `/masters/products/${productId}`;
+        const res = await apiClient.get(endpoint);
+        return assertEntityResponse<
+          ProductDetailResponse["product"] & Record<string, unknown>
+        >(res.data, "product", ["variants"], endpoint);
       },
       enabled: Boolean(productId),
     });
@@ -73,7 +77,7 @@ export function ProductDetailPage() {
     );
   }
 
-  if (isError || !data?.product) {
+  if (isError || !product) {
     return (
       <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
         <ErrorState
@@ -84,8 +88,6 @@ export function ProductDetailPage() {
       </div>
     );
   }
-
-  const product = data.product;
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8 max-w-6xl">
@@ -129,9 +131,10 @@ export function ProductDetailPage() {
                 </TableRow>
               ) : (
                 product.variants.map((v) => {
-                  const defaultPrice = v.priceLines.find(
+                  const defaultPrice = (v.priceLines ?? []).find(
                     (pl) => pl.priceList.isDefault,
                   );
+                  const recipes = v.recipes ?? [];
                   return (
                     <TableRow key={v.id}>
                       <TableCell className="font-mono text-xs">{v.sku}</TableCell>
@@ -143,9 +146,9 @@ export function ProductDetailPage() {
                         {defaultPrice ? formatINR(defaultPrice.price) : "Not set"}
                       </TableCell>
                       <TableCell>
-                        {v.recipes.length > 0 ? (
+                        {recipes.length > 0 ? (
                           <div className="flex flex-wrap gap-1.5">
-                            {v.recipes.map((r) => (
+                            {recipes.map((r) => (
                               <Link
                                 key={r.id}
                                 to={`/production/recipes/${r.id}`}

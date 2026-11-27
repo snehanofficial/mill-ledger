@@ -5,6 +5,7 @@ import type { PaginationMeta } from "@mill-ledger/shared";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWarehouses } from "@/hooks/use-warehouses";
 import { apiClient } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
 import { formatINR, formatQuantity } from "@/lib/formatters";
@@ -95,7 +96,7 @@ export function ProductionHistoryPage() {
         params.set("q", searchQuery.trim());
       }
       const res = await apiClient.get(`/production-runs?${params.toString()}`);
-      return res.data;
+      return assertCollectionResponse(res.data, "runs", "/production-runs");
     },
     placeholderData: keepPreviousData,
   });
@@ -109,7 +110,11 @@ export function ProductionHistoryPage() {
         ? `?warehouseId=${encodeURIComponent(activeWarehouse.id)}`
         : "";
       const res = await apiClient.get(`/inventory/balances${qs}`);
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "balances",
+        "/inventory/balances",
+      );
     },
   });
 
@@ -119,7 +124,11 @@ export function ProductionHistoryPage() {
     queryKey: ["production-recipes"],
     queryFn: async () => {
       const res = await apiClient.get("/production-runs/recipes");
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "recipes",
+        "/production-runs/recipes",
+      );
     },
   });
 

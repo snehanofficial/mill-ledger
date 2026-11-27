@@ -3,6 +3,7 @@ import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tansta
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
@@ -116,7 +117,11 @@ export function SuppliersPage() {
       const res = await apiClient.get(
         `/inventory/suppliers?${params.toString()}`,
       );
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "suppliers",
+        "/inventory/suppliers",
+      );
     },
     placeholderData: keepPreviousData,
   });

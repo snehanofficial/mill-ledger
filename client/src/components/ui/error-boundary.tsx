@@ -33,6 +33,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     console.error("[Client ErrorBoundary]", {
       name: error.name,
       message: error.message,
+      route: typeof window !== "undefined" ? window.location.pathname : undefined,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
       timestamp: new Date().toISOString(),

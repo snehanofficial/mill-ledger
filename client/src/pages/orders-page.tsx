@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -107,7 +108,7 @@ export function OrdersPage() {
         params.set("q", searchQuery.trim());
       }
       const res = await apiClient.get(`/sales/orders?${params.toString()}`);
-      return res.data;
+      return assertCollectionResponse(res.data, "orders", "/sales/orders");
     },
     placeholderData: keepPreviousData,
   });

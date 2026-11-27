@@ -4,6 +4,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import { usePagination } from "@/hooks/use-pagination";
 import { formatINR, formatQuantity, formatDateTime } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
@@ -68,7 +69,11 @@ export function StockLedgerPage() {
     queryKey: ["inventory-balances", "all-for-ledger"],
     queryFn: async () => {
       const res = await apiClient.get("/inventory/balances?limit=100");
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "balances",
+        "/inventory/balances",
+      );
     },
   });
 
@@ -78,10 +83,9 @@ export function StockLedgerPage() {
   }>({
     queryKey: ["inventory-item-ledger", itemId, page, pageSize],
     queryFn: async () => {
-      const res = await apiClient.get(
-        `/inventory/items/${itemId}/ledger?limit=${pageSize}&offset=${offset}`,
-      );
-      return res.data;
+      const endpoint = `/inventory/items/${itemId}/ledger?limit=${pageSize}&offset=${offset}`;
+      const res = await apiClient.get(endpoint);
+      return assertCollectionResponse(res.data, "ledger", endpoint);
     },
     enabled: Boolean(itemId),
     placeholderData: keepPreviousData,

@@ -11,6 +11,10 @@ import { usePagination } from "@/hooks/use-pagination";
 import { useUrlState } from "@/hooks/use-url-state";
 import { useSyncManager } from "@/offline/use-offline";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import {
+  assertCollectionResponse,
+  assertEntityResponse,
+} from "@/lib/api-contracts";
 import { formatINR } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -139,20 +143,23 @@ export function NewOrderPage() {
       productVariant: ProductItem;
     }>;
   };
-  const { data: draftData } = useQuery<
-    DraftOrderPayload | { order: DraftOrderPayload }
-  >({
+  const { data: draftData } = useQuery<DraftOrderPayload>({
     queryKey: ["sales-order", draftId],
     queryFn: async () => {
-      const res = await apiClient.get(`/sales/orders/${draftId}`);
-      return res.data;
+      const endpoint = `/sales/orders/${draftId}`;
+      const res = await apiClient.get(endpoint);
+      return assertEntityResponse<DraftOrderPayload & Record<string, unknown>>(
+        res.data,
+        "order",
+        ["lines"],
+        endpoint,
+      );
     },
     enabled: Boolean(draftId),
   });
 
   useEffect(() => {
-    const draft =
-      draftData && "order" in draftData ? draftData.order : draftData;
+    const draft = draftData;
     if (!draft || draft.status !== "DRAFT") return;
     setSelectedCustomerId(draft.customerId);
     setOrderNotes(draft.notes ?? "");
@@ -174,7 +181,11 @@ export function NewOrderPage() {
     queryKey: ["sales-customers"],
     queryFn: async () => {
       const res = await apiClient.get("/sales/customers");
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "customers",
+        "/sales/customers",
+      );
     },
   });
 
@@ -206,7 +217,7 @@ export function NewOrderPage() {
       const res = await apiClient.get<ProductsResponse>(
         `/sales/products?${params.toString()}`,
       );
-      return res.data;
+      return assertCollectionResponse(res.data, "products", "/sales/products");
     },
     placeholderData: keepPreviousData,
   });
@@ -216,7 +227,11 @@ export function NewOrderPage() {
     queryKey: ["inventory-balances"],
     queryFn: async () => {
       const res = await apiClient.get("/inventory/balances");
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "balances",
+        "/inventory/balances",
+      );
     },
   });
 

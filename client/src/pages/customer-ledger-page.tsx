@@ -1,6 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertEntityResponse } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatINR, formatDateTime } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
@@ -28,7 +29,8 @@ interface CustomerLedgerData {
   };
   summary: {
     totalInvoiced: number;
-    totalCredited: number;
+    totalCredited?: number;
+    totalCreditNotes?: number;
     totalPaid: number;
     netOutstanding: number;
     unallocatedCredit?: number;
@@ -63,8 +65,14 @@ export function CustomerLedgerPage() {
     useQuery<CustomerLedgerData>({
       queryKey: ["customer-ledger", customerId],
       queryFn: async () => {
-        const res = await apiClient.get(`/payments/ledger/${customerId}`);
-        return res.data;
+        const endpoint = `/payments/ledger/${customerId}`;
+        const res = await apiClient.get(endpoint);
+        return assertEntityResponse<CustomerLedgerData & Record<string, unknown>>(
+          res.data,
+          null,
+          ["invoices", "payments"],
+          endpoint,
+        );
       },
       enabled: Boolean(customerId),
     });
@@ -122,7 +130,7 @@ export function CustomerLedgerPage() {
         <div className="rounded-lg border border-border bg-card p-3">
           <div className="text-xs text-muted-foreground">Credit notes</div>
           <div className="text-lg font-semibold tabular-nums">
-            {formatINR(summary.totalCredited)}
+            {formatINR(summary.totalCredited ?? summary.totalCreditNotes ?? 0)}
           </div>
         </div>
         <div className="rounded-lg border border-border bg-card p-3">
@@ -154,7 +162,17 @@ export function CustomerLedgerPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.map((inv) => (
+              {invoices.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="py-6 text-center text-xs text-muted-foreground"
+                  >
+                    No invoices posted for this customer yet.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                invoices.map((inv) => (
                 <TableRow key={inv.id}>
                   <TableCell className="font-medium tabular-nums">
                     <Link
@@ -180,7 +198,8 @@ export function CustomerLedgerPage() {
                     {formatDateTime(inv.postedAt)}
                   </TableCell>
                 </TableRow>
-              ))}
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
@@ -201,7 +220,17 @@ export function CustomerLedgerPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {payments.map((p) => (
+              {payments.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="py-6 text-center text-xs text-muted-foreground"
+                  >
+                    No payments recorded for this customer yet.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                payments.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell className="font-medium tabular-nums">
                     <Link
@@ -225,7 +254,8 @@ export function CustomerLedgerPage() {
                     {formatDateTime(p.paymentDate)}
                   </TableCell>
                 </TableRow>
-              ))}
+                ))
+              )}
             </TableBody>
           </Table>
         </div>

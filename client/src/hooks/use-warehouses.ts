@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 
 export interface FacilityRecord {
   id: string;
@@ -42,10 +43,9 @@ export function useWarehouses(options?: {
       if (options?.facilityId) params.set("facilityId", options.facilityId);
       if (options?.includeInactive) params.set("includeInactive", "true");
       const qs = params.toString();
-      const res = await apiClient.get(
-        qs ? `/masters/warehouses?${qs}` : "/masters/warehouses",
-      );
-      return res.data;
+      const endpoint = qs ? `/masters/warehouses?${qs}` : "/masters/warehouses";
+      const res = await apiClient.get(endpoint);
+      return assertCollectionResponse(res.data, "warehouses", endpoint);
     },
   });
 }
@@ -55,8 +55,9 @@ export function useFacilities(includeInactive = false) {
     queryKey: ["masters-facilities", includeInactive],
     queryFn: async () => {
       const qs = includeInactive ? "?includeInactive=true" : "";
-      const res = await apiClient.get(`/masters/facilities${qs}`);
-      return res.data;
+      const endpoint = `/masters/facilities${qs}`;
+      const res = await apiClient.get(endpoint);
+      return assertCollectionResponse(res.data, "facilities", endpoint);
     },
   });
 }

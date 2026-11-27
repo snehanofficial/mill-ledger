@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
@@ -182,7 +183,7 @@ export function ProductsPage() {
         params.set("q", searchQuery.trim());
       }
       const res = await apiClient.get(`/masters/products?${params.toString()}`);
-      return res.data;
+      return assertCollectionResponse(res.data, "products", "/masters/products");
     },
     placeholderData: keepPreviousData,
   });

@@ -889,10 +889,30 @@ export class PaymentService {
       summary: {
         totalInvoiced,
         totalCreditNotes,
+        totalCredited: totalCreditNotes,
         totalPaid,
         netOutstanding,
         ageing,
       },
+      invoices: invoices.map((inv) => ({
+        id: inv.id,
+        invoiceNumber: inv.invoiceNumber,
+        postedAt: inv.postedAt,
+        totalAmount: Number(inv.totalAmount),
+        paidAmount: Number(inv.paidAmount),
+        outstandingAmount: Number(inv.outstandingAmount),
+        status: inv.status,
+      })),
+      payments: payments.map((p) => ({
+        id: p.id,
+        receiptNumber: p.paymentNumber,
+        paymentNumber: p.paymentNumber,
+        paymentDate: p.paymentDate,
+        paymentMode: p.paymentMode,
+        amount: Number(p.amount),
+        unallocatedAmount: Number(p.unallocatedAmount),
+        status: p.status,
+      })),
       ledgerEntries,
     };
   }

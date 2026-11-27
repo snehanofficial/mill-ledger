@@ -56,7 +56,7 @@ function RunActionsCell({
         directLaborCost: Number(run.directLaborCost) || 0,
         utilityCost: Number(run.utilityCost) || 0,
         notes: run.notes || undefined,
-        consumedMaterials: run.materials.map((m) => ({
+        consumedMaterials: (run.materials ?? []).map((m) => ({
           inventoryItemId: m.inventoryItemId,
           actualQty:
             Number(m.actualQty) > 0 ? Number(m.actualQty) : Number(m.plannedQty),
@@ -486,7 +486,7 @@ export function useProductionRunBulkActions({
                 directLaborCost: Number(run.directLaborCost) || 0,
                 utilityCost: Number(run.utilityCost) || 0,
                 notes: run.notes || undefined,
-                consumedMaterials: run.materials.map((m) => ({
+                consumedMaterials: (run.materials ?? []).map((m) => ({
                   inventoryItemId: m.inventoryItemId,
                   actualQty:
                     Number(m.actualQty) > 0

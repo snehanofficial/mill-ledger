@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertEntityResponse } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatINR, formatQuantity, formatDateTime } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
@@ -81,18 +82,21 @@ export function ProductionRunDetailPage() {
   const [reverseOpen, setReverseOpen] = useState(false);
   const [reverseReason, setReverseReason] = useState("");
 
-  const { data, isLoading, isError, error, refetch } = useQuery<
-    RunDetail | { run: RunDetail }
-  >({
-    queryKey: ["production-run", runId],
-    queryFn: async () => {
-      const res = await apiClient.get(`/production-runs/${runId}`);
-      return res.data;
-    },
-    enabled: Boolean(runId),
-  });
-
-  const run = data && "run" in data ? data.run : data;
+  const { data: run, isLoading, isError, error, refetch } =
+    useQuery<RunDetail>({
+      queryKey: ["production-run", runId],
+      queryFn: async () => {
+        const endpoint = `/production-runs/${runId}`;
+        const res = await apiClient.get(endpoint);
+        return assertEntityResponse<RunDetail & Record<string, unknown>>(
+          res.data,
+          "run",
+          ["materials"],
+          endpoint,
+        );
+      },
+      enabled: Boolean(runId),
+    });
 
   const reverseMutation = useMutation({
     mutationFn: async () => {

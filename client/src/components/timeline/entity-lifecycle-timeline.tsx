@@ -9,6 +9,7 @@ import type {
   TimelineFilterType,
 } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import { formatDateTime } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -229,7 +230,7 @@ function TimelineEventRow({
                       </tr>
                     </thead>
                     <tbody>
-                      {event.changes.map((c, idx) => (
+                      {(event.changes ?? []).map((c, idx) => (
                         <tr
                           key={`${c.field}-${idx}`}
                           className="border-b border-border last:border-0"
@@ -293,11 +294,11 @@ function TimelineEventRow({
               )}
             </dl>
 
-            {event.relatedRecords.length > 0 && (
+            {(event.relatedRecords ?? []).length > 0 && (
               <div className="space-y-1.5">
                 <div className="font-semibold text-foreground">Related records</div>
                 <div className="flex flex-wrap gap-2">
-                  {event.relatedRecords.map((rel, idx) =>
+                  {(event.relatedRecords ?? []).map((rel, idx) =>
                     rel.route ? (
                       <Link
                         key={`${rel.entityType}-${rel.entityId}-${idx}`}
@@ -353,10 +354,13 @@ export function EntityLifecycleTimeline({
           limit: String(limit),
           offset: "0",
         });
-        const res = await apiClient.get(
-          `/timeline/${entityType}/${entityId}?${params.toString()}`,
+        const endpoint = `/timeline/${entityType}/${entityId}?${params.toString()}`;
+        const res = await apiClient.get(endpoint);
+        return assertCollectionResponse<EntityTimelineResponse>(
+          res.data,
+          "events",
+          endpoint,
         );
-        return res.data;
       },
       enabled: Boolean(entityId),
     });

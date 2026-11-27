@@ -1,5 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import {
+  assertCollectionResponse,
+  assertEntityResponse,
+} from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatINR, formatQuantity, formatTime } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
@@ -112,7 +116,17 @@ export function DashboardPage() {
       queryKey: ["owner-dashboard"],
       queryFn: async () => {
         const res = await apiClient.get("/dashboard");
-        return res.data;
+        return assertEntityResponse<DashboardData & Record<string, unknown>>(
+          res.data,
+          null,
+          [
+            "recentInvoices",
+            "stockItems",
+            "recentProductionRuns",
+            "topReceivables",
+          ],
+          "/dashboard",
+        );
       },
     });
 
@@ -130,7 +144,7 @@ export function DashboardPage() {
     queryKey: ["sales-orders"],
     queryFn: async () => {
       const res = await apiClient.get("/sales/orders");
-      return res.data;
+      return assertCollectionResponse(res.data, "orders", "/sales/orders");
     },
     enabled: isAdmin,
   });
@@ -451,7 +465,7 @@ export function DashboardPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      data?.recentInvoices.map((inv) => (
+                      (data?.recentInvoices ?? []).map((inv) => (
                         <TableRow key={inv.invoiceId}>
                           <TableCell className="font-mono text-xs font-semibold">
                             {inv.invoiceNumber}
@@ -521,7 +535,7 @@ export function DashboardPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      data?.stockItems.map((item) => (
+                      (data?.stockItems ?? []).map((item) => (
                         <TableRow key={item.sku}>
                           <TableCell>
                             <div className="flex flex-col text-xs">

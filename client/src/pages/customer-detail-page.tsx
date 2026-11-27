@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertEntityResponse } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatDateTime, formatINR } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
@@ -51,12 +52,15 @@ export function CustomerDetailPage() {
     user?.role === "ACCOUNTANT" ||
     user?.role === "OWNER";
 
-  const { data, isLoading, isError, error, refetch } =
-    useQuery<CustomerDetailResponse>({
+  const { data: customer, isLoading, isError, error, refetch } =
+    useQuery<CustomerDetailResponse["customer"]>({
       queryKey: ["customer-detail", customerId],
       queryFn: async () => {
-        const res = await apiClient.get(`/sales/customers/${customerId}`);
-        return res.data;
+        const endpoint = `/sales/customers/${customerId}`;
+        const res = await apiClient.get(endpoint);
+        return assertEntityResponse<
+          CustomerDetailResponse["customer"] & Record<string, unknown>
+        >(res.data, "customer", ["assignments"], endpoint);
       },
       enabled: Boolean(customerId),
     });
@@ -69,7 +73,7 @@ export function CustomerDetailPage() {
     );
   }
 
-  if (isError || !data?.customer) {
+  if (isError || !customer) {
     return (
       <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
         <ErrorState
@@ -80,8 +84,6 @@ export function CustomerDetailPage() {
       </div>
     );
   }
-
-  const customer = data.customer;
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8 max-w-6xl">

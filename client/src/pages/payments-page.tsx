@@ -3,6 +3,7 @@ import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tansta
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
 import { formatDate, formatINR } from "@/lib/formatters";
@@ -195,7 +196,11 @@ export function PaymentsPage() {
       const res = await apiClient.get(
         `/finance/invoices?customerId=${allocatingPayment?.customer?.id ?? ""}`,
       );
-      return res.data;
+      return assertCollectionResponse<{ invoices: OpenInvoice[] }>(
+        res.data,
+        "invoices",
+        "/finance/invoices",
+      );
     },
   });
 
@@ -281,7 +286,7 @@ export function PaymentsPage() {
         params.set("q", searchQuery.trim());
       }
       const res = await apiClient.get(`/payments?${params.toString()}`);
-      return res.data;
+      return assertCollectionResponse(res.data, "payments", "/payments");
     },
     placeholderData: keepPreviousData,
   });
@@ -309,7 +314,11 @@ export function PaymentsPage() {
       const res = await apiClient.get(
         `/payments/receivables/summary?${params.toString()}`,
       );
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "receivables",
+        "/payments/receivables/summary",
+      );
     },
     placeholderData: keepPreviousData,
   });
@@ -319,10 +328,9 @@ export function PaymentsPage() {
     useQuery<CustomerLedgerData>({
       queryKey: ["customer-ledger", selectedCustomerIdForLedger],
       queryFn: async () => {
-        const res = await apiClient.get(
-          `/payments/ledger/${selectedCustomerIdForLedger}`,
-        );
-        return res.data;
+        const endpoint = `/payments/ledger/${selectedCustomerIdForLedger}`;
+        const res = await apiClient.get(endpoint);
+        return assertCollectionResponse(res.data, "ledgerEntries", endpoint);
       },
       enabled: !!selectedCustomerIdForLedger,
     });
@@ -334,8 +342,13 @@ export function PaymentsPage() {
       const res = await apiClient.get(
         `/finance/invoices?customerId=${selectedCustomerId}`,
       );
-      const invs: OpenInvoice[] = (res.data.invoices || []).filter(
-        (i: any) => Number(i.outstandingAmount) > 0,
+      const data = assertCollectionResponse<{ invoices: OpenInvoice[] }>(
+        res.data,
+        "invoices",
+        "/finance/invoices",
+      );
+      const invs: OpenInvoice[] = data.invoices.filter(
+        (i) => Number(i.outstandingAmount) > 0,
       );
       return { invoices: invs };
     },
@@ -754,10 +767,10 @@ export function PaymentsPage() {
                         </span>
                       </div>
                     )}
-                    {p.allocations.length > 0 && (
+                    {(p.allocations ?? []).length > 0 && (
                       <div className="text-2xs text-muted-foreground pt-1">
                         <span className="font-medium">Allocated: </span>
-                        {p.allocations.map((a) => (
+                        {(p.allocations ?? []).map((a) => (
                           <span
                             key={a.id}
                             className="font-mono text-emerald-600 dark:text-emerald-400 mr-2"
@@ -854,12 +867,12 @@ export function PaymentsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1 text-xs">
-                          {p.allocations.length === 0 ? (
+                          {(p.allocations ?? []).length === 0 ? (
                             <span className="italic text-muted-foreground">
                               Unallocated advance
                             </span>
                           ) : (
-                            p.allocations.map((a) => (
+                            (p.allocations ?? []).map((a) => (
                               <div
                                 key={a.id}
                                 className="flex items-center gap-1 font-mono text-emerald-600 dark:text-emerald-400"
@@ -1290,7 +1303,7 @@ export function PaymentsPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {customerLedger.ledgerEntries.map((entry, idx) => (
+                        {(customerLedger.ledgerEntries ?? []).map((entry, idx) => (
                           <TableRow key={idx}>
                             <TableCell className="text-xs text-muted-foreground">
                               {formatDate(entry.date)}
@@ -1545,7 +1558,7 @@ export function PaymentsPage() {
                         <span className="text-[11px] text-muted-foreground">
                           Specify exact allocation amount per open invoice:
                         </span>
-                        {openInvoicesData?.invoices.map((inv) => (
+                        {(openInvoicesData?.invoices ?? []).map((inv) => (
                           <div
                             key={inv.id}
                             className="flex items-center justify-between gap-2 rounded border bg-card p-2 text-xs"

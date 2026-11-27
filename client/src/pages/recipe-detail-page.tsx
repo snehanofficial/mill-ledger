@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertEntityResponse } from "@/lib/api-contracts";
 import { formatDateTime, formatQuantity } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
 import { ErrorState, SkeletonTable } from "@/components/ui/loading-error-empty";
@@ -60,12 +61,15 @@ interface RecipeDetailResponse {
 export function RecipeDetailPage() {
   const { recipeId } = useParams<{ recipeId: string }>();
 
-  const { data, isLoading, isError, error, refetch } =
-    useQuery<RecipeDetailResponse>({
+  const { data: recipe, isLoading, isError, error, refetch } =
+    useQuery<RecipeDetailResponse["recipe"]>({
       queryKey: ["recipe-detail", recipeId],
       queryFn: async () => {
-        const res = await apiClient.get(`/production-runs/recipes/${recipeId}`);
-        return res.data;
+        const endpoint = `/production-runs/recipes/${recipeId}`;
+        const res = await apiClient.get(endpoint);
+        return assertEntityResponse<
+          RecipeDetailResponse["recipe"] & Record<string, unknown>
+        >(res.data, "recipe", ["items", "productionRuns"], endpoint);
       },
       enabled: Boolean(recipeId),
     });
@@ -78,7 +82,7 @@ export function RecipeDetailPage() {
     );
   }
 
-  if (isError || !data?.recipe) {
+  if (isError || !recipe) {
     return (
       <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
         <ErrorState
@@ -89,8 +93,6 @@ export function RecipeDetailPage() {
       </div>
     );
   }
-
-  const recipe = data.recipe;
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8 max-w-6xl">
@@ -125,7 +127,7 @@ export function RecipeDetailPage() {
         <div>
           <div className="text-xs text-muted-foreground">Revisions for variant</div>
           <div className="flex flex-wrap gap-1.5 pt-0.5">
-            {recipe.productVariant.recipes.map((r) => (
+            {(recipe.productVariant.recipes ?? []).map((r) => (
               <Link
                 key={r.id}
                 to={`/production/recipes/${r.id}`}

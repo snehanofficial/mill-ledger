@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   isRouteErrorResponse,
+  useLocation,
   useNavigate,
   useRevalidator,
   useRouteError,
@@ -30,9 +31,22 @@ export function RouteErrorFallback({
   homePath = "/dashboard",
 }: RouteErrorFallbackProps) {
   const error = useRouteError();
+  const location = useLocation();
   const navigate = useNavigate();
   const revalidator = useRevalidator();
   const [showDetails, setShowDetails] = useState(false);
+
+  useEffect(() => {
+    if (error instanceof Error) {
+      console.error("[RouteErrorFallback]", {
+        route: location.pathname,
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [error, location.pathname]);
 
   const isRouteResponse = isRouteErrorResponse(error);
   const statusCode = isRouteResponse ? error.status : undefined;

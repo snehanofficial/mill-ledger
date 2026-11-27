@@ -4,6 +4,7 @@ import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tansta
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWarehouses } from "@/hooks/use-warehouses";
 import { useUrlState } from "@/hooks/use-url-state";
@@ -357,7 +358,11 @@ export function StockPage() {
         params.set("q", searchQuery.trim());
       }
       const res = await apiClient.get(`/inventory/balances?${params.toString()}`);
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "balances",
+        "/inventory/balances",
+      );
     },
     placeholderData: keepPreviousData,
   });

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertEntityResponse } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatDateTime, formatQuantity, formatINR } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
@@ -77,18 +78,21 @@ export function DispatchDetailPage() {
   const [returnReason, setReturnReason] = useState("");
   const [returnQuantities, setReturnQuantities] = useState<Record<string, string>>({});
 
-  const { data, isLoading, isError, error, refetch } = useQuery<{
-    dispatch: DispatchDetail;
-  }>({
-    queryKey: ["dispatch", dispatchId],
-    queryFn: async () => {
-      const res = await apiClient.get(`/sales/dispatches/${dispatchId}`);
-      return res.data;
-    },
-    enabled: Boolean(dispatchId),
-  });
-
-  const dispatch = data?.dispatch;
+  const { data: dispatch, isLoading, isError, error, refetch } =
+    useQuery<DispatchDetail>({
+      queryKey: ["dispatch", dispatchId],
+      queryFn: async () => {
+        const endpoint = `/sales/dispatches/${dispatchId}`;
+        const res = await apiClient.get(endpoint);
+        return assertEntityResponse<DispatchDetail & Record<string, unknown>>(
+          res.data,
+          "dispatch",
+          ["lines"],
+          endpoint,
+        );
+      },
+      enabled: Boolean(dispatchId),
+    });
 
   useEffect(() => {
     if (!dispatch) return;

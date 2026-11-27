@@ -4,6 +4,7 @@ import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tansta
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
@@ -116,7 +117,7 @@ export function CustomersPage() {
         params.set("q", searchQuery.trim());
       }
       const res = await apiClient.get(`/sales/customers?${params.toString()}`);
-      return res.data;
+      return assertCollectionResponse(res.data, "customers", "/sales/customers");
     },
     placeholderData: keepPreviousData,
   });
@@ -126,7 +127,7 @@ export function CustomersPage() {
     enabled: canManageCustomers,
     queryFn: async () => {
       const res = await apiClient.get("/sales/salesmen");
-      return res.data;
+      return assertCollectionResponse(res.data, "salesmen", "/sales/salesmen");
     },
   });
 

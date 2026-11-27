@@ -233,11 +233,12 @@ export function DeviceOutboxSheet({
             </div>
           ) : (
             outboxOrders.map((ord) => {
-              const totalItems = ord.items.reduce(
+              const items = Array.isArray(ord.items) ? ord.items : [];
+              const totalItems = items.reduce(
                 (sum, it) => sum + Number(it.quantity),
                 0,
               );
-              const totalQuoted = ord.items.reduce(
+              const totalQuoted = items.reduce(
                 (sum, it) =>
                   sum + Number(it.quantity) * Number(it.quotedUnitPrice),
                 0,
@@ -293,7 +294,7 @@ export function DeviceOutboxSheet({
 
                   {/* Items breakdown */}
                   <div className="bg-muted/40 rounded p-2 space-y-1">
-                    {ord.items.map((it, idx) => (
+                    {items.map((it, idx) => (
                       <div
                         key={idx}
                         className="flex justify-between text-muted-foreground"

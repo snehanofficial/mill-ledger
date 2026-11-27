@@ -5,6 +5,7 @@ import type { PaginationMeta } from "@mill-ledger/shared";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWarehouses } from "@/hooks/use-warehouses";
 import { apiClient } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import { formatINR, formatQuantity, formatDate } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import { PageHeader } from "@/components/ui/page-header";
@@ -96,7 +97,7 @@ export function ProductionTodayPage({
     queryKey: ["production-runs", "today-feed"],
     queryFn: async () => {
       const res = await apiClient.get("/production-runs?limit=50&offset=0");
-      return res.data;
+      return assertCollectionResponse(res.data, "runs", "/production-runs");
     },
   });
 
@@ -109,7 +110,11 @@ export function ProductionTodayPage({
         ? `?warehouseId=${encodeURIComponent(activeWarehouse.id)}`
         : "";
       const res = await apiClient.get(`/inventory/balances${qs}`);
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "balances",
+        "/inventory/balances",
+      );
     },
   });
 
@@ -119,7 +124,11 @@ export function ProductionTodayPage({
     queryKey: ["production-recipes"],
     queryFn: async () => {
       const res = await apiClient.get("/production-runs/recipes");
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "recipes",
+        "/production-runs/recipes",
+      );
     },
   });
 

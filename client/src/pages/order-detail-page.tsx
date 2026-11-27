@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import {
+  assertCollectionResponse,
+  assertEntityResponse,
+} from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatINR, formatQuantity, formatDateTime } from "@/lib/formatters";
 import { RecordHeader, LifecycleSteps, type LifecycleStep } from "@/components/ui/page-header";
@@ -152,28 +156,35 @@ export function OrderDetailPage() {
   const [rejectionReason, setRejectionReason] = useState("");
 
   const {
-    data: orderData,
+    data: order,
     isLoading,
     isError,
     error,
     refetch,
-  } = useQuery<OrderDetail | { order: OrderDetail }>({
+  } = useQuery<OrderDetail>({
     queryKey: ["sales-order", orderId],
     queryFn: async () => {
-      const res = await apiClient.get(`/sales/orders/${orderId}`);
-      return res.data;
+      const endpoint = `/sales/orders/${orderId}`;
+      const res = await apiClient.get(endpoint);
+      return assertEntityResponse<OrderDetail & Record<string, unknown>>(
+        res.data,
+        "order",
+        ["lines"],
+        endpoint,
+      );
     },
     enabled: Boolean(orderId),
   });
-
-  const order =
-    orderData && "order" in orderData ? orderData.order : orderData;
 
   const { data: balancesData } = useQuery<{ balances: StockBalance[] }>({
     queryKey: ["inventory-balances"],
     queryFn: async () => {
       const res = await apiClient.get("/inventory/balances");
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "balances",
+        "/inventory/balances",
+      );
     },
     enabled: isAdmin && (order?.status === "SUBMITTED" || order?.status === "UNDER_REVIEW"),
   });

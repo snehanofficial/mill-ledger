@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
 import { formatINR } from "@/lib/formatters";
@@ -62,7 +63,11 @@ export function ReceivablesPage() {
       const res = await apiClient.get(
         `/payments/receivables/summary?${params.toString()}`,
       );
-      return res.data;
+      return assertCollectionResponse(
+        res.data,
+        "receivables",
+        "/payments/receivables/summary",
+      );
     },
     placeholderData: keepPreviousData,
   });

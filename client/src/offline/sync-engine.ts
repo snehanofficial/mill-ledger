@@ -1,5 +1,6 @@
 import axios from "axios";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import {
   offlineDb,
   requestPersistentStorage,
@@ -45,19 +46,37 @@ export async function refreshMasterDataSnapshot(
       }>("/sales/products?limit=100&offset=0"),
     ]);
 
-    const allRawProducts = [...firstProdRes.data.products];
-    const totalProducts = firstProdRes.data.pagination?.total ?? allRawProducts.length;
+    const customersPayload = assertCollectionResponse<{
+      customers: Array<CachedCustomer>;
+    }>(custRes.data, "customers", "/sales/customers");
+
+    const firstProductsPayload = assertCollectionResponse<{
+      products: Array<CachedProduct>;
+      pagination?: { limit: number; offset: number; count: number; total?: number };
+    }>(
+      firstProdRes.data,
+      "products",
+      "/sales/products?limit=100&offset=0",
+    );
+
+    const allRawProducts = [...firstProductsPayload.products];
+    const totalProducts =
+      firstProductsPayload.pagination?.total ?? allRawProducts.length;
     for (let offset = allRawProducts.length; offset < totalProducts; offset += 100) {
+      const nextEndpoint = `/sales/products?limit=100&offset=${offset}`;
       const nextRes = await apiClient.get<{ products: Array<CachedProduct> }>(
-        `/sales/products?limit=100&offset=${offset}`,
+        nextEndpoint,
       );
-      if (nextRes.data.products.length === 0) break;
-      allRawProducts.push(...nextRes.data.products);
+      const nextPayload = assertCollectionResponse<{
+        products: Array<CachedProduct>;
+      }>(nextRes.data, "products", nextEndpoint);
+      if (nextPayload.products.length === 0) break;
+      allRawProducts.push(...nextPayload.products);
     }
 
     const now = new Date().toISOString();
 
-    const customers: CachedCustomer[] = custRes.data.customers.map((c) => ({
+    const customers: CachedCustomer[] = customersPayload.customers.map((c) => ({
       id: c.id,
       code: c.code,
       name: c.name,

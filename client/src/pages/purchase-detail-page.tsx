@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertEntityResponse } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatINR, formatQuantity, formatDateTime } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
@@ -67,18 +68,21 @@ export function PurchaseDetailPage() {
   const [debitAmount, setDebitAmount] = useState("");
   const [debitReason, setDebitReason] = useState("");
 
-  const { data, isLoading, isError, error, refetch } = useQuery<{
-    receipt: ReceiptDetail;
-  }>({
-    queryKey: ["purchase-receipt", receiptId],
-    queryFn: async () => {
-      const res = await apiClient.get(`/inventory/purchase-receipts/${receiptId}`);
-      return res.data;
-    },
-    enabled: Boolean(receiptId),
-  });
-
-  const receipt = data?.receipt;
+  const { data: receipt, isLoading, isError, error, refetch } =
+    useQuery<ReceiptDetail>({
+      queryKey: ["purchase-receipt", receiptId],
+      queryFn: async () => {
+        const endpoint = `/inventory/purchase-receipts/${receiptId}`;
+        const res = await apiClient.get(endpoint);
+        return assertEntityResponse<ReceiptDetail & Record<string, unknown>>(
+          res.data,
+          "receipt",
+          ["lines"],
+          endpoint,
+        );
+      },
+      enabled: Boolean(receiptId),
+    });
 
   const reverseMutation = useMutation({
     mutationFn: async () => {

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { BACKEND_URL } from "./env";
+import { ApiContractError } from "./api-contracts";
 
 export const apiClient = axios.create({
   baseURL: `${BACKEND_URL}/api/v1`,
@@ -33,6 +34,9 @@ export function extractErrorMessage(
   error: unknown,
   fallback = "An unexpected error occurred",
 ): string {
+  if (error instanceof ApiContractError) {
+    return error.message;
+  }
   if (!error || typeof error !== "object") return fallback;
   const e = error as {
     code?: unknown;

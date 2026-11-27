@@ -2,6 +2,7 @@ import { useState } from "react";
 import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertCollectionResponse } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { usePagination } from "@/hooks/use-pagination";
 import { DataPagination } from "@/components/ui/data-pagination";
@@ -333,7 +334,7 @@ export function SettingsPage() {
       const res = await apiClient.get(
         `/users?limit=${usersPageSize}&offset=${usersOffset}`,
       );
-      return res.data;
+      return assertCollectionResponse(res.data, "users", "/users");
     },
     enabled: activeTab === "users",
     placeholderData: keepPreviousData,
@@ -373,26 +374,31 @@ export function SettingsPage() {
     },
     onMutate: async ({ id, isActive }) => {
       await queryClient.cancelQueries({ queryKey: ["admin-users"] });
-      const previousUsers = queryClient.getQueryData<{ users: UserRecord[] }>([
-        "admin-users",
-      ]);
-      queryClient.setQueryData<{ users: UserRecord[] }>(
-        ["admin-users"],
-        (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            users: old.users.map((u) => (u.id === id ? { ...u, isActive } : u)),
-          };
-        },
-      );
-      return { previousUsers };
+      const previousQueries = queryClient.getQueriesData<{
+        users: UserRecord[];
+        pagination?: PaginationMeta;
+      }>({ queryKey: ["admin-users"] });
+      queryClient.setQueriesData<{
+        users: UserRecord[];
+        pagination?: PaginationMeta;
+      }>({ queryKey: ["admin-users"] }, (old) => {
+        if (!old || !Array.isArray(old.users)) return old;
+        return {
+          ...old,
+          users: old.users.map((u) => (u.id === id ? { ...u, isActive } : u)),
+        };
+      });
+      return { previousQueries };
     },
-    onError: (err: any, _vars, context) => {
-      if (context?.previousUsers) {
-        queryClient.setQueryData(["admin-users"], context.previousUsers);
+    onError: (err: unknown, _vars, context) => {
+      if (context?.previousQueries) {
+        for (const [key, snapshot] of context.previousQueries) {
+          queryClient.setQueryData(key, snapshot);
+        }
       }
-      toast.error(`Failed to update user: ${err.message}. Reverted changes.`);
+      toast.error(
+        `Failed to update user: ${extractErrorMessage(err)}. Reverted changes.`,
+      );
     },
     onSuccess: () => {
       toast.success("User status updated successfully");

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { assertEntityResponse } from "@/lib/api-contracts";
 import { BACKEND_URL } from "@/lib/env";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatINR, formatQuantity, formatDateTime } from "@/lib/formatters";
@@ -98,18 +99,21 @@ export function InvoiceDetailPage() {
   const [creditReason, setCreditReason] = useState("");
   const [creditAmount, setCreditAmount] = useState("");
 
-  const { data, isLoading, isError, error, refetch } = useQuery<
-    InvoiceDetail | { invoice: InvoiceDetail }
-  >({
-    queryKey: ["sales-invoice", invoiceId],
-    queryFn: async () => {
-      const res = await apiClient.get(`/finance/invoices/${invoiceId}`);
-      return res.data;
-    },
-    enabled: Boolean(invoiceId),
-  });
-
-  const invoice = data && "invoice" in data ? data.invoice : data;
+  const { data: invoice, isLoading, isError, error, refetch } =
+    useQuery<InvoiceDetail>({
+      queryKey: ["sales-invoice", invoiceId],
+      queryFn: async () => {
+        const endpoint = `/finance/invoices/${invoiceId}`;
+        const res = await apiClient.get(endpoint);
+        return assertEntityResponse<InvoiceDetail & Record<string, unknown>>(
+          res.data,
+          "invoice",
+          ["lines"],
+          endpoint,
+        );
+      },
+      enabled: Boolean(invoiceId),
+    });
 
   const creditNoteMutation = useMutation({
     mutationFn: async () => {
