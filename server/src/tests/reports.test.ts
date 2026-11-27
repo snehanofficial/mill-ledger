@@ -328,7 +328,7 @@ describe("M8: Reporting, audit logs, and owner dashboard", () => {
     expect(exportRes.status).toBe(200);
     expect(exportRes.headers.get("content-type")).toContain("text/csv");
     const csvText = await exportRes.text();
-    expect(csvText).toContain("Sales Register");
+    expect(csvText).toContain("Invoice #,Date,Cust. Code,Customer");
     expect(csvText).toContain("7875");
 
     // J. Audit Log Report
