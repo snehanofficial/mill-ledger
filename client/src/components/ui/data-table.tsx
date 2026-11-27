@@ -321,13 +321,77 @@ export function DataTable<TData>({
   const showToolbar =
     Boolean(toolbarLeft) ||
     Boolean(toolbarRight) ||
+    enableRowSelection ||
     (enableColumnVisibility && hideableColumns.length > 0);
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
       {showToolbar && (
-        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-2">{toolbarLeft}</div>
+        <div
+          role={selectedCount > 0 ? "region" : undefined}
+          aria-label={selectedCount > 0 ? "Bulk actions" : undefined}
+          className={cn(
+            "flex min-h-[46px] flex-wrap items-center justify-between gap-2 rounded-lg border px-2.5 py-1 transition-colors",
+            selectedCount > 0
+              ? "border-primary/30 bg-selection/70"
+              : "border-transparent bg-transparent px-0",
+          )}
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedCount > 0 ? (
+              <>
+                <span className="text-xs font-semibold text-foreground tabular-nums">
+                  {selectedCount} {selectedCount === 1 ? "row" : "rows"} selected
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSelection}
+                  className="h-9 px-2 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <XIcon data-icon="inline-start" aria-hidden="true" />
+                  Clear
+                </Button>
+                {bulkActions
+                  .filter((action) => !action.hidden?.(selectedRows))
+                  .map((action) => {
+                    const Icon = action.icon;
+                    const isDisabled =
+                      typeof action.disabled === "function"
+                        ? action.disabled(selectedRows)
+                        : action.disabled;
+                    return (
+                      <Button
+                        key={action.id}
+                        variant={action.variant ?? "outline"}
+                        size="sm"
+                        disabled={isDisabled}
+                        onClick={() => action.onClick(selectedRows, clearSelection)}
+                        className="h-9 text-xs"
+                      >
+                        {Icon && (
+                          <Icon data-icon="inline-start" aria-hidden={true} />
+                        )}
+                        {action.label}
+                      </Button>
+                    );
+                  })}
+                {enableCsvExport && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportSelectedCsv}
+                    className="h-9 text-xs"
+                  >
+                    <DownloadIcon data-icon="inline-start" aria-hidden="true" />
+                    Export CSV ({selectedCount})
+                  </Button>
+                )}
+              </>
+            ) : (
+              toolbarLeft
+            )}
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             {toolbarRight}
             {enableColumnVisibility && hideableColumns.length > 0 && (
@@ -392,64 +456,6 @@ export function DataTable<TData>({
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-            )}
-          </div>
-        </div>
-      )}
-
-      {selectedCount > 0 && (
-        <div
-          role="region"
-          aria-label="Bulk actions"
-          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/30 bg-selection/70 px-3 py-2 text-xs"
-        >
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-foreground tabular-nums">
-              {selectedCount} {selectedCount === 1 ? "row" : "rows"} selected
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearSelection}
-              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-            >
-              <XIcon data-icon="inline-start" aria-hidden="true" />
-              Clear
-            </Button>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {bulkActions
-              .filter((action) => !action.hidden?.(selectedRows))
-              .map((action) => {
-                const Icon = action.icon;
-                const isDisabled =
-                  typeof action.disabled === "function"
-                    ? action.disabled(selectedRows)
-                    : action.disabled;
-                return (
-                  <Button
-                    key={action.id}
-                    variant={action.variant ?? "outline"}
-                    size="sm"
-                    disabled={isDisabled}
-                    onClick={() => action.onClick(selectedRows, clearSelection)}
-                    className="h-8 text-xs"
-                  >
-                    {Icon && <Icon data-icon="inline-start" aria-hidden={true} />}
-                    {action.label}
-                  </Button>
-                );
-              })}
-            {enableCsvExport && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportSelectedCsv}
-                className="h-8 text-xs"
-              >
-                <DownloadIcon data-icon="inline-start" aria-hidden="true" />
-                Export CSV ({selectedCount})
-              </Button>
             )}
           </div>
         </div>
