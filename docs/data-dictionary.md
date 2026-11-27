@@ -7,6 +7,7 @@ This document provides a field-by-field, column-by-column Data Dictionary for al
 ## 1. Mathematical & Precision Conventions
 
 To guarantee financial and inventory accuracy without IEEE 754 floating-point rounding errors:
+
 - **Financial Balances & Taxes (`Decimal(15,2)`)**: Stored with 2 decimal places (exact paise). Examples: `taxableAmount`, `cgstAmount`, `sgstAmount`, `igstAmount`, `totalAmount`, `outstandingAmount`, `allocatedAmount`.
 - **Physical Quantities & Unit Costs (`Decimal(18,6)`)**: Stored with 6 decimal places (micro-unit precision) to prevent rounding drift during multi-stage recipe bill-of-materials conversion, wastage calculation, and moving weighted-average inventory costing. Examples: `currentStock`, `unitCost`, `weightedAverageCost`, `quantity`, `yieldQuantity`.
 - **Primary Keys**: CUID (`String @id @default(cuid())`) or UUID strings.
@@ -17,14 +18,18 @@ To guarantee financial and inventory accuracy without IEEE 754 floating-point ro
 ## 2. Enumerations
 
 ### 2.1 `ItemCategory`
+
 Categories classifying inventory items:
+
 - `RAW_MATERIAL`: Raw grains, flour, spices, cooking oils.
 - `PACKAGING`: Packing pouches, corrugated cartons, sealing labels.
 - `WORK_IN_PROGRESS`: Intermediate doughs, unroasted mixes.
 - `FINISHED_GOOD`: Final consumer packaged food products (e.g., 200g Murukku packets).
 
 ### 2.2 `MovementType`
+
 Traceable stock movement classifications:
+
 - `PURCHASE_RECEIPT`: Inward stock from vendor purchase.
 - `PRODUCTION_ISSUE`: Outward raw material consumed into a production batch.
 - `PRODUCTION_RECEIPT`: Inward finished goods produced from a batch.
@@ -34,62 +39,82 @@ Traceable stock movement classifications:
 - `REVERSAL`: Compensating transaction reversing a previously posted run.
 
 ### 2.3 `RecipeItemType`
+
 Roles of materials in bill-of-materials:
+
 - `INPUT`: Raw material consumed in recipe.
 - `PACKAGING`: Packaging material consumed per unit produced.
 - `OUTPUT`: Primary finished product.
 - `BYPRODUCT`: Secondary consumable or saleable scrap.
 
 ### 2.4 `ProductionRunStatus`
+
 Lifecycle states of a manufacturing run:
+
 - `DRAFT`: Initial preparation of batch.
 - `IN_PROGRESS`: Floor processing underway.
 - `COMPLETED`: Run finished, output packets recorded and costed.
 - `REVERSED`: Production batch cancelled and stock reversed via compensating ledger movements.
 
 ### 2.5 `OrderStatus`
+
 Lifecycle states of a sales order:
+
 - `DRAFT`: Local unsubmitted draft.
 - `SUBMITTED`: Placed by salesman; stock atomically reserved.
 - `APPROVED`: Reviewed and approved by admin/owner.
 - `REJECTED`: Cancelled by admin or customer.
 
 ### 2.6 `FulfilmentStatus`
+
 Order dispatch completion status:
+
 - `UNFULFILLED`: No goods dispatched.
 - `PARTIALLY_FULFILLED`: Partial shipment dispatched.
 - `FULFILLED`: All ordered items dispatched.
 
 ### 2.7 `ReservationStatus`
+
 Atomic inventory reservation status:
+
 - `ACTIVE`: Quantity is reserved and unavailable for other orders.
 - `RELEASED`: Reservation fulfilled via dispatch.
 - `CANCELLED`: Order cancelled; reserved quantity returned to available pool.
 
 ### 2.8 `InvoiceStatus`
+
 Statutory sales invoice lifecycle:
+
 - `DRAFT`: Pro-forma invoice.
 - `POSTED`: Final tax invoice posted; immutable; assigned gapless GST financial-year sequence.
 - `PAID`: Outstanding balance reduced to zero via payment allocations.
 - `CANCELLED`: Cancelled prior to delivery or offset via Credit Note.
 
 ### 2.9 `DispatchStatus`
+
 Goods dispatch note status:
+
 - `PENDING`: Staged for loading.
 - `DISPATCHED`: Transport initiated; stock deducted from warehouse.
 - `DELIVERED`: Confirmed delivered to customer premises.
 
 ### 2.10 `DebitNoteStatus`
+
 Vendor purchase debit note status:
+
 - `DRAFT`: Initial draft.
 - `POSTED`: Confirmed and submitted to vendor.
 
 ### 2.11 `PaymentMode`
+
 Modes of monetary receipt:
+
 - `CASH`, `BANK_TRANSFER`, `UPI`, `CHEQUE`, `CREDIT_CARD`.
 
 ### 2.12 `PaymentStatus`
+
 State of customer payment allocation:
+
 - `UNALLOCATED`: Payment recorded but not linked to invoices.
 - `PARTIALLY_ALLOCATED`: Portion applied to invoices; unallocated balance remains.
 - `FULLY_ALLOCATED`: Entire payment sum applied across invoices.
@@ -99,7 +124,9 @@ State of customer payment allocation:
 ## 3. Auth, Tenancy & Organization Models
 
 ### `User`
+
 Accounts for system actors across roles.
+
 - `id` (`String`, PK): CUID identifier.
 - `name` (`String`): Full name.
 - `email` (`String`, Unique): Work email address.
@@ -110,7 +137,9 @@ Accounts for system actors across roles.
 - `createdAt`, `updatedAt` (`DateTime`).
 
 ### `Session`
+
 Active Better Auth web sessions.
+
 - `id` (`String`, PK): Session token ID.
 - `userId` (`String`, FK -> `User.id`): Authenticated user.
 - `token` (`String`, Unique): Cryptographic session bearer token.
@@ -120,7 +149,9 @@ Active Better Auth web sessions.
 - `createdAt`, `updatedAt` (`DateTime`).
 
 ### `Account`
+
 Authentication credentials and OAuth links.
+
 - `id` (`String`, PK): Account ID.
 - `userId` (`String`, FK -> `User.id`): Associated user.
 - `accountId` (`String`): Provider account identifier.
@@ -129,7 +160,9 @@ Authentication credentials and OAuth links.
 - `createdAt`, `updatedAt` (`DateTime`).
 
 ### `Verification`
+
 One-time tokens for email verification and password resets.
+
 - `id` (`String`, PK): Token ID.
 - `identifier` (`String`): Target user email.
 - `value` (`String`): One-time verification token.
@@ -137,7 +170,9 @@ One-time tokens for email verification and password resets.
 - `createdAt`, `updatedAt` (`DateTime`).
 
 ### `Organization`
+
 Top-level multi-tenant mill enterprise entity.
+
 - `id` (`String`, PK): Organization key (e.g., `"MILL"`).
 - `name` (`String`): Registered business trade name.
 - `code` (`String`, Unique): Organization short code.
@@ -147,7 +182,9 @@ Top-level multi-tenant mill enterprise entity.
 - `createdAt`, `updatedAt` (`DateTime`).
 
 ### `Facility`
+
 Physical operational milling and packing plants.
+
 - `id` (`String`, PK): Facility ID.
 - `organizationId` (`String`, FK -> `Organization.id`): Parent organization.
 - `name` (`String`): Plant facility name.
@@ -155,7 +192,9 @@ Physical operational milling and packing plants.
 - `createdAt`, `updatedAt` (`DateTime`).
 
 ### `Warehouse`
+
 Specific storage zones within a facility (raw storage, finished goods cold room).
+
 - `id` (`String`, PK): Warehouse ID.
 - `facilityId` (`String`, FK -> `Facility.id`): Parent facility.
 - `name` (`String`): Storage location name.
@@ -167,7 +206,9 @@ Specific storage zones within a facility (raw storage, finished goods cold room)
 ## 4. Master Data Models
 
 ### `Customer`
+
 Wholesale distributors, retail stores, and direct buyers.
+
 - `id` (`String`, PK): Customer ID.
 - `organizationId` (`String`, FK -> `Organization.id`): Owning tenant.
 - `name` (`String`): Registered business name.
@@ -181,14 +222,18 @@ Wholesale distributors, retail stores, and direct buyers.
 - `createdAt`, `updatedAt` (`DateTime`).
 
 ### `SalesmanCustomerAssignment`
+
 ABAC salesman geographic account scoping table.
+
 - `id` (`String`, PK): Assignment ID.
 - `salesmanId` (`String`, FK -> `User.id`): Assigned sales representative.
 - `customerId` (`String`, FK -> `Customer.id`): Assigned customer account.
 - `assignedAt` (`DateTime`, Default `now()`).
 
 ### `Supplier`
+
 Raw material and packaging vendors.
+
 - `id` (`String`, PK): Supplier ID.
 - `organizationId` (`String`, FK -> `Organization.id`): Tenant key.
 - `name` (`String`): Vendor name.
@@ -198,7 +243,9 @@ Raw material and packaging vendors.
 - `createdAt`, `updatedAt` (`DateTime`).
 
 ### `UnitOfMeasure`
+
 Physical units of measurement.
+
 - `id` (`String`, PK): UOM ID.
 - `name` (`String`): Full unit name (`Kilogram`, `Litre`, `Pouch`).
 - `code` (`String`, Unique): Abbreviation (`KG`, `L`, `PKT`, `BOX`).
@@ -206,7 +253,9 @@ Physical units of measurement.
 - `createdAt`, `updatedAt` (`DateTime`).
 
 ### `UnitConversion`
+
 Dimensional conversions between measurement units.
+
 - `id` (`String`, PK): Conversion ID.
 - `fromUomId` (`String`, FK -> `UnitOfMeasure.id`): Source unit.
 - `toUomId` (`String`, FK -> `UnitOfMeasure.id`): Target unit.
@@ -214,7 +263,9 @@ Dimensional conversions between measurement units.
 - `createdAt`, `updatedAt` (`DateTime`).
 
 ### `InventoryItem`
+
 Tracked inventory SKUs with real-time stock balances.
+
 - `id` (`String`, PK): Item ID.
 - `organizationId` (`String`, FK -> `Organization.id`): Tenant key.
 - `sku` (`String`, Unique): SKU code (e.g. `RM-FLOUR`, `FG-MURUKKU-200G`).
@@ -229,14 +280,18 @@ Tracked inventory SKUs with real-time stock balances.
 - `createdAt`, `updatedAt` (`DateTime`).
 
 ### `Product` & `ProductVariant`
+
 Manufactured goods hierarchy and pack sizes.
+
 - `id` (`String`, PK).
 - `name`, `code` (`String`).
 - `inventoryItemId` (`String`, FK -> `InventoryItem.id`): Linked finished good SKU.
 - `packSize` (`Decimal(18,6)`): Net weight/volume per unit.
 
 ### `Recipe` & `RecipeItem`
+
 Manufacturing bill-of-materials (BOM) formulas.
+
 - `Recipe`:
   - `id` (`String`, PK).
   - `name`, `code` (`String`).
@@ -250,7 +305,9 @@ Manufacturing bill-of-materials (BOM) formulas.
   - `quantity` (`Decimal(18,6)`): Formula quantity required per batch.
 
 ### `TaxRate`
+
 Statutory Goods and Services Tax schedule.
+
 - `id` (`String`, PK): Tax rate ID.
 - `code` (`String`, Unique): Tax identifier (`GST_5`, `GST_12`, `GST_18`).
 - `name` (`String`): Rate description.
@@ -266,7 +323,9 @@ Statutory Goods and Services Tax schedule.
 ## 5. Inventory Ledger & Reservation Models
 
 ### `StockMovement`
+
 Immutable inventory double-entry transaction ledger.
+
 - `id` (`String`, PK): Movement ID.
 - `inventoryItemId` (`String`, FK -> `InventoryItem.id`): Affected SKU.
 - `warehouseId` (`String`, FK -> `Warehouse.id`): Location.
@@ -281,7 +340,9 @@ Immutable inventory double-entry transaction ledger.
 - `createdAt` (`DateTime`, Default `now()`).
 
 ### `StockReservation`
+
 Atomic stock reservation holding finished goods for approved sales orders.
+
 - `id` (`String`, PK): Reservation ID.
 - `salesOrderId` (`String`, FK -> `SalesOrder.id`): Linked order.
 - `inventoryItemId` (`String`, FK -> `InventoryItem.id`): Reserved SKU.
@@ -295,7 +356,9 @@ Atomic stock reservation holding finished goods for approved sales orders.
 ## 6. Manufacturing & Production Models
 
 ### `ProductionRun`
+
 Recorded manufacturing batch execution.
+
 - `id` (`String`, PK): Run ID.
 - `organizationId` (`String`, FK -> `Organization.id`): Tenant key.
 - `runNumber` (`String`, Unique): Document number (`PR-2026-0001`).
@@ -311,7 +374,9 @@ Recorded manufacturing batch execution.
 - `postedAt`, `createdAt`, `updatedAt` (`DateTime`).
 
 ### `ProductionRunMaterial`
+
 Bill of actual materials consumed in a specific production run.
+
 - `id` (`String`, PK).
 - `productionRunId` (`String`, FK -> `ProductionRun.id`): Linked run.
 - `inventoryItemId` (`String`, FK -> `InventoryItem.id`): Consumed SKU.
@@ -322,7 +387,9 @@ Bill of actual materials consumed in a specific production run.
 - `variancePercent` (`Decimal(5,2)`): Consumption variance percentage.
 
 ### `ProductionRunReversal`
+
 Audit record of compensated production run cancellation.
+
 - `id` (`String`, PK).
 - `productionRunId` (`String`, FK -> `ProductionRun.id`, Unique): Cancelled run.
 - `reason` (`String`): Reason for cancellation.
@@ -334,7 +401,9 @@ Audit record of compensated production run cancellation.
 ## 7. Procurement Models
 
 ### `PurchaseReceipt` & `PurchaseReceiptLine`
+
 Vendor inward goods receiving vouchers.
+
 - `PurchaseReceipt`:
   - `id` (`String`, PK).
   - `organizationId` (`String`, FK -> `Organization.id`).
@@ -356,7 +425,9 @@ Vendor inward goods receiving vouchers.
 ## 8. Sales, Invoicing & Fulfilment Models
 
 ### `SalesOrder` & `SalesOrderLine`
+
 Sales order agreements submitted by salesmen.
+
 - `SalesOrder`:
   - `id` (`String`, PK).
   - `organizationId` (`String`, FK -> `Organization.id`).
@@ -380,7 +451,9 @@ Sales order agreements submitted by salesmen.
   - `taxableAmount`, `cgstAmount`, `sgstAmount`, `igstAmount`, `lineTotal` (`Decimal(15,2)`).
 
 ### `SalesInvoice` & `SalesInvoiceLine`
+
 Statutory GST Tax Invoices.
+
 - `SalesInvoice`:
   - `id` (`String`, PK).
   - `organizationId` (`String`, FK -> `Organization.id`).
@@ -403,7 +476,9 @@ Statutory GST Tax Invoices.
   - `taxableAmount`, `cgstAmount`, `sgstAmount`, `igstAmount`, `lineTotal` (`Decimal(15,2)`).
 
 ### `Dispatch` & `DispatchLine`
+
 Warehouse delivery and transport orders.
+
 - `Dispatch`:
   - `id` (`String`, PK).
   - `dispatchNumber` (`String`, Unique): Document number (`DSP-2026-0001`).
@@ -421,7 +496,9 @@ Warehouse delivery and transport orders.
 ## 9. Payments & Adjustments Models
 
 ### `Payment`
+
 Monetary collections from customers.
+
 - `id` (`String`, PK).
 - `paymentNumber` (`String`, Unique): Document number (`PAY-2026-0001`).
 - `customerId` (`String`, FK -> `Customer.id`).
@@ -433,7 +510,9 @@ Monetary collections from customers.
 - `createdAt`, `updatedAt` (`DateTime`).
 
 ### `PaymentAllocation`
+
 FIFO or selective matching of payments against outstanding invoices.
+
 - `id` (`String`, PK).
 - `paymentId` (`String`, FK -> `Payment.id`).
 - `salesInvoiceId` (`String`, FK -> `SalesInvoice.id`).
@@ -441,7 +520,9 @@ FIFO or selective matching of payments against outstanding invoices.
 - `allocatedAt` (`DateTime`, Default `now()`).
 
 ### `CreditNote` & `DebitNote`
+
 Adjustments for returns, discounts, or supply shortages.
+
 - `CreditNote`:
   - `id` (`String`, PK).
   - `creditNoteNumber` (`String`, Unique): Document number (`CN-2026-0001`).
@@ -456,7 +537,9 @@ Adjustments for returns, discounts, or supply shortages.
 ## 10. Audit & Governance Models
 
 ### `AuditLog`
+
 Append-only tamper-resistant operational audit ledger.
+
 - `id` (`String`, PK): UUID identifier.
 - `userId` (`String?`): Operator executing the action.
 - `action` (`String`): Action verb (`LOGIN`, `CREATE`, `APPROVE`, `POST`, `DISPATCH`, `EXPORT`).
@@ -465,7 +548,9 @@ Append-only tamper-resistant operational audit ledger.
 - `createdAt` (`DateTime`, Default `now()`).
 
 ### `DocumentSequence`
+
 Atomic gapless statutory document numbering sequence generator.
+
 - `id` (`String`, PK).
 - `organizationId` (`String`, FK -> `Organization.id`).
 - `type` (`String`): Sequence type (`INVOICE`, `ORDER`, `DISPATCH`, `PAYMENT`, `PRODUCTION`).

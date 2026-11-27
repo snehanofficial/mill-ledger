@@ -52,18 +52,23 @@ export function CustomerDetailPage() {
     user?.role === "ACCOUNTANT" ||
     user?.role === "OWNER";
 
-  const { data: customer, isLoading, isError, error, refetch } =
-    useQuery<CustomerDetailResponse["customer"]>({
-      queryKey: ["customer-detail", customerId],
-      queryFn: async () => {
-        const endpoint = `/sales/customers/${customerId}`;
-        const res = await apiClient.get(endpoint);
-        return assertEntityResponse<
-          CustomerDetailResponse["customer"] & Record<string, unknown>
-        >(res.data, "customer", ["assignments"], endpoint);
-      },
-      enabled: Boolean(customerId),
-    });
+  const {
+    data: customer,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<CustomerDetailResponse["customer"]>({
+    queryKey: ["customer-detail", customerId],
+    queryFn: async () => {
+      const endpoint = `/sales/customers/${customerId}`;
+      const res = await apiClient.get(endpoint);
+      return assertEntityResponse<
+        CustomerDetailResponse["customer"] & Record<string, unknown>
+      >(res.data, "customer", ["assignments"], endpoint);
+    },
+    enabled: Boolean(customerId),
+  });
 
   if (isLoading) {
     return (
@@ -134,7 +139,7 @@ export function CustomerDetailPage() {
         </div>
       </div>
 
-      {(customer.salesOrders?.length || customer.invoices?.length) ? (
+      {customer.salesOrders?.length || customer.invoices?.length ? (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {customer.salesOrders && customer.salesOrders.length > 0 && (
             <section className="rounded-lg border border-border bg-card p-4 space-y-2.5">
@@ -167,36 +172,38 @@ export function CustomerDetailPage() {
             </section>
           )}
 
-          {canViewLedger && customer.invoices && customer.invoices.length > 0 && (
-            <section className="rounded-lg border border-border bg-card p-4 space-y-2.5">
-              <h2 className="text-sm font-semibold text-foreground">
-                Recent invoices
-              </h2>
-              <div className="space-y-2 text-sm">
-                {customer.invoices.slice(0, 5).map((inv) => (
-                  <div
-                    key={inv.id}
-                    className="flex items-center justify-between rounded-md border border-border px-3 py-2"
-                  >
-                    <div>
-                      <Link
-                        to={`/invoices/${inv.id}`}
-                        className="font-medium text-primary hover:underline"
-                      >
-                        {inv.invoiceNumber}
-                      </Link>
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        ({inv.status}) · {formatDateTime(inv.postedAt)}
+          {canViewLedger &&
+            customer.invoices &&
+            customer.invoices.length > 0 && (
+              <section className="rounded-lg border border-border bg-card p-4 space-y-2.5">
+                <h2 className="text-sm font-semibold text-foreground">
+                  Recent invoices
+                </h2>
+                <div className="space-y-2 text-sm">
+                  {customer.invoices.slice(0, 5).map((inv) => (
+                    <div
+                      key={inv.id}
+                      className="flex items-center justify-between rounded-md border border-border px-3 py-2"
+                    >
+                      <div>
+                        <Link
+                          to={`/invoices/${inv.id}`}
+                          className="font-medium text-primary hover:underline"
+                        >
+                          {inv.invoiceNumber}
+                        </Link>
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          ({inv.status}) · {formatDateTime(inv.postedAt)}
+                        </span>
+                      </div>
+                      <span className="font-medium tabular-nums">
+                        {formatINR(inv.totalAmount)}
                       </span>
                     </div>
-                    <span className="font-medium tabular-nums">
-                      {formatINR(inv.totalAmount)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+                  ))}
+                </div>
+              </section>
+            )}
         </div>
       ) : null}
 

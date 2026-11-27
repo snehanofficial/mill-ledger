@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { assertCollectionResponse } from "@/lib/api-contracts";
@@ -117,7 +122,9 @@ export function SettingsPage() {
       queryClient.invalidateQueries({ queryKey: ["masters-warehouses"] });
       setShowFacilityModal(false);
       setEditingFacility(null);
-      toast.success(editingFacility ? "Facility updated." : "Facility created.");
+      toast.success(
+        editingFacility ? "Facility updated." : "Facility created.",
+      );
     },
     onError: (err: unknown) => {
       toast.error(extractErrorMessage(err, "Failed to save facility"));
@@ -362,7 +369,9 @@ export function SettingsPage() {
       setNewUserPassword("");
     },
     onError: (err: unknown) => {
-      toast.error(`Error: ${extractErrorMessage(err, "Failed to create user")}`);
+      toast.error(
+        `Error: ${extractErrorMessage(err, "Failed to create user")}`,
+      );
     },
   });
 
@@ -410,7 +419,11 @@ export function SettingsPage() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newUserName.trim() || !newUserEmail.trim() || !newUserPassword.trim()) {
+    if (
+      !newUserName.trim() ||
+      !newUserEmail.trim() ||
+      !newUserPassword.trim()
+    ) {
       toast.error("Please fill in all required user fields");
       return;
     }
@@ -431,7 +444,8 @@ export function SettingsPage() {
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground max-w-[60ch]">
-            Configure enterprise parameters, manage staff access roles, and maintain statutory GST settings.
+            Configure enterprise parameters, manage staff access roles, and
+            maintain statutory GST settings.
           </p>
         </div>
 
@@ -444,7 +458,11 @@ export function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div role="tablist" aria-label="Settings sections" className="flex flex-wrap border-b border-border">
+      <div
+        role="tablist"
+        aria-label="Settings sections"
+        className="flex flex-wrap border-b border-border"
+      >
         <button
           type="button"
           role="tab"
@@ -514,7 +532,8 @@ export function SettingsPage() {
                   Mill Organization Profile
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Official entity registration and place of supply configurations
+                  Official entity registration and place of supply
+                  configurations
                 </p>
               </div>
               {canEditSettings && orgData?.organization && (
@@ -537,36 +556,52 @@ export function SettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 px-5 py-4 sm:px-6 sm:pb-6">
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Legal Entity Name</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Legal Entity Name
+                </span>
                 <span className="text-sm font-bold text-foreground">
                   {orgData?.organization?.name || "MillLedger Foods Pvt Ltd"}
                 </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Organization Code</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Organization Code
+                </span>
                 <span className="text-sm font-mono font-bold text-foreground">
                   {orgData?.organization?.code || "—"}
                 </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Principal Place of Business</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Principal Place of Business
+                </span>
                 <span className="text-sm font-bold text-foreground">
                   {orgData?.organization?.state || "Tamil Nadu"}
                 </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Statutory GSTIN</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Statutory GSTIN
+                </span>
                 <span className="text-sm font-mono font-bold text-foreground">
                   {orgData?.organization?.gstin || "Unregistered"}
                 </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Primary Milling HSN</span>
-                <span className="text-sm font-mono font-bold text-foreground">21069099 (Food Preparations)</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Primary Milling HSN
+                </span>
+                <span className="text-sm font-mono font-bold text-foreground">
+                  21069099 (Food Preparations)
+                </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Benchmark GST Tax Rate</span>
-                <span className="text-sm font-bold text-emerald-600">5.00% (2.5% CGST + 2.5% SGST)</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Benchmark GST Tax Rate
+                </span>
+                <span className="text-sm font-bold text-emerald-600">
+                  5.00% (2.5% CGST + 2.5% SGST)
+                </span>
               </div>
             </div>
           </div>
@@ -608,12 +643,24 @@ export function SettingsPage() {
               <TableBody>
                 {(taxRatesData?.taxRates ?? []).map((tr) => (
                   <TableRow key={tr.id}>
-                    <TableCell className="font-mono text-xs font-semibold">{tr.hsnCode}</TableCell>
-                    <TableCell className="text-right text-xs font-bold">{Number(tr.rate)}%</TableCell>
-                    <TableCell className="text-right text-xs">{Number(tr.cgstRate)}%</TableCell>
-                    <TableCell className="text-right text-xs">{Number(tr.sgstRate)}%</TableCell>
-                    <TableCell className="text-right text-xs">{Number(tr.igstRate)}%</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{formatDate(tr.effectiveFrom)}</TableCell>
+                    <TableCell className="font-mono text-xs font-semibold">
+                      {tr.hsnCode}
+                    </TableCell>
+                    <TableCell className="text-right text-xs font-bold">
+                      {Number(tr.rate)}%
+                    </TableCell>
+                    <TableCell className="text-right text-xs">
+                      {Number(tr.cgstRate)}%
+                    </TableCell>
+                    <TableCell className="text-right text-xs">
+                      {Number(tr.sgstRate)}%
+                    </TableCell>
+                    <TableCell className="text-right text-xs">
+                      {Number(tr.igstRate)}%
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {formatDate(tr.effectiveFrom)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -633,28 +680,52 @@ export function SettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 px-5 py-4 sm:px-6 sm:pb-6">
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Inventory Costing Method</span>
-                <span className="text-sm font-bold text-foreground">Weighted-Average Costing (WAC)</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Inventory Costing Method
+                </span>
+                <span className="text-sm font-bold text-foreground">
+                  Weighted-Average Costing (WAC)
+                </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Statutory Rounding Rule</span>
-                <span className="text-sm font-bold text-foreground">Section 170 CGST Act (Nearest ₹1.00)</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Statutory Rounding Rule
+                </span>
+                <span className="text-sm font-bold text-foreground">
+                  Section 170 CGST Act (Nearest ₹1.00)
+                </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Financial Year Timezone</span>
-                <span className="text-sm font-bold text-foreground">Asia/Kolkata (IST +05:30)</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Financial Year Timezone
+                </span>
+                <span className="text-sm font-bold text-foreground">
+                  Asia/Kolkata (IST +05:30)
+                </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Invoice Sequence Series</span>
-                <span className="text-sm font-mono font-bold text-foreground">INV/2025-26/XXXX</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Invoice Sequence Series
+                </span>
+                <span className="text-sm font-mono font-bold text-foreground">
+                  INV/2025-26/XXXX
+                </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Sales Order Series</span>
-                <span className="text-sm font-mono font-bold text-foreground">SO/YYYY/XXXX</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Sales Order Series
+                </span>
+                <span className="text-sm font-mono font-bold text-foreground">
+                  SO/YYYY/XXXX
+                </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Purchase Receipt Series</span>
-                <span className="text-sm font-mono font-bold text-foreground">PR/YYYY/XXXX</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Purchase Receipt Series
+                </span>
+                <span className="text-sm font-mono font-bold text-foreground">
+                  PR/YYYY/XXXX
+                </span>
               </div>
             </div>
           </div>
@@ -668,7 +739,8 @@ export function SettingsPage() {
                   Interface Motion & Accessibility
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  User preference controls for WCAG 2.2 Success Criterion 2.2.2 (Pause, Stop, Hide)
+                  User preference controls for WCAG 2.2 Success Criterion 2.2.2
+                  (Pause, Stop, Hide)
                 </p>
               </div>
               <Button
@@ -694,13 +766,19 @@ export function SettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-5 py-4 sm:px-6 sm:pb-6">
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Continuous Animation State</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Continuous Animation State
+                </span>
                 <span className="text-sm font-bold text-foreground">
-                  {isMotionPaused ? "Paused (Animations Suppressed)" : "Active (Continuous Animations Allowed)"}
+                  {isMotionPaused
+                    ? "Paused (Animations Suppressed)"
+                    : "Active (Continuous Animations Allowed)"}
                 </span>
               </div>
               <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <span className="text-xs text-muted-foreground font-semibold">Pulsing Badges & Indicators</span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Pulsing Badges & Indicators
+                </span>
                 <span className="text-sm font-bold text-foreground">
                   Finite Pulse (Auto-stops within 4.0 seconds)
                 </span>
@@ -715,7 +793,9 @@ export function SettingsPage() {
         <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-foreground">System Users & Access Roles</h2>
+              <h2 className="text-lg font-bold text-foreground">
+                System Users & Access Roles
+              </h2>
               <p className="text-xs text-muted-foreground">
                 Manage credentials, role assignments, and account active states.
               </p>
@@ -751,117 +831,137 @@ export function SettingsPage() {
                 className="border-0 rounded-none"
               />
             ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/30">
-                  <TableHead className="font-semibold text-xs">Name</TableHead>
-                  <TableHead className="font-semibold text-xs">Email</TableHead>
-                  <TableHead className="font-semibold text-xs">Role</TableHead>
-                  <TableHead className="font-semibold text-xs">Status</TableHead>
-                  <TableHead className="font-semibold text-xs">Created At</TableHead>
-                  <TableHead className="font-semibold text-xs text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoadingUsers ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-xs">
-                      Loading users directory...
-                    </TableCell>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30">
+                    <TableHead className="font-semibold text-xs">
+                      Name
+                    </TableHead>
+                    <TableHead className="font-semibold text-xs">
+                      Email
+                    </TableHead>
+                    <TableHead className="font-semibold text-xs">
+                      Role
+                    </TableHead>
+                    <TableHead className="font-semibold text-xs">
+                      Status
+                    </TableHead>
+                    <TableHead className="font-semibold text-xs">
+                      Created At
+                    </TableHead>
+                    <TableHead className="font-semibold text-xs text-right">
+                      Actions
+                    </TableHead>
                   </TableRow>
-                ) : usersList.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="p-6 text-center">
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <p className="text-xs text-muted-foreground">No users found.</p>
-                        {canEditSettings && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setShowAddUserModal(true)}
-                          >
-                            Add User
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  usersList.map((u) => (
-                    <TableRow key={u.id}>
-                      <TableCell className="font-semibold text-foreground text-xs">
-                        {u.name}
+                </TableHeader>
+                <TableBody>
+                  {isLoadingUsers ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        className="text-center py-8 text-muted-foreground text-xs"
+                      >
+                        Loading users directory...
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {u.email}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            u.role === "ADMIN" || u.role === "OWNER"
-                              ? "default"
-                              : u.role === "ACCOUNTANT"
-                                ? "info"
-                                : u.role === "PRODUCTION"
-                                  ? "warning"
-                                  : "secondary"
-                          }
-                          className="text-[10px] font-semibold"
-                        >
-                          {u.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {u.isActive ? (
-                          <Badge variant="success" className="text-[10px]">
-                            Active
-                          </Badge>
-                        ) : (
-                          <Badge variant="danger" className="text-[10px]">
-                            Inactive
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {formatDate(u.createdAt)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                    </TableRow>
+                  ) : usersList.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="p-6 text-center">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <p className="text-xs text-muted-foreground">
+                            No users found.
+                          </p>
                           {canEditSettings && (
                             <Button
-                              variant="ghost"
                               size="sm"
-                              onClick={() => {
-                                setEditingUser(u);
-                                setEditUserName(u.name);
-                                setEditUserRole(u.role);
-                              }}
-                              className="text-xs cursor-pointer"
+                              variant="outline"
+                              onClick={() => setShowAddUserModal(true)}
                             >
-                              Edit
+                              Add User
                             </Button>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled={u.id === currentUser?.id || toggleUserMutation.isPending}
-                            onClick={() =>
-                              toggleUserMutation.mutate({
-                                id: u.id,
-                                isActive: !u.isActive,
-                              })
-                            }
-                            className="text-xs cursor-pointer"
-                          >
-                            {u.isActive ? "Deactivate" : "Activate"}
-                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    usersList.map((u) => (
+                      <TableRow key={u.id}>
+                        <TableCell className="font-semibold text-foreground text-xs">
+                          {u.name}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          {u.email}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              u.role === "ADMIN" || u.role === "OWNER"
+                                ? "default"
+                                : u.role === "ACCOUNTANT"
+                                  ? "info"
+                                  : u.role === "PRODUCTION"
+                                    ? "warning"
+                                    : "secondary"
+                            }
+                            className="text-[10px] font-semibold"
+                          >
+                            {u.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {u.isActive ? (
+                            <Badge variant="success" className="text-[10px]">
+                              Active
+                            </Badge>
+                          ) : (
+                            <Badge variant="danger" className="text-[10px]">
+                              Inactive
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {formatDate(u.createdAt)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            {canEditSettings && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingUser(u);
+                                  setEditUserName(u.name);
+                                  setEditUserRole(u.role);
+                                }}
+                                className="text-xs cursor-pointer"
+                              >
+                                Edit
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={
+                                u.id === currentUser?.id ||
+                                toggleUserMutation.isPending
+                              }
+                              onClick={() =>
+                                toggleUserMutation.mutate({
+                                  id: u.id,
+                                  isActive: !u.isActive,
+                                })
+                              }
+                              className="text-xs cursor-pointer"
+                            >
+                              {u.isActive ? "Deactivate" : "Activate"}
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             )}
           </div>
           <DataPagination
@@ -887,15 +987,19 @@ export function SettingsPage() {
                 Data Protection & Privacy Policy (DPDP Act 2023)
               </h2>
               <p className="text-xs text-muted-foreground">
-                Statutory customer personal data governance, retention cycles, and deletion rules
+                Statutory customer personal data governance, retention cycles,
+                and deletion rules
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-5 py-4 sm:px-6 sm:pb-6">
               <div className="p-4 rounded-lg border bg-muted/20 flex flex-col gap-1.5">
-                <span className="text-xs font-bold text-foreground">Section 11: Right to Access</span>
+                <span className="text-xs font-bold text-foreground">
+                  Section 11: Right to Access
+                </span>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Data fiduciaries must provide portable JSON export of customer personal data and linked transactions upon verified request.
+                  Data fiduciaries must provide portable JSON export of customer
+                  personal data and linked transactions upon verified request.
                 </p>
                 <div className="mt-2 text-[11px] font-mono text-emerald-600 font-semibold">
                   API: /api/v1/sales/customers/:id/export
@@ -903,9 +1007,12 @@ export function SettingsPage() {
               </div>
 
               <div className="p-4 rounded-lg border bg-muted/20 flex flex-col gap-1.5">
-                <span className="text-xs font-bold text-foreground">Section 12: Right to Erasure</span>
+                <span className="text-xs font-bold text-foreground">
+                  Section 12: Right to Erasure
+                </span>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Right to erasure is balanced against statutory tax retention. Contact PII is anonymized while preserving financial ledgers.
+                  Right to erasure is balanced against statutory tax retention.
+                  Contact PII is anonymized while preserving financial ledgers.
                 </p>
                 <div className="mt-2 text-[11px] font-mono text-emerald-600 font-semibold">
                   API: /api/v1/sales/customers/:id/anonymize
@@ -913,9 +1020,12 @@ export function SettingsPage() {
               </div>
 
               <div className="p-4 rounded-lg border bg-muted/20 flex flex-col gap-1.5">
-                <span className="text-xs font-bold text-foreground">Statutory 7-Year Tax Lock</span>
+                <span className="text-xs font-bold text-foreground">
+                  Statutory 7-Year Tax Lock
+                </span>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Under Section 36 CGST Act 2017, invoice headers, line amounts, and tax credits must be retained for at least 72 months.
+                  Under Section 36 CGST Act 2017, invoice headers, line amounts,
+                  and tax credits must be retained for at least 72 months.
                 </p>
                 <div className="mt-2 text-[11px] font-mono text-indigo-600 font-semibold">
                   Enforced via PostgreSQL Ledger Rules
@@ -936,7 +1046,10 @@ export function SettingsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleCreateUser} className="mt-2 flex flex-col gap-4">
+          <form
+            onSubmit={handleCreateUser}
+            className="mt-2 flex flex-col gap-4"
+          >
             <div className="flex flex-col gap-1.5">
               <Label
                 htmlFor="settings-user-name"
@@ -1003,11 +1116,21 @@ export function SettingsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SALESMAN">Salesman (Field sales & bookings)</SelectItem>
-                  <SelectItem value="PRODUCTION">Production Manager (Shop floor & runs)</SelectItem>
-                  <SelectItem value="ACCOUNTANT">Accountant (Invoices, reports & taxes)</SelectItem>
-                  <SelectItem value="ADMIN">Administrator (Full operational management)</SelectItem>
-                  <SelectItem value="OWNER">Owner (Executive & financial oversight)</SelectItem>
+                  <SelectItem value="SALESMAN">
+                    Salesman (Field sales & bookings)
+                  </SelectItem>
+                  <SelectItem value="PRODUCTION">
+                    Production Manager (Shop floor & runs)
+                  </SelectItem>
+                  <SelectItem value="ACCOUNTANT">
+                    Accountant (Invoices, reports & taxes)
+                  </SelectItem>
+                  <SelectItem value="ADMIN">
+                    Administrator (Full operational management)
+                  </SelectItem>
+                  <SelectItem value="OWNER">
+                    Owner (Executive & financial oversight)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1039,25 +1162,57 @@ export function SettingsPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Organization Profile</DialogTitle>
-            <DialogDescription>Update legal entity name, state, and GSTIN.</DialogDescription>
+            <DialogDescription>
+              Update legal entity name, state, and GSTIN.
+            </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-2">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="org-name" className="text-xs">Legal Entity Name</Label>
-              <Input id="org-name" value={orgNameInput} onChange={(e) => setOrgNameInput(e.target.value)} />
+              <Label htmlFor="org-name" className="text-xs">
+                Legal Entity Name
+              </Label>
+              <Input
+                id="org-name"
+                value={orgNameInput}
+                onChange={(e) => setOrgNameInput(e.target.value)}
+              />
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="org-state" className="text-xs">State</Label>
-              <Input id="org-state" value={orgStateInput} onChange={(e) => setOrgStateInput(e.target.value)} />
+              <Label htmlFor="org-state" className="text-xs">
+                State
+              </Label>
+              <Input
+                id="org-state"
+                value={orgStateInput}
+                onChange={(e) => setOrgStateInput(e.target.value)}
+              />
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="org-gstin" className="text-xs">GSTIN</Label>
-              <Input id="org-gstin" value={orgGstinInput} onChange={(e) => setOrgGstinInput(e.target.value)} />
+              <Label htmlFor="org-gstin" className="text-xs">
+                GSTIN
+              </Label>
+              <Input
+                id="org-gstin"
+                value={orgGstinInput}
+                onChange={(e) => setOrgGstinInput(e.target.value)}
+              />
             </div>
           </div>
           <DialogFooter className="border-t pt-4">
-            <Button variant="outline" size="sm" onClick={() => setShowEditOrgModal(false)}>Cancel</Button>
-            <Button size="sm" disabled={updateOrgMutation.isPending} onClick={() => updateOrgMutation.mutate()}>Save</Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowEditOrgModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={updateOrgMutation.isPending}
+              onClick={() => updateOrgMutation.mutate()}
+            >
+              Save
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1067,27 +1222,60 @@ export function SettingsPage() {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Add Statutory Tax Rate</DialogTitle>
-            <DialogDescription>Configure effective-dated GST rate for an HSN code.</DialogDescription>
+            <DialogDescription>
+              Configure effective-dated GST rate for an HSN code.
+            </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-2">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="tax-hsn" className="text-xs">HSN Code</Label>
-              <Input id="tax-hsn" value={taxHsn} onChange={(e) => setTaxHsn(e.target.value)} />
+              <Label htmlFor="tax-hsn" className="text-xs">
+                HSN Code
+              </Label>
+              <Input
+                id="tax-hsn"
+                value={taxHsn}
+                onChange={(e) => setTaxHsn(e.target.value)}
+              />
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="tax-rate" className="text-xs">Total GST Rate (%)</Label>
-              <Input id="tax-rate" type="number" step="0.5" value={taxRateVal} onChange={(e) => setTaxRateVal(Number(e.target.value))} />
+              <Label htmlFor="tax-rate" className="text-xs">
+                Total GST Rate (%)
+              </Label>
+              <Input
+                id="tax-rate"
+                type="number"
+                step="0.5"
+                value={taxRateVal}
+                onChange={(e) => setTaxRateVal(Number(e.target.value))}
+              />
             </div>
           </div>
           <DialogFooter className="border-t pt-4">
-            <Button variant="outline" size="sm" onClick={() => setShowAddTaxModal(false)}>Cancel</Button>
-            <Button size="sm" disabled={addTaxRateMutation.isPending} onClick={() => addTaxRateMutation.mutate()}>Save Tax Rate</Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAddTaxModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={addTaxRateMutation.isPending}
+              onClick={() => addTaxRateMutation.mutate()}
+            >
+              Save Tax Rate
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit User Modal (IMP-017) */}
-      <Dialog open={editingUser !== null} onOpenChange={(o) => { if (!o) setEditingUser(null); }}>
+      <Dialog
+        open={editingUser !== null}
+        onOpenChange={(o) => {
+          if (!o) setEditingUser(null);
+        }}
+      >
         {editingUser && (
           <DialogContent className="max-w-md">
             <DialogHeader>
@@ -1096,16 +1284,29 @@ export function SettingsPage() {
             </DialogHeader>
             <div className="flex flex-col gap-3 py-2">
               <div className="flex flex-col gap-1">
-                <Label htmlFor="edit-user-name" className="text-xs">Full Name</Label>
-                <Input id="edit-user-name" value={editUserName} onChange={(e) => setEditUserName(e.target.value)} />
+                <Label htmlFor="edit-user-name" className="text-xs">
+                  Full Name
+                </Label>
+                <Input
+                  id="edit-user-name"
+                  value={editUserName}
+                  onChange={(e) => setEditUserName(e.target.value)}
+                />
               </div>
               <div className="flex flex-col gap-1">
                 <Label className="text-xs">Role</Label>
-                <Select value={editUserRole} onValueChange={(v) => setEditUserRole(v as Role)}>
-                  <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <Select
+                  value={editUserRole}
+                  onValueChange={(v) => setEditUserRole(v as Role)}
+                >
+                  <SelectTrigger className="h-9 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="SALESMAN">Salesman</SelectItem>
-                    <SelectItem value="PRODUCTION">Production Manager</SelectItem>
+                    <SelectItem value="PRODUCTION">
+                      Production Manager
+                    </SelectItem>
                     <SelectItem value="ACCOUNTANT">Accountant</SelectItem>
                     <SelectItem value="ADMIN">Administrator</SelectItem>
                     <SelectItem value="OWNER">Owner</SelectItem>
@@ -1114,8 +1315,20 @@ export function SettingsPage() {
               </div>
             </div>
             <DialogFooter className="border-t pt-4">
-              <Button variant="outline" size="sm" onClick={() => setEditingUser(null)}>Cancel</Button>
-              <Button size="sm" disabled={updateUserMutation.isPending} onClick={() => updateUserMutation.mutate()}>Save User</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditingUser(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={updateUserMutation.isPending}
+                onClick={() => updateUserMutation.mutate()}
+              >
+                Save User
+              </Button>
             </DialogFooter>
           </DialogContent>
         )}
@@ -1128,9 +1341,12 @@ export function SettingsPage() {
           <div className="rounded-xl border border-border/80 bg-card shadow-xs">
             <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 sm:px-6">
               <div>
-                <h2 className="text-base font-bold text-foreground">Facilities</h2>
+                <h2 className="text-base font-bold text-foreground">
+                  Facilities
+                </h2>
                 <p className="text-xs text-muted-foreground">
-                  Physical mill plants and regional hubs within your organization
+                  Physical mill plants and regional hubs within your
+                  organization
                 </p>
               </div>
               {canEditSettings && (
@@ -1158,16 +1374,22 @@ export function SettingsPage() {
                   <TableHead>State</TableHead>
                   <TableHead className="text-right">Warehouses</TableHead>
                   <TableHead>Status</TableHead>
-                  {canEditSettings && <TableHead className="text-right">Actions</TableHead>}
+                  {canEditSettings && (
+                    <TableHead className="text-right">Actions</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {facilitiesList.map((f) => (
                   <TableRow key={f.id}>
-                    <TableCell className="font-mono text-xs font-semibold">{f.code}</TableCell>
+                    <TableCell className="font-mono text-xs font-semibold">
+                      {f.code}
+                    </TableCell>
                     <TableCell className="font-medium">{f.name}</TableCell>
                     <TableCell className="text-xs">{f.state}</TableCell>
-                    <TableCell className="text-right font-mono text-xs">{f._count?.warehouses ?? 0}</TableCell>
+                    <TableCell className="text-right font-mono text-xs">
+                      {f._count?.warehouses ?? 0}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={f.isActive ? "success" : "secondary"}>
                         {f.isActive ? "Active" : "Inactive"}
@@ -1194,7 +1416,9 @@ export function SettingsPage() {
                             variant="outline"
                             size="sm"
                             className="h-7 px-2 text-xs"
-                            onClick={() => toggleFacilityActiveMutation.mutate(f)}
+                            onClick={() =>
+                              toggleFacilityActiveMutation.mutate(f)
+                            }
                           >
                             {f.isActive ? "Deactivate" : "Reactivate"}
                           </Button>
@@ -1211,15 +1435,20 @@ export function SettingsPage() {
           <div className="rounded-xl border border-border/80 bg-card shadow-xs">
             <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 sm:px-6">
               <div>
-                <h2 className="text-base font-bold text-foreground">Warehouses</h2>
+                <h2 className="text-base font-bold text-foreground">
+                  Warehouses
+                </h2>
                 <p className="text-xs text-muted-foreground">
-                  Storage locations for raw materials, production output, and order fulfilment
+                  Storage locations for raw materials, production output, and
+                  order fulfilment
                 </p>
               </div>
               {canEditSettings && (
                 <Button
                   size="sm"
-                  disabled={facilitiesList.filter((f) => f.isActive).length === 0}
+                  disabled={
+                    facilitiesList.filter((f) => f.isActive).length === 0
+                  }
                   onClick={() => {
                     setEditingWarehouse(null);
                     setWhCode("");
@@ -1243,16 +1472,22 @@ export function SettingsPage() {
                   <TableHead>Warehouse Name</TableHead>
                   <TableHead>Facility</TableHead>
                   <TableHead>Status</TableHead>
-                  {canEditSettings && <TableHead className="text-right">Actions</TableHead>}
+                  {canEditSettings && (
+                    <TableHead className="text-right">Actions</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {warehousesList.map((w) => (
                   <TableRow key={w.id}>
-                    <TableCell className="font-mono text-xs font-semibold">{w.code}</TableCell>
+                    <TableCell className="font-mono text-xs font-semibold">
+                      {w.code}
+                    </TableCell>
                     <TableCell className="font-medium">{w.name}</TableCell>
                     <TableCell className="text-xs">
-                      {w.facility ? `${w.facility.code} · ${w.facility.name}` : "—"}
+                      {w.facility
+                        ? `${w.facility.code} · ${w.facility.name}`
+                        : "—"}
                     </TableCell>
                     <TableCell>
                       <Badge variant={w.isActive ? "success" : "secondary"}>
@@ -1280,7 +1515,9 @@ export function SettingsPage() {
                             variant="outline"
                             size="sm"
                             className="h-7 px-2 text-xs"
-                            onClick={() => toggleWarehouseActiveMutation.mutate(w)}
+                            onClick={() =>
+                              toggleWarehouseActiveMutation.mutate(w)
+                            }
                           >
                             {w.isActive ? "Deactivate" : "Reactivate"}
                           </Button>
@@ -1299,27 +1536,63 @@ export function SettingsPage() {
       <Dialog open={showFacilityModal} onOpenChange={setShowFacilityModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingFacility ? "Edit Facility" : "Add Facility"}</DialogTitle>
+            <DialogTitle>
+              {editingFacility ? "Edit Facility" : "Add Facility"}
+            </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-2">
             {!editingFacility && (
               <div className="flex flex-col gap-1">
-                <Label htmlFor="fac-code" className="text-xs">Code</Label>
-                <Input id="fac-code" value={facCode} onChange={(e) => setFacCode(e.target.value)} placeholder="FAC-2" />
+                <Label htmlFor="fac-code" className="text-xs">
+                  Code
+                </Label>
+                <Input
+                  id="fac-code"
+                  value={facCode}
+                  onChange={(e) => setFacCode(e.target.value)}
+                  placeholder="FAC-2"
+                />
               </div>
             )}
             <div className="flex flex-col gap-1">
-              <Label htmlFor="fac-name" className="text-xs">Name</Label>
-              <Input id="fac-name" value={facName} onChange={(e) => setFacName(e.target.value)} placeholder="Chennai Packaging Plant" />
+              <Label htmlFor="fac-name" className="text-xs">
+                Name
+              </Label>
+              <Input
+                id="fac-name"
+                value={facName}
+                onChange={(e) => setFacName(e.target.value)}
+                placeholder="Chennai Packaging Plant"
+              />
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="fac-state" className="text-xs">State</Label>
-              <Input id="fac-state" value={facState} onChange={(e) => setFacState(e.target.value)} />
+              <Label htmlFor="fac-state" className="text-xs">
+                State
+              </Label>
+              <Input
+                id="fac-state"
+                value={facState}
+                onChange={(e) => setFacState(e.target.value)}
+              />
             </div>
           </div>
           <DialogFooter className="border-t pt-4">
-            <Button variant="outline" size="sm" onClick={() => setShowFacilityModal(false)}>Cancel</Button>
-            <Button size="sm" disabled={saveFacilityMutation.isPending || !facName.trim() || (!editingFacility && !facCode.trim())} onClick={() => saveFacilityMutation.mutate()}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFacilityModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={
+                saveFacilityMutation.isPending ||
+                !facName.trim() ||
+                (!editingFacility && !facCode.trim())
+              }
+              onClick={() => saveFacilityMutation.mutate()}
+            >
               Save Facility
             </Button>
           </DialogFooter>
@@ -1330,36 +1603,73 @@ export function SettingsPage() {
       <Dialog open={showWarehouseModal} onOpenChange={setShowWarehouseModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingWarehouse ? "Edit Warehouse" : "Add Warehouse"}</DialogTitle>
+            <DialogTitle>
+              {editingWarehouse ? "Edit Warehouse" : "Add Warehouse"}
+            </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-2">
             {!editingWarehouse && (
               <div className="flex flex-col gap-1">
-                <Label htmlFor="wh-code" className="text-xs">Code</Label>
-                <Input id="wh-code" value={whCode} onChange={(e) => setWhCode(e.target.value)} placeholder="WH-2" />
+                <Label htmlFor="wh-code" className="text-xs">
+                  Code
+                </Label>
+                <Input
+                  id="wh-code"
+                  value={whCode}
+                  onChange={(e) => setWhCode(e.target.value)}
+                  placeholder="WH-2"
+                />
               </div>
             )}
             <div className="flex flex-col gap-1">
-              <Label htmlFor="wh-name" className="text-xs">Name</Label>
-              <Input id="wh-name" value={whName} onChange={(e) => setWhName(e.target.value)} placeholder="Finished Goods Store" />
+              <Label htmlFor="wh-name" className="text-xs">
+                Name
+              </Label>
+              <Input
+                id="wh-name"
+                value={whName}
+                onChange={(e) => setWhName(e.target.value)}
+                placeholder="Finished Goods Store"
+              />
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="wh-facility" className="text-xs">Facility</Label>
+              <Label htmlFor="wh-facility" className="text-xs">
+                Facility
+              </Label>
               <Select value={whFacilityId} onValueChange={setWhFacilityId}>
-                <SelectTrigger id="wh-facility" className="h-9 text-xs"><SelectValue placeholder="Select facility" /></SelectTrigger>
+                <SelectTrigger id="wh-facility" className="h-9 text-xs">
+                  <SelectValue placeholder="Select facility" />
+                </SelectTrigger>
                 <SelectContent>
-                  {facilitiesList.filter((f) => f.isActive).map((f) => (
-                    <SelectItem key={f.id} value={f.id}>
-                      {f.code} · {f.name}
-                    </SelectItem>
-                  ))}
+                  {facilitiesList
+                    .filter((f) => f.isActive)
+                    .map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.code} · {f.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter className="border-t pt-4">
-            <Button variant="outline" size="sm" onClick={() => setShowWarehouseModal(false)}>Cancel</Button>
-            <Button size="sm" disabled={saveWarehouseMutation.isPending || !whName.trim() || !whFacilityId || (!editingWarehouse && !whCode.trim())} onClick={() => saveWarehouseMutation.mutate()}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowWarehouseModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={
+                saveWarehouseMutation.isPending ||
+                !whName.trim() ||
+                !whFacilityId ||
+                (!editingWarehouse && !whCode.trim())
+              }
+              onClick={() => saveWarehouseMutation.mutate()}
+            >
               Save Warehouse
             </Button>
           </DialogFooter>

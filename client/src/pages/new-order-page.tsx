@@ -45,11 +45,7 @@ import {
 import { toast } from "sonner";
 
 type ProductStockFilter =
-  | "ALL"
-  | "IN_STOCK"
-  | "LOW_STOCK"
-  | "OUT_OF_STOCK"
-  | "IN_ORDER";
+  "ALL" | "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK" | "IN_ORDER";
 
 interface ProductItem {
   id: string;
@@ -111,7 +107,8 @@ export function NewOrderPage() {
   const draftId = searchParams.get("draftId") ?? "";
   const prefillCustomerId = searchParams.get("customerId") ?? "";
 
-  const [selectedCustomerId, setSelectedCustomerId] = useState(prefillCustomerId);
+  const [selectedCustomerId, setSelectedCustomerId] =
+    useState(prefillCustomerId);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [orderNotes, setOrderNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -174,7 +171,9 @@ export function NewOrderPage() {
     setQuantities(nextQty);
     setProductCache((prev) => ({ ...prev, ...nextCache }));
   }, [draftData]);
-  const [productCache, setProductCache] = useState<Record<string, ProductItem>>({});
+  const [productCache, setProductCache] = useState<Record<string, ProductItem>>(
+    {},
+  );
 
   // Fetch customers
   const { data: customersData } = useQuery<{ customers: CustomerItem[] }>({
@@ -201,7 +200,13 @@ export function NewOrderPage() {
     isFetching: isProductsFetching,
     refetch: refetchProducts,
   } = useQuery<ProductsResponse>({
-    queryKey: ["sales-products", page, pageSize, trimmedSearch, serverStockFilter],
+    queryKey: [
+      "sales-products",
+      page,
+      pageSize,
+      trimmedSearch,
+      serverStockFilter,
+    ],
     queryFn: async () => {
       const offset = (page - 1) * pageSize;
       const params = new URLSearchParams({
@@ -295,7 +300,8 @@ export function NewOrderPage() {
         productsList.find((p) => p.id === key || p.sku === key) ??
         productCache[key];
       if (!product || seenProductIds.has(product.id)) return null;
-      if (key === product.sku && quantities[product.id] !== undefined) return null;
+      if (key === product.sku && quantities[product.id] !== undefined)
+        return null;
       seenProductIds.add(product.id);
       const unitPrice = Number(product.defaultPrice ?? 0);
       const taxable = qty * unitPrice;
@@ -335,7 +341,8 @@ export function NewOrderPage() {
             return (
               p.name.toLowerCase().includes(normalizedSearch) ||
               p.sku.toLowerCase().includes(normalizedSearch) ||
-              (p.productName?.toLowerCase().includes(normalizedSearch) ?? false) ||
+              (p.productName?.toLowerCase().includes(normalizedSearch) ??
+                false) ||
               (p.hsnCode?.toLowerCase().includes(normalizedSearch) ?? false)
             );
           })
@@ -345,8 +352,7 @@ export function NewOrderPage() {
     stockFilter === "IN_ORDER" ? displayedProducts.length : totalProducts;
   const displayRangeStart =
     displayTotal === 0 ? 0 : stockFilter === "IN_ORDER" ? 1 : rangeStart;
-  const displayRangeEnd =
-    stockFilter === "IN_ORDER" ? displayTotal : rangeEnd;
+  const displayRangeEnd = stockFilter === "IN_ORDER" ? displayTotal : rangeEnd;
   const hasActiveFilters = Boolean(trimmedSearch) || stockFilter !== "ALL";
 
   const handleStockFilterChange = (nextStock: ProductStockFilter) => {
@@ -422,7 +428,9 @@ export function NewOrderPage() {
       navigate(orderId ? `/orders/${orderId}` : "/orders");
     },
     onError: (err: unknown) => {
-      toast.error(`Order failed: ${extractErrorMessage(err, "Failed to save order")}`);
+      toast.error(
+        `Order failed: ${extractErrorMessage(err, "Failed to save order")}`,
+      );
     },
   });
 
@@ -438,7 +446,9 @@ export function NewOrderPage() {
 
     if (!isOnline) {
       if (submitAsDraft) {
-        toast.info("Offline mode: saving to device outbox for automatic sync when online.");
+        toast.info(
+          "Offline mode: saving to device outbox for automatic sync when online.",
+        );
       }
       // Offline queueing in Dexie outbox
       try {
@@ -524,7 +534,9 @@ export function NewOrderPage() {
             {t("New order")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {t("Select customer, browse packaged product tiles, and adjust quantities using touch-friendly steppers.")}
+            {t(
+              "Select customer, browse packaged product tiles, and adjust quantities using touch-friendly steppers.",
+            )}
           </p>
         </div>
 
@@ -546,7 +558,10 @@ export function NewOrderPage() {
                 <SelectTrigger id={customerSelectId} className="font-medium">
                   <SelectValue placeholder="Select customer..." />
                 </SelectTrigger>
-                <SelectContent searchable searchPlaceholder="Search customers...">
+                <SelectContent
+                  searchable
+                  searchPlaceholder="Search customers..."
+                >
                   {customersList.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name} ({c.code}) · {c.state}
@@ -557,14 +572,21 @@ export function NewOrderPage() {
               <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                 {activeCustomer ? (
                   <>
-                    <span>Place of Supply: <strong>{customerState}</strong></span>
+                    <span>
+                      Place of Supply: <strong>{customerState}</strong>
+                    </span>
                     <span>•</span>
                     <span className="text-primary font-medium">
-                      {isIntraState ? "Intra-state (CGST 2.5% + SGST 2.5%)" : "Inter-state (IGST 5.0%)"}
+                      {isIntraState
+                        ? "Intra-state (CGST 2.5% + SGST 2.5%)"
+                        : "Inter-state (IGST 5.0%)"}
                     </span>
                   </>
                 ) : (
-                  <span>Select a customer to determine place of supply and GST regime</span>
+                  <span>
+                    Select a customer to determine place of supply and GST
+                    regime
+                  </span>
                 )}
               </div>
             </div>
@@ -592,21 +614,34 @@ export function NewOrderPage() {
         </div>
 
         {/* Product Catalog Grid */}
-        <section aria-labelledby="catalog-heading" className="flex flex-col gap-4">
+        <section
+          aria-labelledby="catalog-heading"
+          className="flex flex-col gap-4"
+        >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h2 id="catalog-heading" className="text-lg font-bold text-foreground flex items-center gap-2">
-                <PackageIcon className="size-5 text-primary" aria-hidden="true" />
-                Product Catalog ({displayTotal} {displayTotal === 1 ? "item" : "items"})
+              <h2
+                id="catalog-heading"
+                className="text-lg font-bold text-foreground flex items-center gap-2"
+              >
+                <PackageIcon
+                  className="size-5 text-primary"
+                  aria-hidden="true"
+                />
+                Product Catalog ({displayTotal}{" "}
+                {displayTotal === 1 ? "item" : "items"})
               </h2>
               <p className="text-xs text-muted-foreground">
-                Touch <strong>+</strong> or <strong>−</strong> steppers to adjust batch packet quantity
+                Touch <strong>+</strong> or <strong>−</strong> steppers to
+                adjust batch packet quantity
               </p>
             </div>
             {displayTotal > 0 && (
               <div className="text-xs text-muted-foreground" aria-live="polite">
                 Showing {displayRangeStart}-{displayRangeEnd} of {displayTotal}
-                {isProductsFetching && !isProductsLoading ? " (Updating...)" : ""}
+                {isProductsFetching && !isProductsLoading
+                  ? " (Updating...)"
+                  : ""}
               </div>
             )}
           </div>
@@ -624,7 +659,10 @@ export function NewOrderPage() {
                   { value: "IN_STOCK", label: "In stock" },
                   { value: "LOW_STOCK", label: "Low stock" },
                   { value: "OUT_OF_STOCK", label: "Out of stock" },
-                  { value: "IN_ORDER", label: `In order (${orderLines.length})` },
+                  {
+                    value: "IN_ORDER",
+                    label: `In order (${orderLines.length})`,
+                  },
                 ] as const
               ).map((f) => (
                 <Button
@@ -730,7 +768,9 @@ export function NewOrderPage() {
                   onClick={clearProductFilters}
                   className="min-h-[44px] cursor-pointer"
                 >
-                  {stockFilter === "IN_ORDER" && orderLines.length === 0 && !trimmedSearch
+                  {stockFilter === "IN_ORDER" &&
+                  orderLines.length === 0 &&
+                  !trimmedSearch
                     ? "Show all products"
                     : "Clear filters"}
                 </Button>
@@ -751,7 +791,8 @@ export function NewOrderPage() {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
                 {displayedProducts.map((product) => {
-                  const qty = quantities[product.id] ?? quantities[product.sku] ?? 0;
+                  const qty =
+                    quantities[product.id] ?? quantities[product.sku] ?? 0;
                   const unitPrice = Number(product.defaultPrice ?? 0);
                   const taxRate = Number(product.taxRate ?? 0) / 100;
                   const availableStock = getProductStock(product);
@@ -779,138 +820,158 @@ export function NewOrderPage() {
                               className="h-28 w-28 object-contain transition-transform duration-(--ml-motion-fast) ease-enter group-hover:scale-105 drop-shadow-xs"
                             />
                           ) : (
-                            <PackageIcon className="size-10 text-muted-foreground/50" aria-hidden="true" />
+                            <PackageIcon
+                              className="size-10 text-muted-foreground/50"
+                              aria-hidden="true"
+                            />
                           )}
-                      <div className="absolute top-2 right-2">
-                        {availableStock > 0 ? (
-                          <Badge
-                            variant="outline"
-                            className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-[11px] font-medium"
+                          <div className="absolute top-2 right-2">
+                            {availableStock > 0 ? (
+                              <Badge
+                                variant="outline"
+                                className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-[11px] font-medium"
+                              >
+                                {availableStock} pkts available
+                              </Badge>
+                            ) : (
+                              <Badge variant="danger" className="text-[11px]">
+                                Out of Stock
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Product Metadata */}
+                        <div className="min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-mono text-[11px] font-semibold text-muted-foreground tracking-wider uppercase truncate">
+                              {product.sku}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground shrink-0">
+                              {product.hsnCode
+                                ? `HSN: ${product.hsnCode}`
+                                : "HSN: —"}
+                            </span>
+                          </div>
+                          <h3 className="text-base font-bold text-foreground mt-0.5 line-clamp-2">
+                            {product.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground line-clamp-1">
+                            {[
+                              product.productName,
+                              product.uom ? `(${product.uom})` : null,
+                            ]
+                              .filter(Boolean)
+                              .join(" ") || "—"}
+                          </p>
+                        </div>
+
+                        {/* Pricing */}
+                        <div className="mt-auto flex items-baseline justify-between pt-2 border-t border-border/50">
+                          <div>
+                            <span className="text-xs text-muted-foreground">
+                              Standard wholesale:
+                            </span>
+                            <div className="text-lg font-extrabold text-foreground font-mono">
+                              {formatINR(unitPrice)}
+                              <span className="text-xs font-normal text-muted-foreground ml-1">
+                                / pkt
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs text-muted-foreground">
+                              GST:
+                            </span>
+                            <div className="text-xs font-semibold text-foreground">
+                              {product.taxRate}%
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quantity Stepper, Line Total & Reserved Shortage Slot */}
+                      <div className="mt-4 pt-3 border-t border-border flex flex-col gap-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-xs font-semibold text-muted-foreground">
+                            Quantity:
+                          </span>
+
+                          {/* Accessible 44x44px Touch Targets Stepper */}
+                          <div className="flex items-center gap-1.5">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              aria-label={`Decrease quantity of ${product.name}`}
+                              onClick={() => handleStep(product, -10)}
+                              disabled={qty === 0}
+                              className="min-w-[44px] min-h-[44px] size-11 font-bold text-base"
+                            >
+                              <MinusIcon className="size-4" />
+                            </Button>
+
+                            <Input
+                              type="number"
+                              min="0"
+                              value={qty}
+                              onChange={(e) =>
+                                updateQuantity(product, Number(e.target.value))
+                              }
+                              aria-label={`Quantity of ${product.name}`}
+                              className="w-16 h-11 px-2 text-center font-mono font-bold text-base"
+                            />
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              aria-label={`Increase quantity of ${product.name}`}
+                              onClick={() => handleStep(product, 10)}
+                              className="min-w-[44px] min-h-[44px] size-11 font-bold text-base"
+                            >
+                              <PlusIcon className="size-4" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs min-h-[20px] text-muted-foreground">
+                          <span>Line Total:</span>
+                          <span
+                            className={
+                              qty > 0
+                                ? "font-mono font-bold text-foreground"
+                                : "font-mono text-muted-foreground/70"
+                            }
                           >
-                            {availableStock} pkts available
-                          </Badge>
-                        ) : (
-                          <Badge variant="danger" className="text-[11px]">
-                            Out of Stock
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Product Metadata */}
-                    <div className="min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-[11px] font-semibold text-muted-foreground tracking-wider uppercase truncate">
-                          {product.sku}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground shrink-0">
-                          {product.hsnCode ? `HSN: ${product.hsnCode}` : "HSN: —"}
-                        </span>
-                      </div>
-                      <h3 className="text-base font-bold text-foreground mt-0.5 line-clamp-2">
-                        {product.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground line-clamp-1">
-                        {[product.productName, product.uom ? `(${product.uom})` : null]
-                          .filter(Boolean)
-                          .join(" ") || "—"}
-                      </p>
-                    </div>
-
-                    {/* Pricing */}
-                    <div className="mt-auto flex items-baseline justify-between pt-2 border-t border-border/50">
-                      <div>
-                        <span className="text-xs text-muted-foreground">Standard wholesale:</span>
-                        <div className="text-lg font-extrabold text-foreground font-mono">
-                          {formatINR(unitPrice)}
-                          <span className="text-xs font-normal text-muted-foreground ml-1">/ pkt</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-xs text-muted-foreground">GST:</span>
-                        <div className="text-xs font-semibold text-foreground">
-                          {product.taxRate}%
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Quantity Stepper, Line Total & Reserved Shortage Slot */}
-                  <div className="mt-4 pt-3 border-t border-border flex flex-col gap-2">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-xs font-semibold text-muted-foreground">
-                        Quantity:
-                      </span>
-
-                      {/* Accessible 44x44px Touch Targets Stepper */}
-                      <div className="flex items-center gap-1.5">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          aria-label={`Decrease quantity of ${product.name}`}
-                          onClick={() => handleStep(product, -10)}
-                          disabled={qty === 0}
-                          className="min-w-[44px] min-h-[44px] size-11 font-bold text-base"
-                        >
-                          <MinusIcon className="size-4" />
-                        </Button>
-
-                        <Input
-                          type="number"
-                          min="0"
-                          value={qty}
-                          onChange={(e) => updateQuantity(product, Number(e.target.value))}
-                          aria-label={`Quantity of ${product.name}`}
-                          className="w-16 h-11 px-2 text-center font-mono font-bold text-base"
-                        />
-
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          aria-label={`Increase quantity of ${product.name}`}
-                          onClick={() => handleStep(product, 10)}
-                          className="min-w-[44px] min-h-[44px] size-11 font-bold text-base"
-                        >
-                          <PlusIcon className="size-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs min-h-[20px] text-muted-foreground">
-                      <span>Line Total:</span>
-                      <span
-                        className={
-                          qty > 0
-                            ? "font-mono font-bold text-foreground"
-                            : "font-mono text-muted-foreground/70"
-                        }
-                      >
-                        {qty > 0
-                          ? `${formatINR(qty * unitPrice * (1 + taxRate))} (incl. GST)`
-                          : "—"}
-                      </span>
-                    </div>
-
-                    <div className="min-h-[34px] flex items-center">
-                      {isShort && (
-                        <div
-                          role="status"
-                          aria-live="polite"
-                          className="w-full flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md px-2 py-1.5"
-                        >
-                          <AlertTriangleIcon className="size-3.5 shrink-0" aria-hidden="true" />
-                          <span className="truncate">
-                            Shortage: {qty - availableStock} pkts exceeds stock
+                            {qty > 0
+                              ? `${formatINR(qty * unitPrice * (1 + taxRate))} (incl. GST)`
+                              : "—"}
                           </span>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+
+                        <div className="min-h-[34px] flex items-center">
+                          {isShort && (
+                            <div
+                              role="status"
+                              aria-live="polite"
+                              className="w-full flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md px-2 py-1.5"
+                            >
+                              <AlertTriangleIcon
+                                className="size-3.5 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span className="truncate">
+                                Shortage: {qty - availableStock} pkts exceeds
+                                stock
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
 
               {stockFilter !== "IN_ORDER" && (
@@ -950,10 +1011,14 @@ export function NewOrderPage() {
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                   <span className="text-sm font-bold text-foreground whitespace-nowrap">
-                    {totalItemCount} {totalItemCount === 1 ? "Packet" : "Packets"}
+                    {totalItemCount}{" "}
+                    {totalItemCount === 1 ? "Packet" : "Packets"}
                   </span>
                   {anyShortage && (
-                    <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20"
+                    >
                       Shortage flagged
                     </Badge>
                   )}
@@ -978,7 +1043,9 @@ export function NewOrderPage() {
 
           <div className="flex items-center gap-4 shrink-0">
             <div className="hidden sm:flex flex-col items-end">
-              <span className="text-xs text-muted-foreground">Grand Total (incl. GST)</span>
+              <span className="text-xs text-muted-foreground">
+                Grand Total (incl. GST)
+              </span>
               <span className="text-xl font-extrabold text-foreground font-mono">
                 {formatINR(grandTotal)}
               </span>
@@ -989,7 +1056,11 @@ export function NewOrderPage() {
                 variant="outline"
                 size="lg"
                 onClick={() => handleSubmit(true)}
-                disabled={totalItemCount === 0 || isSubmitting || createOrderMutation.isPending}
+                disabled={
+                  totalItemCount === 0 ||
+                  isSubmitting ||
+                  createOrderMutation.isPending
+                }
                 className="min-h-[44px] h-11 sm:h-12 px-4 text-sm font-medium cursor-pointer"
               >
                 Save draft
@@ -999,18 +1070,27 @@ export function NewOrderPage() {
             <Button
               size="lg"
               onClick={() => handleSubmit(false)}
-              disabled={totalItemCount === 0 || isSubmitting || createOrderMutation.isPending}
+              disabled={
+                totalItemCount === 0 ||
+                isSubmitting ||
+                createOrderMutation.isPending
+              }
               className="w-full sm:w-auto min-h-[44px] h-11 sm:h-12 sm:min-w-[170px] px-4 sm:px-6 text-sm font-bold gap-2 shadow-md cursor-pointer"
             >
               {isSubmitting || createOrderMutation.isPending ? (
                 <>
-                  <RefreshCwIcon className="size-4 animate-spin" aria-hidden="true" />
+                  <RefreshCwIcon
+                    className="size-4 animate-spin"
+                    aria-hidden="true"
+                  />
                   <span>Submitting...</span>
                 </>
               ) : (
                 <>
                   <CheckCircle2Icon className="size-4" aria-hidden="true" />
-                  <span>{isOnline ? "Place Sales Order" : "Queue Offline Order"}</span>
+                  <span>
+                    {isOnline ? "Place Sales Order" : "Queue Offline Order"}
+                  </span>
                 </>
               )}
             </Button>

@@ -14,7 +14,10 @@ export function getHealth(_req: Request, res: Response<HealthResponse>): void {
   res.status(200).json(healthData);
 }
 
-export async function getReadiness(_req: Request, res: Response): Promise<void> {
+export async function getReadiness(
+  _req: Request,
+  res: Response,
+): Promise<void> {
   try {
     await prisma.$queryRaw`SELECT 1`;
     res.status(200).json({

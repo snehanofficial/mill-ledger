@@ -104,8 +104,14 @@ export const dictionary: Translations = {
   "action.back": { en: "Back", ta: "பின்செல்" },
   "action.confirm": { en: "Confirm", ta: "உறுதிப்படுத்து" },
   "action.invoice_order": { en: "Invoice Order", ta: "விலைப்பட்டியல் உருவாக்கு" },
-  "action.generate_invoice": { en: "Generate Invoice", ta: "விலைப்பட்டியல் உருவாக்கு" },
-  "action.record_payment": { en: "Record Payment", ta: "பணம் செலுத்துதலைப் பதிவு செய்" },
+  "action.generate_invoice": {
+    en: "Generate Invoice",
+    ta: "விலைப்பட்டியல் உருவாக்கு",
+  },
+  "action.record_payment": {
+    en: "Record Payment",
+    ta: "பணம் செலுத்துதலைப் பதிவு செய்",
+  },
   "action.new_run": { en: "New Run", ta: "புதிய உற்பத்தி" },
   "action.start_run": { en: "Start Run", ta: "உற்பத்தியைத் தொடங்கு" },
   "action.receive_stock": { en: "Receive Stock", ta: "சரக்கு வரவு வை" },
@@ -179,7 +185,10 @@ export const dictionary: Translations = {
   "term.flour": { en: "Flour", ta: "மாவு" },
   "term.raw_rice_flour": { en: "Raw Rice Flour", ta: "பச்சரிசி மாவு" },
   "term.oil": { en: "Oil", ta: "எண்ணெய்" },
-  "term.refined_palm_oil": { en: "Refined Palm Oil", ta: "சுத்திகரிக்கப்பட்ட பாமாயில்" },
+  "term.refined_palm_oil": {
+    en: "Refined Palm Oil",
+    ta: "சுத்திகரிக்கப்பட்ட பாமாயில்",
+  },
   "term.salt": { en: "Salt", ta: "உப்பு" },
   "term.salt_spices": { en: "Salt & Spices", ta: "உப்பு & மசாலா" },
   "term.packaging_pouch": { en: "Packaging pouch", ta: "பேக்கிங் கவர்" },
@@ -211,7 +220,10 @@ export const dictionary: Translations = {
   "kpi.production_output": { en: "Production output", ta: "உற்பத்தி வெளியீடு" },
   "kpi.collections": { en: "Collections", ta: "வசூலிப்பு" },
   "kpi.active_batches": { en: "Active batches", ta: "செயலில் உள்ள தொகுதிகள்" },
-  "kpi.ledger_balanced": { en: "Ledger balanced", ta: "பேரேடு சமநிலையில் உள்ளது" },
+  "kpi.ledger_balanced": {
+    en: "Ledger balanced",
+    ta: "பேரேடு சமநிலையில் உள்ளது",
+  },
   "kpi.discrepancy_flagged": {
     en: "Discrepancy flagged",
     ta: "முரண்பாடு கண்டறியப்பட்டது",
@@ -230,9 +242,18 @@ export const dictionary: Translations = {
   "common.loading": { en: "Loading...", ta: "ஏற்றுகிறது..." },
   "common.no_records": { en: "No records found", ta: "பதிவுகள் எதுவும் இல்லை" },
   "common.no_orders": { en: "No orders found", ta: "ஆணைகள் எதுவும் இல்லை" },
-  "common.no_invoices": { en: "No invoices posted yet", ta: "விலைப்பட்டியல் எதுவும் பதிவாகவில்லை" },
-  "common.no_runs": { en: "No production runs found", ta: "உற்பத்திப் பதிவுகள் எதுவும் இல்லை" },
-  "common.recent_invoices": { en: "Recent Invoices", ta: "சமீபத்திய விலைப்பட்டியல்கள்" },
+  "common.no_invoices": {
+    en: "No invoices posted yet",
+    ta: "விலைப்பட்டியல் எதுவும் பதிவாகவில்லை",
+  },
+  "common.no_runs": {
+    en: "No production runs found",
+    ta: "உற்பத்திப் பதிவுகள் எதுவும் இல்லை",
+  },
+  "common.recent_invoices": {
+    en: "Recent Invoices",
+    ta: "சமீபத்திய விலைப்பட்டியல்கள்",
+  },
   "common.active_batches": {
     en: "Active Production Batches",
     ta: "செயல்பாட்டில் உள்ள உற்பத்தி தொகுதிகள்",
@@ -242,7 +263,10 @@ export const dictionary: Translations = {
     ta: "பக்கங்கள் மற்றும் செயல்களைத் தேடு...",
   },
   "shell.search_records": { en: "Search records", ta: "பதிவுகளைத் தேடு" },
-  "shell.pause_motion": { en: "Pause animations", ta: "அசைவூட்டங்களை இடைநிறுத்து" },
+  "shell.pause_motion": {
+    en: "Pause animations",
+    ta: "அசைவூட்டங்களை இடைநிறுத்து",
+  },
   "shell.resume_motion": { en: "Resume animations", ta: "அசைவூட்டங்களைத் தொடங்கு" },
 
   // Operational Surface Phrases (F-080 Bilingual UI)
@@ -251,38 +275,92 @@ export const dictionary: Translations = {
     en: "BOM execution, consumption variances, yield calculations, and run costs",
     ta: "மூலப்பொருள் பயன்பாடு, மகசூல் மாறுபாடு மற்றும் உற்பத்தி செலவு விவரங்கள்",
   },
-  "prod.record_batch": { en: "Record production batch", ta: "உற்பத்தி தொகுதி பதிவு" },
+  "prod.record_batch": {
+    en: "Record production batch",
+    ta: "உற்பத்தி தொகுதி பதிவு",
+  },
   "prod.murukku_batch": {
     en: "Murukku 200g standard batch (Benchmark: 200 expected packets)",
     ta: "முறுக்கு 200 கி நிலையான உற்பத்தி (இலக்கு: 200 பாக்கெட்டுகள்)",
   },
-  "prod.bom_recipe": { en: "Bill of Materials (BOM) Recipe", ta: "மூலப்பொருள் செய்முறை (BOM)" },
-  "prod.good_pkts_prod": { en: "Good packets produced", ta: "தயாரிக்கப்பட்ட நல்ல பாக்கெட்டுகள்" },
+  "prod.bom_recipe": {
+    en: "Bill of Materials (BOM) Recipe",
+    ta: "மூலப்பொருள் செய்முறை (BOM)",
+  },
+  "prod.good_pkts_prod": {
+    en: "Good packets produced",
+    ta: "தயாரிக்கப்பட்ட நல்ல பாக்கெட்டுகள்",
+  },
   "prod.damaged_pouches": { en: "Damaged pouches", ta: "சேதமடைந்த பவுச்சுகள்" },
   "prod.total_batches": { en: "Total batches", ta: "மொத்த உற்பத்திகள்" },
-  "prod.pkts_produced": { en: "Packets produced", ta: "உற்பத்தி செய்த பாக்கெட்டுகள்" },
+  "prod.pkts_produced": {
+    en: "Packets produced",
+    ta: "உற்பத்தி செய்த பாக்கெட்டுகள்",
+  },
   "prod.total_run_cost": { en: "Total run cost", ta: "மொத்த உற்பத்தி செலவு" },
   "prod.ledger_integrity": { en: "Ledger integrity", ta: "பேரேட்டு நம்பகத்தன்மை" },
   "prod.verified": { en: "Verified", ta: "சரிபார்க்கப்பட்டது" },
-  "prod.completed_runs": { en: "Completed production runs", ta: "நிறைவடைந்த உற்பத்தி பதிவுகள்" },
-  "prod.search_batches": { en: "Search production batches...", ta: "உற்பத்தி தொகுதிகளைத் தேடு..." },
-  "prod.oil_consumed": { en: "Oil consumed (L)", ta: "பயன்படுத்திய எண்ணெய் (லிட்டர்)" },
-  "prod.cooking_oil": { en: "Cooking oil consumed (L)", ta: "பயன்படுத்திய சமையல் எண்ணெய் (லிட்டர்)" },
+  "prod.completed_runs": {
+    en: "Completed production runs",
+    ta: "நிறைவடைந்த உற்பத்தி பதிவுகள்",
+  },
+  "prod.search_batches": {
+    en: "Search production batches...",
+    ta: "உற்பத்தி தொகுதிகளைத் தேடு...",
+  },
+  "prod.oil_consumed": {
+    en: "Oil consumed (L)",
+    ta: "பயன்படுத்திய எண்ணெய் (லிட்டர்)",
+  },
+  "prod.cooking_oil": {
+    en: "Cooking oil consumed (L)",
+    ta: "பயன்படுத்திய சமையல் எண்ணெய் (லிட்டர்)",
+  },
   "prod.cartons_consumed": { en: "Cartons consumed", ta: "பயன்படுத்திய பெட்டிகள்" },
-  "prod.cartons_used": { en: "Cartons used (pieces)", ta: "பயன்படுத்திய பெட்டிகள் (எண்ணிக்கை)" },
+  "prod.cartons_used": {
+    en: "Cartons used (pieces)",
+    ta: "பயன்படுத்திய பெட்டிகள் (எண்ணிக்கை)",
+  },
   "prod.labor_cost": { en: "Direct labor cost", ta: "நேரடி கூலி செலவு" },
-  "prod.labor_cost_inr": { en: "Direct labour cost (₹)", ta: "நேரடி கூலி செலவு (₹)" },
-  "prod.utility_cost": { en: "Utility & electricity cost", ta: "மின்சாரம் & பராமரிப்பு செலவு" },
-  "prod.gas_power_inr": { en: "Gas and power cost (₹)", ta: "எரிவாயு & மின்சார செலவு (₹)" },
+  "prod.labor_cost_inr": {
+    en: "Direct labour cost (₹)",
+    ta: "நேரடி கூலி செலவு (₹)",
+  },
+  "prod.utility_cost": {
+    en: "Utility & electricity cost",
+    ta: "மின்சாரம் & பராமரிப்பு செலவு",
+  },
+  "prod.gas_power_inr": {
+    en: "Gas and power cost (₹)",
+    ta: "எரிவாயு & மின்சார செலவு (₹)",
+  },
   "prod.batch_notes": { en: "Batch notes", ta: "தொகுதி குறிப்புகள்" },
-  "prod.direct_mat_colon": { en: "Direct materials:", ta: "நேரடி மூலப்பொருட்கள்:" },
+  "prod.direct_mat_colon": {
+    en: "Direct materials:",
+    ta: "நேரடி மூலப்பொருட்கள்:",
+  },
   "prod.direct_lab_colon": { en: "Direct labour:", ta: "நேரடி கூலி:" },
   "prod.gas_power_colon": { en: "Gas and power:", ta: "எரிவாயு & மின்சாரம்:" },
-  "prod.total_run_cost_colon": { en: "Total run cost:", ta: "மொத்த உற்பத்தி செலவு:" },
-  "prod.cost_per_good_pkt": { en: "Cost per good packet:", ta: "பாக்கெட் அடக்க விலை:" },
-  "prod.post_btn": { en: "Post & Update Stock Ledger", ta: "பதிவு செய்து சரக்கு இருப்பை புதுப்பி" },
-  "prod.reverse_run": { en: "Reverse Production Run", ta: "உற்பத்தி பதிவை ரத்து செய்" },
-  "prod.reversal_reason": { en: "Reason for reversal", ta: "ரத்து செய்வதற்கான காரணம்" },
+  "prod.total_run_cost_colon": {
+    en: "Total run cost:",
+    ta: "மொத்த உற்பத்தி செலவு:",
+  },
+  "prod.cost_per_good_pkt": {
+    en: "Cost per good packet:",
+    ta: "பாக்கெட் அடக்க விலை:",
+  },
+  "prod.post_btn": {
+    en: "Post & Update Stock Ledger",
+    ta: "பதிவு செய்து சரக்கு இருப்பை புதுப்பி",
+  },
+  "prod.reverse_run": {
+    en: "Reverse Production Run",
+    ta: "உற்பத்தி பதிவை ரத்து செய்",
+  },
+  "prod.reversal_reason": {
+    en: "Reason for reversal",
+    ta: "ரத்து செய்வதற்கான காரணம்",
+  },
   "prod.reverse_btn": { en: "Reverse Run", ta: "உற்பத்தியை ரத்து செய்" },
   "prod.reverse": { en: "Reverse", ta: "ரத்து செய்" },
   "prod.reversed": { en: "Reversed", ta: "ரத்து செய்யப்பட்டது" },
@@ -296,7 +374,10 @@ export const dictionary: Translations = {
   },
   "outbox.connected": { en: "Connected", ta: "இணைக்கப்பட்டுள்ளது" },
   "outbox.refresh_catalog": { en: "Refresh catalog", ta: "பட்டியலை புதுப்பி" },
-  "outbox.discard_title": { en: "Discard Offline Order", ta: "இணையற்ற ஆணையை நீக்கு" },
+  "outbox.discard_title": {
+    en: "Discard Offline Order",
+    ta: "இணையற்ற ஆணையை நீக்கு",
+  },
   "outbox.discard_desc": {
     en: "Warning: This uncommitted order exists only in your local device storage. Discarding will permanently erase it and it cannot be recovered.",
     ta: "எச்சரிக்கை: இந்த ஆணை உங்கள் சாதன நினைவகத்தில் மட்டுமே உள்ளது. நீக்கினால் இது நிரந்தரமாக அழிக்கப்படும், திரும்பப் பெற முடியாது.",
@@ -311,12 +392,18 @@ export const dictionary: Translations = {
   "stock.packaging": { en: "Packaging", ta: "பேக்கிங் பொருட்கள்" },
   "stock.finished_goods": { en: "Finished Goods", ta: "முடிக்கப்பட்ட பொருட்கள்" },
   "stock.valued_total": { en: "Valued Stock Total", ta: "மொத்த இருப்பு மதிப்பு" },
-  "stock.title": { en: "Inventory & stock ledger", ta: "சரக்கு மற்றும் இருப்புப் பேரேடு" },
+  "stock.title": {
+    en: "Inventory & stock ledger",
+    ta: "சரக்கு மற்றும் இருப்புப் பேரேடு",
+  },
   "stock.subtitle": {
     en: "Real-time stock on hand, reservations, weighted average cost, and movements",
     ta: "கையிருப்பு, முன்பதிவு, சராசரி அடக்க விலை மற்றும் நகர்வுகள்",
   },
-  "stock.movement_history": { en: "Stock movement history", ta: "சரக்கு நகர்வு வரலாறு" },
+  "stock.movement_history": {
+    en: "Stock movement history",
+    ta: "சரக்கு நகர்வு வரலாறு",
+  },
 
   // Orders
   "orders.title": { en: "Orders", ta: "விற்பனை ஆணைகள்" },
@@ -328,19 +415,34 @@ export const dictionary: Translations = {
   "orders.new_order": { en: "New sales order", ta: "புதிய விற்பனை ஆணை" },
   "orders.create_order": { en: "Create order", ta: "ஆணை உருவாக்கு" },
   "orders.total_orders": { en: "Total orders", ta: "மொத்த ஆணைகள்" },
-  "orders.approved_bookings": { en: "Approved bookings", ta: "ஒப்புதல் அளிக்கப்பட்டவை" },
+  "orders.approved_bookings": {
+    en: "Approved bookings",
+    ta: "ஒப்புதல் அளிக்கப்பட்டவை",
+  },
   "orders.booked_value": { en: "Booked value", ta: "முன்பதிவு மதிப்பு" },
   "orders.pending_review": { en: "Pending review", ta: "பரிசீலனையில் உள்ளவை" },
-  "orders.total_sales_value": { en: "Total sales value", ta: "மொத்த விற்பனை மதிப்பு" },
-  "orders.select_customer": { en: "Select customer", ta: "வாடிக்கையாளரைத் தேர்ந்தெடு" },
+  "orders.total_sales_value": {
+    en: "Total sales value",
+    ta: "மொத்த விற்பனை மதிப்பு",
+  },
+  "orders.select_customer": {
+    en: "Select customer",
+    ta: "வாடிக்கையாளரைத் தேர்ந்தெடு",
+  },
   "orders.select_product": { en: "Select product", ta: "பொருளைத் தேர்ந்தெடு" },
-  "orders.catalog_title": { en: "Order Catalog & Entry", ta: "பொருட்கள் பட்டியல் & புதிய ஆணை" },
+  "orders.catalog_title": {
+    en: "Order Catalog & Entry",
+    ta: "பொருட்கள் பட்டியல் & புதிய ஆணை",
+  },
   "orders.catalog_desc": {
     en: "Select customer, browse packaged product tiles, and adjust quantities using touch-friendly steppers.",
     ta: "வாடிக்கையாளரைத் தேர்ந்தெடுத்து, பாக்கெட் பொருட்களைப் பார்த்து, அளவுகளை உள்ளிடவும்.",
   },
   "orders.offline_mode": { en: "Offline Mode", ta: "இணைப்பற்ற நிலை" },
-  "orders.live_stock_avail": { en: "Live Stock Available", ta: "நேரடி இருப்பு உள்ளது" },
+  "orders.live_stock_avail": {
+    en: "Live Stock Available",
+    ta: "நேரடி இருப்பு உள்ளது",
+  },
 
   // Invoices
   "invoices.title": { en: "Sales invoices", ta: "விற்பனை விலைப்பட்டியல்கள்" },
@@ -353,18 +455,39 @@ export const dictionary: Translations = {
     en: "Tax calculation snapshots, FY series numbering, and immutable invoice ledger",
     ta: "வரி கணக்கீடு, நிதியாண்டு தொடர் எண் மற்றும் மாறா விலைப்பட்டியல் பேரேடு",
   },
-  "invoices.ledger_header": { en: "Posted invoices ledger", ta: "விலைப்பட்டியல் பேரேடு" },
-  "invoices.total_invoiced": { en: "Total Invoiced", ta: "மொத்த விலைப்பட்டியல் மதிப்பு" },
+  "invoices.ledger_header": {
+    en: "Posted invoices ledger",
+    ta: "விலைப்பட்டியல் பேரேடு",
+  },
+  "invoices.total_invoiced": {
+    en: "Total Invoiced",
+    ta: "மொத்த விலைப்பட்டியல் மதிப்பு",
+  },
   "invoices.total_invoices": { en: "Total invoices", ta: "மொத்த விலைப்பட்டியல்கள்" },
-  "invoices.total_billed": { en: "Total billed", ta: "மொத்த விலைப்பட்டியல் மதிப்பு" },
-  "invoices.total_outstanding": { en: "Total outstanding", ta: "மொத்த நிலுவைத் தொகை" },
-  "invoices.paid_invoices": { en: "Paid Invoices", ta: "செலுத்தப்பட்ட விலைப்பட்டியல்கள்" },
-  "invoices.outstanding_receivables": { en: "Outstanding Receivables", ta: "வசூலிக்க வேண்டிய நிலுவை" },
+  "invoices.total_billed": {
+    en: "Total billed",
+    ta: "மொத்த விலைப்பட்டியல் மதிப்பு",
+  },
+  "invoices.total_outstanding": {
+    en: "Total outstanding",
+    ta: "மொத்த நிலுவைத் தொகை",
+  },
+  "invoices.paid_invoices": {
+    en: "Paid Invoices",
+    ta: "செலுத்தப்பட்ட விலைப்பட்டியல்கள்",
+  },
+  "invoices.outstanding_receivables": {
+    en: "Outstanding Receivables",
+    ta: "வசூலிக்க வேண்டிய நிலுவை",
+  },
   "invoices.gst_collected": { en: "GST Collected", ta: "வசூலிக்கப்பட்ட ஜி.எஸ்.டி" },
 
   // Purchases
   "purchases.title": { en: "Purchase receipts", ta: "கொள்முதல் வரவுகள்" },
-  "purchases.procurement": { en: "Procurement & Mandi Intake", ta: "கொள்முதல் மற்றும் மண்டி வரவு" },
+  "purchases.procurement": {
+    en: "Procurement & Mandi Intake",
+    ta: "கொள்முதல் மற்றும் மண்டி வரவு",
+  },
   "purchases.live_ledger": { en: "Live Ledger", ta: "நேரடி பேரேடு" },
   "purchases.subtitle": {
     en: "Raw material receipts, supplier invoicing, and weighted average cost updates",
@@ -374,20 +497,38 @@ export const dictionary: Translations = {
     en: "Mandi raw material receipts, supplier invoicing, and automated weighted-average cost updating.",
     ta: "மண்டி மூலப்பொருள் வரவு, வழங்குநர் விலைப்பட்டியல் மற்றும் தானியங்கி சராசரி அடக்க விலை கணக்கீடு.",
   },
-  "purchases.record_btn": { en: "Record Purchase Receipt", ta: "கொள்முதல் ரசீது பதிவு" },
-  "purchases.ledger_header": { en: "Purchase Receipts Ledger", ta: "கொள்முதல் ரசீது பேரேடு" },
+  "purchases.record_btn": {
+    en: "Record Purchase Receipt",
+    ta: "கொள்முதல் ரசீது பதிவு",
+  },
+  "purchases.ledger_header": {
+    en: "Purchase Receipts Ledger",
+    ta: "கொள்முதல் ரசீது பேரேடு",
+  },
 
   // Dispatches
-  "dispatch.title": { en: "Dispatch & delivery", ta: "சரக்கு விநியோகம் மற்றும் போக்குவரத்து" },
+  "dispatch.title": {
+    en: "Dispatch & delivery",
+    ta: "சரக்கு விநியோகம் மற்றும் போக்குவரத்து",
+  },
   "dispatch.header": { en: "Dispatch", ta: "விநியோகம்" },
   "dispatch.subtitle": {
     en: "Physical stock movements, reservation release, and warehouse fulfillment records",
     ta: "நேரடி சரக்கு நகர்வு, முன்பதிவு விடுவிப்பு மற்றும் ஆலை விநியோகப் பதிவுகள்",
   },
   "dispatch.record_btn": { en: "Record dispatch", ta: "விநியோகத்தை பதிவு செய்" },
-  "dispatch.total_dispatches": { en: "Total dispatches", ta: "மொத்த விநியோகங்கள்" },
-  "dispatch.units_dispatched": { en: "Units dispatched", ta: "விநியோகிக்கப்பட்ட அலகுகள்" },
-  "dispatch.active_reservations": { en: "Active stock reservations", ta: "செயலில் உள்ள முன்பதிவுகள்" },
+  "dispatch.total_dispatches": {
+    en: "Total dispatches",
+    ta: "மொத்த விநியோகங்கள்",
+  },
+  "dispatch.units_dispatched": {
+    en: "Units dispatched",
+    ta: "விநியோகிக்கப்பட்ட அலகுகள்",
+  },
+  "dispatch.active_reservations": {
+    en: "Active stock reservations",
+    ta: "செயலில் உள்ள முன்பதிவுகள்",
+  },
   "dispatch.order_dispatches": {
     en: "Order dispatches, transporter details, vehicle tracking, and stock release",
     ta: "ஆணை விநியோகம், போக்குவரத்து விவரங்கள் மற்றும் சரக்கு ஒப்படைப்பு",
@@ -406,13 +547,25 @@ export const dictionary: Translations = {
   },
   "payments.record_btn": { en: "Record payment", ta: "வசூலைப் பதிவு செய்" },
   "payments.total_collected": { en: "Total collected", ta: "மொத்த வசூலிப்பு" },
-  "payments.net_outstanding": { en: "Net outstanding", ta: "நிகர நிலுவைத் தொகை" },
-  "payments.unallocated_credit": { en: "Unallocated credit", ta: "ஒதுக்கப்படாத வரவு" },
+  "payments.net_outstanding": {
+    en: "Net outstanding",
+    ta: "நிகர நிலுவைத் தொகை",
+  },
+  "payments.unallocated_credit": {
+    en: "Unallocated credit",
+    ta: "ஒதுக்கப்படாத வரவு",
+  },
   "payments.ledger_tab": { en: "Payments ledger", ta: "பணம் வசூல் பேரேடு" },
-  "payments.receivables_tab": { en: "Customer receivables", ta: "வாடிக்கையாளர் நிலுவைகள்" },
+  "payments.receivables_tab": {
+    en: "Customer receivables",
+    ta: "வாடிக்கையாளர் நிலுவைகள்",
+  },
 
   // Reports
-  "reports.title": { en: "Operational & financial reports", ta: "செயல்பாடு மற்றும் நிதி அறிக்கைகள்" },
+  "reports.title": {
+    en: "Operational & financial reports",
+    ta: "செயல்பாடு மற்றும் நிதி அறிக்கைகள்",
+  },
   "reports.subtitle": {
     en: "Statutory GST registers, stock valuation, production costing, and audit trail",
     ta: "ஜி.எஸ்.டி பதிவேடு, சரக்கு மதிப்பீடு மற்றும் தணிக்கைப் பதிவு",
@@ -478,7 +631,9 @@ export function getSavedLanguage(userId?: string | null): Language {
     const key = getUserScopedLanguageKey(userId);
     const saved = localStorage.getItem(key) as Language | null;
     if (saved === "en" || saved === "ta") return saved;
-    const fallback = localStorage.getItem("mill_ledger_lang") as Language | null;
+    const fallback = localStorage.getItem(
+      "mill_ledger_lang",
+    ) as Language | null;
     if (fallback === "en" || fallback === "ta") return fallback;
   } catch {}
   return "en";
@@ -502,7 +657,9 @@ export function LanguageProvider({
   userId?: string | null;
 }) {
   const [prevUserId, setPrevUserId] = useState(userId);
-  const [language, setLanguageState] = useState<Language>(() => getSavedLanguage(userId));
+  const [language, setLanguageState] = useState<Language>(() =>
+    getSavedLanguage(userId),
+  );
 
   if (userId !== prevUserId) {
     setPrevUserId(userId);

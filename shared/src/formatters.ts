@@ -83,7 +83,7 @@ function getDateFormatter(
 
 export function formatINR(
   amount: number | string | { toString(): string } | null | undefined,
-  options: FormatINROptions = {}
+  options: FormatINROptions = {},
 ): string {
   const {
     symbol = true,
@@ -103,7 +103,10 @@ export function formatINR(
     num = amount;
   } else if (typeof amount === "string") {
     num = Number(amount.trim());
-  } else if (typeof amount === "object" && typeof amount.toString === "function") {
+  } else if (
+    typeof amount === "object" &&
+    typeof amount.toString === "function"
+  ) {
     num = Number(amount.toString().trim());
   } else {
     num = Number(amount);
@@ -116,7 +119,7 @@ export function formatINR(
   const resolvedLocale =
     lang === "ta" || locale === "ta" || locale === "ta-IN"
       ? "ta-IN"
-      : (locale || "en-IN");
+      : locale || "en-IN";
 
   if (symbol) {
     return getNumberFormatter(resolvedLocale, {
@@ -139,7 +142,7 @@ export function formatINR(
  */
 export function formatQuantity(
   amount: number | string | { toString(): string } | null | undefined,
-  options: FormatQuantityOptions = {}
+  options: FormatQuantityOptions = {},
 ): string {
   const {
     unit,
@@ -159,7 +162,10 @@ export function formatQuantity(
     num = amount;
   } else if (typeof amount === "string") {
     num = Number(amount.trim());
-  } else if (typeof amount === "object" && typeof amount.toString === "function") {
+  } else if (
+    typeof amount === "object" &&
+    typeof amount.toString === "function"
+  ) {
     num = Number(amount.toString().trim());
   } else {
     num = Number(amount);
@@ -172,7 +178,7 @@ export function formatQuantity(
   const resolvedLocale =
     lang === "ta" || locale === "ta" || locale === "ta-IN"
       ? "ta-IN"
-      : (locale || "en-IN");
+      : locale || "en-IN";
 
   const formatted = getNumberFormatter(resolvedLocale, {
     minimumFractionDigits,
@@ -188,16 +194,26 @@ export function formatQuantity(
 export function formatDate(
   date: string | Date | number | null | undefined,
   options: FormatDateOptions = DEFAULT_DATE_OPTIONS,
-  localeParam: string = "en-IN"
+  localeParam: string = "en-IN",
 ): string {
   if (!date) return "—";
   const d = date instanceof Date ? date : new Date(date);
   if (Number.isNaN(d.getTime())) return "—";
 
-  const rawLocale = options.locale || (options.lang === "ta" ? "ta-IN" : undefined) || localeParam;
-  const resolvedLocale = rawLocale === "ta" || rawLocale === "ta-IN" ? "ta-IN" : (rawLocale || "en-IN");
+  const rawLocale =
+    options.locale ||
+    (options.lang === "ta" ? "ta-IN" : undefined) ||
+    localeParam;
+  const resolvedLocale =
+    rawLocale === "ta" || rawLocale === "ta-IN"
+      ? "ta-IN"
+      : rawLocale || "en-IN";
 
-  const { locale: _l, lang: _lg, ...dtOptions } = { ...DEFAULT_DATE_OPTIONS, ...options };
+  const {
+    locale: _l,
+    lang: _lg,
+    ...dtOptions
+  } = { ...DEFAULT_DATE_OPTIONS, ...options };
   return getDateFormatter(resolvedLocale, dtOptions).format(d);
 }
 
@@ -206,7 +222,7 @@ export function formatDate(
  */
 export function formatDateShort(
   date: string | Date | number | null | undefined,
-  localeParam: string = "en-IN"
+  localeParam: string = "en-IN",
 ): string {
   return formatDate(
     date,
@@ -215,7 +231,7 @@ export function formatDateShort(
       month: "2-digit",
       year: "numeric",
     },
-    localeParam
+    localeParam,
   );
 }
 
@@ -225,7 +241,7 @@ export function formatDateShort(
 export function formatDateTime(
   date: string | Date | number | null | undefined,
   options: FormatDateOptions = DEFAULT_DATETIME_OPTIONS,
-  localeParam: string = "en-IN"
+  localeParam: string = "en-IN",
 ): string {
   const mergedOptions = { ...DEFAULT_DATETIME_OPTIONS, ...options };
   return formatDate(date, mergedOptions, localeParam);
@@ -237,7 +253,7 @@ export function formatDateTime(
 export function formatTime(
   date: string | Date | number | null | undefined,
   options: FormatDateOptions = DEFAULT_TIME_OPTIONS,
-  localeParam: string = "en-IN"
+  localeParam: string = "en-IN",
 ): string {
   const mergedOptions = { ...DEFAULT_TIME_OPTIONS, ...options };
   return formatDate(date, mergedOptions, localeParam);
@@ -251,10 +267,11 @@ export function compareStrings(
   a: string | null | undefined,
   b: string | null | undefined,
   locale: string = "en-IN",
-  options: Intl.CollatorOptions = { sensitivity: "base", numeric: true }
+  options: Intl.CollatorOptions = { sensitivity: "base", numeric: true },
 ): number {
   const strA = a ?? "";
   const strB = b ?? "";
-  const resolvedLocale = locale === "ta" || locale === "ta-IN" ? "ta-IN" : (locale || "en-IN");
+  const resolvedLocale =
+    locale === "ta" || locale === "ta-IN" ? "ta-IN" : locale || "en-IN";
   return strA.localeCompare(strB, resolvedLocale, options);
 }

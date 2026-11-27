@@ -30,10 +30,12 @@ export function NewPaymentPage() {
   const [paymentMode, setPaymentMode] = useState("BANK_TRANSFER");
   const [referenceNumber, setReferenceNumber] = useState("");
   const [notes, setNotes] = useState("");
-  const [allocationMode, setAllocationMode] = useState<"FIFO" | "MANUAL" | "UNALLOCATED">(
-    initialInvoiceId ? "MANUAL" : "FIFO",
-  );
-  const [manualAllocations, setManualAllocations] = useState<Record<string, string>>({});
+  const [allocationMode, setAllocationMode] = useState<
+    "FIFO" | "MANUAL" | "UNALLOCATED"
+  >(initialInvoiceId ? "MANUAL" : "FIFO");
+  const [manualAllocations, setManualAllocations] = useState<
+    Record<string, string>
+  >({});
 
   const { data: customersData } = useQuery<{
     customers: Array<{ id: string; code: string; name: string }>;
@@ -55,7 +57,9 @@ export function NewPaymentPage() {
   }>({
     queryKey: ["customer-open-invoices", customerId],
     queryFn: async () => {
-      const res = await apiClient.get(`/finance/invoices?customerId=${customerId}`);
+      const res = await apiClient.get(
+        `/finance/invoices?customerId=${customerId}`,
+      );
       return {
         invoices: (res.data.invoices ?? []).filter(
           (i: { outstandingAmount: number }) => Number(i.outstandingAmount) > 0,
@@ -71,7 +75,8 @@ export function NewPaymentPage() {
 
   const recordMutation = useMutation({
     mutationFn: async () => {
-      let allocations: Array<{ salesInvoiceId: string; amount: number }> | undefined;
+      let allocations:
+        Array<{ salesInvoiceId: string; amount: number }> | undefined;
       if (allocationMode === "UNALLOCATED") {
         allocations = [];
       } else if (allocationMode === "MANUAL") {
@@ -153,7 +158,9 @@ export function NewPaymentPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="BANK_TRANSFER">Bank Transfer (NEFT/RTGS/IMPS)</SelectItem>
+                <SelectItem value="BANK_TRANSFER">
+                  Bank Transfer (NEFT/RTGS/IMPS)
+                </SelectItem>
                 <SelectItem value="UPI">UPI</SelectItem>
                 <SelectItem value="CHEQUE">Cheque</SelectItem>
                 <SelectItem value="CASH">Cash</SelectItem>
@@ -216,7 +223,8 @@ export function NewPaymentPage() {
                   className="flex items-center justify-between gap-3 text-sm"
                 >
                   <Label htmlFor={`alloc-${inv.id}`}>
-                    {inv.invoiceNumber} (Due: {formatINR(inv.outstandingAmount)})
+                    {inv.invoiceNumber} (Due: {formatINR(inv.outstandingAmount)}
+                    )
                   </Label>
                   <Input
                     id={`alloc-${inv.id}`}

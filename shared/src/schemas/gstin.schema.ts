@@ -10,10 +10,45 @@ export const GSTIN_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
  * Valid 2-digit Indian State / Union Territory GST codes per Rule 8 CGST Rules
  */
 export const VALID_STATE_CODES = new Set([
-  "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
-  "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
-  "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
-  "31", "32", "33", "34", "35", "36", "37", "38", "97",
+  "01",
+  "02",
+  "03",
+  "04",
+  "05",
+  "06",
+  "07",
+  "08",
+  "09",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16",
+  "17",
+  "18",
+  "19",
+  "20",
+  "21",
+  "22",
+  "23",
+  "24",
+  "25",
+  "26",
+  "27",
+  "28",
+  "29",
+  "30",
+  "31",
+  "32",
+  "33",
+  "34",
+  "35",
+  "36",
+  "37",
+  "38",
+  "97",
 ]);
 
 /**
@@ -54,7 +89,9 @@ export function computeGstinCheckDigit(gstin14: string): string {
     const ch = clean[i];
     const val = GSTIN_CHARS.indexOf(ch);
     if (val === -1) {
-      throw new Error(`Invalid character '${ch}' in GSTIN prefix at position ${i + 1}`);
+      throw new Error(
+        `Invalid character '${ch}' in GSTIN prefix at position ${i + 1}`,
+      );
     }
 
     // Alternating weights: 1 for even index (pos 1,3,...), 2 for odd index (pos 2,4,...)

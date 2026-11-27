@@ -3,9 +3,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { PublicLayout } from "./public-layout";
 
 export type ResourceArticleId =
-  | "gst-invoicing"
-  | "stock-ledger"
-  | "offline-orders";
+  "gst-invoicing" | "stock-ledger" | "offline-orders";
 
 interface ArticleSection {
   heading: string;
@@ -34,10 +32,31 @@ const ARTICLES: Record<ResourceArticleId, ArticleData> = {
           "For intra-state sales (for example, a Tamil Nadu mill supplying a Tamil Nadu retailer), tax splits evenly into CGST and SGST. For inter-state sales (for example, supplying a Karnataka distributor), the full tax rate applies as IGST.",
         ],
         table: {
-          headers: ["Scenario", "Taxable Value", "CGST", "SGST", "IGST", "Invoice Total"],
+          headers: [
+            "Scenario",
+            "Taxable Value",
+            "CGST",
+            "SGST",
+            "IGST",
+            "Invoice Total",
+          ],
           rows: [
-            ["Intra-State (5% GST)", "₹7,500.00", "₹187.50 (2.5%)", "₹187.50 (2.5%)", "₹0.00", "₹7,875.00"],
-            ["Inter-State (5% GST)", "₹100.00", "₹0.00", "₹0.00", "₹5.00 (5.0%)", "₹105.00"],
+            [
+              "Intra-State (5% GST)",
+              "₹7,500.00",
+              "₹187.50 (2.5%)",
+              "₹187.50 (2.5%)",
+              "₹0.00",
+              "₹7,875.00",
+            ],
+            [
+              "Inter-State (5% GST)",
+              "₹100.00",
+              "₹0.00",
+              "₹0.00",
+              "₹5.00 (5.0%)",
+              "₹105.00",
+            ],
           ],
         },
       },
@@ -96,10 +115,26 @@ const ARTICLES: Record<ResourceArticleId, ArticleData> = {
         table: {
           headers: ["Outbox State", "Meaning", "Stock Reserved?"],
           rows: [
-            ["Local", "Saved in device IndexedDB waiting for connectivity.", "No"],
-            ["Syncing", "Submitting to Express API with unique idempotency key.", "Pending"],
-            ["Synced", "Committed on PostgreSQL and assigned a server order number.", "On admin approval"],
-            ["Conflict", "Rejected by server (for example, insufficient stock); user can review or discard.", "No"],
+            [
+              "Local",
+              "Saved in device IndexedDB waiting for connectivity.",
+              "No",
+            ],
+            [
+              "Syncing",
+              "Submitting to Express API with unique idempotency key.",
+              "Pending",
+            ],
+            [
+              "Synced",
+              "Committed on PostgreSQL and assigned a server order number.",
+              "On admin approval",
+            ],
+            [
+              "Conflict",
+              "Rejected by server (for example, insufficient stock); user can review or discard.",
+              "No",
+            ],
           ],
         },
       },
@@ -113,7 +148,11 @@ const ARTICLES: Record<ResourceArticleId, ArticleData> = {
   },
 };
 
-export function ResourceArticlePage({ articleId }: { articleId: ResourceArticleId }) {
+export function ResourceArticlePage({
+  articleId,
+}: {
+  articleId: ResourceArticleId;
+}) {
   const article = ARTICLES[articleId];
 
   return (
@@ -131,9 +170,14 @@ export function ResourceArticlePage({ articleId }: { articleId: ResourceArticleI
 
           {article.sections.map((sec) => (
             <section key={sec.heading} className="space-y-4">
-              <h2 className="text-xl font-bold text-foreground">{sec.heading}</h2>
+              <h2 className="text-xl font-bold text-foreground">
+                {sec.heading}
+              </h2>
               {sec.body.map((p) => (
-                <p key={p} className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                <p
+                  key={p}
+                  className="text-sm sm:text-base text-muted-foreground leading-relaxed"
+                >
                   {p}
                 </p>
               ))}
@@ -153,7 +197,10 @@ export function ResourceArticlePage({ articleId }: { articleId: ResourceArticleI
                       {sec.table.rows.map((row, idx) => (
                         <tr key={idx}>
                           {row.map((cell, cIdx) => (
-                            <td key={cIdx} className="px-4 py-3 text-foreground whitespace-nowrap">
+                            <td
+                              key={cIdx}
+                              className="px-4 py-3 text-foreground whitespace-nowrap"
+                            >
                               {cell}
                             </td>
                           ))}
@@ -169,13 +216,19 @@ export function ResourceArticlePage({ articleId }: { articleId: ResourceArticleI
           <footer className="border-t border-border pt-8 flex flex-wrap gap-3">
             <Link
               to="/demo"
-              className={buttonVariants({ variant: "primary", className: "min-h-[44px] px-6" })}
+              className={buttonVariants({
+                variant: "primary",
+                className: "min-h-[44px] px-6",
+              })}
             >
               See This Workflow in a Live Demo
             </Link>
             <Link
               to="/resources"
-              className={buttonVariants({ variant: "outline", className: "min-h-[44px] px-6" })}
+              className={buttonVariants({
+                variant: "outline",
+                className: "min-h-[44px] px-6",
+              })}
             >
               Back to All Guides
             </Link>

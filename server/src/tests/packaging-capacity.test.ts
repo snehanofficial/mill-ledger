@@ -50,19 +50,44 @@ describe("F-016: Dynamic Packaging Capacity Mismatch Warning and Database Persis
 
     // 2. Create UOMs
     const kgUom = await prisma.unitOfMeasure.create({
-      data: { organizationId: testOrgId, code: `KG-${runId}`, name: "Kilogram", symbol: "kg" },
+      data: {
+        organizationId: testOrgId,
+        code: `KG-${runId}`,
+        name: "Kilogram",
+        symbol: "kg",
+      },
     });
     const lUom = await prisma.unitOfMeasure.create({
-      data: { organizationId: testOrgId, code: `L-${runId}`, name: "Liter", symbol: "L" },
+      data: {
+        organizationId: testOrgId,
+        code: `L-${runId}`,
+        name: "Liter",
+        symbol: "L",
+      },
     });
     const pktUom = await prisma.unitOfMeasure.create({
-      data: { organizationId: testOrgId, code: `PKT-${runId}`, name: "Packet", symbol: "pkt" },
+      data: {
+        organizationId: testOrgId,
+        code: `PKT-${runId}`,
+        name: "Packet",
+        symbol: "pkt",
+      },
     });
     const cartonUom = await prisma.unitOfMeasure.create({
-      data: { organizationId: testOrgId, code: `CARTON-${runId}`, name: "Carton", symbol: "ctn" },
+      data: {
+        organizationId: testOrgId,
+        code: `CARTON-${runId}`,
+        name: "Carton",
+        symbol: "ctn",
+      },
     });
     const tinUom = await prisma.unitOfMeasure.create({
-      data: { organizationId: testOrgId, code: `TIN-${runId}`, name: "Tin", symbol: "tin" },
+      data: {
+        organizationId: testOrgId,
+        code: `TIN-${runId}`,
+        name: "Tin",
+        symbol: "tin",
+      },
     });
 
     // 3. Unit conversions: 1 Carton = 20 Packets, 1 Tin = 15 Packets
@@ -231,11 +256,36 @@ describe("F-016: Dynamic Packaging Capacity Mismatch Warning and Database Persis
         expectedOutputQty: 200,
         items: {
           create: [
-            { inventoryItemId: flourItemId, uomId: kgUom.id, plannedQty: 40, itemType: RecipeItemType.INGREDIENT },
-            { inventoryItemId: oilItemId, uomId: lUom.id, plannedQty: 10, itemType: RecipeItemType.INGREDIENT },
-            { inventoryItemId: spiceItemId, uomId: kgUom.id, plannedQty: 1.2, itemType: RecipeItemType.INGREDIENT },
-            { inventoryItemId: pouchItemId, uomId: pktUom.id, plannedQty: 200, itemType: RecipeItemType.PACKAGING },
-            { inventoryItemId: cartonItemId, uomId: cartonUom.id, plannedQty: 10, itemType: RecipeItemType.PACKAGING },
+            {
+              inventoryItemId: flourItemId,
+              uomId: kgUom.id,
+              plannedQty: 40,
+              itemType: RecipeItemType.INGREDIENT,
+            },
+            {
+              inventoryItemId: oilItemId,
+              uomId: lUom.id,
+              plannedQty: 10,
+              itemType: RecipeItemType.INGREDIENT,
+            },
+            {
+              inventoryItemId: spiceItemId,
+              uomId: kgUom.id,
+              plannedQty: 1.2,
+              itemType: RecipeItemType.INGREDIENT,
+            },
+            {
+              inventoryItemId: pouchItemId,
+              uomId: pktUom.id,
+              plannedQty: 200,
+              itemType: RecipeItemType.PACKAGING,
+            },
+            {
+              inventoryItemId: cartonItemId,
+              uomId: cartonUom.id,
+              plannedQty: 10,
+              itemType: RecipeItemType.PACKAGING,
+            },
           ],
         },
       },
@@ -246,7 +296,9 @@ describe("F-016: Dynamic Packaging Capacity Mismatch Warning and Database Persis
   afterAll(async () => {
     // Clean up isolated test organization data within a transaction that bypasses immutability
     await prisma.$transaction(async (tx) => {
-      await tx.$executeRawUnsafe("SET LOCAL mill_ledger.bypass_immutability = 'on'");
+      await tx.$executeRawUnsafe(
+        "SET LOCAL mill_ledger.bypass_immutability = 'on'",
+      );
       await tx.productionRunMaterial.deleteMany({
         where: { productionRun: { organizationId: testOrgId } },
       });
@@ -310,16 +362,22 @@ describe("F-016: Dynamic Packaging Capacity Mismatch Warning and Database Persis
     });
 
     expect(result.warnings).toHaveLength(1);
-    expect(result.warnings[0]).toContain("9 cartons represent 180 of 188 packets");
+    expect(result.warnings[0]).toContain(
+      "9 cartons represent 180 of 188 packets",
+    );
 
     // Assert warning flag and text are persisted on returned run
     expect(result.run.packagingMismatch).toBe(true);
-    expect(result.run.packagingWarning).toContain("9 cartons represent 180 of 188 packets");
+    expect(result.run.packagingWarning).toContain(
+      "9 cartons represent 180 of 188 packets",
+    );
 
     // Fetch freshly from database via getProductionRunById to verify DB persistence
     const fetched = await productionService.getProductionRunById(result.run.id);
     expect(fetched.packagingMismatch).toBe(true);
-    expect(fetched.packagingWarning).toContain("9 cartons represent 180 of 188 packets");
+    expect(fetched.packagingWarning).toContain(
+      "9 cartons represent 180 of 188 packets",
+    );
   });
 
   it("2. Does not flag packaging mismatch when carton capacity is sufficient", async () => {
@@ -373,12 +431,18 @@ describe("F-016: Dynamic Packaging Capacity Mismatch Warning and Database Persis
     });
 
     expect(result.warnings).toHaveLength(1);
-    expect(result.warnings[0]).toContain("12 tins represent 180 of 188 packets");
+    expect(result.warnings[0]).toContain(
+      "12 tins represent 180 of 188 packets",
+    );
     expect(result.run.packagingMismatch).toBe(true);
-    expect(result.run.packagingWarning).toContain("12 tins represent 180 of 188 packets");
+    expect(result.run.packagingWarning).toContain(
+      "12 tins represent 180 of 188 packets",
+    );
 
     const fetched = await productionService.getProductionRunById(result.run.id);
     expect(fetched.packagingMismatch).toBe(true);
-    expect(fetched.packagingWarning).toContain("12 tins represent 180 of 188 packets");
+    expect(fetched.packagingWarning).toContain(
+      "12 tins represent 180 of 188 packets",
+    );
   });
 });

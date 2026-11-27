@@ -91,9 +91,18 @@ describe("Unified Entity 360° Lifecycle Timeline", () => {
       },
     });
 
-    const adminCookie = await loginAndGetCookie("admin@millledger.local", "AdminPassword123!");
-    const salesmanCookie = await loginAndGetCookie("salesman1@millledger.local", "SalesmanPassword123!");
-    const productionCookie = await loginAndGetCookie("production@millledger.local", "ProductionPassword123!");
+    const adminCookie = await loginAndGetCookie(
+      "admin@millledger.local",
+      "AdminPassword123!",
+    );
+    const salesmanCookie = await loginAndGetCookie(
+      "salesman1@millledger.local",
+      "SalesmanPassword123!",
+    );
+    const productionCookie = await loginAndGetCookie(
+      "production@millledger.local",
+      "ProductionPassword123!",
+    );
 
     // 1. Salesman creates a DRAFT order for Retailer A, modifies it, submits it
     const createOrderRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
@@ -123,28 +132,34 @@ describe("Unified Entity 360° Lifecycle Timeline", () => {
     const order1Id = createdOrderBody.order.id;
 
     // Submit draft order
-    const submitRes = await fetch(`${baseUrl}/api/v1/sales/orders/${order1Id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: salesmanCookie,
+    const submitRes = await fetch(
+      `${baseUrl}/api/v1/sales/orders/${order1Id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: salesmanCookie,
+        },
+        body: JSON.stringify({
+          status: "SUBMITTED",
+          notes: "Ready for approval",
+        }),
       },
-      body: JSON.stringify({
-        status: "SUBMITTED",
-        notes: "Ready for approval",
-      }),
-    });
+    );
     expect(submitRes.status).toBe(200);
 
     // Admin approves order 1
-    const approveRes = await fetch(`${baseUrl}/api/v1/sales/orders/${order1Id}/approve`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: adminCookie,
+    const approveRes = await fetch(
+      `${baseUrl}/api/v1/sales/orders/${order1Id}/approve`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({}),
       },
-      body: JSON.stringify({}),
-    });
+    );
     expect(approveRes.status).toBe(200);
 
     // 2. Admin posts invoice from order 1
@@ -169,9 +184,7 @@ describe("Unified Entity 360° Lifecycle Timeline", () => {
         amount: 500,
         paymentMode: "BANK_TRANSFER",
         referenceNumber: "UTR-TL-001",
-        allocations: [
-          { salesInvoiceId: invoice1!.id, amount: 500 },
-        ],
+        allocations: [{ salesInvoiceId: invoice1!.id, amount: 500 }],
       },
       adminCtx,
     );
@@ -208,7 +221,8 @@ describe("Unified Entity 360° Lifecycle Timeline", () => {
       { headers: { Cookie: adminCookie } },
     );
     expect(orderTimelineRes.status).toBe(200);
-    const orderTimeline = (await orderTimelineRes.json()) as EntityTimelineResponse;
+    const orderTimeline =
+      (await orderTimelineRes.json()) as EntityTimelineResponse;
 
     const eventTypes = orderTimeline.events.map((e) => e.eventType);
     expect(eventTypes).toContain("ORDER_CREATED");
@@ -222,7 +236,9 @@ describe("Unified Entity 360° Lifecycle Timeline", () => {
     expect(new Set(ids).size).toBe(ids.length);
 
     // Unrelated order 2 must not appear in order 1's timeline
-    expect(orderTimeline.events.some((e) => e.originEntityId === order2Id)).toBe(false);
+    expect(
+      orderTimeline.events.some((e) => e.originEntityId === order2Id),
+    ).toBe(false);
 
     // 6. Verify RBAC on Order 1 timeline for SALESMAN (must NOT see SalesInvoice or Payment events)
     const salesmanOrderTlRes = await fetch(
@@ -230,10 +246,13 @@ describe("Unified Entity 360° Lifecycle Timeline", () => {
       { headers: { Cookie: salesmanCookie } },
     );
     expect(salesmanOrderTlRes.status).toBe(200);
-    const salesmanOrderTl = (await salesmanOrderTlRes.json()) as EntityTimelineResponse;
+    const salesmanOrderTl =
+      (await salesmanOrderTlRes.json()) as EntityTimelineResponse;
     expect(
       salesmanOrderTl.events.some(
-        (e) => e.originEntityType === "SalesInvoice" || e.originEntityType === "Payment",
+        (e) =>
+          e.originEntityType === "SalesInvoice" ||
+          e.originEntityType === "Payment",
       ),
     ).toBe(false);
 
@@ -258,8 +277,12 @@ describe("Unified Entity 360° Lifecycle Timeline", () => {
     );
     expect(invTlRes.status).toBe(200);
     const invTl = (await invTlRes.json()) as EntityTimelineResponse;
-    expect(invTl.events.some((e) => e.originEntityType === "SalesOrder")).toBe(true);
-    expect(invTl.events.some((e) => e.originEntityType === "Payment")).toBe(true);
+    expect(invTl.events.some((e) => e.originEntityType === "SalesOrder")).toBe(
+      true,
+    );
+    expect(invTl.events.some((e) => e.originEntityType === "Payment")).toBe(
+      true,
+    );
 
     // 8. Verify Payment 1 timeline distinguishes creation and allocation
     const payTlRes = await fetch(
@@ -268,8 +291,12 @@ describe("Unified Entity 360° Lifecycle Timeline", () => {
     );
     expect(payTlRes.status).toBe(200);
     const payTl = (await payTlRes.json()) as EntityTimelineResponse;
-    expect(payTl.events.some((e) => e.eventType === "PAYMENT_RECORDED")).toBe(true);
-    expect(payTl.events.some((e) => e.eventType === "PAYMENT_ALLOCATED")).toBe(true);
+    expect(payTl.events.some((e) => e.eventType === "PAYMENT_RECORDED")).toBe(
+      true,
+    );
+    expect(payTl.events.some((e) => e.eventType === "PAYMENT_ALLOCATED")).toBe(
+      true,
+    );
 
     // 9. Verify Customer timeline + pagination
     const custTlRes = await fetch(
@@ -294,7 +321,9 @@ describe("Unified Entity 360° Lifecycle Timeline", () => {
     );
     expect(prodTlRes.status).toBe(200);
     const prodTl = (await prodTlRes.json()) as EntityTimelineResponse;
-    expect(prodTl.events.some((e) => e.eventType === "PRODUCT_UPDATED")).toBe(true);
+    expect(prodTl.events.some((e) => e.eventType === "PRODUCT_UPDATED")).toBe(
+      true,
+    );
 
     const recipe = await prisma.recipe.findFirstOrThrow({
       where: { productVariantId: variant.id },
@@ -310,6 +339,8 @@ describe("Unified Entity 360° Lifecycle Timeline", () => {
     );
     expect(recipeTlRes.status).toBe(200);
     const recipeTl = (await recipeTlRes.json()) as EntityTimelineResponse;
-    expect(recipeTl.events.some((e) => e.eventType === "RECIPE_VERSION_CREATED")).toBe(true);
+    expect(
+      recipeTl.events.some((e) => e.eventType === "RECIPE_VERSION_CREATED"),
+    ).toBe(true);
   });
 });

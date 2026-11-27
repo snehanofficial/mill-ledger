@@ -33,7 +33,11 @@ export function BrandLogo({
       width={px}
       height={px}
       aria-hidden={isDecorative || undefined}
-      className={cn("shrink-0 object-contain select-none", sizeClass, className)}
+      className={cn(
+        "shrink-0 object-contain select-none",
+        sizeClass,
+        className,
+      )}
     />
   );
 }

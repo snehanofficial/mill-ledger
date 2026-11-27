@@ -66,25 +66,24 @@ describe("F-004 / F-101: Production Guard on Seed Script", () => {
   });
 
   it("invoking prisma/seed.ts directly exits with code 1 in production mode", () => {
-    const tsxBin = fs.existsSync(path.resolve(process.cwd(), "node_modules/.bin/tsx"))
+    const tsxBin = fs.existsSync(
+      path.resolve(process.cwd(), "node_modules/.bin/tsx"),
+    )
       ? path.resolve(process.cwd(), "node_modules/.bin/tsx")
       : path.resolve(process.cwd(), "server/node_modules/.bin/tsx");
     const seedPath = path.resolve(process.cwd(), "server/prisma/seed.ts");
-    const result = spawnSync(
-      tsxBin,
-      [seedPath],
-      {
-        env: {
-          ...process.env,
-          NODE_ENV: "production",
-          DATABASE_URL: "postgresql://prod_user:secret@db.prod.mill-ledger.internal:5432/mill_ledger_prod?schema=public",
-          BETTER_AUTH_SECRET: "long-secure-production-secret-for-guard-test-1234",
-          CORS_ORIGIN: "https://millledger.com",
-          BETTER_AUTH_URL: "https://millledger.com",
-        },
-        encoding: "utf8",
+    const result = spawnSync(tsxBin, [seedPath], {
+      env: {
+        ...process.env,
+        NODE_ENV: "production",
+        DATABASE_URL:
+          "postgresql://prod_user:secret@db.prod.mill-ledger.internal:5432/mill_ledger_prod?schema=public",
+        BETTER_AUTH_SECRET: "long-secure-production-secret-for-guard-test-1234",
+        CORS_ORIGIN: "https://millledger.com",
+        BETTER_AUTH_URL: "https://millledger.com",
       },
-    );
+      encoding: "utf8",
+    });
 
     expect(result.status).toBe(1);
     const combinedOutput = `${result.stdout}\n${result.stderr}`;

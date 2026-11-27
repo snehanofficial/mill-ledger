@@ -32,7 +32,11 @@ function sanitizeExcelText(value: unknown): string {
 }
 
 function sanitizeSheetName(name: string, used: Set<string>): string {
-  const base = name.replace(/[\\/?*[\]:]/g, "-").trim().slice(0, 31) || "Sheet";
+  const base =
+    name
+      .replace(/[\\/?*[\]:]/g, "-")
+      .trim()
+      .slice(0, 31) || "Sheet";
   let candidate = base;
   let idx = 2;
   while (used.has(candidate)) {
@@ -52,11 +56,15 @@ function applyCellBorder(
   cell.border = {
     top: {
       style: topBottomStrong ? "medium" : "thin",
-      color: { argb: topBottomStrong ? EXPORT_THEME.excelColors.borderStrong : color },
+      color: {
+        argb: topBottomStrong ? EXPORT_THEME.excelColors.borderStrong : color,
+      },
     },
     bottom: {
       style: topBottomStrong ? "double" : "thin",
-      color: { argb: topBottomStrong ? EXPORT_THEME.excelColors.borderStrong : color },
+      color: {
+        argb: topBottomStrong ? EXPORT_THEME.excelColors.borderStrong : color,
+      },
     },
     left: { style: "thin", color: { argb: color } },
     right: { style: "thin", color: { argb: color } },
@@ -190,9 +198,7 @@ export async function renderExcelWorkbook(
       meta.organization?.state || null,
     ].filter(Boolean);
 
-    const titleRow = sheet.addRow([
-      sheetDef.title || meta.title,
-    ]);
+    const titleRow = sheet.addRow([sheetDef.title || meta.title]);
     titleRow.font = {
       name: "Calibri",
       size: 14,
@@ -212,9 +218,7 @@ export async function renderExcelWorkbook(
       `Generated: ${formatExportDateTime(meta.generatedAt)}`,
     ].filter(Boolean);
 
-    const subRow = sheet.addRow([
-      sheetDef.subtitle || metaParts.join("  •  "),
-    ]);
+    const subRow = sheet.addRow([sheetDef.subtitle || metaParts.join("  •  ")]);
     subRow.font = {
       name: "Calibri",
       size: 9.5,
@@ -246,7 +250,9 @@ export async function renderExcelWorkbook(
     if (sheetDef.columns.length === 0 || sheetDef.rows.length === 0) {
       if (sheetDef.columns.length > 0) {
         const headerRow = sheet.addRow(
-          sheetDef.columns.map((c) => (c.unit ? `${c.header} (${c.unit})` : c.header)),
+          sheetDef.columns.map((c) =>
+            c.unit ? `${c.header} (${c.unit})` : c.header,
+          ),
         );
         headerRow.height = 22;
         headerRow.eachCell((cell) => {
@@ -269,7 +275,9 @@ export async function renderExcelWorkbook(
           to: { row: headerRow.number, column: sheetDef.columns.length },
         };
       }
-      const emptyRow = sheet.addRow(["No records found for the selected criteria."]);
+      const emptyRow = sheet.addRow([
+        "No records found for the selected criteria.",
+      ]);
       emptyRow.font = { name: "Calibri", size: 10, italic: true };
       sheet.columns.forEach((col) => {
         col.width = 20;

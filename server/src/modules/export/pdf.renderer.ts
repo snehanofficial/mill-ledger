@@ -320,12 +320,18 @@ export async function renderTabularPdf(
           .font(fonts.regular)
           .fontSize(7.5)
           .fillColor(EXPORT_THEME.colors.pine700)
-          .text(item.label, x, boxY + 6, { width: colW - 16, lineBreak: false });
+          .text(item.label, x, boxY + 6, {
+            width: colW - 16,
+            lineBreak: false,
+          });
         doc
           .font(fonts.bold)
           .fontSize(10)
           .fillColor(EXPORT_THEME.colors.pine950)
-          .text(item.value, x, boxY + 18, { width: colW - 16, lineBreak: false });
+          .text(item.value, x, boxY + 18, {
+            width: colW - 16,
+            lineBreak: false,
+          });
       });
       doc.y = boxY + boxHeight + 12;
     }
@@ -355,7 +361,11 @@ export async function renderTabularPdf(
           .font(fonts.regular)
           .fontSize(9)
           .fillColor(EXPORT_THEME.colors.pine700)
-          .text("No records found for the selected criteria.", margin + 10, doc.y + 9);
+          .text(
+            "No records found for the selected criteria.",
+            margin + 10,
+            doc.y + 9,
+          );
         doc.y += 38;
         continue;
       }

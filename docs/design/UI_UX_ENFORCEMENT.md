@@ -98,6 +98,7 @@ Do not scatter arbitrary hex values, spacing values, or radii throughout the app
 All components must use the shared tokens. A global design adjustment should not require manually editing dozens of unrelated components.
 
 Use semantic colours consistently:
+
 - Success: completed, verified, or successful operations.
 - Warning: attention required or potentially risky actions.
 - Danger: errors, destructive actions, and failed operations.

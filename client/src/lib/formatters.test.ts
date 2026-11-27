@@ -56,7 +56,9 @@ describe("F-097: Centralized Currency & Date Formatters", () => {
 
     it("supports optional configuration (e.g. symbol: false)", () => {
       expect(formatINR(100000, { symbol: false })).toBe("1,00,000.00");
-      expect(formatINR(500, { minimumFractionDigits: 0, maximumFractionDigits: 0 })).toBe("₹500");
+      expect(
+        formatINR(500, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+      ).toBe("₹500");
     });
   });
 
@@ -131,7 +133,9 @@ describe("F-097: Centralized Currency & Date Formatters", () => {
     });
 
     it("formats discrete quantities with Tamil/Indian locale grouping", () => {
-      expect(formatQuantity(100000, { lang: "ta", unit: "pkts" })).toBe("1,00,000 pkts");
+      expect(formatQuantity(100000, { lang: "ta", unit: "pkts" })).toBe(
+        "1,00,000 pkts",
+      );
     });
 
     it("collates Tamil and English strings using Unicode Collation Algorithm (UTS #10)", () => {
@@ -141,7 +145,9 @@ describe("F-097: Centralized Currency & Date Formatters", () => {
       expect(sorted).toEqual(["அரிசி", "உளுந்து", "கோதுமை"]);
 
       const englishList = ["Zebra", "Apple", "Mango"];
-      const sortedEnglish = [...englishList].sort((a, b) => compareStrings(a, b, "en-IN"));
+      const sortedEnglish = [...englishList].sort((a, b) =>
+        compareStrings(a, b, "en-IN"),
+      );
       expect(sortedEnglish).toEqual(["Apple", "Mango", "Zebra"]);
     });
   });

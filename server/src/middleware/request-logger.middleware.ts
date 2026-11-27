@@ -7,12 +7,12 @@ import {
 /**
  * Redacts sensitive fields such as passwords, tokens, and secrets from logged data.
  */
-export function sanitizeDetails(data: Record<string, unknown>): Record<string, unknown> {
+export function sanitizeDetails(
+  data: Record<string, unknown>,
+): Record<string, unknown> {
   const sanitized: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(data)) {
-    if (
-      /password|token|secret|authorization|cookie|session/i.test(key)
-    ) {
+    if (/password|token|secret|authorization|cookie|session/i.test(key)) {
       sanitized[key] = "[REDACTED]";
     } else if (value && typeof value === "object" && !Array.isArray(value)) {
       sanitized[key] = sanitizeDetails(value as Record<string, unknown>);
@@ -67,7 +67,7 @@ export function requestLogger(
     try {
       const route = req.baseUrl
         ? `${req.baseUrl}${req.route?.path || ""}`
-        : (req.route?.path || req.path || "unknown");
+        : req.route?.path || req.path || "unknown";
       httpRequestsTotal.inc({
         method: req.method,
         route,

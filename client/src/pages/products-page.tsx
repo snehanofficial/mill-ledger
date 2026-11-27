@@ -1,6 +1,11 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { assertCollectionResponse } from "@/lib/api-contracts";
@@ -150,8 +155,9 @@ export function ProductsPage() {
   const [varDefaultPrice, setVarDefaultPrice] = useState("100");
 
   // Delete variant confirmation state
-  const [deletingVariant, setDeletingVariant] =
-    useState<ProductVariant | null>(null);
+  const [deletingVariant, setDeletingVariant] = useState<ProductVariant | null>(
+    null,
+  );
 
   // Price list modal state
   const [showPriceListModal, setShowPriceListModal] = useState(false);
@@ -173,7 +179,13 @@ export function ProductsPage() {
     priceLists: PriceList[];
     pagination: PaginationMeta;
   }>({
-    queryKey: ["masters-products", page, pageSize, statusFilter, searchQuery.trim()],
+    queryKey: [
+      "masters-products",
+      page,
+      pageSize,
+      statusFilter,
+      searchQuery.trim(),
+    ],
     queryFn: async () => {
       const params = new URLSearchParams({
         limit: String(pageSize),
@@ -184,7 +196,11 @@ export function ProductsPage() {
         params.set("q", searchQuery.trim());
       }
       const res = await apiClient.get(`/masters/products?${params.toString()}`);
-      return assertCollectionResponse(res.data, "products", "/masters/products");
+      return assertCollectionResponse(
+        res.data,
+        "products",
+        "/masters/products",
+      );
     },
     placeholderData: keepPreviousData,
   });
@@ -540,7 +556,11 @@ export function ProductsPage() {
 
       {/* Tabs + Search/Filter bar */}
       <div className="flex flex-col gap-3 border-b border-border pb-3 sm:flex-row sm:items-center sm:justify-between">
-        <div role="tablist" aria-label="Product catalog sections" className="flex gap-1">
+        <div
+          role="tablist"
+          aria-label="Product catalog sections"
+          className="flex gap-1"
+        >
           <button
             type="button"
             role="tab"
@@ -639,7 +659,12 @@ export function ProductsPage() {
               </p>
             </div>
             {products.length === 0 && canManage ? (
-              <Button variant="outline" size="sm" onClick={openAddProductModal} className="gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openAddProductModal}
+                className="gap-1.5"
+              >
                 <PlusCircleIcon aria-hidden="true" className="size-4" />
                 Add Product
               </Button>
@@ -698,7 +723,10 @@ export function ProductsPage() {
                         className="h-8 gap-1 px-2.5 text-xs"
                         onClick={() => openAddVariantModal(prod.id)}
                       >
-                        <PlusCircleIcon aria-hidden="true" className="size-3.5" />
+                        <PlusCircleIcon
+                          aria-hidden="true"
+                          className="size-3.5"
+                        />
                         Add Pack Size
                       </Button>
                       <Button
@@ -722,12 +750,20 @@ export function ProductsPage() {
                         size="sm"
                         disabled={toggleProductArchiveMutation.isPending}
                         className="h-8 gap-1 px-2.5 text-xs text-muted-foreground"
-                        onClick={() => toggleProductArchiveMutation.mutate(prod)}
+                        onClick={() =>
+                          toggleProductArchiveMutation.mutate(prod)
+                        }
                       >
                         {prod.isActive ? (
-                          <ArchiveIcon aria-hidden="true" className="size-3.5" />
+                          <ArchiveIcon
+                            aria-hidden="true"
+                            className="size-3.5"
+                          />
                         ) : (
-                          <RotateCcwIcon aria-hidden="true" className="size-3.5" />
+                          <RotateCcwIcon
+                            aria-hidden="true"
+                            className="size-3.5"
+                          />
                         )}
                         {prod.isActive ? "Archive" : "Restore"}
                       </Button>
@@ -1143,7 +1179,10 @@ export function ProductsPage() {
                   <SelectTrigger id="var-product" className="h-9 text-xs">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent searchable searchPlaceholder="Search products...">
+                  <SelectContent
+                    searchable
+                    searchPlaceholder="Search products..."
+                  >
                     {products.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.name}
@@ -1383,8 +1422,7 @@ export function ProductsPage() {
             <DialogHeader>
               <DialogTitle>Set Unit Price</DialogTitle>
               <DialogDescription>
-                {editingPriceLine.priceListName}:{" "}
-                {editingPriceLine.variantName}
+                {editingPriceLine.priceListName}: {editingPriceLine.variantName}
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-1 py-2">

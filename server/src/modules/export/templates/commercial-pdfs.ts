@@ -10,7 +10,11 @@ import {
   renderTabularPdf,
   stampPdfFooters,
 } from "../pdf.renderer.js";
-import type { ExportColumn, ExportDocumentMeta, ExportOrganization } from "../export.types.js";
+import type {
+  ExportColumn,
+  ExportDocumentMeta,
+  ExportOrganization,
+} from "../export.types.js";
 
 export interface OrderPdfData {
   orderNumber: string;
@@ -86,9 +90,14 @@ export async function generateOrderPdfBuffer(
       .font(fonts.bold)
       .fontSize(10)
       .fillColor(EXPORT_THEME.colors.pine950)
-      .text(`${order.customer.name} (${order.customer.code})`, margin, doc.y + 2, {
-        width: leftW,
-      });
+      .text(
+        `${order.customer.name} (${order.customer.code})`,
+        margin,
+        doc.y + 2,
+        {
+          width: leftW,
+        },
+      );
     doc
       .font(fonts.regular)
       .fontSize(8.5)
@@ -179,7 +188,10 @@ export async function generateOrderPdfBuffer(
           .font(ci === 6 ? fonts.bold : fonts.regular)
           .fontSize(8)
           .fillColor(EXPORT_THEME.colors.pine950)
-          .text(cells[ci], cx + 4, y + 5, { width: c.width - 8, align: c.align });
+          .text(cells[ci], cx + 4, y + 5, {
+            width: c.width - 8,
+            align: c.align,
+          });
         cx += c.width;
       });
       doc
@@ -296,10 +308,25 @@ export async function generatePaymentReceiptPdfBuffer(
   };
 
   const columns: ExportColumn[] = [
-    { key: "invoiceNumber", header: "Invoice Number", type: "text", width: 130 },
+    {
+      key: "invoiceNumber",
+      header: "Invoice Number",
+      type: "text",
+      width: 130,
+    },
     { key: "invoiceDate", header: "Invoice Date", type: "date", width: 90 },
-    { key: "invoiceTotal", header: "Invoice Total", type: "currency", width: 110 },
-    { key: "allocatedAmount", header: "Allocated Amount", type: "currency", width: 110 },
+    {
+      key: "invoiceTotal",
+      header: "Invoice Total",
+      type: "currency",
+      width: 110,
+    },
+    {
+      key: "allocatedAmount",
+      header: "Allocated Amount",
+      type: "currency",
+      width: 110,
+    },
   ];
 
   const rows = payment.allocations.map((a) => ({
@@ -363,12 +390,28 @@ export async function generateCustomerStatementPdfBuffer(
     generatedAt: new Date(),
     organization: data.organization,
     summaryItems: [
-      { label: "Customer", value: `${data.customer.name} (${data.customer.code})`, bold: true },
-      { label: "Total Invoiced", value: formatExportCurrency(data.summary.totalInvoiced, true) },
-      { label: "Total Collected", value: formatExportCurrency(data.summary.totalPaid, true) },
-      { label: "Net Outstanding", value: formatExportCurrency(data.summary.netOutstanding, true), bold: true },
+      {
+        label: "Customer",
+        value: `${data.customer.name} (${data.customer.code})`,
+        bold: true,
+      },
+      {
+        label: "Total Invoiced",
+        value: formatExportCurrency(data.summary.totalInvoiced, true),
+      },
+      {
+        label: "Total Collected",
+        value: formatExportCurrency(data.summary.totalPaid, true),
+      },
+      {
+        label: "Net Outstanding",
+        value: formatExportCurrency(data.summary.netOutstanding, true),
+        bold: true,
+      },
     ],
-    footerNote: data.customer.gstin ? `Customer GSTIN: ${data.customer.gstin}` : undefined,
+    footerNote: data.customer.gstin
+      ? `Customer GSTIN: ${data.customer.gstin}`
+      : undefined,
   };
 
   const columns: ExportColumn[] = [
@@ -428,10 +471,23 @@ export async function generateRecipeSheetPdfBuffer(
     generatedAt: new Date(),
     organization: recipe.organization,
     summaryItems: [
-      { label: "Recipe", value: `${recipe.name} (v${recipe.version})`, bold: true },
-      { label: "Output Product", value: `${recipe.productVariant.name} (${recipe.productVariant.sku})` },
-      { label: "Standard Batch", value: formatExportNumber(recipe.standardBatchSize, 2) },
-      { label: "Expected Output", value: `${formatExportNumber(recipe.expectedOutputQty, 2)} ${recipe.outputUom.code}` },
+      {
+        label: "Recipe",
+        value: `${recipe.name} (v${recipe.version})`,
+        bold: true,
+      },
+      {
+        label: "Output Product",
+        value: `${recipe.productVariant.name} (${recipe.productVariant.sku})`,
+      },
+      {
+        label: "Standard Batch",
+        value: formatExportNumber(recipe.standardBatchSize, 2),
+      },
+      {
+        label: "Expected Output",
+        value: `${formatExportNumber(recipe.expectedOutputQty, 2)} ${recipe.outputUom.code}`,
+      },
     ],
     footerNote: `Status: ${recipe.isActive ? "Active" : "Inactive"}`,
   };

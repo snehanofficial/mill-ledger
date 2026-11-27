@@ -43,13 +43,12 @@ export function isPrivateNetworkOrLoopback(originUrl: string): boolean {
  */
 export function getConfiguredOrigins(): string[] {
   const envOrigins = env.CORS_ORIGIN
-    ? env.CORS_ORIGIN.split(",").map((o) => o.trim()).filter(Boolean)
+    ? env.CORS_ORIGIN.split(",")
+        .map((o) => o.trim())
+        .filter(Boolean)
     : [];
 
-  const baseOrigins = [
-    ...envOrigins,
-    env.BETTER_AUTH_URL,
-  ];
+  const baseOrigins = [...envOrigins, env.BETTER_AUTH_URL];
 
   if (env.NODE_ENV === "production") {
     return Array.from(new Set(baseOrigins));

@@ -67,12 +67,9 @@ export function CustomerLedgerPage() {
       queryFn: async () => {
         const endpoint = `/payments/ledger/${customerId}`;
         const res = await apiClient.get(endpoint);
-        return assertEntityResponse<CustomerLedgerData & Record<string, unknown>>(
-          res.data,
-          null,
-          ["invoices", "payments"],
-          endpoint,
-        );
+        return assertEntityResponse<
+          CustomerLedgerData & Record<string, unknown>
+        >(res.data, null, ["invoices", "payments"], endpoint);
       },
       enabled: Boolean(customerId),
     });
@@ -110,7 +107,9 @@ export function CustomerLedgerPage() {
           isAdmin ? (
             <Button
               variant="primary"
-              onClick={() => navigate(`/payments/new?customerId=${customer.id}`)}
+              onClick={() =>
+                navigate(`/payments/new?customerId=${customer.id}`)
+              }
               className="gap-1.5"
             >
               <CreditCardIcon className="size-4" aria-hidden="true" />
@@ -173,31 +172,31 @@ export function CustomerLedgerPage() {
                 </TableRow>
               ) : (
                 invoices.map((inv) => (
-                <TableRow key={inv.id}>
-                  <TableCell className="font-medium tabular-nums">
-                    <Link
-                      to={`/invoices/${inv.id}`}
-                      className="text-primary hover:underline"
-                    >
-                      {inv.invoiceNumber}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{inv.status}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatINR(inv.totalAmount)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatINR(inv.paidAmount)}
-                  </TableCell>
-                  <TableCell className="text-right font-semibold tabular-nums">
-                    {formatINR(inv.outstandingAmount)}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground tabular-nums">
-                    {formatDateTime(inv.postedAt)}
-                  </TableCell>
-                </TableRow>
+                  <TableRow key={inv.id}>
+                    <TableCell className="font-medium tabular-nums">
+                      <Link
+                        to={`/invoices/${inv.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {inv.invoiceNumber}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{inv.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatINR(inv.totalAmount)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatINR(inv.paidAmount)}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold tabular-nums">
+                      {formatINR(inv.outstandingAmount)}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground tabular-nums">
+                      {formatDateTime(inv.postedAt)}
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
             </TableBody>
@@ -231,29 +230,29 @@ export function CustomerLedgerPage() {
                 </TableRow>
               ) : (
                 payments.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell className="font-medium tabular-nums">
-                    <Link
-                      to={`/payments/${p.id}`}
-                      className="text-primary hover:underline"
-                    >
-                      {p.receiptNumber}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-xs">{p.paymentMode}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{p.status}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-medium tabular-nums">
-                    {formatINR(p.amount)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatINR(p.unallocatedAmount)}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground tabular-nums">
-                    {formatDateTime(p.paymentDate)}
-                  </TableCell>
-                </TableRow>
+                  <TableRow key={p.id}>
+                    <TableCell className="font-medium tabular-nums">
+                      <Link
+                        to={`/payments/${p.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {p.receiptNumber}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-xs">{p.paymentMode}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{p.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-medium tabular-nums">
+                      {formatINR(p.amount)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatINR(p.unallocatedAmount)}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground tabular-nums">
+                      {formatDateTime(p.paymentDate)}
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
             </TableBody>

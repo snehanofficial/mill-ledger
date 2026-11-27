@@ -43,10 +43,7 @@ export function useTheme() {
   );
 
   const toggleTheme = useCallback(() => {
-    const currentResolved =
-      theme === "system"
-        ? getSystemTheme()
-        : theme;
+    const currentResolved = theme === "system" ? getSystemTheme() : theme;
     const nextTheme: Theme = currentResolved === "dark" ? "light" : "dark";
     setTheme(nextTheme);
   }, [theme, setTheme]);

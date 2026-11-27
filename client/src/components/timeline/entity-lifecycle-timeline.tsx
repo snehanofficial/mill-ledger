@@ -151,7 +151,10 @@ function TimelineEventRow({
                 <span className="text-sm font-semibold text-foreground">
                   {event.title}
                 </span>
-                <Badge variant={meta.badgeVariant} className="text-[11px] px-2 py-0">
+                <Badge
+                  variant={meta.badgeVariant}
+                  className="text-[11px] px-2 py-0"
+                >
                   {meta.label}
                 </Badge>
                 {event.isBaseline && (
@@ -196,7 +199,9 @@ function TimelineEventRow({
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span>
               Actor:{" "}
-              <span className="font-medium text-foreground">{event.actorName}</span>
+              <span className="font-medium text-foreground">
+                {event.actorName}
+              </span>
             </span>
             <span aria-hidden="true">·</span>
             <span>{event.relationshipLabel}</span>
@@ -207,7 +212,8 @@ function TimelineEventRow({
                   to={event.originRoute}
                   className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
                 >
-                  {humanizeOriginType(event.originEntityType)} #{event.originEntityLabel}
+                  {humanizeOriginType(event.originEntityType)} #
+                  {event.originEntityLabel}
                   <ExternalLinkIcon className="size-3" aria-hidden="true" />
                 </Link>
               </>
@@ -219,7 +225,9 @@ function TimelineEventRow({
           <div className="border-t border-border bg-muted/25 px-3 py-3 sm:px-3.5 space-y-3 text-xs">
             {event.changes.length > 0 && (
               <div className="space-y-1.5">
-                <div className="font-semibold text-foreground">Recorded changes</div>
+                <div className="font-semibold text-foreground">
+                  Recorded changes
+                </div>
                 <div className="overflow-x-auto rounded-md border border-border bg-card">
                   <table className="w-full text-left text-xs">
                     <thead>
@@ -257,8 +265,12 @@ function TimelineEventRow({
                 <dt className="text-muted-foreground">Originating record</dt>
                 <dd className="font-medium text-foreground">
                   {event.originRoute ? (
-                    <Link to={event.originRoute} className="text-primary hover:underline">
-                      {humanizeOriginType(event.originEntityType)} #{event.originEntityLabel}
+                    <Link
+                      to={event.originRoute}
+                      className="text-primary hover:underline"
+                    >
+                      {humanizeOriginType(event.originEntityType)} #
+                      {event.originEntityLabel}
                     </Link>
                   ) : (
                     `${humanizeOriginType(event.originEntityType)} #${event.originEntityLabel}`
@@ -275,13 +287,16 @@ function TimelineEventRow({
                 <dt className="text-muted-foreground">Actor & source</dt>
                 <dd className="font-medium text-foreground">
                   {event.actorName}
-                  {event.actorEmail ? ` (${event.actorEmail})` : ""} · {event.source}
+                  {event.actorEmail ? ` (${event.actorEmail})` : ""} ·{" "}
+                  {event.source}
                 </dd>
               </div>
               {event.reason && (
                 <div className="sm:col-span-2 lg:col-span-3">
                   <dt className="text-muted-foreground">Reason</dt>
-                  <dd className="font-medium text-foreground">{event.reason}</dd>
+                  <dd className="font-medium text-foreground">
+                    {event.reason}
+                  </dd>
                 </div>
               )}
               {event.correlationId && (
@@ -296,7 +311,9 @@ function TimelineEventRow({
 
             {(event.relatedRecords ?? []).length > 0 && (
               <div className="space-y-1.5">
-                <div className="font-semibold text-foreground">Related records</div>
+                <div className="font-semibold text-foreground">
+                  Related records
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {(event.relatedRecords ?? []).map((rel, idx) =>
                     rel.route ? (
@@ -306,7 +323,10 @@ function TimelineEventRow({
                         className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-primary hover:bg-muted"
                       >
                         {humanizeOriginType(rel.entityType)}: {rel.label}
-                        <ExternalLinkIcon className="size-3" aria-hidden="true" />
+                        <ExternalLinkIcon
+                          className="size-3"
+                          aria-hidden="true"
+                        />
                       </Link>
                     ) : (
                       <span
@@ -389,13 +409,22 @@ export function EntityLifecycleTimeline({
   return (
     <section
       aria-labelledby="entity-lifecycle-heading"
-      className={cn("rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4", className)}
+      className={cn(
+        "rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4",
+        className,
+      )}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <ClockIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-            <h2 id="entity-lifecycle-heading" className="text-base font-semibold text-foreground">
+            <ClockIcon
+              className="size-4 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <h2
+              id="entity-lifecycle-heading"
+              className="text-base font-semibold text-foreground"
+            >
               {title}
             </h2>
             {data && (
@@ -457,7 +486,11 @@ export function EntityLifecycleTimeline({
 
       {/* Body states */}
       {isLoading ? (
-        <div className="space-y-3" aria-busy="true" aria-label="Loading lifecycle timeline">
+        <div
+          className="space-y-3"
+          aria-busy="true"
+          aria-label="Loading lifecycle timeline"
+        >
           <Skeleton className="h-16 w-full" />
           <Skeleton className="h-16 w-full" />
           <Skeleton className="h-16 w-full" />

@@ -164,7 +164,8 @@ export function LifecycleSteps({
                 "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums",
                 step.state === "completed" &&
                   "bg-emerald-600 text-white dark:bg-emerald-500",
-                step.state === "current" && "bg-primary text-primary-foreground",
+                step.state === "current" &&
+                  "bg-primary text-primary-foreground",
                 step.state === "blocked" &&
                   "bg-destructive text-destructive-foreground",
                 step.state === "upcoming" && "bg-muted text-muted-foreground",

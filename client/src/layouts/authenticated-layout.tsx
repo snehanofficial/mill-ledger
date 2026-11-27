@@ -29,7 +29,9 @@ function RouteLoadingFallback() {
     <div className="flex h-[40vh] w-full items-center justify-center p-8">
       <div className="flex flex-col items-center gap-2">
         <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <span className="text-xs font-medium text-muted-foreground">Loading view...</span>
+        <span className="text-xs font-medium text-muted-foreground">
+          Loading view...
+        </span>
       </div>
     </div>
   );
@@ -70,8 +72,7 @@ export function AuthenticatedLayout() {
   const lastWithHandle = [...matches]
     .reverse()
     .find(
-      (m) =>
-        (m.handle as RouteHandle | undefined)?.breadcrumb !== undefined,
+      (m) => (m.handle as RouteHandle | undefined)?.breadcrumb !== undefined,
     );
 
   let label = "Overview";
@@ -134,7 +135,9 @@ export function AuthenticatedLayout() {
 
   // REQ-062 & Owner Decision 2: Keep authenticated ERP pages noindex, nofollow
   useEffect(() => {
-    let meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    let meta = document.querySelector(
+      'meta[name="robots"]',
+    ) as HTMLMetaElement | null;
     const created = !meta;
     if (!meta) {
       meta = document.createElement("meta");
@@ -205,7 +208,11 @@ export function AuthenticatedLayout() {
         onTimeout={handleSessionTimeout}
         onSignOut={handleSignOut}
       />
-      <AuthenticatedShell user={user} notificationCount={0} onSignOut={handleSignOut}>
+      <AuthenticatedShell
+        user={user}
+        notificationCount={0}
+        onSignOut={handleSignOut}
+      >
         <Suspense fallback={<RouteLoadingFallback />}>
           <Outlet />
         </Suspense>

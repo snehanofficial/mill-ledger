@@ -18,11 +18,13 @@ describe("audit-formatter", () => {
       kind: "text",
       text: "Manual export",
     });
-    expect(parseAuditDetails('{"runNumber":"PR-001","isActive":true}')).toEqual({
-      kind: "structured",
-      data: { runNumber: "PR-001", isActive: true },
-      raw: { runNumber: "PR-001", isActive: true },
-    });
+    expect(parseAuditDetails('{"runNumber":"PR-001","isActive":true}')).toEqual(
+      {
+        kind: "structured",
+        data: { runNumber: "PR-001", isActive: true },
+        raw: { runNumber: "PR-001", isActive: true },
+      },
+    );
     expect(parseAuditDetails("[1,2]")).toEqual({
       kind: "array",
       data: [1, 2],

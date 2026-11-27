@@ -21,12 +21,7 @@ import {
 import { Alert } from "@/components/ui/alert";
 import { useLanguage } from "@/lib/i18n";
 import { getDefaultRouteForRole } from "@/lib/role-routing";
-import {
-  LockIcon,
-  MailIcon,
-  EyeIcon,
-  EyeOffIcon,
-} from "lucide-react";
+import { LockIcon, MailIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { BrandLogo } from "@/components/ui/brand-logo";
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -90,7 +85,9 @@ export function LoginPage() {
 
   React.useEffect(() => {
     document.title = "Sign In | MillLedger";
-    let meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    let meta = document.querySelector(
+      'meta[name="robots"]',
+    ) as HTMLMetaElement | null;
     if (!meta) {
       meta = document.createElement("meta");
       meta.name = "robots";
@@ -106,7 +103,10 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
   const isSessionExpired = Boolean(
     (location.state as { sessionExpired?: boolean })?.sessionExpired,
   );
@@ -325,12 +325,17 @@ export function LoginPage() {
                     spellCheck={false}
                     required
                     aria-invalid={Boolean(fieldErrors.email)}
-                    aria-describedby={fieldErrors.email ? "email-error" : undefined}
+                    aria-describedby={
+                      fieldErrors.email ? "email-error" : undefined
+                    }
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
                       if (fieldErrors.email) {
-                        setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          email: undefined,
+                        }));
                       }
                       if (errorMessage) setErrorMessage(null);
                     }}
@@ -339,7 +344,10 @@ export function LoginPage() {
                   />
                 </div>
                 {fieldErrors.email && (
-                  <p id="email-error" className="text-xs font-medium text-destructive">
+                  <p
+                    id="email-error"
+                    className="text-xs font-medium text-destructive"
+                  >
                     {fieldErrors.email}
                   </p>
                 )}
@@ -363,12 +371,17 @@ export function LoginPage() {
                     autoComplete="current-password"
                     required
                     aria-invalid={Boolean(fieldErrors.password)}
-                    aria-describedby={fieldErrors.password ? "password-error" : undefined}
+                    aria-describedby={
+                      fieldErrors.password ? "password-error" : undefined
+                    }
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
                       if (fieldErrors.password) {
-                        setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          password: undefined,
+                        }));
                       }
                       if (errorMessage) setErrorMessage(null);
                     }}
@@ -397,7 +410,10 @@ export function LoginPage() {
                   </button>
                 </div>
                 {fieldErrors.password && (
-                  <p id="password-error" className="text-xs font-medium text-destructive">
+                  <p
+                    id="password-error"
+                    className="text-xs font-medium text-destructive"
+                  >
                     {fieldErrors.password}
                   </p>
                 )}

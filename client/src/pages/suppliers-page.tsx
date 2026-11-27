@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient } from "@/lib/api-client";
@@ -102,7 +107,13 @@ export function SuppliersPage() {
     suppliers: Supplier[];
     pagination: PaginationMeta;
   }>({
-    queryKey: ["inventory-suppliers", page, pageSize, statusFilter, searchQuery.trim()],
+    queryKey: [
+      "inventory-suppliers",
+      page,
+      pageSize,
+      statusFilter,
+      searchQuery.trim(),
+    ],
     queryFn: async () => {
       const params = new URLSearchParams({
         includeInactive: "true",
@@ -145,7 +156,9 @@ export function SuppliersPage() {
       queryClient.invalidateQueries({ queryKey: ["inventory-suppliers"] });
       setShowAddModal(false);
       resetForm();
-      toast.success(`Supplier ${data.supplier?.name ?? code} added successfully`);
+      toast.success(
+        `Supplier ${data.supplier?.name ?? code} added successfully`,
+      );
     },
     onError: (err: any) => {
       toast.error(
@@ -343,9 +356,14 @@ export function SuppliersPage() {
         ) : isError ? (
           <div className="p-4">
             <ErrorState
-              title={t("Failed to load supplier directory", "Failed to load supplier directory")}
+              title={t(
+                "Failed to load supplier directory",
+                "Failed to load supplier directory",
+              )}
               description={
-                error instanceof Error ? error.message : "Failed to load supplier records. Please refresh."
+                error instanceof Error
+                  ? error.message
+                  : "Failed to load supplier records. Please refresh."
               }
               error={error}
               onRetry={() => refetch()}
@@ -439,7 +457,9 @@ export function SuppliersPage() {
                         {row.original.code}
                       </span>
                     ),
-                    meta: { label: "Vendor Code" } satisfies DataTableColumnMeta<Supplier>,
+                    meta: {
+                      label: "Vendor Code",
+                    } satisfies DataTableColumnMeta<Supplier>,
                   },
                   {
                     accessorKey: "name",
@@ -454,7 +474,9 @@ export function SuppliersPage() {
                         {row.original.name}
                       </div>
                     ),
-                    meta: { label: "Legal / Trade Name" } satisfies DataTableColumnMeta<Supplier>,
+                    meta: {
+                      label: "Legal / Trade Name",
+                    } satisfies DataTableColumnMeta<Supplier>,
                   },
                   {
                     accessorKey: "state",
@@ -466,11 +488,16 @@ export function SuppliersPage() {
                     ),
                     cell: ({ row }) => (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
-                        <MapPinIcon className="size-3.5 text-primary" aria-hidden="true" />
+                        <MapPinIcon
+                          className="size-3.5 text-primary"
+                          aria-hidden="true"
+                        />
                         <span>{row.original.state}</span>
                       </div>
                     ),
-                    meta: { label: "State / Jurisdiction" } satisfies DataTableColumnMeta<Supplier>,
+                    meta: {
+                      label: "State / Jurisdiction",
+                    } satisfies DataTableColumnMeta<Supplier>,
                   },
                   {
                     accessorKey: "gstin",
@@ -482,7 +509,9 @@ export function SuppliersPage() {
                     ),
                     cell: ({ row }) => {
                       const s = row.original;
-                      const gstinValidation = s.gstin ? validateGstin(s.gstin) : null;
+                      const gstinValidation = s.gstin
+                        ? validateGstin(s.gstin)
+                        : null;
                       return s.gstin ? (
                         <div className="flex flex-col gap-0.5 whitespace-nowrap">
                           <span className="font-mono text-xs text-foreground font-medium">
@@ -490,7 +519,10 @@ export function SuppliersPage() {
                           </span>
                           {gstinValidation?.isValid ? (
                             <span className="text-[10px] text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                              <CheckCircle2Icon className="size-2.5" aria-hidden="true" />
+                              <CheckCircle2Icon
+                                className="size-2.5"
+                                aria-hidden="true"
+                              />
                               Valid GSTIN
                             </span>
                           ) : (
@@ -525,7 +557,10 @@ export function SuppliersPage() {
                         <div className="flex flex-col gap-1 text-xs text-muted-foreground whitespace-nowrap">
                           {s.phone && (
                             <div className="flex items-center gap-1">
-                              <PhoneIcon className="size-3" aria-hidden="true" />
+                              <PhoneIcon
+                                className="size-3"
+                                aria-hidden="true"
+                              />
                               <span>{s.phone}</span>
                             </div>
                           )}
@@ -535,7 +570,9 @@ export function SuppliersPage() {
                               <span>{s.email}</span>
                             </div>
                           )}
-                          {!s.phone && !s.email && <span className="italic">—</span>}
+                          {!s.phone && !s.email && (
+                            <span className="italic">—</span>
+                          )}
                         </div>
                       );
                     },
@@ -549,17 +586,24 @@ export function SuppliersPage() {
                     id: "isActive",
                     accessorFn: (row) => (row.isActive ? "Active" : "Inactive"),
                     header: ({ column }) => (
-                      <DataTableColumnHeader column={column} title={t("Status")} />
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Status")}
+                      />
                     ),
                     cell: ({ row }) => (
                       <Badge
-                        variant={row.original.isActive ? "success" : "secondary"}
+                        variant={
+                          row.original.isActive ? "success" : "secondary"
+                        }
                         className="text-xs whitespace-nowrap"
                       >
                         {row.original.isActive ? "Active" : "Inactive"}
                       </Badge>
                     ),
-                    meta: { label: "Status" } satisfies DataTableColumnMeta<Supplier>,
+                    meta: {
+                      label: "Status",
+                    } satisfies DataTableColumnMeta<Supplier>,
                   },
                   {
                     id: "actions",
@@ -587,7 +631,10 @@ export function SuppliersPage() {
                                 onClick={() => handleStartEdit(s)}
                                 className="h-8 px-2 gap-1 text-xs"
                               >
-                                <Edit2Icon className="size-3" aria-hidden="true" />
+                                <Edit2Icon
+                                  className="size-3"
+                                  aria-hidden="true"
+                                />
                                 Edit
                               </Button>
                               <Button
@@ -601,7 +648,10 @@ export function SuppliersPage() {
                                 }
                                 className="h-8 px-2 gap-1 text-xs text-muted-foreground"
                               >
-                                <ArchiveIcon className="size-3" aria-hidden="true" />
+                                <ArchiveIcon
+                                  className="size-3"
+                                  aria-hidden="true"
+                                />
                                 {s.isActive ? "Archive" : "Restore"}
                               </Button>
                             </>
@@ -637,8 +687,8 @@ export function SuppliersPage() {
           <DialogHeader>
             <DialogTitle>Add New Raw Material Supplier</DialogTitle>
             <DialogDescription>
-              Register a new mandi vendor, farmer, or mill supplier for
-              purchase intake receipts.
+              Register a new mandi vendor, farmer, or mill supplier for purchase
+              intake receipts.
             </DialogDescription>
           </DialogHeader>
 
@@ -657,144 +707,146 @@ export function SuppliersPage() {
             }}
             className="mt-2 flex flex-col gap-3"
           >
+            <div className="flex flex-col gap-1">
+              <Label
+                htmlFor="supplier-new-code"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Vendor Code *
+              </Label>
+              <Input
+                id="supplier-new-code"
+                type="text"
+                required
+                placeholder="e.g. SUP-MANDI-02"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                className="font-medium"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label
+                htmlFor="supplier-new-name"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Supplier / Vendor Name *
+              </Label>
+              <Input
+                id="supplier-new-name"
+                type="text"
+                required
+                placeholder="e.g. Thanjavur Agro Mandi"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="font-medium"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <Label
-                  htmlFor="supplier-new-code"
+                  htmlFor="supplier-new-state"
                   className="text-xs font-semibold text-muted-foreground"
                 >
-                  Vendor Code *
+                  State *
                 </Label>
                 <Input
-                  id="supplier-new-code"
+                  id="supplier-new-state"
                   type="text"
                   required
-                  placeholder="e.g. SUP-MANDI-02"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
                   className="font-medium"
                 />
               </div>
-
               <div className="flex flex-col gap-1">
                 <Label
-                  htmlFor="supplier-new-name"
+                  htmlFor="supplier-new-phone"
                   className="text-xs font-semibold text-muted-foreground"
                 >
-                  Supplier / Vendor Name *
+                  Phone (Optional)
                 </Label>
                 <Input
-                  id="supplier-new-name"
+                  id="supplier-new-phone"
                   type="text"
-                  required
-                  placeholder="e.g. Thanjavur Agro Mandi"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  placeholder="9876543210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   className="font-medium"
                 />
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <Label
-                    htmlFor="supplier-new-state"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    State *
-                  </Label>
-                  <Input
-                    id="supplier-new-state"
-                    type="text"
-                    required
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    className="font-medium"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label
-                    htmlFor="supplier-new-phone"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Phone (Optional)
-                  </Label>
-                  <Input
-                    id="supplier-new-phone"
-                    type="text"
-                    placeholder="9876543210"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="font-medium"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <Label
-                    htmlFor="supplier-new-email"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Email (Optional)
-                  </Label>
-                  <Input
-                    id="supplier-new-email"
-                    type="email"
-                    placeholder="mandi@agro.in"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="font-medium"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label
-                    htmlFor="supplier-new-gstin"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    GSTIN (Optional)
-                  </Label>
-                  <Input
-                    id="supplier-new-gstin"
-                    type="text"
-                    placeholder="33AAAAA0000A1Z5"
-                    value={gstin}
-                    onChange={(e) => setGstin(e.target.value)}
-                    className="font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-2 flex items-center gap-2">
-                <Checkbox
-                  id="isActiveNew"
-                  checked={isActive}
-                  onCheckedChange={(checked) => setIsActive(checked === true)}
-                />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
                 <Label
-                  htmlFor="isActiveNew"
-                  className="text-xs font-normal text-foreground cursor-pointer"
+                  htmlFor="supplier-new-email"
+                  className="text-xs font-semibold text-muted-foreground"
                 >
-                  Active for purchase receipts
+                  Email (Optional)
                 </Label>
+                <Input
+                  id="supplier-new-email"
+                  type="email"
+                  placeholder="mandi@agro.in"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="font-medium"
+                />
               </div>
+              <div className="flex flex-col gap-1">
+                <Label
+                  htmlFor="supplier-new-gstin"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
+                  GSTIN (Optional)
+                </Label>
+                <Input
+                  id="supplier-new-gstin"
+                  type="text"
+                  placeholder="33AAAAA0000A1Z5"
+                  value={gstin}
+                  onChange={(e) => setGstin(e.target.value)}
+                  className="font-mono"
+                />
+              </div>
+            </div>
 
-              <DialogFooter className="mt-4 border-t pt-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowAddModal(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={!code || !name || createSupplierMutation.isPending}
-                >
-                  {createSupplierMutation.isPending ? "Adding..." : "Save Supplier"}
-                </Button>
-              </DialogFooter>
-            </form>
+            <div className="mt-2 flex items-center gap-2">
+              <Checkbox
+                id="isActiveNew"
+                checked={isActive}
+                onCheckedChange={(checked) => setIsActive(checked === true)}
+              />
+              <Label
+                htmlFor="isActiveNew"
+                className="text-xs font-normal text-foreground cursor-pointer"
+              >
+                Active for purchase receipts
+              </Label>
+            </div>
+
+            <DialogFooter className="mt-4 border-t pt-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAddModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={!code || !name || createSupplierMutation.isPending}
+              >
+                {createSupplierMutation.isPending
+                  ? "Adding..."
+                  : "Save Supplier"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 

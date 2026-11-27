@@ -15,7 +15,11 @@ import {
   DataTableColumnHeader,
   type DataTableColumnMeta,
 } from "@/components/ui/data-table";
-import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
+import {
+  EmptyState,
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RefreshCwIcon, SearchIcon } from "lucide-react";
@@ -38,7 +42,9 @@ interface CustomerReceivable {
 }
 
 export function ReceivablesPage() {
-  const [searchQuery, setSearchQuery] = useUrlState("q", "", { debounceMs: 200 });
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 200,
+  });
   const [onlyDue, setOnlyDue] = useUrlState("due", "ALL");
   const { page, pageSize, offset, setPage, setPageSize, resetPage } =
     usePagination({ defaultPageSize: 20 });
@@ -48,7 +54,13 @@ export function ReceivablesPage() {
     totalOutstanding?: number;
     pagination: PaginationMeta;
   }>({
-    queryKey: ["receivables-summary", page, pageSize, onlyDue, searchQuery.trim()],
+    queryKey: [
+      "receivables-summary",
+      page,
+      pageSize,
+      onlyDue,
+      searchQuery.trim(),
+    ],
     queryFn: async () => {
       const params = new URLSearchParams({
         limit: String(pageSize),
@@ -103,7 +115,11 @@ export function ReceivablesPage() {
         id: "totalInvoiced",
         accessorFn: (row) => Number(row.totalInvoiced) || 0,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Invoiced" align="right" />
+          <DataTableColumnHeader
+            column={column}
+            title="Invoiced"
+            align="right"
+          />
         ),
         cell: ({ row }) => (
           <span className="tabular-nums whitespace-nowrap">

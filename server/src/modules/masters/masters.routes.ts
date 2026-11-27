@@ -94,7 +94,9 @@ mastersRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       const product = await mastersService.getProductById(orgId, id);
       res.json({ product });
     } catch (err) {
@@ -128,7 +130,9 @@ mastersRouter.put(
   authorize("inventory", "update"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Product ID is required", 400);
       const parsed = updateProductSchema.safeParse(req.body);
       if (!parsed.success) throw parsed.error;
@@ -169,7 +173,9 @@ mastersRouter.put(
   authorize("inventory", "update"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Variant ID is required", 400);
       const parsed = updateVariantSchema.safeParse(req.body);
       if (!parsed.success) throw parsed.error;
@@ -191,7 +197,9 @@ mastersRouter.delete(
   authorize("inventory", "delete"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Variant ID is required", 400);
       const result = await mastersService.deleteVariant(id, req.user!);
       res.json(result);
@@ -241,7 +249,9 @@ mastersRouter.put(
   authorize("inventory", "update"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Price list ID is required", 400);
       const parsed = upsertPriceLineSchema.safeParse(req.body);
       if (!parsed.success) throw parsed.error;
@@ -301,7 +311,10 @@ mastersRouter.get(
     try {
       const orgId = getSessionOrgId(req);
       const includeInactive = req.query.includeInactive === "true";
-      const facilities = await mastersService.getFacilities(orgId, includeInactive);
+      const facilities = await mastersService.getFacilities(
+        orgId,
+        includeInactive,
+      );
       res.json({ facilities });
     } catch (err) {
       next(err);
@@ -316,7 +329,9 @@ mastersRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Facility ID is required", 400);
       const facility = await mastersService.getFacilityById(id, orgId);
       res.json({ facility });
@@ -354,7 +369,9 @@ mastersRouter.put(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Facility ID is required", 400);
       const parsed = updateFacilitySchema.safeParse(req.body);
       if (!parsed.success) throw parsed.error;
@@ -398,7 +415,9 @@ mastersRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Warehouse ID is required", 400);
       const warehouse = await mastersService.getWarehouseById(id, orgId);
       res.json({ warehouse });
@@ -436,7 +455,9 @@ mastersRouter.put(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Warehouse ID is required", 400);
       const parsed = updateWarehouseSchema.safeParse(req.body);
       if (!parsed.success) throw parsed.error;

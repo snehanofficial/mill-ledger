@@ -1,4 +1,8 @@
-import { buildExportFilename, serializeCsv, type ExportFileExtension } from "@mill-ledger/shared";
+import {
+  buildExportFilename,
+  serializeCsv,
+  type ExportFileExtension,
+} from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "./api-client";
 
 export function parseContentDispositionFilename(
@@ -66,8 +70,7 @@ export async function downloadExportFromApi(
         : await apiClient.get(url, { responseType: "blob" });
 
     const contentDisposition = response.headers?.["content-disposition"] as
-      | string
-      | undefined;
+      string | undefined;
     const filename =
       parseContentDispositionFilename(contentDisposition) ||
       buildExportFilename({

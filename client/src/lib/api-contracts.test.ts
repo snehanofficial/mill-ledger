@@ -66,12 +66,7 @@ describe("API contract validation", () => {
     const direct = assertEntityResponse<{
       id: string;
       lines: Array<{ id: string }>;
-    }>(
-      { id: "ord-2", lines: [] },
-      "order",
-      ["lines"],
-      "/sales/orders/ord-2",
-    );
+    }>({ id: "ord-2", lines: [] }, "order", ["lines"], "/sales/orders/ord-2");
     expect(direct.id).toBe("ord-2");
     expect(direct.lines).toEqual([]);
   });

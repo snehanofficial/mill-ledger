@@ -550,7 +550,9 @@ describe("M7: Payments, customer ledger, allocations, and costing", () => {
       // Outstanding balance is 0 or status is PAID (cannot allocate)
       expect(res.status).toBe(400);
       const data = (await res.json()) as { message: string };
-      expect(data.message).toMatch(/cannot allocate payment to invoice|exceeds invoice .* outstanding balance/i);
+      expect(data.message).toMatch(
+        /cannot allocate payment to invoice|exceeds invoice .* outstanding balance/i,
+      );
     });
 
     it("handles exact decimal paise allocations without floating-point drift", async () => {

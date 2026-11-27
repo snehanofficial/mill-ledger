@@ -40,7 +40,9 @@ export function SecurityPage() {
               Security, Access Control, and Ledger Integrity
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
-              MillLedger is designed so that financial, inventory, and customer records remain verifiable and access-controlled at the database and API layers.
+              MillLedger is designed so that financial, inventory, and customer
+              records remain verifiable and access-controlled at the database
+              and API layers.
             </p>
           </div>
         </div>
@@ -53,7 +55,9 @@ export function SecurityPage() {
               key={ctrl.title}
               className="rounded-xl border border-border bg-card p-6 space-y-2"
             >
-              <h2 className="text-lg font-bold text-foreground">{ctrl.title}</h2>
+              <h2 className="text-lg font-bold text-foreground">
+                {ctrl.title}
+              </h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {ctrl.detail}
               </p>
@@ -65,14 +69,20 @@ export function SecurityPage() {
               Compliance &amp; Certification Transparency
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              MillLedger implements role-based access control, Zod validation, Helmet security headers, and rate limiting in code. It does not claim external third-party audit certifications such as SOC 2 or ISO 27001.
+              MillLedger implements role-based access control, Zod validation,
+              Helmet security headers, and rate limiting in code. It does not
+              claim external third-party audit certifications such as SOC 2 or
+              ISO 27001.
             </p>
           </div>
 
           <div className="pt-2">
             <Link
               to="/contact"
-              className={buttonVariants({ variant: "primary", className: "min-h-[44px] px-6" })}
+              className={buttonVariants({
+                variant: "primary",
+                className: "min-h-[44px] px-6",
+              })}
             >
               Ask a Technical Security Question
             </Link>

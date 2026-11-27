@@ -50,7 +50,9 @@ function InquiryForm({
     inquiryType: defaultType,
     message: "",
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof InquiryFormState, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof InquiryFormState, string>>
+  >({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
@@ -84,14 +86,17 @@ function InquiryForm({
     setIsSubmitting(true);
     try {
       const attribution = captureAttributionOnce();
-      const response = await apiClient.post<{ referenceId: string }>("/public/inquiries", {
-        ...formData,
-        sourcePath: location.pathname,
-        referrer: attribution?.referrer || "",
-        utmSource: attribution?.utmSource || "",
-        utmMedium: attribution?.utmMedium || "",
-        utmCampaign: attribution?.utmCampaign || "",
-      });
+      const response = await apiClient.post<{ referenceId: string }>(
+        "/public/inquiries",
+        {
+          ...formData,
+          sourcePath: location.pathname,
+          referrer: attribution?.referrer || "",
+          utmSource: attribution?.utmSource || "",
+          utmMedium: attribution?.utmMedium || "",
+          utmCampaign: attribution?.utmCampaign || "",
+        },
+      );
 
       trackPublicEvent("generate_lead", {
         inquiry_type: formData.inquiryType,
@@ -134,7 +139,10 @@ function InquiryForm({
         </h2>
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
           Thank you. Your inquiry has been recorded with reference{" "}
-          <span className="font-mono font-semibold text-foreground">{submittedRef}</span>.
+          <span className="font-mono font-semibold text-foreground">
+            {submittedRef}
+          </span>
+          .
         </p>
         <Button
           type="button"
@@ -168,7 +176,8 @@ function InquiryForm({
             value={formData.fullName}
             onChange={(e) => {
               setFormData({ ...formData, fullName: e.target.value });
-              if (errors.fullName) setErrors({ ...errors, fullName: undefined });
+              if (errors.fullName)
+                setErrors({ ...errors, fullName: undefined });
             }}
             aria-invalid={!!errors.fullName}
             aria-describedby={errors.fullName ? "error-fullname" : undefined}
@@ -176,7 +185,10 @@ function InquiryForm({
             className="min-h-[44px]"
           />
           {errors.fullName && (
-            <p id="error-fullname" className="text-xs text-destructive flex items-center gap-1">
+            <p
+              id="error-fullname"
+              className="text-xs text-destructive flex items-center gap-1"
+            >
               <AlertCircleIcon className="size-3" aria-hidden="true" />
               {errors.fullName}
             </p>
@@ -214,7 +226,10 @@ function InquiryForm({
             className="min-h-[44px]"
           />
           {errors.phone && (
-            <p id="error-phone" className="text-xs text-destructive flex items-center gap-1">
+            <p
+              id="error-phone"
+              className="text-xs text-destructive flex items-center gap-1"
+            >
               <AlertCircleIcon className="size-3" aria-hidden="true" />
               {errors.phone}
             </p>
@@ -237,7 +252,10 @@ function InquiryForm({
             className="min-h-[44px]"
           />
           {errors.email && (
-            <p id="error-email" className="text-xs text-destructive flex items-center gap-1">
+            <p
+              id="error-email"
+              className="text-xs text-destructive flex items-center gap-1"
+            >
               <AlertCircleIcon className="size-3" aria-hidden="true" />
               {errors.email}
             </p>
@@ -260,8 +278,12 @@ function InquiryForm({
             <SelectValue placeholder="Select inquiry topic" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="product_demo">Request Live Product Demo</SelectItem>
-            <SelectItem value="erp_evaluation">Food Mill ERP Evaluation</SelectItem>
+            <SelectItem value="product_demo">
+              Request Live Product Demo
+            </SelectItem>
+            <SelectItem value="erp_evaluation">
+              Food Mill ERP Evaluation
+            </SelectItem>
             <SelectItem value="migration_from_spreadsheets">
               Migrating from Spreadsheets
             </SelectItem>
@@ -273,7 +295,9 @@ function InquiryForm({
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="inquiry-message">Your Mill Operation &amp; Questions *</Label>
+        <Label htmlFor="inquiry-message">
+          Your Mill Operation &amp; Questions *
+        </Label>
         <Textarea
           id="inquiry-message"
           rows={4}
@@ -287,7 +311,10 @@ function InquiryForm({
           placeholder="Tell us what products you manufacture, how many users or field salesmen you have, and what you want to see in the walkthrough."
         />
         {errors.message && (
-          <p id="error-message" className="text-xs text-destructive flex items-center gap-1">
+          <p
+            id="error-message"
+            className="text-xs text-destructive flex items-center gap-1"
+          >
             <AlertCircleIcon className="size-3" aria-hidden="true" />
             {errors.message}
           </p>
@@ -346,16 +373,20 @@ function InquiryPageShell({
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-muted-foreground">
                   <p>
-                    1. Purchase receipt posting and moving weighted average cost recalculation.
+                    1. Purchase receipt posting and moving weighted average cost
+                    recalculation.
                   </p>
                   <p>
-                    2. BOM production run entry, yield variance flags, and packaging warnings.
+                    2. BOM production run entry, yield variance flags, and
+                    packaging warnings.
                   </p>
                   <p>
-                    3. Mobile salesman offline order capture and ATP stock reservation on approval.
+                    3. Mobile salesman offline order capture and ATP stock
+                    reservation on approval.
                   </p>
                   <p>
-                    4. CGST/SGST/IGST tax invoice PDFs, FIFO payments, and 9-tab audit exports.
+                    4. CGST/SGST/IGST tax invoice PDFs, FIFO payments, and 9-tab
+                    audit exports.
                   </p>
                 </CardContent>
               </Card>
@@ -363,7 +394,10 @@ function InquiryPageShell({
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <MailIcon className="size-4 text-primary" aria-hidden="true" />
+                    <MailIcon
+                      className="size-4 text-primary"
+                      aria-hidden="true"
+                    />
                     Direct Contact
                   </CardTitle>
                 </CardHeader>

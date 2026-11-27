@@ -28,33 +28,47 @@ export function AboutPage() {
             <dl className="divide-y divide-border text-sm">
               <div className="py-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <dt className="font-semibold text-foreground">Product Name</dt>
-                <dd className="sm:col-span-2 text-muted-foreground">MillLedger</dd>
+                <dd className="sm:col-span-2 text-muted-foreground">
+                  MillLedger
+                </dd>
               </div>
               <div className="py-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <dt className="font-semibold text-foreground">Category</dt>
-                <dd className="sm:col-span-2 text-muted-foreground">{BRAND_ENTITY.category}</dd>
+                <dd className="sm:col-span-2 text-muted-foreground">
+                  {BRAND_ENTITY.category}
+                </dd>
               </div>
               <div className="py-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <dt className="font-semibold text-foreground">Intended Users</dt>
+                <dt className="font-semibold text-foreground">
+                  Intended Users
+                </dt>
                 <dd className="sm:col-span-2 text-muted-foreground">
-                  Small food manufacturing mills in India (Owners, Admins, Production Supervisors, Field Salesmen, and Accountants)
+                  Small food manufacturing mills in India (Owners, Admins,
+                  Production Supervisors, Field Salesmen, and Accountants)
                 </dd>
               </div>
               <div className="py-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <dt className="font-semibold text-foreground">Architecture</dt>
                 <dd className="sm:col-span-2 text-muted-foreground">
-                  TypeScript modular monolith: React 19 + Vite PWA + Tailwind CSS 4 + TanStack Query + Dexie IndexedDB on the client; Express 5 + Better Auth + Prisma 7 + PostgreSQL on the server
+                  TypeScript modular monolith: React 19 + Vite PWA + Tailwind
+                  CSS 4 + TanStack Query + Dexie IndexedDB on the client;
+                  Express 5 + Better Auth + Prisma 7 + PostgreSQL on the server
                 </dd>
               </div>
               <div className="py-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <dt className="font-semibold text-foreground">Languages Supported</dt>
+                <dt className="font-semibold text-foreground">
+                  Languages Supported
+                </dt>
                 <dd className="sm:col-span-2 text-muted-foreground">
-                  English and Tamil (தமிழ்) across operational navigation and outbox sync
+                  English and Tamil (தமிழ்) across operational navigation and
+                  outbox sync
                 </dd>
               </div>
               <div className="py-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <dt className="font-semibold text-foreground">Contact</dt>
-                <dd className="sm:col-span-2 text-muted-foreground">{BRAND_ENTITY.contactEmail}</dd>
+                <dd className="sm:col-span-2 text-muted-foreground">
+                  {BRAND_ENTITY.contactEmail}
+                </dd>
               </div>
             </dl>
           </div>
@@ -62,13 +76,19 @@ export function AboutPage() {
           <div className="flex flex-wrap gap-3">
             <Link
               to="/demo"
-              className={buttonVariants({ variant: "primary", className: "min-h-[44px] px-6" })}
+              className={buttonVariants({
+                variant: "primary",
+                className: "min-h-[44px] px-6",
+              })}
             >
               Request a Live Demo
             </Link>
             <Link
               to="/features"
-              className={buttonVariants({ variant: "outline", className: "min-h-[44px] px-6" })}
+              className={buttonVariants({
+                variant: "outline",
+                className: "min-h-[44px] px-6",
+              })}
             >
               View Implemented Modules
             </Link>

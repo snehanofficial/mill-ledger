@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWarehouses } from "@/hooks/use-warehouses";
@@ -118,7 +123,9 @@ export function ProductionPage() {
   const [showNewBatchModal, setShowNewBatchModal] = useState(false);
   const [showBomModal, setShowBomModal] = useState(false);
   const [selectedRun, setSelectedRun] = useState<ProductionRun | null>(null);
-  const [editingDraftRun, setEditingDraftRun] = useState<ProductionRun | null>(null);
+  const [editingDraftRun, setEditingDraftRun] = useState<ProductionRun | null>(
+    null,
+  );
   const [draftEditGoodQty, setDraftEditGoodQty] = useState(200);
   const [draftEditLabor, setDraftEditLabor] = useState(0);
   const [draftEditUtility, setDraftEditUtility] = useState(0);
@@ -135,7 +142,11 @@ export function ProductionPage() {
   const [newBomExpectedOutput, setNewBomExpectedOutput] = useState(100);
   const [newBomOutputUomId, setNewBomOutputUomId] = useState("");
   const [newBomLines, setNewBomLines] = useState<
-    Array<{ inventoryItemId: string; itemType: "INGREDIENT" | "PACKAGING"; plannedQty: number }>
+    Array<{
+      inventoryItemId: string;
+      itemType: "INGREDIENT" | "PACKAGING";
+      plannedQty: number;
+    }>
   >([]);
 
   // Form states for production batch
@@ -357,12 +368,15 @@ export function ProductionPage() {
   const updateDraftMutation = useMutation({
     mutationFn: async () => {
       if (!editingDraftRun) throw new Error("No draft selected");
-      const res = await apiClient.put(`/production-runs/${editingDraftRun.id}`, {
-        actualGoodQty: draftEditGoodQty,
-        directLaborCost: draftEditLabor,
-        utilityCost: draftEditUtility,
-        notes: draftEditNotes,
-      });
+      const res = await apiClient.put(
+        `/production-runs/${editingDraftRun.id}`,
+        {
+          actualGoodQty: draftEditGoodQty,
+          directLaborCost: draftEditLabor,
+          utilityCost: draftEditUtility,
+          notes: draftEditNotes,
+        },
+      );
       return res.data;
     },
     onSuccess: () => {
@@ -419,7 +433,10 @@ export function ProductionPage() {
 
   const cloneRecipeVersionMutation = useMutation({
     mutationFn: async (recipeId: string) => {
-      const res = await apiClient.post(`/production-runs/recipes/${recipeId}/version`, {});
+      const res = await apiClient.post(
+        `/production-runs/recipes/${recipeId}/version`,
+        {},
+      );
       return res.data;
     },
     onSuccess: () => {
@@ -433,9 +450,12 @@ export function ProductionPage() {
 
   const archiveRecipeMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      const res = await apiClient.patch(`/production-runs/recipes/${id}/archive`, {
-        isActive,
-      });
+      const res = await apiClient.patch(
+        `/production-runs/recipes/${id}/archive`,
+        {
+          isActive,
+        },
+      );
       return res.data;
     },
     onSuccess: () => {
@@ -502,7 +522,8 @@ export function ProductionPage() {
   const liveDirectMaterialCost = (activeRecipe?.items ?? []).reduce(
     (sum, item) => {
       const entry = getMaterialInput(item);
-      const wac = balanceById.get(item.inventoryItemId)?.weightedAverageCost ?? 0;
+      const wac =
+        balanceById.get(item.inventoryItemId)?.weightedAverageCost ?? 0;
       return sum + Number(entry.actualQty) * wac;
     },
     0,
@@ -513,7 +534,9 @@ export function ProductionPage() {
       it.inventoryItem.sku === "PKG-CARTON" ||
       it.inventoryItem.name.toLowerCase().includes("carton"),
   );
-  const cartonsUsedLive = cartonLine ? getMaterialInput(cartonLine).actualQty : 0;
+  const cartonsUsedLive = cartonLine
+    ? getMaterialInput(cartonLine).actualQty
+    : 0;
   const cartonsHold = cartonsUsedLive * 20;
   const hasCartonShortage = Boolean(cartonLine) && cartonsHold < actualGoodQty;
 
@@ -551,7 +574,9 @@ export function ProductionPage() {
             </h1>
           </div>
           <p className="max-w-[60ch] text-sm text-muted-foreground">
-            {t("BOM execution, consumption variances, yield calculations, and run costs")}
+            {t(
+              "BOM execution, consumption variances, yield calculations, and run costs",
+            )}
           </p>
         </div>
 
@@ -685,9 +710,14 @@ export function ProductionPage() {
         ) : isError ? (
           <div className="p-4">
             <ErrorState
-              title={t("Failed to load production runs from server", "Failed to load production runs from server")}
+              title={t(
+                "Failed to load production runs from server",
+                "Failed to load production runs from server",
+              )}
               description={
-                error instanceof Error ? error.message : "An unexpected server error occurred."
+                error instanceof Error
+                  ? error.message
+                  : "An unexpected server error occurred."
               }
               error={error}
               onRetry={() => refetch()}
@@ -698,15 +728,15 @@ export function ProductionPage() {
             <FactoryIcon className="h-8 w-8 stroke-1 text-muted-foreground" />
             <p>No production batches recorded yet.</p>
             <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowBomModal(true)}
-            className="gap-2"
-          >
-            <LayersIcon className="h-4 w-4" />
-            Manage BOMs
-          </Button>
-          {canRecordProduction && (
+              variant="outline"
+              size="sm"
+              onClick={() => setShowBomModal(true)}
+              className="gap-2"
+            >
+              <LayersIcon className="h-4 w-4" />
+              Manage BOMs
+            </Button>
+            {canRecordProduction && (
               <Button
                 variant="outline"
                 size="sm"
@@ -770,392 +800,425 @@ export function ProductionPage() {
           <DialogHeader>
             <DialogTitle>{t("Record production batch")}</DialogTitle>
             <DialogDescription>
-              {t("Murukku 200g standard batch (Benchmark: 200 expected packets)")}
+              {t(
+                "Murukku 200g standard batch (Benchmark: 200 expected packets)",
+              )}
             </DialogDescription>
           </DialogHeader>
 
           <div className="mt-2 flex flex-col gap-4">
             {/* Recipe BOM selection (MLD-010) */}
-              <div className="flex flex-col gap-1.5">
-                <DomainTooltip term="BOM">
-                  <Label
-                    htmlFor="production-recipe-select"
-                    className="text-xs font-semibold text-muted-foreground cursor-help"
-                  >
-                    {t("Bill of Materials (BOM) Recipe")}
-                  </Label>
-                </DomainTooltip>
-                <Select
-                  value={activeRecipe?.id || undefined}
-                  onValueChange={setSelectedRecipeId}
+            <div className="flex flex-col gap-1.5">
+              <DomainTooltip term="BOM">
+                <Label
+                  htmlFor="production-recipe-select"
+                  className="text-xs font-semibold text-muted-foreground cursor-help"
                 >
-                  <SelectTrigger id="production-recipe-select" className="font-medium">
-                    <SelectValue placeholder="Select BOM recipe" />
-                  </SelectTrigger>
-                  <SelectContent searchable searchPlaceholder="Search BOM recipes...">
-                    {(recipesData?.recipes || []).map((r) => (
-                      <SelectItem key={r.id} value={r.id}>
-                        {r.name} · Target: {r.expectedOutputQty} pkts
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  {t("Bill of Materials (BOM) Recipe")}
+                </Label>
+              </DomainTooltip>
+              <Select
+                value={activeRecipe?.id || undefined}
+                onValueChange={setSelectedRecipeId}
+              >
+                <SelectTrigger
+                  id="production-recipe-select"
+                  className="font-medium"
+                >
+                  <SelectValue placeholder="Select BOM recipe" />
+                </SelectTrigger>
+                <SelectContent
+                  searchable
+                  searchPlaceholder="Search BOM recipes..."
+                >
+                  {(recipesData?.recipes || []).map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.name} · Target: {r.expectedOutputQty} pkts
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              {/* Warehouse selection */}
+            {/* Warehouse selection */}
+            <div className="flex flex-col gap-1.5">
+              <Label
+                htmlFor="production-warehouse-select"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Production Warehouse
+              </Label>
+              <Select
+                value={activeWarehouse?.id || undefined}
+                onValueChange={setSelectedWarehouseId}
+              >
+                <SelectTrigger id="production-warehouse-select">
+                  <SelectValue placeholder="Select warehouse" />
+                </SelectTrigger>
+                <SelectContent>
+                  {warehouses.map((w) => (
+                    <SelectItem key={w.id} value={w.id}>
+                      {w.code} · {w.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Output & Batch inputs */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="flex flex-col gap-1.5">
                 <Label
-                  htmlFor="production-warehouse-select"
+                  htmlFor="production-batch-count-input"
                   className="text-xs font-semibold text-muted-foreground"
                 >
-                  Production Warehouse
-                </Label>
-                <Select
-                  value={activeWarehouse?.id || undefined}
-                  onValueChange={setSelectedWarehouseId}
-                >
-                  <SelectTrigger id="production-warehouse-select">
-                    <SelectValue placeholder="Select warehouse" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {warehouses.map((w) => (
-                      <SelectItem key={w.id} value={w.id}>
-                        {w.code} · {w.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Output & Batch inputs */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor="production-batch-count-input"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Batches
-                  </Label>
-                  <Input
-                    id="production-batch-count-input"
-                    type="number"
-                    min={0.1}
-                    step="0.1"
-                    value={batchCount}
-                    onChange={(e) => setBatchCount(Math.max(0.1, Number(e.target.value) || 1))}
-                  />
-                  <span className="text-2xs text-muted-foreground">
-                    Expected: {expectedPackets}
-                  </span>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor="production-good-qty-input"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    {t("Good packets produced")}
-                  </Label>
-                  <Input
-                    id="production-good-qty-input"
-                    type="number"
-                    min={0}
-                    value={actualGoodQty}
-                    onChange={(e) => setActualGoodQty(Number(e.target.value))}
-                    className="font-semibold"
-                  />
-                  <div className="flex items-center gap-1 text-2xs">
-                    <span>{t("Variance")}:</span>
-                    <span
-                      className={`font-semibold ${
-                        yieldVariancePct !== 0
-                          ? "text-amber-600 dark:text-amber-400"
-                          : "text-emerald-600"
-                      }`}
-                    >
-                      {yieldVariancePct > 0
-                        ? `+${yieldVariancePct.toFixed(1)}%`
-                        : `${yieldVariancePct.toFixed(1)}%`}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor="production-rejected-qty-input"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Rejected output
-                  </Label>
-                  <Input
-                    id="production-rejected-qty-input"
-                    type="number"
-                    min={0}
-                    value={actualRejectedQty}
-                    onChange={(e) => setActualRejectedQty(Number(e.target.value))}
-                  />
-                </div>
-              </div>
-
-              {/* Dynamic BOM Material Lines with live stock & variance */}
-              <div className="flex flex-col gap-2">
-                <Label className="text-xs font-semibold text-muted-foreground">
-                  BOM Material & Packaging Consumption (Live Stock & WAC)
-                </Label>
-                <div className="max-h-56 overflow-y-auto rounded-lg border divide-y">
-                  {(activeRecipe?.items ?? []).map((item) => {
-                    const entry = getMaterialInput(item);
-                    const bal = balanceById.get(item.inventoryItemId);
-                    const available = bal?.available ?? 0;
-                    const plannedScaled = Number(item.plannedQty) * batchCount;
-                    const varPct =
-                      plannedScaled > 0
-                        ? ((entry.actualQty - plannedScaled) / plannedScaled) * 100
-                        : 0;
-                    const shortage = Math.max(0, entry.actualQty - available);
-                    const unitSym = item.uom?.symbol || bal?.baseUom?.symbol || "";
-
-                    return (
-                      <div key={item.id} className="p-2.5 flex flex-col gap-1.5 text-xs">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-medium text-foreground">
-                            {item.inventoryItem.name} ({unitSym})
-                          </span>
-                          <span className="text-2xs text-muted-foreground font-mono">
-                            Plan: {plannedScaled} · Avail: {available}
-                            {shortage > 0 && (
-                              <span className="ml-1 text-destructive font-semibold">
-                                · Short {shortage}
-                              </span>
-                            )}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-stretch sm:items-center">
-                          <div className="flex flex-col gap-0.5">
-                            <Label
-                              htmlFor={`mat-actual-${item.inventoryItem.sku}`}
-                              className="text-2xs text-muted-foreground"
-                            >
-                              Consumed
-                            </Label>
-                            <Input
-                              id={`mat-actual-${item.inventoryItem.sku}`}
-                              type="number"
-                              min={0}
-                              step="any"
-                              value={entry.actualQty}
-                              onChange={(e) => {
-                                const val = Number(e.target.value);
-                                setMaterialActuals((prev) => ({
-                                  ...prev,
-                                  [item.inventoryItemId]: {
-                                    actualQty: val,
-                                    damagedQty: entry.damagedQty,
-                                  },
-                                }));
-                              }}
-                              className="h-8 text-xs font-mono"
-                            />
-                          </div>
-                          <div className="flex flex-col gap-0.5">
-                            <Label
-                              htmlFor={`mat-damaged-${item.inventoryItem.sku}`}
-                              className="text-2xs text-muted-foreground"
-                            >
-                              Damaged/Scrap
-                            </Label>
-                            <Input
-                              id={`mat-damaged-${item.inventoryItem.sku}`}
-                              type="number"
-                              min={0}
-                              step="any"
-                              value={entry.damagedQty}
-                              onChange={(e) => {
-                                const dmg = Number(e.target.value);
-                                setMaterialActuals((prev) => ({
-                                  ...prev,
-                                  [item.inventoryItemId]: {
-                                    actualQty: entry.actualQty,
-                                    damagedQty: dmg,
-                                  },
-                                }));
-                              }}
-                              className="h-8 text-xs font-mono"
-                            />
-                          </div>
-                          <div className="text-right font-mono text-2xs">
-                            <span
-                              className={
-                                Math.abs(varPct) >= (item.tolerancePct || 5) && varPct !== 0
-                                  ? "text-amber-600 font-semibold"
-                                  : "text-muted-foreground"
-                              }
-                            >
-                              {varPct > 0 ? `+${varPct.toFixed(1)}%` : `${varPct.toFixed(1)}%`}
-                            </span>
-                            <div className="text-muted-foreground">
-                              {formatINR(entry.actualQty * (bal?.weightedAverageCost ?? 0))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Non-blocking carton warning pill */}
-              {hasCartonShortage && (
-                <div
-                  role="status"
-                  aria-live="polite"
-                  className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                >
-                  <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span>
-                    Warning: {cartonsUsedLive} cartons represent {cartonsHold}{" "}
-                    of {actualGoodQty} packets.
-                  </span>
-                </div>
-              )}
-
-              {/* Additional Costs */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor="production-labor-cost-input"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    {t("Direct labour cost (₹)")}
-                  </Label>
-                  <Input
-                    id="production-labor-cost-input"
-                    type="number"
-                    min={0}
-                    value={laborCost}
-                    onChange={(e) => setLaborCost(Number(e.target.value))}
-                    className="font-semibold"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor="production-utility-cost-input"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    {t("Gas and power cost (₹)")}
-                  </Label>
-                  <Input
-                    id="production-utility-cost-input"
-                    type="number"
-                    min={0}
-                    value={utilityCost}
-                    onChange={(e) => setUtilityCost(Number(e.target.value))}
-                    className="font-semibold"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <Label
-                  htmlFor="production-notes-input"
-                  className="text-xs font-semibold text-muted-foreground"
-                >
-                  {t("Notes")}
+                  Batches
                 </Label>
                 <Input
-                  id="production-notes-input"
-                  type="text"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  id="production-batch-count-input"
+                  type="number"
+                  min={0.1}
+                  step="0.1"
+                  value={batchCount}
+                  onChange={(e) =>
+                    setBatchCount(Math.max(0.1, Number(e.target.value) || 1))
+                  }
                 />
+                <span className="text-2xs text-muted-foreground">
+                  Expected: {expectedPackets}
+                </span>
               </div>
 
-              {/* Cost summary preview (computed from live inventory WAC) */}
-              <div className="rounded-lg bg-muted/50 p-3 text-xs flex flex-col gap-1">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    {t("Direct materials:")}
-                  </span>
-                  <span className="font-semibold">{formatINR(liveDirectMaterialCost)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("Direct labour:")}</span>
-                  <span className="font-semibold">{formatINR(laborCost)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("Gas and power:")}</span>
-                  <span className="font-semibold">
-                    {formatINR(utilityCost)}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t pt-1 font-bold">
-                  <span>{t("Total run cost:")}</span>
-                  <span className="text-foreground">
-                    {formatINR(liveDirectMaterialCost + laborCost + utilityCost)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-emerald-600 font-bold">
-                  <span>{t("Cost per good packet:")}</span>
-                  <span>
-                    {actualGoodQty > 0
-                      ? formatINR((liveDirectMaterialCost + laborCost + utilityCost) / actualGoodQty)
-                      : "—"}
+              <div className="flex flex-col gap-1.5">
+                <Label
+                  htmlFor="production-good-qty-input"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
+                  {t("Good packets produced")}
+                </Label>
+                <Input
+                  id="production-good-qty-input"
+                  type="number"
+                  min={0}
+                  value={actualGoodQty}
+                  onChange={(e) => setActualGoodQty(Number(e.target.value))}
+                  className="font-semibold"
+                />
+                <div className="flex items-center gap-1 text-2xs">
+                  <span>{t("Variance")}:</span>
+                  <span
+                    className={`font-semibold ${
+                      yieldVariancePct !== 0
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-emerald-600"
+                    }`}
+                  >
+                    {yieldVariancePct > 0
+                      ? `+${yieldVariancePct.toFixed(1)}%`
+                      : `${yieldVariancePct.toFixed(1)}%`}
                   </span>
                 </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label
+                  htmlFor="production-rejected-qty-input"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
+                  Rejected output
+                </Label>
+                <Input
+                  id="production-rejected-qty-input"
+                  type="number"
+                  min={0}
+                  value={actualRejectedQty}
+                  onChange={(e) => setActualRejectedQty(Number(e.target.value))}
+                />
               </div>
             </div>
 
-            {postMutation.isError && (
+            {/* Dynamic BOM Material Lines with live stock & variance */}
+            <div className="flex flex-col gap-2">
+              <Label className="text-xs font-semibold text-muted-foreground">
+                BOM Material & Packaging Consumption (Live Stock & WAC)
+              </Label>
+              <div className="max-h-56 overflow-y-auto rounded-lg border divide-y">
+                {(activeRecipe?.items ?? []).map((item) => {
+                  const entry = getMaterialInput(item);
+                  const bal = balanceById.get(item.inventoryItemId);
+                  const available = bal?.available ?? 0;
+                  const plannedScaled = Number(item.plannedQty) * batchCount;
+                  const varPct =
+                    plannedScaled > 0
+                      ? ((entry.actualQty - plannedScaled) / plannedScaled) *
+                        100
+                      : 0;
+                  const shortage = Math.max(0, entry.actualQty - available);
+                  const unitSym =
+                    item.uom?.symbol || bal?.baseUom?.symbol || "";
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="p-2.5 flex flex-col gap-1.5 text-xs"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium text-foreground">
+                          {item.inventoryItem.name} ({unitSym})
+                        </span>
+                        <span className="text-2xs text-muted-foreground font-mono">
+                          Plan: {plannedScaled} · Avail: {available}
+                          {shortage > 0 && (
+                            <span className="ml-1 text-destructive font-semibold">
+                              · Short {shortage}
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-stretch sm:items-center">
+                        <div className="flex flex-col gap-0.5">
+                          <Label
+                            htmlFor={`mat-actual-${item.inventoryItem.sku}`}
+                            className="text-2xs text-muted-foreground"
+                          >
+                            Consumed
+                          </Label>
+                          <Input
+                            id={`mat-actual-${item.inventoryItem.sku}`}
+                            type="number"
+                            min={0}
+                            step="any"
+                            value={entry.actualQty}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setMaterialActuals((prev) => ({
+                                ...prev,
+                                [item.inventoryItemId]: {
+                                  actualQty: val,
+                                  damagedQty: entry.damagedQty,
+                                },
+                              }));
+                            }}
+                            className="h-8 text-xs font-mono"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          <Label
+                            htmlFor={`mat-damaged-${item.inventoryItem.sku}`}
+                            className="text-2xs text-muted-foreground"
+                          >
+                            Damaged/Scrap
+                          </Label>
+                          <Input
+                            id={`mat-damaged-${item.inventoryItem.sku}`}
+                            type="number"
+                            min={0}
+                            step="any"
+                            value={entry.damagedQty}
+                            onChange={(e) => {
+                              const dmg = Number(e.target.value);
+                              setMaterialActuals((prev) => ({
+                                ...prev,
+                                [item.inventoryItemId]: {
+                                  actualQty: entry.actualQty,
+                                  damagedQty: dmg,
+                                },
+                              }));
+                            }}
+                            className="h-8 text-xs font-mono"
+                          />
+                        </div>
+                        <div className="text-right font-mono text-2xs">
+                          <span
+                            className={
+                              Math.abs(varPct) >= (item.tolerancePct || 5) &&
+                              varPct !== 0
+                                ? "text-amber-600 font-semibold"
+                                : "text-muted-foreground"
+                            }
+                          >
+                            {varPct > 0
+                              ? `+${varPct.toFixed(1)}%`
+                              : `${varPct.toFixed(1)}%`}
+                          </span>
+                          <div className="text-muted-foreground">
+                            {formatINR(
+                              entry.actualQty * (bal?.weightedAverageCost ?? 0),
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Non-blocking carton warning pill */}
+            {hasCartonShortage && (
               <div
-                role="alert"
-                className="mt-4 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive"
+                role="status"
+                aria-live="polite"
+                className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20"
               >
-                <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <AlertTriangleIcon
+                  className="h-4 w-4 shrink-0"
+                  aria-hidden="true"
+                />
                 <span>
-                  {extractErrorMessage(
-                    postMutation.error,
-                    "Failed to post production batch",
-                  )}
+                  Warning: {cartonsUsedLive} cartons represent {cartonsHold} of{" "}
+                  {actualGoodQty} packets.
                 </span>
               </div>
             )}
 
-            <DialogFooter className="mt-6 flex-wrap gap-2 border-t pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowNewBatchModal(false)}
+            {/* Additional Costs */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label
+                  htmlFor="production-labor-cost-input"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
+                  {t("Direct labour cost (₹)")}
+                </Label>
+                <Input
+                  id="production-labor-cost-input"
+                  type="number"
+                  min={0}
+                  value={laborCost}
+                  onChange={(e) => setLaborCost(Number(e.target.value))}
+                  className="font-semibold"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label
+                  htmlFor="production-utility-cost-input"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
+                  {t("Gas and power cost (₹)")}
+                </Label>
+                <Input
+                  id="production-utility-cost-input"
+                  type="number"
+                  min={0}
+                  value={utilityCost}
+                  onChange={(e) => setUtilityCost(Number(e.target.value))}
+                  className="font-semibold"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label
+                htmlFor="production-notes-input"
+                className="text-xs font-semibold text-muted-foreground"
               >
-                {t("Cancel")}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => saveDraftMutation.mutate()}
-                disabled={saveDraftMutation.isPending || postMutation.isPending}
-              >
-                Save as Draft
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => postMutation.mutate()}
-                disabled={postMutation.isPending}
-                className="gap-2"
-              >
-                {postMutation.isPending ? (
-                  <>
-                    <RefreshCwIcon className="h-4 w-4 animate-spin" />
-                    {t("Posting batch...")}
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2Icon className="h-4 w-4" />
-                    {t("Post & Update Stock Ledger")}
-                  </>
+                {t("Notes")}
+              </Label>
+              <Input
+                id="production-notes-input"
+                type="text"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+
+            {/* Cost summary preview (computed from live inventory WAC) */}
+            <div className="rounded-lg bg-muted/50 p-3 text-xs flex flex-col gap-1">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {t("Direct materials:")}
+                </span>
+                <span className="font-semibold">
+                  {formatINR(liveDirectMaterialCost)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {t("Direct labour:")}
+                </span>
+                <span className="font-semibold">{formatINR(laborCost)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {t("Gas and power:")}
+                </span>
+                <span className="font-semibold">{formatINR(utilityCost)}</span>
+              </div>
+              <div className="flex justify-between border-t pt-1 font-bold">
+                <span>{t("Total run cost:")}</span>
+                <span className="text-foreground">
+                  {formatINR(liveDirectMaterialCost + laborCost + utilityCost)}
+                </span>
+              </div>
+              <div className="flex justify-between text-emerald-600 font-bold">
+                <span>{t("Cost per good packet:")}</span>
+                <span>
+                  {actualGoodQty > 0
+                    ? formatINR(
+                        (liveDirectMaterialCost + laborCost + utilityCost) /
+                          actualGoodQty,
+                      )
+                    : "—"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {postMutation.isError && (
+            <div
+              role="alert"
+              className="mt-4 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive"
+            >
+              <AlertTriangleIcon
+                className="h-4 w-4 shrink-0"
+                aria-hidden="true"
+              />
+              <span>
+                {extractErrorMessage(
+                  postMutation.error,
+                  "Failed to post production batch",
                 )}
-              </Button>
-            </DialogFooter>
+              </span>
+            </div>
+          )}
+
+          <DialogFooter className="mt-6 flex-wrap gap-2 border-t pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowNewBatchModal(false)}
+            >
+              {t("Cancel")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => saveDraftMutation.mutate()}
+              disabled={saveDraftMutation.isPending || postMutation.isPending}
+            >
+              Save as Draft
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => postMutation.mutate()}
+              disabled={postMutation.isPending}
+              className="gap-2"
+            >
+              {postMutation.isPending ? (
+                <>
+                  <RefreshCwIcon className="h-4 w-4 animate-spin" />
+                  {t("Posting batch...")}
+                </>
+              ) : (
+                <>
+                  <CheckCircle2Icon className="h-4 w-4" />
+                  {t("Post & Update Stock Ledger")}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1171,7 +1234,9 @@ export function ProductionPage() {
             <DialogHeader>
               <DialogTitle>{t("Reverse Production Run")}</DialogTitle>
               <DialogDescription>
-                {t("This will atomically restore raw materials and packaging back into inventory and deduct finished packets.")}
+                {t(
+                  "This will atomically restore raw materials and packaging back into inventory and deduct finished packets.",
+                )}
               </DialogDescription>
             </DialogHeader>
 
@@ -1230,14 +1295,18 @@ export function ProductionPage() {
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Draft Run {editingDraftRun?.runNumber}</DialogTitle>
+            <DialogTitle>
+              Edit Draft Run {editingDraftRun?.runNumber}
+            </DialogTitle>
             <DialogDescription>
               Update expected output, labour, utility, or notes before posting.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-2">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="draft-edit-good-qty" className="text-xs">Actual Good Output</Label>
+              <Label htmlFor="draft-edit-good-qty" className="text-xs">
+                Actual Good Output
+              </Label>
               <Input
                 id="draft-edit-good-qty"
                 type="number"
@@ -1248,7 +1317,9 @@ export function ProductionPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
-                <Label htmlFor="draft-edit-labor" className="text-xs">Direct Labour (₹)</Label>
+                <Label htmlFor="draft-edit-labor" className="text-xs">
+                  Direct Labour (₹)
+                </Label>
                 <Input
                   id="draft-edit-labor"
                   type="number"
@@ -1258,7 +1329,9 @@ export function ProductionPage() {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <Label htmlFor="draft-edit-utility" className="text-xs">Gas & Power (₹)</Label>
+                <Label htmlFor="draft-edit-utility" className="text-xs">
+                  Gas & Power (₹)
+                </Label>
                 <Input
                   id="draft-edit-utility"
                   type="number"
@@ -1269,7 +1342,9 @@ export function ProductionPage() {
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="draft-edit-notes" className="text-xs">Notes</Label>
+              <Label htmlFor="draft-edit-notes" className="text-xs">
+                Notes
+              </Label>
               <Input
                 id="draft-edit-notes"
                 value={draftEditNotes}
@@ -1278,7 +1353,11 @@ export function ProductionPage() {
             </div>
           </div>
           <DialogFooter className="border-t pt-4">
-            <Button variant="outline" size="sm" onClick={() => setEditingDraftRun(null)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditingDraftRun(null)}
+            >
               Cancel
             </Button>
             <Button
@@ -1301,7 +1380,8 @@ export function ProductionPage() {
               Bill of Materials (BOM) Recipes
             </DialogTitle>
             <DialogDescription>
-              Active BOM recipes and version history. Cloning creates a new version without mutating historical runs.
+              Active BOM recipes and version history. Cloning creates a new
+              version without mutating historical runs.
             </DialogDescription>
           </DialogHeader>
           {canManageBom && (
@@ -1311,17 +1391,30 @@ export function ProductionPage() {
                 size="sm"
                 className="h-8 text-xs"
                 onClick={() => {
-                  const allVariants = (productsData?.products ?? []).flatMap((p) => p.variants);
+                  const allVariants = (productsData?.products ?? []).flatMap(
+                    (p) => p.variants,
+                  );
                   setNewBomVariantId(allVariants[0]?.id || "");
                   setNewBomOutputUomId(
                     uomsData?.uoms.find((u) => u.code === "PACKET")?.id ||
                       uomsData?.uoms[0]?.id ||
                       "",
                   );
-                  if (newBomLines.length === 0 && (balancesData?.balances ?? []).length > 0) {
-                    const firstRaw = balancesData!.balances.find((b) => b.category === "RAW_MATERIAL");
+                  if (
+                    newBomLines.length === 0 &&
+                    (balancesData?.balances ?? []).length > 0
+                  ) {
+                    const firstRaw = balancesData!.balances.find(
+                      (b) => b.category === "RAW_MATERIAL",
+                    );
                     if (firstRaw) {
-                      setNewBomLines([{ inventoryItemId: firstRaw.id, itemType: "INGREDIENT", plannedQty: 10 }]);
+                      setNewBomLines([
+                        {
+                          inventoryItemId: firstRaw.id,
+                          itemType: "INGREDIENT",
+                          plannedQty: 10,
+                        },
+                      ]);
                     }
                   }
                   setShowCreateBomForm((v) => !v);
@@ -1339,9 +1432,17 @@ export function ProductionPage() {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="new-bom-variant" className="text-xs">Product Variant</Label>
-                    <Select value={newBomVariantId} onValueChange={setNewBomVariantId}>
-                      <SelectTrigger id="new-bom-variant" className="h-9 text-xs">
+                    <Label htmlFor="new-bom-variant" className="text-xs">
+                      Product Variant
+                    </Label>
+                    <Select
+                      value={newBomVariantId}
+                      onValueChange={setNewBomVariantId}
+                    >
+                      <SelectTrigger
+                        id="new-bom-variant"
+                        className="h-9 text-xs"
+                      >
                         <SelectValue placeholder="Select variant" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1356,7 +1457,9 @@ export function ProductionPage() {
                     </Select>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="new-bom-name" className="text-xs">Recipe Name</Label>
+                    <Label htmlFor="new-bom-name" className="text-xs">
+                      Recipe Name
+                    </Label>
                     <Input
                       id="new-bom-name"
                       placeholder="Standard Mixture 250g BOM"
@@ -1367,28 +1470,41 @@ export function ProductionPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="new-bom-batch" className="text-xs">Batch Size</Label>
+                    <Label htmlFor="new-bom-batch" className="text-xs">
+                      Batch Size
+                    </Label>
                     <Input
                       id="new-bom-batch"
                       type="number"
                       min={1}
                       value={newBomBatchSize}
-                      onChange={(e) => setNewBomBatchSize(Number(e.target.value))}
+                      onChange={(e) =>
+                        setNewBomBatchSize(Number(e.target.value))
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="new-bom-output" className="text-xs">Expected Yield</Label>
+                    <Label htmlFor="new-bom-output" className="text-xs">
+                      Expected Yield
+                    </Label>
                     <Input
                       id="new-bom-output"
                       type="number"
                       min={1}
                       value={newBomExpectedOutput}
-                      onChange={(e) => setNewBomExpectedOutput(Number(e.target.value))}
+                      onChange={(e) =>
+                        setNewBomExpectedOutput(Number(e.target.value))
+                      }
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <Label htmlFor="new-bom-uom" className="text-xs">Output UOM</Label>
-                    <Select value={newBomOutputUomId} onValueChange={setNewBomOutputUomId}>
+                    <Label htmlFor="new-bom-uom" className="text-xs">
+                      Output UOM
+                    </Label>
+                    <Select
+                      value={newBomOutputUomId}
+                      onValueChange={setNewBomOutputUomId}
+                    >
                       <SelectTrigger id="new-bom-uom" className="h-9 text-xs">
                         <SelectValue />
                       </SelectTrigger>
@@ -1404,7 +1520,9 @@ export function ProductionPage() {
                 </div>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium">BOM Material Lines</span>
+                    <span className="text-xs font-medium">
+                      BOM Material Lines
+                    </span>
                     <Button
                       type="button"
                       variant="outline"
@@ -1417,7 +1535,10 @@ export function ProductionPage() {
                           ...prev,
                           {
                             inventoryItemId: first.id,
-                            itemType: first.category === "PACKAGING" ? "PACKAGING" : "INGREDIENT",
+                            itemType:
+                              first.category === "PACKAGING"
+                                ? "PACKAGING"
+                                : "INGREDIENT",
                             plannedQty: 1,
                           },
                         ]);
@@ -1427,17 +1548,24 @@ export function ProductionPage() {
                     </Button>
                   </div>
                   {newBomLines.map((line, idx) => (
-                    <div key={idx} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-stretch sm:items-center">
+                    <div
+                      key={idx}
+                      className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-stretch sm:items-center"
+                    >
                       <div className="sm:col-span-5">
                         <Select
                           value={line.inventoryItemId}
                           onValueChange={(val) =>
                             setNewBomLines((prev) =>
-                              prev.map((l, i) => (i === idx ? { ...l, inventoryItemId: val } : l)),
+                              prev.map((l, i) =>
+                                i === idx ? { ...l, inventoryItemId: val } : l,
+                              ),
                             )
                           }
                         >
-                          <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
                           <SelectContent>
                             {(balancesData?.balances ?? [])
                               .filter((b) => b.category !== "FINISHED_GOODS")
@@ -1456,15 +1584,23 @@ export function ProductionPage() {
                             setNewBomLines((prev) =>
                               prev.map((l, i) =>
                                 i === idx
-                                  ? { ...l, itemType: val as "INGREDIENT" | "PACKAGING" }
+                                  ? {
+                                      ...l,
+                                      itemType: val as
+                                        "INGREDIENT" | "PACKAGING",
+                                    }
                                   : l,
                               ),
                             )
                           }
                         >
-                          <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="INGREDIENT">Ingredient</SelectItem>
+                            <SelectItem value="INGREDIENT">
+                              Ingredient
+                            </SelectItem>
                             <SelectItem value="PACKAGING">Packaging</SelectItem>
                           </SelectContent>
                         </Select>
@@ -1478,7 +1614,9 @@ export function ProductionPage() {
                           onChange={(e) =>
                             setNewBomLines((prev) =>
                               prev.map((l, i) =>
-                                i === idx ? { ...l, plannedQty: Number(e.target.value) } : l,
+                                i === idx
+                                  ? { ...l, plannedQty: Number(e.target.value) }
+                                  : l,
                               ),
                             )
                           }
@@ -1492,7 +1630,9 @@ export function ProductionPage() {
                           size="sm"
                           className="h-8 px-1.5 text-destructive"
                           onClick={() =>
-                            setNewBomLines((prev) => prev.filter((_, i) => i !== idx))
+                            setNewBomLines((prev) =>
+                              prev.filter((_, i) => i !== idx),
+                            )
                           }
                         >
                           <Trash2Icon className="size-3.5" />
@@ -1504,7 +1644,9 @@ export function ProductionPage() {
                 <div className="flex justify-end gap-2">
                   <Button
                     size="sm"
-                    disabled={createRecipeMutation.isPending || !newBomName.trim()}
+                    disabled={
+                      createRecipeMutation.isPending || !newBomName.trim()
+                    }
                     onClick={() => createRecipeMutation.mutate()}
                   >
                     Save Recipe
@@ -1514,12 +1656,16 @@ export function ProductionPage() {
             )}
 
             {(recipesData?.recipes ?? []).map((r) => (
-              <div key={r.id} className="rounded-lg border p-3 flex flex-col gap-2">
+              <div
+                key={r.id}
+                className="rounded-lg border p-3 flex flex-col gap-2"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <span className="font-semibold text-sm">{r.name}</span>
                     <span className="ml-2 text-xs text-muted-foreground">
-                      ({r.productVariant?.name}) · Target: {Number(r.expectedOutputQty)} pkts
+                      ({r.productVariant?.name}) · Target:{" "}
+                      {Number(r.expectedOutputQty)} pkts
                     </span>
                   </div>
                   {canManageBom && (
@@ -1539,7 +1685,10 @@ export function ProductionPage() {
                         className="h-7 px-2 text-xs text-muted-foreground"
                         disabled={archiveRecipeMutation.isPending}
                         onClick={() =>
-                          archiveRecipeMutation.mutate({ id: r.id, isActive: false })
+                          archiveRecipeMutation.mutate({
+                            id: r.id,
+                            isActive: false,
+                          })
                         }
                       >
                         Archive
@@ -1558,7 +1707,11 @@ export function ProductionPage() {
             ))}
           </div>
           <DialogFooter className="border-t pt-4">
-            <Button variant="outline" size="sm" onClick={() => setShowBomModal(false)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowBomModal(false)}
+            >
               Close
             </Button>
           </DialogFooter>

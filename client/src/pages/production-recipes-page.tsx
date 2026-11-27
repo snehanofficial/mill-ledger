@@ -339,7 +339,10 @@ export function ProductionRecipesPage() {
               <Label htmlFor="new-bom-variant" className="text-xs">
                 Product Variant
               </Label>
-              <Select value={newBomVariantId} onValueChange={setNewBomVariantId}>
+              <Select
+                value={newBomVariantId}
+                onValueChange={setNewBomVariantId}
+              >
                 <SelectTrigger id="new-bom-variant" className="h-9 text-xs">
                   <SelectValue placeholder="Select variant" />
                 </SelectTrigger>
@@ -392,7 +395,9 @@ export function ProductionRecipesPage() {
                 type="number"
                 min={1}
                 value={newBomExpectedOutput}
-                onChange={(e) => setNewBomExpectedOutput(Number(e.target.value))}
+                onChange={(e) =>
+                  setNewBomExpectedOutput(Number(e.target.value))
+                }
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -529,9 +534,7 @@ export function ProductionRecipesPage() {
                     aria-label="Remove BOM line"
                     className="h-9 px-2 text-destructive"
                     onClick={() =>
-                      setNewBomLines((prev) =>
-                        prev.filter((_, i) => i !== idx),
-                      )
+                      setNewBomLines((prev) => prev.filter((_, i) => i !== idx))
                     }
                   >
                     <Trash2Icon className="size-4" aria-hidden="true" />
@@ -654,7 +657,10 @@ export function ProductionRecipesPage() {
                             {recipe.name}
                           </span>
                           {recipe.version !== undefined && (
-                            <Badge variant="outline" className="text-xs font-mono">
+                            <Badge
+                              variant="outline"
+                              className="text-xs font-mono"
+                            >
                               v{recipe.version}
                             </Badge>
                           )}
@@ -666,13 +672,25 @@ export function ProductionRecipesPage() {
                           </span>
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Output: <span className="font-medium text-foreground">{recipe.productVariant.name}</span>{" "}
-                          (<span className="font-mono">{recipe.productVariant.sku}</span>)
-                          {" · "}
-                          Expected yield: <span className="font-semibold text-foreground">{formatQuantity(expectedOut)}</span>{" "}
+                          Output:{" "}
+                          <span className="font-medium text-foreground">
+                            {recipe.productVariant.name}
+                          </span>{" "}
+                          (
+                          <span className="font-mono">
+                            {recipe.productVariant.sku}
+                          </span>
+                          ){" · "}
+                          Expected yield:{" "}
+                          <span className="font-semibold text-foreground">
+                            {formatQuantity(expectedOut)}
+                          </span>{" "}
                           {recipe.outputUom?.symbol || "pkts"} / batch
                           {" · "}
-                          Est. material cost: <span className="font-semibold text-foreground">{formatINR(batchMaterialCost)}</span>{" "}
+                          Est. material cost:{" "}
+                          <span className="font-semibold text-foreground">
+                            {formatINR(batchMaterialCost)}
+                          </span>{" "}
                           ({formatINR(estCostPerUnit)}/pkt)
                         </div>
                       </div>
@@ -682,7 +700,10 @@ export function ProductionRecipesPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Link
                       to={`/production/recipes/${recipe.id}`}
-                      className={buttonVariants({ variant: "outline", size: "sm" })}
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                      })}
                     >
                       Lifecycle & details
                     </Link>
@@ -709,7 +730,10 @@ export function ProductionRecipesPage() {
                             cloneRecipeVersionMutation.mutate(recipe.id)
                           }
                         >
-                          <CopyIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                          <CopyIcon
+                            className="h-3.5 w-3.5"
+                            aria-hidden="true"
+                          />
                           Clone New Version
                         </Button>
                         <Button
@@ -745,7 +769,9 @@ export function ProductionRecipesPage() {
                           <TableHead className="text-right">
                             Planned / Batch
                           </TableHead>
-                          <TableHead className="text-right">Tolerance</TableHead>
+                          <TableHead className="text-right">
+                            Tolerance
+                          </TableHead>
                           <TableHead className="text-right">
                             Available Stock
                           </TableHead>

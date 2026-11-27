@@ -16,7 +16,9 @@ describe("M9: Offline synchronization and idempotency verification", () => {
     await prisma.salesmanCustomerAssignment.deleteMany({
       where: {
         salesman: {
-          email: { in: ["salesman1@millledger.local", "salesman2@millledger.local"] },
+          email: {
+            in: ["salesman1@millledger.local", "salesman2@millledger.local"],
+          },
         },
       },
     });

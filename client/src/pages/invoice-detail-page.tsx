@@ -51,7 +51,8 @@ interface InvoiceDetail {
   customerGstinSnapshot: string | null;
   deliveryStateSnapshot: string;
   companyGstinSnapshot: string;
-  status: "DRAFT" | "POSTED" | "CANCELLED_BY_CREDIT_NOTE" | "PAID" | "PARTIALLY_PAID";
+  status:
+    "DRAFT" | "POSTED" | "CANCELLED_BY_CREDIT_NOTE" | "PAID" | "PARTIALLY_PAID";
   taxableAmount: number;
   cgstAmount: number;
   sgstAmount: number;
@@ -100,30 +101,38 @@ export function InvoiceDetailPage() {
   const [creditReason, setCreditReason] = useState("");
   const [creditAmount, setCreditAmount] = useState("");
 
-  const { data: invoice, isLoading, isError, error, refetch } =
-    useQuery<InvoiceDetail>({
-      queryKey: ["sales-invoice", invoiceId],
-      queryFn: async () => {
-        const endpoint = `/finance/invoices/${invoiceId}`;
-        const res = await apiClient.get(endpoint);
-        return assertEntityResponse<InvoiceDetail & Record<string, unknown>>(
-          res.data,
-          "invoice",
-          ["lines"],
-          endpoint,
-        );
-      },
-      enabled: Boolean(invoiceId),
-    });
+  const {
+    data: invoice,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<InvoiceDetail>({
+    queryKey: ["sales-invoice", invoiceId],
+    queryFn: async () => {
+      const endpoint = `/finance/invoices/${invoiceId}`;
+      const res = await apiClient.get(endpoint);
+      return assertEntityResponse<InvoiceDetail & Record<string, unknown>>(
+        res.data,
+        "invoice",
+        ["lines"],
+        endpoint,
+      );
+    },
+    enabled: Boolean(invoiceId),
+  });
 
   const creditNoteMutation = useMutation({
     mutationFn: async () => {
       if (!invoice) return;
       const parsedAmount = Number(creditAmount);
-      const res = await apiClient.post(`/finance/invoices/${invoice.id}/credit-note`, {
-        reason: creditReason.trim(),
-        totalAmount: parsedAmount > 0 ? parsedAmount : undefined,
-      });
+      const res = await apiClient.post(
+        `/finance/invoices/${invoice.id}/credit-note`,
+        {
+          reason: creditReason.trim(),
+          totalAmount: parsedAmount > 0 ? parsedAmount : undefined,
+        },
+      );
       return res.data;
     },
     onSuccess: () => {
@@ -150,7 +159,9 @@ export function InvoiceDetailPage() {
       });
       toast.success(`Downloaded ${filename}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to download PDF.");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to download PDF.",
+      );
     }
   };
 
@@ -168,7 +179,11 @@ export function InvoiceDetailPage() {
   const handleShareWhatsApp = () => {
     if (!invoice) return;
     const text = `Invoice ${invoice.invoiceNumber} for ${invoice.customerNameSnapshot}: Total ${formatINR(invoice.totalAmount)}, Outstanding ${formatINR(invoice.outstandingAmount)}.`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(text)}`,
+      "_blank",
+      "noopener",
+    );
   };
 
   if (isLoading) {
@@ -214,7 +229,9 @@ export function InvoiceDetailPage() {
         subtitle={`${invoice.customerNameSnapshot} • FY ${invoice.financialYear} • Posted ${formatDateTime(invoice.postedAt)}`}
         statuses={
           <>
-            <Badge variant="outline">{invoice.status.replaceAll("_", " ")}</Badge>
+            <Badge variant="outline">
+              {invoice.status.replaceAll("_", " ")}
+            </Badge>
             <Badge variant="outline">
               Outstanding: {formatINR(invoice.outstandingAmount)}
             </Badge>
@@ -224,7 +241,9 @@ export function InvoiceDetailPage() {
           canDispatch ? (
             <Button
               variant="primary"
-              onClick={() => navigate(`/dispatch/new?orderId=${invoice.salesOrder!.id}`)}
+              onClick={() =>
+                navigate(`/dispatch/new?orderId=${invoice.salesOrder!.id}`)
+              }
               className="gap-1.5"
             >
               <TruckIcon className="size-4" aria-hidden="true" />
@@ -247,15 +266,30 @@ export function InvoiceDetailPage() {
         }
         secondaryActions={
           <>
-            <Button variant="outline" size="sm" onClick={handleDownloadPdf} className="gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadPdf}
+              className="gap-1.5"
+            >
               <DownloadIcon className="size-4" aria-hidden="true" />
               Download PDF
             </Button>
-            <Button variant="outline" size="sm" onClick={handleCopyLink} className="gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyLink}
+              className="gap-1.5"
+            >
               <CopyIcon className="size-4" aria-hidden="true" />
               Copy link
             </Button>
-            <Button variant="outline" size="sm" onClick={handleShareWhatsApp} className="gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleShareWhatsApp}
+              className="gap-1.5"
+            >
               <Share2Icon className="size-4" aria-hidden="true" />
               Share
             </Button>
@@ -303,7 +337,8 @@ export function InvoiceDetailPage() {
             <span className="text-muted-foreground">—</span>
           )}
           <div className="text-xs text-muted-foreground">
-            Paid: {formatINR(invoice.paidAmount)} • Due: {formatINR(invoice.outstandingAmount)}
+            Paid: {formatINR(invoice.paidAmount)} • Due:{" "}
+            {formatINR(invoice.outstandingAmount)}
           </div>
         </div>
       </div>
@@ -363,7 +398,9 @@ export function InvoiceDetailPage() {
       <div className="ml-auto w-full max-w-sm rounded-lg border border-border bg-card p-4 text-sm space-y-1.5">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Taxable value</span>
-          <span className="tabular-nums">{formatINR(invoice.taxableAmount)}</span>
+          <span className="tabular-nums">
+            {formatINR(invoice.taxableAmount)}
+          </span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">CGST</span>
@@ -399,14 +436,19 @@ export function InvoiceDetailPage() {
       <Dialog open={creditOpen} onOpenChange={setCreditOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Issue credit note for {invoice.invoiceNumber}</DialogTitle>
+            <DialogTitle>
+              Issue credit note for {invoice.invoiceNumber}
+            </DialogTitle>
             <DialogDescription>
-              Posted invoices are immutable. A credit note creates a linked financial reversal without deleting the original invoice.
+              Posted invoices are immutable. A credit note creates a linked
+              financial reversal without deleting the original invoice.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="cn-amount">Credit amount (leave blank for full credit)</Label>
+              <Label htmlFor="cn-amount">
+                Credit amount (leave blank for full credit)
+              </Label>
               <Input
                 id="cn-amount"
                 type="number"
@@ -439,7 +481,9 @@ export function InvoiceDetailPage() {
               onClick={() => creditNoteMutation.mutate()}
               disabled={!creditReason.trim() || creditNoteMutation.isPending}
             >
-              {creditNoteMutation.isPending ? "Issuing..." : "Issue credit note"}
+              {creditNoteMutation.isPending
+                ? "Issuing..."
+                : "Issue credit note"}
             </Button>
           </DialogFooter>
         </DialogContent>

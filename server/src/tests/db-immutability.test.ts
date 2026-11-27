@@ -7,7 +7,7 @@ import { seedBenchmarkMasters } from "../db/seed.js";
 
 const migrationFile = resolve(
   __dirname,
-  "../../prisma/migrations/20261120000002_ledger_immutability_triggers/migration.sql"
+  "../../prisma/migrations/20261120000002_ledger_immutability_triggers/migration.sql",
 );
 
 describe("F-009: Database-Level Immutability Enforcement", () => {
@@ -29,7 +29,7 @@ describe("F-009: Database-Level Immutability Enforcement", () => {
     if (!sm) return;
 
     await expect(
-      prisma.$executeRaw`UPDATE "stock_movement" SET "quantity" = 999.000000 WHERE "id" = ${sm.id}`
+      prisma.$executeRaw`UPDATE "stock_movement" SET "quantity" = 999.000000 WHERE "id" = ${sm.id}`,
     ).rejects.toThrow();
   });
 
@@ -50,7 +50,7 @@ describe("F-009: Database-Level Immutability Enforcement", () => {
     });
 
     await expect(
-      prisma.$executeRaw`DELETE FROM "stock_movement" WHERE "id" = ${tempSm.id}`
+      prisma.$executeRaw`DELETE FROM "stock_movement" WHERE "id" = ${tempSm.id}`,
     ).rejects.toThrow();
   });
 
@@ -79,7 +79,7 @@ describe("F-009: Database-Level Immutability Enforcement", () => {
     });
 
     await expect(
-      prisma.$executeRaw`UPDATE "sales_invoice" SET "totalAmount" = 9999.00 WHERE "id" = ${testInv.id}`
+      prisma.$executeRaw`UPDATE "sales_invoice" SET "totalAmount" = 9999.00 WHERE "id" = ${testInv.id}`,
     ).rejects.toThrow();
   });
 
@@ -108,7 +108,7 @@ describe("F-009: Database-Level Immutability Enforcement", () => {
     });
 
     await expect(
-      prisma.$executeRaw`DELETE FROM "sales_invoice" WHERE "id" = ${testInv.id}`
+      prisma.$executeRaw`DELETE FROM "sales_invoice" WHERE "id" = ${testInv.id}`,
     ).rejects.toThrow();
   });
 
@@ -138,7 +138,7 @@ describe("F-009: Database-Level Immutability Enforcement", () => {
 
     // Status downgrade must be blocked
     await expect(
-      prisma.$executeRaw`UPDATE "sales_invoice" SET "status" = 'DRAFT' WHERE "id" = ${testInv.id}`
+      prisma.$executeRaw`UPDATE "sales_invoice" SET "status" = 'DRAFT' WHERE "id" = ${testInv.id}`,
     ).rejects.toThrow();
   });
 
@@ -168,7 +168,7 @@ describe("F-009: Database-Level Immutability Enforcement", () => {
 
     // Forging GSTIN snapshot must be blocked
     await expect(
-      prisma.$executeRaw`UPDATE "sales_invoice" SET "companyGstinSnapshot" = 'FORGED123' WHERE "id" = ${testInv.id}`
+      prisma.$executeRaw`UPDATE "sales_invoice" SET "companyGstinSnapshot" = 'FORGED123' WHERE "id" = ${testInv.id}`,
     ).rejects.toThrow();
   });
 
@@ -217,7 +217,7 @@ describe("F-009: Database-Level Immutability Enforcement", () => {
 
     // DELETE on line of a POSTED invoice must be blocked
     await expect(
-      prisma.$executeRaw`DELETE FROM "sales_invoice_line" WHERE "id" = ${testLine.id}`
+      prisma.$executeRaw`DELETE FROM "sales_invoice_line" WHERE "id" = ${testLine.id}`,
     ).rejects.toThrow();
   });
 
@@ -266,7 +266,7 @@ describe("F-009: Database-Level Immutability Enforcement", () => {
 
     // UPDATE on line of a POSTED invoice must be blocked
     await expect(
-      prisma.$executeRaw`UPDATE "sales_invoice_line" SET "lineTotal" = 9999 WHERE "id" = ${testLine.id}`
+      prisma.$executeRaw`UPDATE "sales_invoice_line" SET "lineTotal" = 9999 WHERE "id" = ${testLine.id}`,
     ).rejects.toThrow();
   });
 });

@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import ExcelJS from "exceljs";
-import { serializeCsv, sanitizeCsvValue, buildExportFilename } from "@mill-ledger/shared";
+import {
+  serializeCsv,
+  sanitizeCsvValue,
+  buildExportFilename,
+} from "@mill-ledger/shared";
 import { createApp } from "../app.js";
 import { prisma } from "../db/client.js";
 import { seedUsers, seedBenchmarkMasters } from "../db/seed.js";
@@ -41,8 +45,14 @@ describe("Unified Professional Export System", () => {
     });
 
     adminCookie = await signIn("admin@millledger.local", "AdminPassword123!");
-    salesmanCookie = await signIn("salesman1@millledger.local", "SalesmanPassword123!");
-    productionCookie = await signIn("production@millledger.local", "ProductionPassword123!");
+    salesmanCookie = await signIn(
+      "salesman1@millledger.local",
+      "SalesmanPassword123!",
+    );
+    productionCookie = await signIn(
+      "production@millledger.local",
+      "ProductionPassword123!",
+    );
   });
 
   it("CSV: enforces UTF-8 BOM, RFC 4180 escaping, and CWE-1236 formula injection protection while keeping numbers numeric", () => {
@@ -141,9 +151,12 @@ describe("Unified Professional Export System", () => {
   });
 
   it("Excel: parses GST multi-sheet workbook and validates numeric types & formula safety", async () => {
-    const res = await fetch(`${baseUrl}/api/v1/reports/gst/export?format=xlsx`, {
-      headers: { Cookie: adminCookie },
-    });
+    const res = await fetch(
+      `${baseUrl}/api/v1/reports/gst/export?format=xlsx`,
+      {
+        headers: { Cookie: adminCookie },
+      },
+    );
     expect(res.status).toBe(200);
     const buf = Buffer.from(await res.arrayBuffer());
     const wb = new ExcelJS.Workbook();

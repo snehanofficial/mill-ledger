@@ -62,7 +62,9 @@ export function getSavedFormDraft(
   if (typeof window === "undefined" || !window.sessionStorage) return null;
 
   try {
-    const raw = window.sessionStorage.getItem(`millledger:form_draft:${pathname}`);
+    const raw = window.sessionStorage.getItem(
+      `millledger:form_draft:${pathname}`,
+    );
     if (!raw) return null;
     const parsed: SavedFormDraft = JSON.parse(raw);
     return parsed.draft || null;

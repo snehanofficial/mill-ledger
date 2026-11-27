@@ -8,7 +8,9 @@ function Toaster() {
 
     // Enhance Sonner toasts with role="status", aria-live="polite", and keyboard focus pausing
     const enhanceToasts = () => {
-      const toasts = document.querySelectorAll<HTMLElement>("[data-sonner-toast]");
+      const toasts = document.querySelectorAll<HTMLElement>(
+        "[data-sonner-toast]",
+      );
       toasts.forEach((toast) => {
         if (!toast.getAttribute("role")) {
           toast.setAttribute("role", "status");
@@ -33,9 +35,13 @@ function Toaster() {
     const handleFocusIn = (e: FocusEvent) => {
       const target = e.target as HTMLElement | null;
       if (target?.closest("[data-sonner-toast]")) {
-        const toaster = document.querySelector<HTMLElement>("[data-sonner-toaster]");
+        const toaster = document.querySelector<HTMLElement>(
+          "[data-sonner-toaster]",
+        );
         if (toaster) {
-          toaster.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+          toaster.dispatchEvent(
+            new MouseEvent("mouseenter", { bubbles: true }),
+          );
         }
       }
     };
@@ -43,9 +49,13 @@ function Toaster() {
     const handleFocusOut = (e: FocusEvent) => {
       const related = e.relatedTarget as HTMLElement | null;
       if (!related?.closest("[data-sonner-toast]")) {
-        const toaster = document.querySelector<HTMLElement>("[data-sonner-toaster]");
+        const toaster = document.querySelector<HTMLElement>(
+          "[data-sonner-toaster]",
+        );
         if (toaster) {
-          toaster.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+          toaster.dispatchEvent(
+            new MouseEvent("mouseleave", { bubbles: true }),
+          );
         }
       }
     };

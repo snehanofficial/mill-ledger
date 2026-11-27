@@ -9,6 +9,7 @@ This runbook establishes standard operating procedures for creating an initial o
 ## 1. Operating Rules & Constraints (OD-02)
 
 To prevent unauthorized privilege escalation or accidental admin creation:
+
 - **OD-02 Policy**: Default admin seeding with hardcoded credentials in production environments is strictly prohibited.
 - **Single Active Admin Guard**: The `admin:bootstrap` script verifies that no active admin user already exists. If an administrator is already registered, the bootstrap script aborts immediately with an error to prevent account takeover.
 - **Audit Logging**: Any administrative user creation is recorded in the immutable database `AuditLog` table with timestamp and originating context.
@@ -18,6 +19,7 @@ To prevent unauthorized privilege escalation or accidental admin creation:
 ## 2. Emergency Provisioning Procedure
 
 ### Scenario A: Initial System Setup (Cold Greenfield Deployment)
+
 When setting up a fresh production environment where no administrator exists:
 
 1. Connect to the host or execute inside the API container:
@@ -31,7 +33,9 @@ When setting up a fresh production environment where no administrator exists:
 3. Upon confirmation, the administrator account is created in Better Auth with `role: "ADMIN"` and `organizationId` set to the `MILL` organization's `id`.
 
 ### Scenario B: Non-Interactive Scripted Provisioning
+
 For automated infrastructure deployments:
+
 ```bash
 ADMIN_EMAIL="ops-admin@millledger.com" \
 ADMIN_PASSWORD="ReplaceWithHighEntropySecret123!" \
@@ -39,6 +43,7 @@ ADMIN_PASSWORD="ReplaceWithHighEntropySecret123!" \
 ```
 
 ### Scenario C: Existing Admin Exists but Credentials Are Lost
+
 If an active administrator account exists but credentials are lost and email password reset (`/api/auth/forget-password`) is unreachable:
 
 1. **Verify Operator Authorization**:
@@ -77,6 +82,7 @@ If an active administrator account exists but credentials are lost and email pas
 ## 3. Post-Provisioning Verification
 
 Verify successful authentication with the newly provisioned administrator:
+
 ```bash
 curl -X POST http://localhost:4000/api/auth/sign-in/email \
   -H "Content-Type: application/json" \
@@ -86,4 +92,5 @@ curl -X POST http://localhost:4000/api/auth/sign-in/email \
 # Verify admin profile endpoint
 curl -b /tmp/admin-cookie.txt http://localhost:4000/api/v1/me
 ```
-*Expected*: Returns HTTP 200 with role `"ADMIN"`.
+
+_Expected_: Returns HTTP 200 with role `"ADMIN"`.

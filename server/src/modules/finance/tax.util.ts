@@ -42,10 +42,9 @@ export function calculateLineTax(
   );
   const taxRate = new Prisma.Decimal(input.taxRate.toString());
 
-  const taxableAmount = qty.mul(price).toDecimalPlaces(
-    2,
-    Prisma.Decimal.ROUND_HALF_UP,
-  );
+  const taxableAmount = qty
+    .mul(price)
+    .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
 
   let cgstAmount = new Prisma.Decimal(0);
   let sgstAmount = new Prisma.Decimal(0);

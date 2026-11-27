@@ -43,7 +43,10 @@ import {
   useProductionRunColumns,
 } from "@/components/production/production-run-columns";
 
-function isSameLocalDay(iso: string | null | undefined, refDate: Date): boolean {
+function isSameLocalDay(
+  iso: string | null | undefined,
+  refDate: Date,
+): boolean {
   if (!iso) return false;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return false;
@@ -69,9 +72,9 @@ export function ProductionTodayPage({
   const [showNewBatchModal, setShowNewBatchModal] = useState(
     initialOpenNewBatch && canRecordProduction,
   );
-  const [preselectedRecipeId, setPreselectedRecipeId] = useState<string | undefined>(
-    undefined,
-  );
+  const [preselectedRecipeId, setPreselectedRecipeId] = useState<
+    string | undefined
+  >(undefined);
   const [selectedRun, setSelectedRun] = useState<ProductionRun | null>(null);
   const [editingDraftRun, setEditingDraftRun] = useState<ProductionRun | null>(
     null,
@@ -180,7 +183,12 @@ export function ProductionTodayPage({
   const recipeReadiness = useMemo(() => {
     return recipes.map((recipe) => {
       let maxBatches = Infinity;
-      const shortages: Array<{ name: string; available: number; needed: number; unit: string }> = [];
+      const shortages: Array<{
+        name: string;
+        available: number;
+        needed: number;
+        unit: string;
+      }> = [];
 
       for (const item of recipe.items) {
         const planned = Number(item.plannedQty);
@@ -233,7 +241,9 @@ export function ProductionTodayPage({
         description={`Floor workspace for ${formatDate(today)}. Track active drafts, today's posted batches, and material readiness.`}
         badge={
           <Badge variant="outline" className="text-xs font-medium">
-            {activeWarehouse ? `${activeWarehouse.code} · ${activeWarehouse.name}` : "All Warehouses"}
+            {activeWarehouse
+              ? `${activeWarehouse.code} · ${activeWarehouse.name}`
+              : "All Warehouses"}
           </Badge>
         }
         secondaryActions={
@@ -293,7 +303,9 @@ export function ProductionTodayPage({
             </span>
             <FactoryIcon className="h-4 w-4" aria-hidden="true" />
           </div>
-          <div className="text-2xl font-bold tabular-nums">{todaysRuns.length}</div>
+          <div className="text-2xl font-bold tabular-nums">
+            {todaysRuns.length}
+          </div>
           <div className="text-xs text-muted-foreground">
             {postedToday.length} posted, {draftCount} draft awaiting post
           </div>
@@ -373,7 +385,8 @@ export function ProductionTodayPage({
                 Material readiness by active recipe
               </h2>
               <p className="text-xs text-muted-foreground">
-                Producible batches based on current available raw and packaging stock
+                Producible batches based on current available raw and packaging
+                stock
               </p>
             </div>
             <Link
@@ -397,7 +410,8 @@ export function ProductionTodayPage({
                         {recipe.productVariant.name}
                       </div>
                       <div className="text-xs text-muted-foreground truncate">
-                        {recipe.name} · {Number(recipe.expectedOutputQty)} pkts/batch
+                        {recipe.name} · {Number(recipe.expectedOutputQty)}{" "}
+                        pkts/batch
                       </div>
                     </div>
                     <Badge variant={isShort ? "danger" : "success"}>
@@ -409,7 +423,8 @@ export function ProductionTodayPage({
                     <div className="text-xs text-destructive space-y-0.5">
                       {shortages.slice(0, 2).map((s) => (
                         <div key={s.name}>
-                          {s.name}: {s.available} {s.unit} avail (needs {s.needed} {s.unit})
+                          {s.name}: {s.available} {s.unit} avail (needs{" "}
+                          {s.needed} {s.unit})
                         </div>
                       ))}
                     </div>

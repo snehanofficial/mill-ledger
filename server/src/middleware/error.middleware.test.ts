@@ -143,14 +143,19 @@ describe("F-034 Error Envelope Middleware", () => {
     expect(getStatus()).toBe(409);
     const data = getData();
     expect(data.code).toBe("TRANSACTION_CONFLICT");
-    expect(data.message).toContain("Transaction conflict: please retry operation");
+    expect(data.message).toContain(
+      "Transaction conflict: please retry operation",
+    );
     expect(data.requestId).toBe("req-p2034");
     expect(data.stack).toBeUndefined();
   });
 
   it("sanitizes unhandled 500 errors and never leaks stack or internals (CWE-209)", () => {
-    const unhandled = new Error("Sensitive database table user_credentials leaked!");
-    unhandled.stack = "Error at Object.<anonymous> (/var/www/internal/server.ts:123:45)";
+    const unhandled = new Error(
+      "Sensitive database table user_credentials leaked!",
+    );
+    unhandled.stack =
+      "Error at Object.<anonymous> (/var/www/internal/server.ts:123:45)";
 
     const { req, res, getStatus, getData } = createMockReqRes("req-500");
     errorHandler(unhandled, req, res, () => {});

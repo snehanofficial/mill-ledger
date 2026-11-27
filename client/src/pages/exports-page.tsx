@@ -52,8 +52,19 @@ const DATASETS: ExportDataset[] = [
     name: "Sales Register",
     category: "Finance & Sales",
     icon: <ReceiptIcon className="size-5 text-emerald-600" />,
-    description: "Line-by-line sales orders, posted invoices, taxable values, and statutory GST breakdowns.",
-    fields: ["Invoice Number", "Order Date", "Customer Name", "State", "Taxable Value", "CGST", "SGST", "IGST", "Total Amount"],
+    description:
+      "Line-by-line sales orders, posted invoices, taxable values, and statutory GST breakdowns.",
+    fields: [
+      "Invoice Number",
+      "Order Date",
+      "Customer Name",
+      "State",
+      "Taxable Value",
+      "CGST",
+      "SGST",
+      "IGST",
+      "Total Amount",
+    ],
   },
   {
     id: "customer-sales",
@@ -61,8 +72,18 @@ const DATASETS: ExportDataset[] = [
     name: "Customer-Wise Sales Summary",
     category: "Finance & Sales",
     icon: <ReceiptIcon className="size-5 text-emerald-600" />,
-    description: "Aggregated taxable value, GST, total invoiced, and outstanding balance per customer.",
-    fields: ["Customer Code", "Customer Name", "State", "Invoices Count", "Taxable Amount", "Total Tax", "Total Amount", "Outstanding"],
+    description:
+      "Aggregated taxable value, GST, total invoiced, and outstanding balance per customer.",
+    fields: [
+      "Customer Code",
+      "Customer Name",
+      "State",
+      "Invoices Count",
+      "Taxable Amount",
+      "Total Tax",
+      "Total Amount",
+      "Outstanding",
+    ],
   },
   {
     id: "product-sales",
@@ -70,8 +91,16 @@ const DATASETS: ExportDataset[] = [
     name: "Product-Wise Sales Summary",
     category: "Finance & Sales",
     icon: <PackageIcon className="size-5 text-blue-600" />,
-    description: "Aggregated quantities, taxable value, and GST by product and HSN code.",
-    fields: ["Product Name", "HSN Code", "Total Quantity", "Taxable Amount", "Total Tax", "Total Amount"],
+    description:
+      "Aggregated quantities, taxable value, and GST by product and HSN code.",
+    fields: [
+      "Product Name",
+      "HSN Code",
+      "Total Quantity",
+      "Taxable Amount",
+      "Total Tax",
+      "Total Amount",
+    ],
   },
   {
     id: "stock-ledger",
@@ -79,8 +108,18 @@ const DATASETS: ExportDataset[] = [
     name: "Stock Movement Ledger",
     category: "Warehouse & Supply",
     icon: <BoxIcon className="size-5 text-amber-600" />,
-    description: "Chronological append-only stock movement ledger across all materials and finished goods.",
-    fields: ["Posted At", "SKU", "Item Name", "Warehouse", "Movement Type", "Quantity", "Unit Cost", "Reference"],
+    description:
+      "Chronological append-only stock movement ledger across all materials and finished goods.",
+    fields: [
+      "Posted At",
+      "SKU",
+      "Item Name",
+      "Warehouse",
+      "Movement Type",
+      "Quantity",
+      "Unit Cost",
+      "Reference",
+    ],
   },
   {
     id: "gst",
@@ -88,8 +127,17 @@ const DATASETS: ExportDataset[] = [
     name: "GSTR-1 Outward Summary",
     category: "Statutory Tax",
     icon: <ShieldCheckIcon className="size-5 text-indigo-600" />,
-    description: "Statutory outward supplies summary classified by HSN 21069099, rate (5%), and place of supply.",
-    fields: ["Financial Year", "Quarter", "HSN Code", "Tax Rate", "Intra-state Taxable", "Inter-state Taxable", "Tax Total"],
+    description:
+      "Statutory outward supplies summary classified by HSN 21069099, rate (5%), and place of supply.",
+    fields: [
+      "Financial Year",
+      "Quarter",
+      "HSN Code",
+      "Tax Rate",
+      "Intra-state Taxable",
+      "Inter-state Taxable",
+      "Tax Total",
+    ],
   },
   {
     id: "stock",
@@ -97,8 +145,18 @@ const DATASETS: ExportDataset[] = [
     name: "Stock Valuation & Inventory",
     category: "Warehouse & Supply",
     icon: <BoxIcon className="size-5 text-amber-600" />,
-    description: "Closing inventory quantities, active reservations, Available-To-Promise (ATP), and weighted-average unit costs.",
-    fields: ["SKU", "Item Name", "UOM", "Physical On Hand", "Reserved Stock", "ATP Stock", "Weighted Avg Cost", "Valuation Total"],
+    description:
+      "Closing inventory quantities, active reservations, Available-To-Promise (ATP), and weighted-average unit costs.",
+    fields: [
+      "SKU",
+      "Item Name",
+      "UOM",
+      "Physical On Hand",
+      "Reserved Stock",
+      "ATP Stock",
+      "Weighted Avg Cost",
+      "Valuation Total",
+    ],
   },
   {
     id: "production",
@@ -106,8 +164,18 @@ const DATASETS: ExportDataset[] = [
     name: "Production Runs & Yield Variances",
     category: "Shop Floor",
     icon: <LayersIcon className="size-5 text-blue-600" />,
-    description: "Milling production runs, recipe yields, flour & oil consumption, scrap/wastage, and tolerance variance flags.",
-    fields: ["Run Number", "Batch Date", "Recipe Code", "Flour Consumed", "Good Packets", "Damaged Units", "Unit Cost", "Variance Flag"],
+    description:
+      "Milling production runs, recipe yields, flour & oil consumption, scrap/wastage, and tolerance variance flags.",
+    fields: [
+      "Run Number",
+      "Batch Date",
+      "Recipe Code",
+      "Flour Consumed",
+      "Good Packets",
+      "Damaged Units",
+      "Unit Cost",
+      "Variance Flag",
+    ],
   },
   {
     id: "receivables",
@@ -115,8 +183,17 @@ const DATASETS: ExportDataset[] = [
     name: "Accounts Receivable & Ageing",
     category: "Accounting",
     icon: <CreditCardIcon className="size-5 text-rose-600" />,
-    description: "Outstanding invoice balances segmented into standard accounting ageing buckets (0-30, 31-60, 61-90, 90+ days).",
-    fields: ["Customer Code", "Customer Name", "Total Invoiced", "Total Collected", "Outstanding Balance", "Ageing 0-30d", "Ageing 30d+"],
+    description:
+      "Outstanding invoice balances segmented into standard accounting ageing buckets (0-30, 31-60, 61-90, 90+ days).",
+    fields: [
+      "Customer Code",
+      "Customer Name",
+      "Total Invoiced",
+      "Total Collected",
+      "Outstanding Balance",
+      "Ageing 0-30d",
+      "Ageing 30d+",
+    ],
   },
   {
     id: "collections",
@@ -124,8 +201,17 @@ const DATASETS: ExportDataset[] = [
     name: "Collections & Payment Register",
     category: "Accounting",
     icon: <CreditCardIcon className="size-5 text-teal-600" />,
-    description: "Inbound customer payments, bank transfer / cheque / cash receipts, and line allocation reconciliations.",
-    fields: ["Payment Number", "Payment Date", "Customer Name", "Payment Mode", "Total Amount", "Allocated Amount", "Unallocated Balance"],
+    description:
+      "Inbound customer payments, bank transfer / cheque / cash receipts, and line allocation reconciliations.",
+    fields: [
+      "Payment Number",
+      "Payment Date",
+      "Customer Name",
+      "Payment Mode",
+      "Total Amount",
+      "Allocated Amount",
+      "Unallocated Balance",
+    ],
   },
   {
     id: "purchase",
@@ -133,8 +219,18 @@ const DATASETS: ExportDataset[] = [
     name: "Procurement & Mandi Receipts",
     category: "Procurement",
     icon: <PackageIcon className="size-5 text-amber-700" />,
-    description: "Direct mandi intake records, supplier invoice references, raw material weights, and intake cost rates.",
-    fields: ["Receipt Number", "Intake Date", "Supplier Code", "Supplier Name", "Raw Material", "Quantity Received", "Unit Price", "Total Amount"],
+    description:
+      "Direct mandi intake records, supplier invoice references, raw material weights, and intake cost rates.",
+    fields: [
+      "Receipt Number",
+      "Intake Date",
+      "Supplier Code",
+      "Supplier Name",
+      "Raw Material",
+      "Quantity Received",
+      "Unit Price",
+      "Total Amount",
+    ],
   },
   {
     id: "audit",
@@ -142,8 +238,17 @@ const DATASETS: ExportDataset[] = [
     name: "Security & Mutation Audit Log",
     category: "Compliance",
     icon: <HistoryIcon className="size-5 text-purple-600" />,
-    description: "Permanent append-only transaction log containing user actions, entity IDs, IP addresses, and correlation IDs.",
-    fields: ["Log Timestamp", "Actor Email", "Role", "Action (CREATE/UPDATE)", "Entity Type", "Entity ID", "Request UUID"],
+    description:
+      "Permanent append-only transaction log containing user actions, entity IDs, IP addresses, and correlation IDs.",
+    fields: [
+      "Log Timestamp",
+      "Actor Email",
+      "Role",
+      "Action (CREATE/UPDATE)",
+      "Entity Type",
+      "Entity ID",
+      "Request UUID",
+    ],
   },
 ];
 
@@ -152,7 +257,9 @@ export function ExportsPage() {
   const dateRangeSelectId = useId();
   const formatSelectId = useId();
   const [selectedReportType, setSelectedReportType] = useState<string>("sales");
-  const [selectedFormat, setSelectedFormat] = useState<"csv" | "xlsx" | "pdf" | "json">("csv");
+  const [selectedFormat, setSelectedFormat] = useState<
+    "csv" | "xlsx" | "pdf" | "json"
+  >("csv");
   const [dateRange, setDateRange] = useState<"all" | "month" | "year">("all");
   const [isExporting, setIsExporting] = useState(false);
 
@@ -173,7 +280,8 @@ export function ExportsPage() {
         endDate = now.toISOString();
       } else if (dateRange === "year") {
         // Indian FY starts April 1
-        const year = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+        const year =
+          now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
         const start = new Date(year, 3, 1);
         startDate = start.toISOString();
         endDate = now.toISOString();
@@ -216,15 +324,13 @@ export function ExportsPage() {
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground max-w-[60ch]">
-            Generate authorized statutory GST filings, closing inventory balances, and auditor reconciliation packages.
+            Generate authorized statutory GST filings, closing inventory
+            balances, and auditor reconciliation packages.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Badge
-            variant="success"
-            className="text-xs"
-          >
+          <Badge variant="success" className="text-xs">
             <ShieldCheckIcon className="size-3.5" />
             DPDP & Section 170 CGST Compliant
           </Badge>
@@ -288,7 +394,9 @@ export function ExportsPage() {
               </Label>
               <Select
                 value={dateRange}
-                onValueChange={(value) => setDateRange(value as "all" | "month" | "year")}
+                onValueChange={(value) =>
+                  setDateRange(value as "all" | "month" | "year")
+                }
               >
                 <SelectTrigger
                   id={dateRangeSelectId}
@@ -299,7 +407,9 @@ export function ExportsPage() {
                 <SelectContent>
                   <SelectItem value="all">All Historical Records</SelectItem>
                   <SelectItem value="month">Current Month to Date</SelectItem>
-                  <SelectItem value="year">Current Financial Year (Apr - Mar)</SelectItem>
+                  <SelectItem value="year">
+                    Current Financial Year (Apr - Mar)
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <span className="mt-1.5 text-xs text-muted-foreground">
@@ -322,7 +432,9 @@ export function ExportsPage() {
               </Label>
               <Select
                 value={selectedFormat}
-                onValueChange={(value) => setSelectedFormat(value as "csv" | "xlsx" | "pdf" | "json")}
+                onValueChange={(value) =>
+                  setSelectedFormat(value as "csv" | "xlsx" | "pdf" | "json")
+                }
               >
                 <SelectTrigger
                   id={formatSelectId}
@@ -334,7 +446,9 @@ export function ExportsPage() {
                   <SelectItem value="csv">CSV (Spreadsheet / Tally)</SelectItem>
                   <SelectItem value="xlsx">Excel (.xlsx Workbook)</SelectItem>
                   <SelectItem value="pdf">PDF Document (.pdf)</SelectItem>
-                  <SelectItem value="json">JSON (Standard Machine-Readable Payload)</SelectItem>
+                  <SelectItem value="json">
+                    JSON (Standard Machine-Readable Payload)
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <span className="mt-1.5 text-xs text-muted-foreground">
@@ -356,7 +470,10 @@ export function ExportsPage() {
                 Export Schema Columns ({activeDataset.fields.length} attributes)
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <span className="size-2 rounded-full bg-success" aria-hidden="true" />
+                <span
+                  className="size-2 rounded-full bg-success"
+                  aria-hidden="true"
+                />
                 Schema Match 100%
               </span>
             </div>
@@ -389,7 +506,8 @@ export function ExportsPage() {
                 <>
                   <DownloadIcon className="size-4" />
                   <span>
-                    Download {activeDataset.name} ({selectedFormat.toUpperCase()})
+                    Download {activeDataset.name} (
+                    {selectedFormat.toUpperCase()})
                   </span>
                 </>
               )}
@@ -399,14 +517,21 @@ export function ExportsPage() {
       </Card>
 
       {/* Dataset Directory Grid */}
-      <section aria-labelledby="available-exports-heading" className="flex flex-col gap-4">
+      <section
+        aria-labelledby="available-exports-heading"
+        className="flex flex-col gap-4"
+      >
         <div>
-          <h2 id="available-exports-heading" className="text-lg font-bold text-foreground flex items-center gap-2">
+          <h2
+            id="available-exports-heading"
+            className="text-lg font-bold text-foreground flex items-center gap-2"
+          >
             <DatabaseIcon className="size-5 text-primary" />
             Available System Export Registers
           </h2>
           <p className="text-xs text-muted-foreground">
-            All exports are generated transactionally from PostgreSQL and logged to the immutable audit trail.
+            All exports are generated transactionally from PostgreSQL and logged
+            to the immutable audit trail.
           </p>
         </div>
 
@@ -432,7 +557,9 @@ export function ExportsPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-bold text-foreground">{d.name}</h3>
+                  <h3 className="text-sm font-bold text-foreground">
+                    {d.name}
+                  </h3>
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                     {d.description}
                   </p>

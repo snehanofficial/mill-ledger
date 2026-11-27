@@ -135,8 +135,7 @@ const handleReportExport = async (
         role === "SALESMAN"
           ? req.user!.id
           : ((req.query.salesmanId || req.body?.salesmanId) as
-              | string
-              | undefined),
+              string | undefined),
       supplierId:
         (req.query.supplierId as string | undefined) ||
         (req.body?.supplierId as string | undefined),
@@ -156,7 +155,10 @@ const handleReportExport = async (
         extension: "csv",
       });
       res.setHeader("Content-Type", "text/csv; charset=utf-8");
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
       return res.send(csvContent);
     } else if (format === "xlsx") {
       const xlsxBuffer = await reportingService.exportToXLSX(
@@ -172,7 +174,10 @@ const handleReportExport = async (
         "Content-Type",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       );
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
       return res.send(xlsxBuffer);
     } else if (format === "pdf") {
       const pdfBuffer = await reportingService.exportToPDF(
@@ -185,7 +190,10 @@ const handleReportExport = async (
         extension: "pdf",
       });
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
       return res.send(pdfBuffer);
     } else {
       // JSON export

@@ -70,7 +70,9 @@ export function FeaturesPage() {
               Verified ERP Capabilities for Food Manufacturing Mills
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
-              MillLedger is built as a modular monolith using React 19, Express 5, Better Auth, Prisma 7, and PostgreSQL. Every module listed below is implemented and verified in the current application.
+              MillLedger is built as a modular monolith using React 19, Express
+              5, Better Auth, Prisma 7, and PostgreSQL. Every module listed
+              below is implemented and verified in the current application.
             </p>
           </div>
         </div>
@@ -84,7 +86,9 @@ export function FeaturesPage() {
               className="rounded-xl border border-border bg-card p-6 sm:p-8"
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border pb-4 mb-4">
-                <h2 className="text-xl font-bold text-foreground">{mod.name}</h2>
+                <h2 className="text-xl font-bold text-foreground">
+                  {mod.name}
+                </h2>
                 <span className="font-mono text-xs text-muted-foreground">
                   App Workspace: {mod.route}
                 </span>
@@ -105,26 +109,44 @@ export function FeaturesPage() {
               Current Scope Boundaries (What MillLedger Does Not Claim)
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              To support accurate evaluation, MillLedger explicitly documents features that are outside the current release:
+              To support accurate evaluation, MillLedger explicitly documents
+              features that are outside the current release:
             </p>
             <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-sm text-muted-foreground list-disc pl-5">
-              <li>No live government GST portal (IRN / GSTR-1 API) push integration.</li>
-              <li>No automated Tally XML export or full general-ledger chart of accounts.</li>
-              <li>No batch/expiry FEFO lot-tracking or automated reorder-level alerts yet.</li>
-              <li>No electronic weighbridge hardware serial-port integration.</li>
+              <li>
+                No live government GST portal (IRN / GSTR-1 API) push
+                integration.
+              </li>
+              <li>
+                No automated Tally XML export or full general-ledger chart of
+                accounts.
+              </li>
+              <li>
+                No batch/expiry FEFO lot-tracking or automated reorder-level
+                alerts yet.
+              </li>
+              <li>
+                No electronic weighbridge hardware serial-port integration.
+              </li>
             </ul>
           </div>
 
           <div className="flex flex-wrap gap-3 pt-2">
             <Link
               to="/demo"
-              className={buttonVariants({ variant: "primary", className: "min-h-[44px] px-6" })}
+              className={buttonVariants({
+                variant: "primary",
+                className: "min-h-[44px] px-6",
+              })}
             >
               Request a Product Demo
             </Link>
             <Link
               to="/workflows"
-              className={buttonVariants({ variant: "outline", className: "min-h-[44px] px-6" })}
+              className={buttonVariants({
+                variant: "outline",
+                className: "min-h-[44px] px-6",
+              })}
             >
               View Order-to-Audit Workflows
             </Link>

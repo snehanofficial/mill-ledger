@@ -25,7 +25,10 @@ describe("use-pwa-status helpers", () => {
     const deferredPrompt = {
       platforms: ["web"],
       prompt: promptMock,
-      userChoice: Promise.resolve({ outcome: "accepted" as const, platform: "web" }),
+      userChoice: Promise.resolve({
+        outcome: "accepted" as const,
+        platform: "web",
+      }),
     } as unknown as BeforeInstallPromptEvent;
 
     const outcome = await triggerPwaInstall({

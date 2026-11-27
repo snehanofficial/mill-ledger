@@ -38,19 +38,27 @@ function normalizeEntityName(entity: string): string {
   if (lower === "salesorder" || lower === "sales_order" || lower === "order") {
     return "SalesOrder";
   }
-  if (lower === "salesinvoice" || lower === "sales_invoice" || lower === "invoice") {
+  if (
+    lower === "salesinvoice" ||
+    lower === "sales_invoice" ||
+    lower === "invoice"
+  ) {
     return "SalesInvoice";
   }
   if (lower === "payment") return "Payment";
   if (lower === "customer") return "Customer";
   if (lower === "product") return "Product";
-  if (lower === "productvariant" || lower === "product_variant") return "ProductVariant";
-  if (lower === "pricelistline" || lower === "price_list_line") return "PriceListLine";
+  if (lower === "productvariant" || lower === "product_variant")
+    return "ProductVariant";
+  if (lower === "pricelistline" || lower === "price_list_line")
+    return "PriceListLine";
   if (lower === "recipe") return "Recipe";
-  if (lower === "productionrun" || lower === "production_run") return "ProductionRun";
+  if (lower === "productionrun" || lower === "production_run")
+    return "ProductionRun";
   if (lower === "dispatch") return "Dispatch";
   if (lower === "creditnote" || lower === "credit_note") return "CreditNote";
-  if (lower === "stockmovement" || lower === "stock_movement") return "StockMovement";
+  if (lower === "stockmovement" || lower === "stock_movement")
+    return "StockMovement";
   return entity;
 }
 
@@ -100,19 +108,29 @@ function buildRouteForEntity(
     case "Product":
       return canAccessRoute(role, "product") ? `/products/${entityId}` : null;
     case "Recipe":
-      return canAccessRoute(role, "recipe") ? `/production/recipes/${entityId}` : null;
+      return canAccessRoute(role, "recipe")
+        ? `/production/recipes/${entityId}`
+        : null;
     case "ProductionRun":
-      return canAccessRoute(role, "production_run") ? `/production/runs/${entityId}` : null;
+      return canAccessRoute(role, "production_run")
+        ? `/production/runs/${entityId}`
+        : null;
     default:
       return null;
   }
 }
 
-function parseDetailsJson(details: string | null | undefined): Record<string, unknown> {
+function parseDetailsJson(
+  details: string | null | undefined,
+): Record<string, unknown> {
   if (!details) return {};
   try {
     const parsed: unknown = JSON.parse(details);
-    if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      !Array.isArray(parsed)
+    ) {
       return parsed as Record<string, unknown>;
     }
     return {};
@@ -134,10 +152,16 @@ function stringifyChangeValue(val: unknown): string {
   return String(val);
 }
 
-function extractChangesFromAuditLog(log: AuditLog, details: Record<string, unknown>): TimelineChangeEntry[] {
+function extractChangesFromAuditLog(
+  log: AuditLog,
+  details: Record<string, unknown>,
+): TimelineChangeEntry[] {
   if (Array.isArray(log.changes)) {
     return (log.changes as unknown[])
-      .filter((c): c is Record<string, unknown> => typeof c === "object" && c !== null && !Array.isArray(c))
+      .filter(
+        (c): c is Record<string, unknown> =>
+          typeof c === "object" && c !== null && !Array.isArray(c),
+      )
       .map((c) => ({
         field: String(c.field ?? ""),
         label: String(c.label ?? c.field ?? "Field"),
@@ -165,7 +189,9 @@ function extractChangesFromAuditLog(log: AuditLog, details: Record<string, unkno
 
   if (!beforeObj || !afterObj) return [];
 
-  const keys = Array.from(new Set([...Object.keys(beforeObj), ...Object.keys(afterObj)]));
+  const keys = Array.from(
+    new Set([...Object.keys(beforeObj), ...Object.keys(afterObj)]),
+  );
   const out: TimelineChangeEntry[] = [];
   for (const key of keys) {
     const prev = beforeObj[key];
@@ -173,8 +199,14 @@ function extractChangesFromAuditLog(log: AuditLog, details: Record<string, unkno
     if (JSON.stringify(prev) === JSON.stringify(next)) continue;
     out.push({
       field: key,
-      label: key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase()),
-      kind: !(key in beforeObj) ? "added" : !(key in afterObj) ? "removed" : "changed",
+      label: key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (s) => s.toUpperCase()),
+      kind: !(key in beforeObj)
+        ? "added"
+        : !(key in afterObj)
+          ? "removed"
+          : "changed",
       previousValue: stringifyChangeValue(prev),
       newValue: stringifyChangeValue(next),
     });
@@ -193,13 +225,16 @@ function buildTitleAndSummary(
 ): { title: string; summary: string } {
   const act = (action || "").toUpperCase();
   const evt = (eventType || "").toUpperCase();
-  const entityLabel = labelMap.get(`${canonicalEntity}:${entityId}`) || entityId;
+  const entityLabel =
+    labelMap.get(`${canonicalEntity}:${entityId}`) || entityId;
 
   if (canonicalEntity === "SalesOrder") {
     if (act === "CREATE" || evt === "ORDER_CREATED") {
       return {
         title: "Order created",
-        summary: summary || `Order ${entityLabel} created (${String(details.status ?? "DRAFT")})`,
+        summary:
+          summary ||
+          `Order ${entityLabel} created (${String(details.status ?? "DRAFT")})`,
       };
     }
     if (act === "SUBMIT" || evt === "ORDER_SUBMITTED") {
@@ -265,7 +300,10 @@ function buildTitleAndSummary(
           `${formatMoneyValue(details.allocatedAmount ?? 0)} allocated from ${entityLabel}`,
       };
     }
-    if (act === "PAYMENT_ALLOCATION_REVERSED" || evt === "PAYMENT_ALLOCATION_REVERSED") {
+    if (
+      act === "PAYMENT_ALLOCATION_REVERSED" ||
+      evt === "PAYMENT_ALLOCATION_REVERSED"
+    ) {
       return {
         title: "Payment allocation reversed",
         summary:
@@ -291,7 +329,8 @@ function buildTitleAndSummary(
     if (act === "SALES_RETURN") {
       return {
         title: "Sales return recorded",
-        summary: summary || `Sales return recorded against dispatch ${entityLabel}`,
+        summary:
+          summary || `Sales return recorded against dispatch ${entityLabel}`,
       };
     }
     return {
@@ -302,12 +341,17 @@ function buildTitleAndSummary(
 
   if (canonicalEntity === "Customer") {
     if (act === "CREATE") {
-      return { title: "Customer created", summary: summary || `Customer ${entityLabel} created` };
+      return {
+        title: "Customer created",
+        summary: summary || `Customer ${entityLabel} created`,
+      };
     }
     if (act === "ASSIGN_SALESMAN") {
       return {
         title: "Salesman assigned",
-        summary: summary || `Assigned ${String(details.salesmanEmail ?? "salesman")} to ${entityLabel}`,
+        summary:
+          summary ||
+          `Assigned ${String(details.salesmanEmail ?? "salesman")} to ${entityLabel}`,
       };
     }
     if (act === "UNASSIGN_SALESMAN") {
@@ -317,43 +361,68 @@ function buildTitleAndSummary(
       };
     }
     if (act === "ARCHIVE") {
-      return { title: "Customer archived", summary: summary || `Customer ${entityLabel} archived` };
+      return {
+        title: "Customer archived",
+        summary: summary || `Customer ${entityLabel} archived`,
+      };
     }
     if (act === "RESTORE") {
-      return { title: "Customer restored", summary: summary || `Customer ${entityLabel} restored` };
+      return {
+        title: "Customer restored",
+        summary: summary || `Customer ${entityLabel} restored`,
+      };
     }
-    return { title: "Customer profile updated", summary: summary || `Customer ${entityLabel} updated` };
+    return {
+      title: "Customer profile updated",
+      summary: summary || `Customer ${entityLabel} updated`,
+    };
   }
 
   if (canonicalEntity === "Product") {
     if (act === "CREATE") {
-      return { title: "Product created", summary: summary || `Product ${entityLabel} created` };
+      return {
+        title: "Product created",
+        summary: summary || `Product ${entityLabel} created`,
+      };
     }
     if (act === "ARCHIVE") {
-      return { title: "Product archived", summary: summary || `Product ${entityLabel} archived` };
+      return {
+        title: "Product archived",
+        summary: summary || `Product ${entityLabel} archived`,
+      };
     }
     if (act === "RESTORE") {
-      return { title: "Product restored", summary: summary || `Product ${entityLabel} restored` };
+      return {
+        title: "Product restored",
+        summary: summary || `Product ${entityLabel} restored`,
+      };
     }
-    return { title: "Product updated", summary: summary || `Product ${entityLabel} updated` };
+    return {
+      title: "Product updated",
+      summary: summary || `Product ${entityLabel} updated`,
+    };
   }
 
   if (canonicalEntity === "ProductVariant") {
     if (act === "CREATE") {
       return {
         title: "Pack size variant added",
-        summary: summary || `Variant ${String(details.name ?? details.sku ?? entityLabel)} added`,
+        summary:
+          summary ||
+          `Variant ${String(details.name ?? details.sku ?? entityLabel)} added`,
       };
     }
     if (act === "DELETE") {
       return {
         title: "Pack size variant deleted",
-        summary: summary || `Variant ${String(details.sku ?? entityLabel)} deleted`,
+        summary:
+          summary || `Variant ${String(details.sku ?? entityLabel)} deleted`,
       };
     }
     return {
       title: "Pack size variant updated",
-      summary: summary || `Variant ${String(details.sku ?? entityLabel)} updated`,
+      summary:
+        summary || `Variant ${String(details.sku ?? entityLabel)} updated`,
     };
   }
 
@@ -368,21 +437,35 @@ function buildTitleAndSummary(
 
   if (canonicalEntity === "Recipe") {
     if (act === "CREATE") {
-      return { title: "Recipe created", summary: summary || `Recipe ${entityLabel} created` };
+      return {
+        title: "Recipe created",
+        summary: summary || `Recipe ${entityLabel} created`,
+      };
     }
     if (act === "CREATE_VERSION") {
       return {
         title: "New recipe revision created",
-        summary: summary || `Recipe ${entityLabel} cloned as v${String(details.version ?? "")}`,
+        summary:
+          summary ||
+          `Recipe ${entityLabel} cloned as v${String(details.version ?? "")}`,
       };
     }
     if (act === "ARCHIVE") {
-      return { title: "Recipe archived", summary: summary || `Recipe ${entityLabel} archived` };
+      return {
+        title: "Recipe archived",
+        summary: summary || `Recipe ${entityLabel} archived`,
+      };
     }
     if (act === "RESTORE") {
-      return { title: "Recipe restored", summary: summary || `Recipe ${entityLabel} restored` };
+      return {
+        title: "Recipe restored",
+        summary: summary || `Recipe ${entityLabel} restored`,
+      };
     }
-    return { title: "Recipe updated", summary: summary || `Recipe ${entityLabel} updated` };
+    return {
+      title: "Recipe updated",
+      summary: summary || `Recipe ${entityLabel} updated`,
+    };
   }
 
   if (canonicalEntity === "ProductionRun") {
@@ -412,7 +495,8 @@ function buildTitleAndSummary(
 
   return {
     title: `${canonicalEntity} ${act.toLowerCase()}`,
-    summary: summary || `${canonicalEntity} ${entityLabel} ${act.toLowerCase()}`,
+    summary:
+      summary || `${canonicalEntity} ${entityLabel} ${act.toLowerCase()}`,
   };
 }
 
@@ -422,7 +506,11 @@ function classifyCategory(
   relationshipType: TimelineRelationshipType,
   actorType: TimelineActorType,
 ): TimelineCategory {
-  if (actorType === "SYSTEM" && relationshipType === "DIRECT" && action === "BASELINE") {
+  if (
+    actorType === "SYSTEM" &&
+    relationshipType === "DIRECT" &&
+    action === "BASELINE"
+  ) {
     return "SYSTEM";
   }
   if (
@@ -442,7 +530,17 @@ function classifyCategory(
   }
   if (relationshipType === "DIRECT") {
     const act = action.toUpperCase();
-    if (["APPROVE", "REJECT", "SUBMIT", "ARCHIVE", "RESTORE", "POST", "CREATE_VERSION"].includes(act)) {
+    if (
+      [
+        "APPROVE",
+        "REJECT",
+        "SUBMIT",
+        "ARCHIVE",
+        "RESTORE",
+        "POST",
+        "CREATE_VERSION",
+      ].includes(act)
+    ) {
       return "LIFECYCLE";
     }
     return "DIRECT";
@@ -450,7 +548,10 @@ function classifyCategory(
   return "RELATED";
 }
 
-function matchesFilter(event: TimelineEvent, filter: TimelineFilterType): boolean {
+function matchesFilter(
+  event: TimelineEvent,
+  filter: TimelineFilterType,
+): boolean {
   if (filter === "ALL") return true;
   if (filter === "DIRECT") {
     return event.relationshipType === "DIRECT";
@@ -484,7 +585,15 @@ export class TimelineService {
     limit: number;
     offset: number;
   }): Promise<EntityTimelineResponse> {
-    const { organizationId, user, entityType, entityId, filter, limit, offset } = params;
+    const {
+      organizationId,
+      user,
+      entityType,
+      entityId,
+      filter,
+      limit,
+      offset,
+    } = params;
 
     let entityLabel = entityId;
     const candidates: CandidateLog[] = [];
@@ -493,42 +602,72 @@ export class TimelineService {
 
     switch (entityType) {
       case "order": {
-        const res = await this.resolveOrder(organizationId, user, entityId, labelMap);
+        const res = await this.resolveOrder(
+          organizationId,
+          user,
+          entityId,
+          labelMap,
+        );
         entityLabel = res.label;
         candidates.push(...res.candidates);
         baselineEvents.push(...res.baselines);
         break;
       }
       case "invoice": {
-        const res = await this.resolveInvoice(organizationId, user, entityId, labelMap);
+        const res = await this.resolveInvoice(
+          organizationId,
+          user,
+          entityId,
+          labelMap,
+        );
         entityLabel = res.label;
         candidates.push(...res.candidates);
         baselineEvents.push(...res.baselines);
         break;
       }
       case "payment": {
-        const res = await this.resolvePayment(organizationId, user, entityId, labelMap);
+        const res = await this.resolvePayment(
+          organizationId,
+          user,
+          entityId,
+          labelMap,
+        );
         entityLabel = res.label;
         candidates.push(...res.candidates);
         baselineEvents.push(...res.baselines);
         break;
       }
       case "customer": {
-        const res = await this.resolveCustomer(organizationId, user, entityId, labelMap);
+        const res = await this.resolveCustomer(
+          organizationId,
+          user,
+          entityId,
+          labelMap,
+        );
         entityLabel = res.label;
         candidates.push(...res.candidates);
         baselineEvents.push(...res.baselines);
         break;
       }
       case "product": {
-        const res = await this.resolveProduct(organizationId, user, entityId, labelMap);
+        const res = await this.resolveProduct(
+          organizationId,
+          user,
+          entityId,
+          labelMap,
+        );
         entityLabel = res.label;
         candidates.push(...res.candidates);
         baselineEvents.push(...res.baselines);
         break;
       }
       case "recipe": {
-        const res = await this.resolveRecipe(organizationId, user, entityId, labelMap);
+        const res = await this.resolveRecipe(
+          organizationId,
+          user,
+          entityId,
+          labelMap,
+        );
         entityLabel = res.label;
         candidates.push(...res.candidates);
         baselineEvents.push(...res.baselines);
@@ -542,7 +681,8 @@ export class TimelineService {
     const allEvents: TimelineEvent[] = [];
 
     for (const item of candidates) {
-      const { log, canonicalEntity, relationshipType, relationshipLabel } = item;
+      const { log, canonicalEntity, relationshipType, relationshipLabel } =
+        item;
       if (seenIds.has(log.id)) continue;
 
       // Enforce RBAC on related entity before exposing it
@@ -554,7 +694,9 @@ export class TimelineService {
       seenIds.add(log.id);
 
       const oid = log.entityId ?? entityId;
-      coveredMilestones.add(`${canonicalEntity}:${oid}:${log.action.toUpperCase()}`);
+      coveredMilestones.add(
+        `${canonicalEntity}:${oid}:${log.action.toUpperCase()}`,
+      );
 
       const details = parseDetailsJson(log.details);
       const changes = extractChangesFromAuditLog(log, details);
@@ -573,14 +715,21 @@ export class TimelineService {
           ? log.actorType
           : "USER";
 
-      const category = classifyCategory(canonicalEntity, log.action, relationshipType, actorType);
+      const category = classifyCategory(
+        canonicalEntity,
+        log.action,
+        relationshipType,
+        actorType,
+      );
 
       const relatedRecords: TimelineRelatedRecordRef[] = [];
       if (Array.isArray(log.relatedEntities)) {
         for (const rawRel of log.relatedEntities) {
           if (typeof rawRel !== "object" || rawRel === null) continue;
           const relObj = rawRel as Record<string, unknown>;
-          const relEntity = normalizeEntityName(String(relObj.entityType ?? ""));
+          const relEntity = normalizeEntityName(
+            String(relObj.entityType ?? ""),
+          );
           const relId = String(relObj.entityId ?? "");
           if (!relEntity || !relId) continue;
 
@@ -607,7 +756,9 @@ export class TimelineService {
 
       allEvents.push({
         id: log.id,
-        eventType: log.eventType || `${canonicalEntity.toUpperCase()}_${log.action.toUpperCase()}`,
+        eventType:
+          log.eventType ||
+          `${canonicalEntity.toUpperCase()}_${log.action.toUpperCase()}`,
         action: log.action,
         title,
         summary,
@@ -622,7 +773,11 @@ export class TimelineService {
         recordedAt: log.timestamp.toISOString(),
         actorName:
           log.actorName ||
-          (log.userEmail ? log.userEmail.split("@")[0] : actorType === "SYSTEM" ? "System" : "Staff"),
+          (log.userEmail
+            ? log.userEmail.split("@")[0]
+            : actorType === "SYSTEM"
+              ? "System"
+              : "Staff"),
         actorEmail: log.userEmail ?? null,
         actorType,
         source: log.source || "API",
@@ -646,16 +801,23 @@ export class TimelineService {
 
     // Sort newest-first
     allEvents.sort((a, b) => {
-      const diff = new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime();
+      const diff =
+        new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime();
       if (diff !== 0) return diff;
-      return new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime();
+      return (
+        new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
+      );
     });
 
     const availableFilters: TimelineFilterType[] = ["ALL"];
-    if (allEvents.some((e) => matchesFilter(e, "DIRECT"))) availableFilters.push("DIRECT");
-    if (allEvents.some((e) => matchesFilter(e, "RELATED"))) availableFilters.push("RELATED");
-    if (allEvents.some((e) => matchesFilter(e, "FINANCIAL"))) availableFilters.push("FINANCIAL");
-    if (allEvents.some((e) => matchesFilter(e, "OPERATIONAL"))) availableFilters.push("OPERATIONAL");
+    if (allEvents.some((e) => matchesFilter(e, "DIRECT")))
+      availableFilters.push("DIRECT");
+    if (allEvents.some((e) => matchesFilter(e, "RELATED")))
+      availableFilters.push("RELATED");
+    if (allEvents.some((e) => matchesFilter(e, "FINANCIAL")))
+      availableFilters.push("FINANCIAL");
+    if (allEvents.some((e) => matchesFilter(e, "OPERATIONAL")))
+      availableFilters.push("OPERATIONAL");
 
     const filtered = allEvents.filter((e) => matchesFilter(e, filter));
     const total = filtered.length;
@@ -688,7 +850,10 @@ export class TimelineService {
     labelMap: Map<string, string>,
   ) {
     if (!hasRbacPermission(user.role, "order", "read")) {
-      throw new AppError("Forbidden: Insufficient permissions to view order timeline", 403);
+      throw new AppError(
+        "Forbidden: Insufficient permissions to view order timeline",
+        403,
+      );
     }
 
     const order = await prisma.salesOrder.findFirst({
@@ -702,7 +867,12 @@ export class TimelineService {
             totalAmount: true,
             postedAt: true,
             creditNotes: {
-              select: { id: true, creditNoteNumber: true, totalAmount: true, postedAt: true },
+              select: {
+                id: true,
+                creditNoteNumber: true,
+                totalAmount: true,
+                postedAt: true,
+              },
             },
             paymentAllocations: {
               select: {
@@ -712,14 +882,24 @@ export class TimelineService {
                 isReversed: true,
                 reversedAt: true,
                 payment: {
-                  select: { id: true, paymentNumber: true, paymentMode: true, status: true },
+                  select: {
+                    id: true,
+                    paymentNumber: true,
+                    paymentMode: true,
+                    status: true,
+                  },
                 },
               },
             },
           },
         },
         dispatches: {
-          select: { id: true, dispatchNumber: true, status: true, dispatchedAt: true },
+          select: {
+            id: true,
+            dispatchNumber: true,
+            status: true,
+            dispatchedAt: true,
+          },
         },
       },
     });
@@ -729,7 +909,10 @@ export class TimelineService {
     }
 
     if (user.role === "SALESMAN" && order.salesmanId !== user.id) {
-      throw new AppError("Forbidden: Salesmen can only view their own orders", 403);
+      throw new AppError(
+        "Forbidden: Salesmen can only view their own orders",
+        403,
+      );
     }
 
     labelMap.set(`SalesOrder:${order.id}`, order.orderNumber);
@@ -747,7 +930,10 @@ export class TimelineService {
       }
       for (const alloc of inv.paymentAllocations) {
         paymentIds.add(alloc.payment.id);
-        labelMap.set(`Payment:${alloc.payment.id}`, alloc.payment.paymentNumber);
+        labelMap.set(
+          `Payment:${alloc.payment.id}`,
+          alloc.payment.paymentNumber,
+        );
       }
     }
 
@@ -759,7 +945,10 @@ export class TimelineService {
     const canReadInvoice = hasRbacPermission(user.role, "invoice", "read");
     const canReadPayment = hasRbacPermission(user.role, "payment", "read");
 
-    const orClauses: Array<{ entity: { in: string[] }; entityId: { in: string[] } }> = [
+    const orClauses: Array<{
+      entity: { in: string[] };
+      entityId: { in: string[] };
+    }> = [
       { entity: { in: ["SalesOrder"] }, entityId: { in: [order.id] } },
       ...(dispatchIds.length > 0
         ? [{ entity: { in: ["Dispatch"] }, entityId: { in: dispatchIds } }]
@@ -767,10 +956,16 @@ export class TimelineService {
     ];
 
     if (canReadInvoice && invoiceIds.length > 0) {
-      orClauses.push({ entity: { in: ["SalesInvoice"] }, entityId: { in: invoiceIds } });
+      orClauses.push({
+        entity: { in: ["SalesInvoice"] },
+        entityId: { in: invoiceIds },
+      });
     }
     if (canReadInvoice && creditNoteIds.length > 0) {
-      orClauses.push({ entity: { in: ["CreditNote"] }, entityId: { in: creditNoteIds } });
+      orClauses.push({
+        entity: { in: ["CreditNote"] },
+        entityId: { in: creditNoteIds },
+      });
     }
     if (canReadPayment && paymentIds.size > 0) {
       orClauses.push({
@@ -823,27 +1018,43 @@ export class TimelineService {
         const details = parseDetailsJson(log.details);
         const relIds = Array.isArray(log.relatedEntities)
           ? (log.relatedEntities as Array<Record<string, unknown>>)
-              .filter((r) => normalizeEntityName(String(r.entityType ?? "")) === "SalesInvoice")
+              .filter(
+                (r) =>
+                  normalizeEntityName(String(r.entityType ?? "")) ===
+                  "SalesInvoice",
+              )
               .map((r) => String(r.entityId ?? ""))
           : [];
-        const detailInvId = typeof details.salesInvoiceId === "string" ? details.salesInvoiceId : null;
+        const detailInvId =
+          typeof details.salesInvoiceId === "string"
+            ? details.salesInvoiceId
+            : null;
         const allocArr = Array.isArray(details.allocations)
           ? (details.allocations as Array<Record<string, unknown>>).map((a) =>
               String(a.salesInvoiceId ?? ""),
             )
           : [];
-        const referencedInvoices = new Set([...relIds, ...allocArr, ...(detailInvId ? [detailInvId] : [])]);
+        const referencedInvoices = new Set([
+          ...relIds,
+          ...allocArr,
+          ...(detailInvId ? [detailInvId] : []),
+        ]);
 
         // If the log explicitly references invoices, require intersection with this order's invoices.
         // If it's a PAYMENT_BOUNCED/REVERSED or legacy log without invoice refs, check if payment is linked.
         const isAllocationEvent =
-          log.action === "PAYMENT_ALLOCATED" || log.action === "PAYMENT_ALLOCATION_REVERSED";
+          log.action === "PAYMENT_ALLOCATED" ||
+          log.action === "PAYMENT_ALLOCATION_REVERSED";
         if (isAllocationEvent && referencedInvoices.size > 0) {
-          const intersects = Array.from(referencedInvoices).some((id) => invoiceIdSet.has(id));
+          const intersects = Array.from(referencedInvoices).some((id) =>
+            invoiceIdSet.has(id),
+          );
           if (!intersects) continue;
         }
         if (log.action === "CREATE" && referencedInvoices.size > 0) {
-          const intersects = Array.from(referencedInvoices).some((id) => invoiceIdSet.has(id));
+          const intersects = Array.from(referencedInvoices).some((id) =>
+            invoiceIdSet.has(id),
+          );
           if (!intersects) continue;
         }
 
@@ -895,16 +1106,26 @@ export class TimelineService {
     labelMap: Map<string, string>,
   ) {
     if (!hasRbacPermission(user.role, "invoice", "read")) {
-      throw new AppError("Forbidden: Insufficient permissions to view invoice timeline", 403);
+      throw new AppError(
+        "Forbidden: Insufficient permissions to view invoice timeline",
+        403,
+      );
     }
 
     const invoice = await prisma.salesInvoice.findFirst({
       where: { id: invoiceId, organizationId },
       include: {
         customer: { select: { id: true, name: true } },
-        salesOrder: { select: { id: true, orderNumber: true, salesmanId: true } },
+        salesOrder: {
+          select: { id: true, orderNumber: true, salesmanId: true },
+        },
         creditNotes: {
-          select: { id: true, creditNoteNumber: true, totalAmount: true, postedAt: true },
+          select: {
+            id: true,
+            creditNoteNumber: true,
+            totalAmount: true,
+            postedAt: true,
+          },
         },
         dispatches: {
           select: { id: true, dispatchNumber: true, dispatchedAt: true },
@@ -915,7 +1136,12 @@ export class TimelineService {
             amount: true,
             allocatedAt: true,
             payment: {
-              select: { id: true, paymentNumber: true, paymentMode: true, status: true },
+              select: {
+                id: true,
+                paymentNumber: true,
+                paymentMode: true,
+                status: true,
+              },
             },
           },
         },
@@ -929,7 +1155,10 @@ export class TimelineService {
     labelMap.set(`SalesInvoice:${invoice.id}`, invoice.invoiceNumber);
     labelMap.set(`Customer:${invoice.customerId}`, invoice.customer.name);
     if (invoice.salesOrder) {
-      labelMap.set(`SalesOrder:${invoice.salesOrder.id}`, invoice.salesOrder.orderNumber);
+      labelMap.set(
+        `SalesOrder:${invoice.salesOrder.id}`,
+        invoice.salesOrder.orderNumber,
+      );
     }
     for (const cn of invoice.creditNotes) {
       labelMap.set(`CreditNote:${cn.id}`, cn.creditNoteNumber);
@@ -948,23 +1177,35 @@ export class TimelineService {
 
     const creditNoteIds = invoice.creditNotes.map((c) => c.id);
     const dispatchIds = invoice.dispatches.map((d) => d.id);
-    const paymentIds = Array.from(new Set(invoice.paymentAllocations.map((a) => a.payment.id)));
+    const paymentIds = Array.from(
+      new Set(invoice.paymentAllocations.map((a) => a.payment.id)),
+    );
 
-    const orClauses: Array<{ entity: { in: string[] }; entityId: { in: string[] } }> = [
+    const orClauses: Array<{
+      entity: { in: string[] };
+      entityId: { in: string[] };
+    }> = [
       { entity: { in: ["SalesInvoice"] }, entityId: { in: [invoice.id] } },
       ...(creditNoteIds.length > 0
         ? [{ entity: { in: ["CreditNote"] }, entityId: { in: creditNoteIds } }]
         : []),
-      ...(dispatchIds.length > 0 && hasRbacPermission(user.role, "order", "read")
+      ...(dispatchIds.length > 0 &&
+      hasRbacPermission(user.role, "order", "read")
         ? [{ entity: { in: ["Dispatch"] }, entityId: { in: dispatchIds } }]
         : []),
     ];
 
     if (canReadOrder && invoice.salesOrderId) {
-      orClauses.push({ entity: { in: ["SalesOrder"] }, entityId: { in: [invoice.salesOrderId] } });
+      orClauses.push({
+        entity: { in: ["SalesOrder"] },
+        entityId: { in: [invoice.salesOrderId] },
+      });
     }
     if (canReadPayment && paymentIds.length > 0) {
-      orClauses.push({ entity: { in: ["Payment", "payment"] }, entityId: { in: paymentIds } });
+      orClauses.push({
+        entity: { in: ["Payment", "payment"] },
+        entityId: { in: paymentIds },
+      });
     }
 
     const logs = await prisma.auditLog.findMany({
@@ -1008,18 +1249,30 @@ export class TimelineService {
         const details = parseDetailsJson(log.details);
         const relIds = Array.isArray(log.relatedEntities)
           ? (log.relatedEntities as Array<Record<string, unknown>>)
-              .filter((r) => normalizeEntityName(String(r.entityType ?? "")) === "SalesInvoice")
+              .filter(
+                (r) =>
+                  normalizeEntityName(String(r.entityType ?? "")) ===
+                  "SalesInvoice",
+              )
               .map((r) => String(r.entityId ?? ""))
           : [];
-        const detailInvId = typeof details.salesInvoiceId === "string" ? details.salesInvoiceId : null;
+        const detailInvId =
+          typeof details.salesInvoiceId === "string"
+            ? details.salesInvoiceId
+            : null;
         const allocArr = Array.isArray(details.allocations)
           ? (details.allocations as Array<Record<string, unknown>>).map((a) =>
               String(a.salesInvoiceId ?? ""),
             )
           : [];
-        const referencedInvoices = new Set([...relIds, ...allocArr, ...(detailInvId ? [detailInvId] : [])]);
+        const referencedInvoices = new Set([
+          ...relIds,
+          ...allocArr,
+          ...(detailInvId ? [detailInvId] : []),
+        ]);
         if (
-          (log.action === "PAYMENT_ALLOCATED" || log.action === "PAYMENT_ALLOCATION_REVERSED") &&
+          (log.action === "PAYMENT_ALLOCATED" ||
+            log.action === "PAYMENT_ALLOCATION_REVERSED") &&
           referencedInvoices.size > 0 &&
           !referencedInvoices.has(invoice.id)
         ) {
@@ -1074,7 +1327,10 @@ export class TimelineService {
     labelMap: Map<string, string>,
   ) {
     if (!hasRbacPermission(user.role, "payment", "read")) {
-      throw new AppError("Forbidden: Insufficient permissions to view payment timeline", 403);
+      throw new AppError(
+        "Forbidden: Insufficient permissions to view payment timeline",
+        403,
+      );
     }
 
     const payment = await prisma.payment.findFirst({
@@ -1106,7 +1362,10 @@ export class TimelineService {
     const creditNoteIds: string[] = [];
     for (const alloc of payment.allocations) {
       invoiceIds.push(alloc.salesInvoiceId);
-      labelMap.set(`SalesInvoice:${alloc.salesInvoiceId}`, alloc.salesInvoice.invoiceNumber);
+      labelMap.set(
+        `SalesInvoice:${alloc.salesInvoiceId}`,
+        alloc.salesInvoice.invoiceNumber,
+      );
       for (const cn of alloc.salesInvoice.creditNotes) {
         creditNoteIds.push(cn.id);
         labelMap.set(`CreditNote:${cn.id}`, cn.creditNoteNumber);
@@ -1114,14 +1373,26 @@ export class TimelineService {
     }
 
     const canReadInvoice = hasRbacPermission(user.role, "invoice", "read");
-    const orClauses: Array<{ entity: { in: string[] }; entityId: { in: string[] } }> = [
-      { entity: { in: ["Payment", "payment"] }, entityId: { in: [payment.id] } },
+    const orClauses: Array<{
+      entity: { in: string[] };
+      entityId: { in: string[] };
+    }> = [
+      {
+        entity: { in: ["Payment", "payment"] },
+        entityId: { in: [payment.id] },
+      },
     ];
     if (canReadInvoice && invoiceIds.length > 0) {
-      orClauses.push({ entity: { in: ["SalesInvoice"] }, entityId: { in: invoiceIds } });
+      orClauses.push({
+        entity: { in: ["SalesInvoice"] },
+        entityId: { in: invoiceIds },
+      });
     }
     if (canReadInvoice && creditNoteIds.length > 0) {
-      orClauses.push({ entity: { in: ["CreditNote"] }, entityId: { in: creditNoteIds } });
+      orClauses.push({
+        entity: { in: ["CreditNote"] },
+        entityId: { in: creditNoteIds },
+      });
     }
 
     const logs = await prisma.auditLog.findMany({
@@ -1189,7 +1460,10 @@ export class TimelineService {
     labelMap: Map<string, string>,
   ) {
     if (!hasRbacPermission(user.role, "customer", "read")) {
-      throw new AppError("Forbidden: Insufficient permissions to view customer timeline", 403);
+      throw new AppError(
+        "Forbidden: Insufficient permissions to view customer timeline",
+        403,
+      );
     }
 
     const customer = await prisma.customer.findFirst({
@@ -1246,7 +1520,12 @@ export class TimelineService {
       canReadPayment
         ? prisma.payment.findMany({
             where: { organizationId, customerId },
-            select: { id: true, paymentNumber: true, postedAt: true, amount: true },
+            select: {
+              id: true,
+              paymentNumber: true,
+              postedAt: true,
+              amount: true,
+            },
             orderBy: { postedAt: "desc" },
             take: 100,
           })
@@ -1256,29 +1535,45 @@ export class TimelineService {
     for (const o of orders) labelMap.set(`SalesOrder:${o.id}`, o.orderNumber);
     for (const i of invoices) {
       labelMap.set(`SalesInvoice:${i.id}`, i.invoiceNumber);
-      for (const cn of i.creditNotes) labelMap.set(`CreditNote:${cn.id}`, cn.creditNoteNumber);
+      for (const cn of i.creditNotes)
+        labelMap.set(`CreditNote:${cn.id}`, cn.creditNoteNumber);
     }
     for (const p of payments) labelMap.set(`Payment:${p.id}`, p.paymentNumber);
 
     const orderIds = orders.map((o) => o.id);
     const invoiceIds = invoices.map((i) => i.id);
-    const creditNoteIds = invoices.flatMap((i) => i.creditNotes.map((c) => c.id));
+    const creditNoteIds = invoices.flatMap((i) =>
+      i.creditNotes.map((c) => c.id),
+    );
     const paymentIds = payments.map((p) => p.id);
 
-    const orClauses: Array<{ entity: { in: string[] }; entityId: { in: string[] } }> = [
-      { entity: { in: ["Customer"] }, entityId: { in: [customer.id] } },
-    ];
+    const orClauses: Array<{
+      entity: { in: string[] };
+      entityId: { in: string[] };
+    }> = [{ entity: { in: ["Customer"] }, entityId: { in: [customer.id] } }];
     if (orderIds.length > 0) {
-      orClauses.push({ entity: { in: ["SalesOrder"] }, entityId: { in: orderIds } });
+      orClauses.push({
+        entity: { in: ["SalesOrder"] },
+        entityId: { in: orderIds },
+      });
     }
     if (invoiceIds.length > 0) {
-      orClauses.push({ entity: { in: ["SalesInvoice"] }, entityId: { in: invoiceIds } });
+      orClauses.push({
+        entity: { in: ["SalesInvoice"] },
+        entityId: { in: invoiceIds },
+      });
     }
     if (creditNoteIds.length > 0) {
-      orClauses.push({ entity: { in: ["CreditNote"] }, entityId: { in: creditNoteIds } });
+      orClauses.push({
+        entity: { in: ["CreditNote"] },
+        entityId: { in: creditNoteIds },
+      });
     }
     if (paymentIds.length > 0) {
-      orClauses.push({ entity: { in: ["Payment", "payment"] }, entityId: { in: paymentIds } });
+      orClauses.push({
+        entity: { in: ["Payment", "payment"] },
+        entityId: { in: paymentIds },
+      });
     }
 
     const logs = await prisma.auditLog.findMany({
@@ -1344,7 +1639,10 @@ export class TimelineService {
     labelMap: Map<string, string>,
   ) {
     if (!hasRbacPermission(user.role, "inventory", "read")) {
-      throw new AppError("Forbidden: Insufficient permissions to view product timeline", 403);
+      throw new AppError(
+        "Forbidden: Insufficient permissions to view product timeline",
+        403,
+      );
     }
 
     const product = await prisma.product.findFirst({
@@ -1422,24 +1720,41 @@ export class TimelineService {
         : Promise.resolve([]),
     ]);
 
-    const orderIds = Array.from(new Set(orderLines.map((l) => l.salesOrder.id)));
-    for (const l of orderLines) labelMap.set(`SalesOrder:${l.salesOrder.id}`, l.salesOrder.orderNumber);
+    const orderIds = Array.from(
+      new Set(orderLines.map((l) => l.salesOrder.id)),
+    );
+    for (const l of orderLines)
+      labelMap.set(`SalesOrder:${l.salesOrder.id}`, l.salesOrder.orderNumber);
 
-    const invoiceIds = Array.from(new Set(invoiceLines.map((l) => l.salesInvoice.id)));
+    const invoiceIds = Array.from(
+      new Set(invoiceLines.map((l) => l.salesInvoice.id)),
+    );
     for (const l of invoiceLines) {
-      labelMap.set(`SalesInvoice:${l.salesInvoice.id}`, l.salesInvoice.invoiceNumber);
+      labelMap.set(
+        `SalesInvoice:${l.salesInvoice.id}`,
+        l.salesInvoice.invoiceNumber,
+      );
     }
 
     const runIds = prodRuns.map((r) => r.id);
-    for (const r of prodRuns) labelMap.set(`ProductionRun:${r.id}`, r.runNumber);
+    for (const r of prodRuns)
+      labelMap.set(`ProductionRun:${r.id}`, r.runNumber);
 
-    const orClauses: Array<{ entity: { in: string[] }; entityId: { in: string[] } }> = [
+    const orClauses: Array<{
+      entity: { in: string[] };
+      entityId: { in: string[] };
+    }> = [
       { entity: { in: ["Product"] }, entityId: { in: [product.id] } },
       ...(variantIds.length > 0
         ? [{ entity: { in: ["ProductVariant"] }, entityId: { in: variantIds } }]
         : []),
       ...(priceLineIds.length > 0
-        ? [{ entity: { in: ["PriceListLine"] }, entityId: { in: priceLineIds } }]
+        ? [
+            {
+              entity: { in: ["PriceListLine"] },
+              entityId: { in: priceLineIds },
+            },
+          ]
         : []),
       ...(recipeIds.length > 0 && canReadProd
         ? [{ entity: { in: ["Recipe"] }, entityId: { in: recipeIds } }]
@@ -1543,7 +1858,10 @@ export class TimelineService {
     labelMap: Map<string, string>,
   ) {
     if (!hasRbacPermission(user.role, "production_run", "read")) {
-      throw new AppError("Forbidden: Insufficient permissions to view recipe timeline", 403);
+      throw new AppError(
+        "Forbidden: Insufficient permissions to view recipe timeline",
+        403,
+      );
     }
 
     const recipe = await prisma.recipe.findFirst({
@@ -1556,7 +1874,12 @@ export class TimelineService {
           },
         },
         productionRuns: {
-          select: { id: true, runNumber: true, recipeVersion: true, createdAt: true },
+          select: {
+            id: true,
+            runNumber: true,
+            recipeVersion: true,
+            createdAt: true,
+          },
           orderBy: { createdAt: "desc" },
           take: 100,
         },
@@ -1569,8 +1892,14 @@ export class TimelineService {
 
     const recipeLabel = `${recipe.name} (v${recipe.version})`;
     labelMap.set(`Recipe:${recipe.id}`, recipeLabel);
-    labelMap.set(`Product:${recipe.productVariant.product.id}`, recipe.productVariant.product.name);
-    labelMap.set(`ProductVariant:${recipe.productVariant.id}`, recipe.productVariant.sku);
+    labelMap.set(
+      `Product:${recipe.productVariant.product.id}`,
+      recipe.productVariant.product.name,
+    );
+    labelMap.set(
+      `ProductVariant:${recipe.productVariant.id}`,
+      recipe.productVariant.sku,
+    );
 
     const siblingRecipeIds = recipe.productVariant.recipes
       .filter((r) => r.id !== recipe.id)
@@ -1583,9 +1912,18 @@ export class TimelineService {
       return r.id;
     });
 
-    const orClauses: Array<{ entity: { in: string[] }; entityId: { in: string[] } }> = [
-      { entity: { in: ["Recipe"] }, entityId: { in: [recipe.id, ...siblingRecipeIds] } },
-      { entity: { in: ["Product"] }, entityId: { in: [recipe.productVariant.product.id] } },
+    const orClauses: Array<{
+      entity: { in: string[] };
+      entityId: { in: string[] };
+    }> = [
+      {
+        entity: { in: ["Recipe"] },
+        entityId: { in: [recipe.id, ...siblingRecipeIds] },
+      },
+      {
+        entity: { in: ["Product"] },
+        entityId: { in: [recipe.productVariant.product.id] },
+      },
       ...(runIds.length > 0
         ? [{ entity: { in: ["ProductionRun"] }, entityId: { in: runIds } }]
         : []),
@@ -1622,7 +1960,10 @@ export class TimelineService {
           relationshipLabel: `Production batch using v${recipe.version}`,
         });
       } else if (canonical === "Product") {
-        if (!["CREATE", "ARCHIVE", "RESTORE"].includes(log.action.toUpperCase())) continue;
+        if (
+          !["CREATE", "ARCHIVE", "RESTORE"].includes(log.action.toUpperCase())
+        )
+          continue;
         candidates.push({
           log,
           canonicalEntity: canonical,

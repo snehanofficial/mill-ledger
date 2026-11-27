@@ -56,7 +56,9 @@ export function DeviceOutboxSheet({
   } = useSyncManager(userId);
 
   const [isRefreshingCatalog, setIsRefreshingCatalog] = useState(false);
-  const [orderToDiscard, setOrderToDiscard] = useState<OfflineOrder | null>(null);
+  const [orderToDiscard, setOrderToDiscard] = useState<OfflineOrder | null>(
+    null,
+  );
 
   const handleRefreshCatalog = async () => {
     setIsRefreshingCatalog(true);
@@ -98,7 +100,8 @@ export function DeviceOutboxSheet({
               <div className="flex items-center gap-1.5">
                 {conflictCount > 0 && (
                   <Badge variant="danger" className="text-xs">
-                    {conflictCount} {t("conflict")}{conflictCount > 1 ? "s" : ""}
+                    {conflictCount} {t("conflict")}
+                    {conflictCount > 1 ? "s" : ""}
                   </Badge>
                 )}
                 <Badge
@@ -110,7 +113,9 @@ export function DeviceOutboxSheet({
               </div>
             </div>
             <SheetDescription className="text-xs text-muted-foreground">
-              {t("Local IndexedDB command queue awaiting server acceptance. No stock reserved until synced.")}
+              {t(
+                "Local IndexedDB command queue awaiting server acceptance. No stock reserved until synced.",
+              )}
             </SheetDescription>
           </SheetHeader>
 
@@ -158,7 +163,10 @@ export function DeviceOutboxSheet({
             (pwaStatus.canInstall || pwaStatus.isStorageSupported) && (
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 px-3 py-2 text-xs">
                 <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <HardDriveIcon className="size-3.5 shrink-0" aria-hidden="true" />
+                  <HardDriveIcon
+                    className="size-3.5 shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>
                     {pwaStatus.storagePersisted === true
                       ? t("Storage: Persistent")
@@ -174,7 +182,8 @@ export function DeviceOutboxSheet({
                       variant="outline"
                       size="sm"
                       onClick={async () => {
-                        const granted = await pwaStatus.requestStoragePersistence();
+                        const granted =
+                          await pwaStatus.requestStoragePersistence();
                         if (granted) {
                           toast.success("Persistent offline storage enabled.");
                         } else if (!pwaStatus.isStandalone) {
@@ -265,7 +274,10 @@ export function DeviceOutboxSheet({
                         variant="outline"
                         className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 flex items-center gap-1"
                       >
-                        <ClockIcon className="size-3 shrink-0" aria-hidden="true" />
+                        <ClockIcon
+                          className="size-3 shrink-0"
+                          aria-hidden="true"
+                        />
                         <span>{t("Waiting to sync")}</span>
                       </Badge>
                     )}
@@ -274,20 +286,40 @@ export function DeviceOutboxSheet({
                         variant="outline"
                         className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20 animate-pulse-finite flex items-center gap-1"
                       >
-                        <RefreshCwIcon className="size-3 shrink-0 animate-spin" aria-hidden="true" />
+                        <RefreshCwIcon
+                          className="size-3 shrink-0 animate-spin"
+                          aria-hidden="true"
+                        />
                         <span>{t("Syncing...")}</span>
                       </Badge>
                     )}
                     {ord.status === "synced" && (
-                      <Badge variant="success" className="flex items-center gap-1">
-                        <CheckCircle2Icon className="size-3 shrink-0" aria-hidden="true" />
-                        <span>{t("Synced")}: {ord.serverOrderNumber ?? t("Accepted")}</span>
+                      <Badge
+                        variant="success"
+                        className="flex items-center gap-1"
+                      >
+                        <CheckCircle2Icon
+                          className="size-3 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span>
+                          {t("Synced")}:{" "}
+                          {ord.serverOrderNumber ?? t("Accepted")}
+                        </span>
                       </Badge>
                     )}
                     {ord.status === "conflict" && (
-                      <Badge variant="danger" className="flex items-center gap-1">
-                        <AlertTriangleIcon className="size-3 shrink-0" aria-hidden="true" />
-                        <span>{t("Conflict")}: {ord.lastErrorCode ?? t("Rejected")}</span>
+                      <Badge
+                        variant="danger"
+                        className="flex items-center gap-1"
+                      >
+                        <AlertTriangleIcon
+                          className="size-3 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span>
+                          {t("Conflict")}: {ord.lastErrorCode ?? t("Rejected")}
+                        </span>
                       </Badge>
                     )}
                   </div>
@@ -308,7 +340,9 @@ export function DeviceOutboxSheet({
                       </div>
                     ))}
                     <div className="border-t pt-1 flex justify-between font-semibold text-foreground">
-                      <span>{t("Total")} ({totalItems} {t("term.packets", "pkts")})</span>
+                      <span>
+                        {t("Total")} ({totalItems} {t("term.packets", "pkts")})
+                      </span>
                       <span>{formatINR(totalQuoted)}</span>
                     </div>
                   </div>
@@ -347,17 +381,18 @@ export function DeviceOutboxSheet({
                         {t("action.sync_now", "Sync this")}
                       </Button>
                     )}
-                    {ord.status !== "syncing" && orderToDiscard?.id !== ord.id && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setOrderToDiscard(ord)}
-                        className="h-8 min-h-[32px] min-w-[32px] px-2.5 text-xs text-muted-foreground hover:text-destructive sm:h-7 sm:min-h-[28px] sm:min-w-[28px] sm:px-2 sm:text-2xs"
-                      >
-                        <Trash2Icon className="size-3.5 sm:size-3" />
-                        Discard
-                      </Button>
-                    )}
+                    {ord.status !== "syncing" &&
+                      orderToDiscard?.id !== ord.id && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setOrderToDiscard(ord)}
+                          className="h-8 min-h-[32px] min-w-[32px] px-2.5 text-xs text-muted-foreground hover:text-destructive sm:h-7 sm:min-h-[28px] sm:min-w-[28px] sm:px-2 sm:text-2xs"
+                        >
+                          <Trash2Icon className="size-3.5 sm:size-3" />
+                          Discard
+                        </Button>
+                      )}
                   </div>
 
                   {orderToDiscard?.id === ord.id && (
@@ -366,7 +401,8 @@ export function DeviceOutboxSheet({
                       className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-2.5 text-xs"
                     >
                       <p className="font-medium text-destructive">
-                        Discard this offline order? It exists only on this device and cannot be recovered.
+                        Discard this offline order? It exists only on this
+                        device and cannot be recovered.
                       </p>
                       <div className="flex items-center justify-end gap-2">
                         <Button
@@ -384,7 +420,9 @@ export function DeviceOutboxSheet({
                           size="sm"
                           onClick={() => {
                             removeOrder(ord.id);
-                            toast.info(`Offline order for ${ord.customerName} discarded.`);
+                            toast.info(
+                              `Offline order for ${ord.customerName} discarded.`,
+                            );
                             setOrderToDiscard(null);
                           }}
                           className="h-8 min-h-[32px] px-2.5 text-xs"

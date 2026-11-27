@@ -17,7 +17,11 @@ import {
   DataTableColumnHeader,
   type DataTableColumnMeta,
 } from "@/components/ui/data-table";
-import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
+import {
+  EmptyState,
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExportMenu } from "@/components/ui/export-menu";
@@ -32,7 +36,8 @@ import {
 interface SalesOrder {
   id: string;
   orderNumber: string;
-  status: "DRAFT" | "SUBMITTED" | "UNDER_REVIEW" | "APPROVED" | "REJECTED" | "CLOSED";
+  status:
+    "DRAFT" | "SUBMITTED" | "UNDER_REVIEW" | "APPROVED" | "REJECTED" | "CLOSED";
   fulfilmentStatus: "UNFULFILLED" | "PARTIALLY_FULFILLED" | "FULFILLED";
   deliveryState: string;
   totalAmount: number;
@@ -63,7 +68,10 @@ function getNextActionLabel(order: SalesOrder, role?: string): string {
     if (order.status === "SUBMITTED" || order.status === "UNDER_REVIEW") {
       return "Review order";
     }
-    if (order.status === "APPROVED" && (!order.invoices || order.invoices.length === 0)) {
+    if (
+      order.status === "APPROVED" &&
+      (!order.invoices || order.invoices.length === 0)
+    ) {
       return "Create invoice";
     }
     if (order.status === "APPROVED" && order.fulfilmentStatus !== "FULFILLED") {
@@ -85,7 +93,9 @@ export function OrdersPage() {
 
   const { pendingCount, conflictCount } = useSyncManager(user?.id);
   const [statusFilter, setStatusFilter] = useUrlState("status", "ALL");
-  const [searchQuery, setSearchQuery] = useUrlState("q", "", { debounceMs: 200 });
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 200,
+  });
   const { page, pageSize, offset, setPage, setPageSize, resetPage } =
     usePagination({ defaultPageSize: 20 });
 
@@ -96,7 +106,13 @@ export function OrdersPage() {
     orders: SalesOrder[];
     pagination: PaginationMeta;
   }>({
-    queryKey: ["sales-orders", page, pageSize, serverStatus, searchQuery.trim()],
+    queryKey: [
+      "sales-orders",
+      page,
+      pageSize,
+      serverStatus,
+      searchQuery.trim(),
+    ],
     queryFn: async () => {
       const params = new URLSearchParams({
         limit: String(pageSize),
@@ -204,7 +220,10 @@ export function OrdersPage() {
                     className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400"
                     title="Stock shortage"
                   >
-                    <AlertTriangleIcon className="size-3.5" aria-hidden="true" />
+                    <AlertTriangleIcon
+                      className="size-3.5"
+                      aria-hidden="true"
+                    />
                     Shortage
                   </span>
                 )}
@@ -342,7 +361,8 @@ export function OrdersPage() {
           Drafts: <strong className="tabular-nums">{draftOrders.length}</strong>
         </span>
         <span className="rounded-md border border-border bg-card px-2.5 py-1.5">
-          Awaiting review: <strong className="tabular-nums">{submittedCount}</strong>
+          Awaiting review:{" "}
+          <strong className="tabular-nums">{submittedCount}</strong>
         </span>
         <span className="rounded-md border border-border bg-card px-2.5 py-1.5">
           Approved: <strong className="tabular-nums">{approvedCount}</strong>
@@ -357,14 +377,20 @@ export function OrdersPage() {
         )}
         {(pendingCount > 0 || conflictCount > 0) && (
           <span className="rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-            Device outbox: {pendingCount} pending{conflictCount > 0 ? `, ${conflictCount} conflict` : ""} (use header Sync indicator)
+            Device outbox: {pendingCount} pending
+            {conflictCount > 0 ? `, ${conflictCount} conflict` : ""} (use header
+            Sync indicator)
           </span>
         )}
       </div>
 
       {/* Filter & Search Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by order status">
+        <div
+          className="flex flex-wrap items-center gap-1.5"
+          role="group"
+          aria-label="Filter by order status"
+        >
           {STATUS_FILTERS.map((f) => (
             <Button
               key={f.value}
@@ -437,9 +463,13 @@ export function OrdersPage() {
                   <span className="font-semibold text-foreground tabular-nums">
                     {order.orderNumber}
                   </span>
-                  <Badge variant="outline">{order.status.replaceAll("_", " ")}</Badge>
+                  <Badge variant="outline">
+                    {order.status.replaceAll("_", " ")}
+                  </Badge>
                 </div>
-                <div className="text-sm text-foreground">{order.customer.name}</div>
+                <div className="text-sm text-foreground">
+                  {order.customer.name}
+                </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>{order.fulfilmentStatus.replaceAll("_", " ")}</span>
                   <span className="font-semibold text-foreground tabular-nums">

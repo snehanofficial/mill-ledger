@@ -1,8 +1,5 @@
 import { Link } from "react-router-dom";
-import {
-  ArrowRightIcon,
-  CheckIcon,
-} from "lucide-react";
+import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { PublicLayout } from "./public-layout";
 import { useLanguage } from "@/lib/i18n";
@@ -111,7 +108,9 @@ export function LandingPage() {
                   })}
                 >
                   <span>
-                    {language === "ta" ? "நேரடி டெமோ கோருக" : "Request a Live Demo"}
+                    {language === "ta"
+                      ? "நேரடி டெமோ கோருக"
+                      : "Request a Live Demo"}
                   </span>
                   <ArrowRightIcon className="size-4" aria-hidden="true" />
                 </Link>
@@ -123,7 +122,9 @@ export function LandingPage() {
                     className: "min-h-[44px] px-6",
                   })}
                 >
-                  {language === "ta" ? "ERP வசதிகளைப் பார்க்க" : "Explore ERP Features"}
+                  {language === "ta"
+                    ? "ERP வசதிகளைப் பார்க்க"
+                    : "Explore ERP Features"}
                 </Link>
               </div>
             </div>
@@ -142,7 +143,9 @@ export function LandingPage() {
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4 border-b border-border pb-2.5">
-                    <dt className="text-muted-foreground">Production Costing</dt>
+                    <dt className="text-muted-foreground">
+                      Production Costing
+                    </dt>
                     <dd className="font-medium text-foreground text-right">
                       Versioned BOM, Yield &amp; Oil/Material Variance
                     </dd>
@@ -160,7 +163,9 @@ export function LandingPage() {
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">Access &amp; Languages</dt>
+                    <dt className="text-muted-foreground">
+                      Access &amp; Languages
+                    </dt>
                     <dd className="font-medium text-foreground text-right">
                       5 RBAC/ABAC Roles, English &amp; Tamil UI
                     </dd>
@@ -180,7 +185,8 @@ export function LandingPage() {
               One Connected Flow from Raw Material Intake to Audit
             </h2>
             <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
-              Every quantity, unit cost, tax amount, and stock balance traces back to a posted source document in PostgreSQL.
+              Every quantity, unit cost, tax amount, and stock balance traces
+              back to a posted source document in PostgreSQL.
             </p>
           </div>
 
@@ -223,7 +229,9 @@ export function LandingPage() {
               Built for Five Distinct Mill Roles
             </h2>
             <p className="mt-3 text-sm sm:text-base text-muted-foreground">
-              Permissions are enforced on the server through Role-Based and Attribute-Based Access Control (RBAC/ABAC), not merely hidden in the interface.
+              Permissions are enforced on the server through Role-Based and
+              Attribute-Based Access Control (RBAC/ABAC), not merely hidden in
+              the interface.
             </p>
           </div>
 
@@ -233,7 +241,9 @@ export function LandingPage() {
                 <tr>
                   <th className="px-5 py-3.5 font-semibold">Role</th>
                   <th className="px-5 py-3.5 font-semibold">Primary Device</th>
-                  <th className="px-5 py-3.5 font-semibold">Operational Scope</th>
+                  <th className="px-5 py-3.5 font-semibold">
+                    Operational Scope
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border text-xs sm:text-sm">
@@ -265,23 +275,38 @@ export function LandingPage() {
                 Moving Off Spreadsheets and Manual Stock Registers?
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                See how MillLedger prevents double-selling with ATP reservations, preserves immutable posted invoices with credit notes, and tracks multi-UOM conversions across kg, g, litres, packets, and cartons.
+                See how MillLedger prevents double-selling with ATP
+                reservations, preserves immutable posted invoices with credit
+                notes, and tracks multi-UOM conversions across kg, g, litres,
+                packets, and cartons.
               </p>
               <ul className="grid grid-cols-1 gap-2 pt-2 text-xs sm:grid-cols-2 text-foreground">
                 <li className="flex items-center gap-2">
-                  <CheckIcon className="size-4 text-primary shrink-0" aria-hidden="true" />
+                  <CheckIcon
+                    className="size-4 text-primary shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>No direct stock overwrites</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon className="size-4 text-primary shrink-0" aria-hidden="true" />
+                  <CheckIcon
+                    className="size-4 text-primary shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>Exact decimal arithmetic (paise precision)</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon className="size-4 text-primary shrink-0" aria-hidden="true" />
+                  <CheckIcon
+                    className="size-4 text-primary shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>CSV, XLSX, and PDF register exports</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon className="size-4 text-primary shrink-0" aria-hidden="true" />
+                  <CheckIcon
+                    className="size-4 text-primary shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>360-degree entity lifecycle audit timeline</span>
                 </li>
               </ul>

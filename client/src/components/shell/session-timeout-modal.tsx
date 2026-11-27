@@ -86,7 +86,8 @@ export function SessionTimeoutModal({
                 <strong className="font-mono font-bold text-foreground">
                   {formatDuration(secondsRemaining, "en")}
                 </strong>{" "}
-                due to inactivity. Current form inputs will be preserved as a draft.
+                due to inactivity. Current form inputs will be preserved as a
+                draft.
               </>
             )}
           </DialogDescription>
@@ -102,12 +103,7 @@ export function SessionTimeoutModal({
         </div>
 
         <DialogFooter className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onSignOut}
-          >
+          <Button type="button" variant="outline" size="sm" onClick={onSignOut}>
             {language === "ta" ? "இப்போது வெளியேறு" : "Log Out Now"}
           </Button>
           <Button

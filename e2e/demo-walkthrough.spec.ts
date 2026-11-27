@@ -33,7 +33,9 @@ test.describe("MillLedger Demo Foods — End-to-End UI & Export Verification", (
 
     // 2. Customers + search + detail timeline
     await page.goto("/customers");
-    await expect(page.getByText("Green Basket Retailers").first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Green Basket Retailers").first()).toBeVisible({
+      timeout: 10000,
+    });
     await expect(page.getByText("Sri Annapoorna Foods").first()).toBeVisible();
     await expect(page.getByText("Kaveri Wholesale Mart").first()).toBeVisible();
 
@@ -41,20 +43,28 @@ test.describe("MillLedger Demo Foods — End-to-End UI & Export Verification", (
     if (await custSearch.isVisible()) {
       await custSearch.fill("Green Basket");
       await page.waitForTimeout(400);
-      await expect(page.getByText("Green Basket Retailers").first()).toBeVisible();
+      await expect(
+        page.getByText("Green Basket Retailers").first(),
+      ).toBeVisible();
     }
 
-    await page.getByRole("button", { name: "View Green Basket Retailers" }).click();
+    await page
+      .getByRole("button", { name: "View Green Basket Retailers" })
+      .click();
     const custDetailLink = page.locator("a[href^='/customers/']").first();
     await custDetailLink.waitFor({ state: "visible", timeout: 10000 });
     await custDetailLink.click();
     await page.waitForURL(/\/customers\/.+/, { timeout: 10000 });
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText("DEMO-SO-001").first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("DEMO-SO-001").first()).toBeVisible({
+      timeout: 10000,
+    });
 
     // 3. Products + detail
     await page.goto("/products");
-    await expect(page.getByText("Sprouted Ragi Health Mix").first()).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByText("Sprouted Ragi Health Mix").first(),
+    ).toBeVisible({ timeout: 10000 });
     await expect(page.getByText("Millet Flour").first()).toBeVisible();
     await expect(page.getByText("Traditional Idli Mix").first()).toBeVisible();
     await expect(page.getByText("Multigrain Cookies").first()).toBeVisible();
@@ -66,16 +76,24 @@ test.describe("MillLedger Demo Foods — End-to-End UI & Export Verification", (
 
     // 4. Recipes + detail
     await page.goto("/production/recipes");
-    await expect(page.getByText(/Sprouted Ragi Health Mix 500g BOM/i).first()).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByText(/Sprouted Ragi Health Mix 500g BOM/i).first(),
+    ).toBeVisible({ timeout: 10000 });
     await page.locator("a[href^='/production/recipes/']").first().click();
     await page.waitForURL(/\/production\/recipes\/.+/, { timeout: 10000 });
     await page.waitForLoadState("networkidle");
 
     // 5. Orders + detail + unified timeline
     await page.goto("/orders");
-    const orderLink = page.locator("a[href^='/orders/']:visible", { hasText: "DEMO-SO-001" }).first();
+    const orderLink = page
+      .locator("a[href^='/orders/']:visible", { hasText: "DEMO-SO-001" })
+      .first();
     await expect(orderLink).toBeVisible({ timeout: 10000 });
-    await expect(page.locator("a[href^='/orders/']:visible", { hasText: "DEMO-SO-005" }).first()).toBeVisible();
+    await expect(
+      page
+        .locator("a[href^='/orders/']:visible", { hasText: "DEMO-SO-005" })
+        .first(),
+    ).toBeVisible();
     await orderLink.click();
     await page.waitForURL(/\/orders\/.+/, { timeout: 10000 });
     await page.waitForLoadState("networkidle");
@@ -84,7 +102,9 @@ test.describe("MillLedger Demo Foods — End-to-End UI & Export Verification", (
 
     // 6. Invoices + detail
     await page.goto("/invoices");
-    await expect(page.getByText("Green Basket Retailers").first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Green Basket Retailers").first()).toBeVisible({
+      timeout: 10000,
+    });
     await expect(page.getByText("Kaveri Wholesale Mart").first()).toBeVisible();
     await page.locator("a[href^='/invoices/']:visible").first().click();
     await page.waitForURL(/\/invoices\/.+/, { timeout: 10000 });
@@ -94,11 +114,16 @@ test.describe("MillLedger Demo Foods — End-to-End UI & Export Verification", (
 
     // 7. Payments + detail
     await page.goto("/payments");
-    await expect(page.locator("text=UPI-DEMO-2026-001 >> visible=true").first()).toBeVisible({ timeout: 10000 });
-    const payListRes = await page.request.get("http://127.0.0.1:4000/api/v1/payments");
+    await expect(
+      page.locator("text=UPI-DEMO-2026-001 >> visible=true").first(),
+    ).toBeVisible({ timeout: 10000 });
+    const payListRes = await page.request.get(
+      "http://127.0.0.1:4000/api/v1/payments",
+    );
     expect(payListRes.status()).toBe(200);
     const payListJson = await payListRes.json();
-    const firstPayId = payListJson.data?.[0]?.id ?? payListJson.payments?.[0]?.id;
+    const firstPayId =
+      payListJson.data?.[0]?.id ?? payListJson.payments?.[0]?.id;
     expect(firstPayId).toBeTruthy();
     await page.goto(`/payments/${firstPayId}`);
     await page.waitForLoadState("networkidle");
@@ -128,9 +153,13 @@ test.describe("MillLedger Demo Foods — End-to-End UI & Export Verification", (
     expect(csvText).toContain("Kaveri Wholesale Mart");
 
     if (orderId) {
-      const orderPdfRes = await page.request.get(`${apiBase}/orders/${orderId}/pdf`);
+      const orderPdfRes = await page.request.get(
+        `${apiBase}/orders/${orderId}/pdf`,
+      );
       expect(orderPdfRes.status()).toBe(200);
-      expect((await orderPdfRes.body()).subarray(0, 5).toString("utf8")).toBe("%PDF-");
+      expect((await orderPdfRes.body()).subarray(0, 5).toString("utf8")).toBe(
+        "%PDF-",
+      );
     }
 
     if (invoiceId) {
@@ -138,13 +167,19 @@ test.describe("MillLedger Demo Foods — End-to-End UI & Export Verification", (
         `http://127.0.0.1:4000/api/v1/finance/invoices/${invoiceId}/pdf`,
       );
       expect(invPdfRes.status()).toBe(200);
-      expect((await invPdfRes.body()).subarray(0, 5).toString("utf8")).toBe("%PDF-");
+      expect((await invPdfRes.body()).subarray(0, 5).toString("utf8")).toBe(
+        "%PDF-",
+      );
     }
 
     if (firstPayId) {
-      const payPdfRes = await page.request.get(`${apiBase}/payments/${firstPayId}/pdf`);
+      const payPdfRes = await page.request.get(
+        `${apiBase}/payments/${firstPayId}/pdf`,
+      );
       expect(payPdfRes.status()).toBe(200);
-      expect((await payPdfRes.body()).subarray(0, 5).toString("utf8")).toBe("%PDF-");
+      expect((await payPdfRes.body()).subarray(0, 5).toString("utf8")).toBe(
+        "%PDF-",
+      );
     }
 
     expect(pageErrors).toEqual([]);

@@ -65,7 +65,9 @@ export function addNotification(
 ): AppNotification {
   ensureInitialized();
   const newNotif: AppNotification = {
-    id: input.id || `notif_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    id:
+      input.id ||
+      `notif_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     title: input.title,
     description: input.description,
     type: input.type,

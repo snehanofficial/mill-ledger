@@ -39,7 +39,10 @@ export const postProductionRunSchema = z
       .number()
       .min(0, "Direct labor cost must be non-negative")
       .optional(),
-    utilityCost: z.number().min(0, "Utility cost must be non-negative").optional(),
+    utilityCost: z
+      .number()
+      .min(0, "Utility cost must be non-negative")
+      .optional(),
     notes: z.string().optional(),
     idempotencyKey: z.string().optional(),
     consumedMaterials: z

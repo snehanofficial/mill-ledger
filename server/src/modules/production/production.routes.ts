@@ -67,7 +67,9 @@ productionRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const recipeId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const recipeId = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       const recipe = await productionService.getRecipeById(orgId, recipeId);
       res.json({ recipe });
     } catch (err) {
@@ -278,7 +280,9 @@ productionRouter.post(
   authorize("inventory", "create"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Recipe ID is required", 400);
       const recipe = await productionService.createRecipeVersion(
         id,
@@ -299,7 +303,9 @@ productionRouter.patch(
   authorize("inventory", "update"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Recipe ID is required", 400);
       const isActive = Boolean(req.body?.isActive);
       const recipe = await productionService.archiveRecipe(

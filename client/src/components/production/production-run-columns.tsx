@@ -59,7 +59,9 @@ function RunActionsCell({
         consumedMaterials: (run.materials ?? []).map((m) => ({
           inventoryItemId: m.inventoryItemId,
           actualQty:
-            Number(m.actualQty) > 0 ? Number(m.actualQty) : Number(m.plannedQty),
+            Number(m.actualQty) > 0
+              ? Number(m.actualQty)
+              : Number(m.plannedQty),
           damagedQty: Number(m.damagedQty) || 0,
         })),
       });
@@ -497,15 +499,21 @@ export function useProductionRunBulkActions({
               }),
             ),
           );
-          const succeeded = results.filter((r) => r.status === "fulfilled").length;
+          const succeeded = results.filter(
+            (r) => r.status === "fulfilled",
+          ).length;
           const failed = results.length - succeeded;
           queryClient.invalidateQueries({ queryKey: ["production-runs"] });
           queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
           if (succeeded > 0) {
-            toast.success(`Posted ${succeeded} draft ${succeeded === 1 ? "run" : "runs"}.`);
+            toast.success(
+              `Posted ${succeeded} draft ${succeeded === 1 ? "run" : "runs"}.`,
+            );
           }
           if (failed > 0) {
-            toast.error(`Failed to post ${failed} draft ${failed === 1 ? "run" : "runs"}.`);
+            toast.error(
+              `Failed to post ${failed} draft ${failed === 1 ? "run" : "runs"}.`,
+            );
           }
           clearSelection();
         },
@@ -521,14 +529,20 @@ export function useProductionRunBulkActions({
           const results = await Promise.allSettled(
             drafts.map((run) => apiClient.delete(`/production-runs/${run.id}`)),
           );
-          const succeeded = results.filter((r) => r.status === "fulfilled").length;
+          const succeeded = results.filter(
+            (r) => r.status === "fulfilled",
+          ).length;
           const failed = results.length - succeeded;
           queryClient.invalidateQueries({ queryKey: ["production-runs"] });
           if (succeeded > 0) {
-            toast.success(`Deleted ${succeeded} draft ${succeeded === 1 ? "run" : "runs"}.`);
+            toast.success(
+              `Deleted ${succeeded} draft ${succeeded === 1 ? "run" : "runs"}.`,
+            );
           }
           if (failed > 0) {
-            toast.error(`Failed to delete ${failed} draft ${failed === 1 ? "run" : "runs"}.`);
+            toast.error(
+              `Failed to delete ${failed} draft ${failed === 1 ? "run" : "runs"}.`,
+            );
           }
           clearSelection();
         },

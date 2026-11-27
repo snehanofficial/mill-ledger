@@ -111,7 +111,11 @@ function ErrorState({
   const activeRequestId = requestId || extractRequestId(error);
 
   const handleCopy = () => {
-    if (activeRequestId && typeof navigator !== "undefined" && navigator.clipboard) {
+    if (
+      activeRequestId &&
+      typeof navigator !== "undefined" &&
+      navigator.clipboard
+    ) {
       navigator.clipboard.writeText(activeRequestId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -205,7 +209,11 @@ function EmptyState({
           <p className="text-xs text-muted-foreground">{description}</p>
         )}
       </div>
-      {action && <div className="flex flex-wrap items-center justify-center gap-2 pt-1">{action}</div>}
+      {action && (
+        <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+          {action}
+        </div>
+      )}
     </div>
   );
 }

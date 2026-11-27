@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWarehouses } from "@/hooks/use-warehouses";
@@ -119,8 +124,11 @@ export function PurchasesPage() {
   const canManageAdminPurchase = user?.role === "ADMIN";
   const [showModal, setShowModal] = useState(false);
   const [receiptStep, setReceiptStep] = useState<"form" | "confirm">("form");
-  const [detailReceipt, setDetailReceipt] = useState<PurchaseReceipt | null>(null);
-  const [debitNoteTarget, setDebitNoteTarget] = useState<PurchaseReceipt | null>(null);
+  const [detailReceipt, setDetailReceipt] = useState<PurchaseReceipt | null>(
+    null,
+  );
+  const [debitNoteTarget, setDebitNoteTarget] =
+    useState<PurchaseReceipt | null>(null);
   const [debitNoteReason, setDebitNoteReason] = useState("");
   const [debitNoteAmount, setDebitNoteAmount] = useState(0);
   const [reverseReason, setReverseReason] = useState("");
@@ -137,7 +145,8 @@ export function PurchasesPage() {
   const [receiptNumber, setReceiptNumber] = useState(
     () => `PR-2026-${Date.now().toString().slice(-4)}`,
   );
-  const [supplierInvoiceNumber, setSupplierInvoiceNumber] = useState("INV-MANDI-01");
+  const [supplierInvoiceNumber, setSupplierInvoiceNumber] =
+    useState("INV-MANDI-01");
   const [notes, setNotes] = useState("Direct mandi intake");
 
   const { data: warehousesData } = useWarehouses();
@@ -247,10 +256,7 @@ export function PurchasesPage() {
         ],
       };
 
-      const res = await apiClient.post(
-        "/inventory/purchase-receipts",
-        payload,
-      );
+      const res = await apiClient.post("/inventory/purchase-receipts", payload);
       return res.data;
     },
     onSuccess: () => {
@@ -279,7 +285,8 @@ export function PurchasesPage() {
           l.inventoryItem?.name?.toLowerCase().includes(q) ||
           l.inventoryItem?.sku?.toLowerCase().includes(q),
       ) ||
-      (r.supplierInvoiceNumber && r.supplierInvoiceNumber.toLowerCase().includes(q))
+      (r.supplierInvoiceNumber &&
+        r.supplierInvoiceNumber.toLowerCase().includes(q))
     );
   });
 
@@ -297,7 +304,9 @@ export function PurchasesPage() {
             </Badge>
           </div>
           <p className="max-w-[60ch] text-sm text-muted-foreground">
-            {t("Mandi raw material receipts, supplier invoicing, and automated weighted-average cost updating.")}
+            {t(
+              "Mandi raw material receipts, supplier invoicing, and automated weighted-average cost updating.",
+            )}
           </p>
         </div>
 
@@ -374,9 +383,14 @@ export function PurchasesPage() {
         ) : isError ? (
           <div className="p-4">
             <ErrorState
-              title={t("Failed to load purchase receipts", "Failed to load purchase receipts")}
+              title={t(
+                "Failed to load purchase receipts",
+                "Failed to load purchase receipts",
+              )}
               description={
-                error instanceof Error ? error.message : "Failed to load purchase receipts. Please verify network connection."
+                error instanceof Error
+                  ? error.message
+                  : "Failed to load purchase receipts. Please verify network connection."
               }
               error={error}
               onRetry={() => refetch()}
@@ -430,7 +444,10 @@ export function PurchasesPage() {
                     accessorKey: "receiptNumber",
                     enableHiding: false,
                     header: ({ column }) => (
-                      <DataTableColumnHeader column={column} title={t("Receipt #")} />
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Receipt #")}
+                      />
                     ),
                     cell: ({ row }) => (
                       <Link
@@ -440,13 +457,18 @@ export function PurchasesPage() {
                         {row.original.receiptNumber}
                       </Link>
                     ),
-                    meta: { label: "Receipt #" } satisfies DataTableColumnMeta<PurchaseReceipt>,
+                    meta: {
+                      label: "Receipt #",
+                    } satisfies DataTableColumnMeta<PurchaseReceipt>,
                   },
                   {
                     id: "postedAt",
                     accessorFn: (row) => new Date(row.postedAt).getTime() || 0,
                     header: ({ column }) => (
-                      <DataTableColumnHeader column={column} title={t("Date")} />
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Date")}
+                      />
                     ),
                     cell: ({ row }) => (
                       <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">
@@ -462,34 +484,49 @@ export function PurchasesPage() {
                     id: "supplier",
                     accessorFn: (row) => row.supplier.name,
                     header: ({ column }) => (
-                      <DataTableColumnHeader column={column} title={t("Supplier")} />
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Supplier")}
+                      />
                     ),
                     cell: ({ row }) => (
                       <span className="font-medium text-sm min-w-[140px] block">
                         {row.original.supplier.name}
                       </span>
                     ),
-                    meta: { label: "Supplier" } satisfies DataTableColumnMeta<PurchaseReceipt>,
+                    meta: {
+                      label: "Supplier",
+                    } satisfies DataTableColumnMeta<PurchaseReceipt>,
                   },
                   {
                     id: "item",
                     accessorFn: (row) =>
                       row.lines[0]?.inventoryItem.name || "Multiple items",
                     header: ({ column }) => (
-                      <DataTableColumnHeader column={column} title={t("Item")} />
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Item")}
+                      />
                     ),
                     cell: ({ row }) => (
                       <span className="text-xs">
-                        {row.original.lines[0]?.inventoryItem.name || "Multiple items"}
+                        {row.original.lines[0]?.inventoryItem.name ||
+                          "Multiple items"}
                       </span>
                     ),
-                    meta: { label: "Item" } satisfies DataTableColumnMeta<PurchaseReceipt>,
+                    meta: {
+                      label: "Item",
+                    } satisfies DataTableColumnMeta<PurchaseReceipt>,
                   },
                   {
                     id: "quantity",
                     accessorFn: (row) => Number(row.lines[0]?.quantity || 0),
                     header: ({ column }) => (
-                      <DataTableColumnHeader column={column} title={t("Quantity")} align="right" />
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Quantity")}
+                        align="right"
+                      />
                     ),
                     cell: ({ row }) => {
                       const firstLine = row.original.lines[0];
@@ -510,7 +547,11 @@ export function PurchasesPage() {
                     id: "unitRate",
                     accessorFn: (row) => Number(row.lines[0]?.unitPrice || 0),
                     header: ({ column }) => (
-                      <DataTableColumnHeader column={column} title={t("Unit Rate")} align="right" />
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Unit Rate")}
+                        align="right"
+                      />
                     ),
                     cell: ({ row }) => (
                       <span className="font-mono text-xs tabular-nums whitespace-nowrap">
@@ -526,9 +567,16 @@ export function PurchasesPage() {
                   {
                     id: "totalAmount",
                     accessorFn: (row) =>
-                      row.lines.reduce((sum, l) => sum + Number(l.totalPrice), 0),
+                      row.lines.reduce(
+                        (sum, l) => sum + Number(l.totalPrice),
+                        0,
+                      ),
                     header: ({ column }) => (
-                      <DataTableColumnHeader column={column} title={t("Total Amount")} align="right" />
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Total Amount")}
+                        align="right"
+                      />
                     ),
                     cell: ({ row }) => {
                       const totalAmount = row.original.lines.reduce(
@@ -545,23 +593,42 @@ export function PurchasesPage() {
                       label: "Total Amount",
                       align: "right",
                       exportValue: (r) =>
-                        r.lines.reduce((sum, l) => sum + Number(l.totalPrice), 0),
+                        r.lines.reduce(
+                          (sum, l) => sum + Number(l.totalPrice),
+                          0,
+                        ),
                     } satisfies DataTableColumnMeta<PurchaseReceipt>,
                   },
                   {
                     accessorKey: "status",
                     header: ({ column }) => (
-                      <DataTableColumnHeader column={column} title={t("Status")} align="center" />
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Status")}
+                        align="center"
+                      />
                     ),
                     cell: ({ row }) =>
                       row.original.status === "REVERSED" ? (
-                        <Badge variant="danger" className="text-[10px] gap-1 whitespace-nowrap">
-                          <RotateCcwIcon className="size-2.5" aria-hidden="true" />
+                        <Badge
+                          variant="danger"
+                          className="text-[10px] gap-1 whitespace-nowrap"
+                        >
+                          <RotateCcwIcon
+                            className="size-2.5"
+                            aria-hidden="true"
+                          />
                           Reversed
                         </Badge>
                       ) : (
-                        <Badge variant="success" className="text-[10px] gap-1 whitespace-nowrap">
-                          <CheckCircle2Icon className="size-2.5" aria-hidden="true" />
+                        <Badge
+                          variant="success"
+                          className="text-[10px] gap-1 whitespace-nowrap"
+                        >
+                          <CheckCircle2Icon
+                            className="size-2.5"
+                            aria-hidden="true"
+                          />
                           Posted
                         </Badge>
                       ),
@@ -592,21 +659,25 @@ export function PurchasesPage() {
                             <EyeIcon className="size-3" aria-hidden="true" />
                             View
                           </Button>
-                          {canManageAdminPurchase && rec.status !== "REVERSED" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setDebitNoteTarget(rec);
-                                setDebitNoteReason("");
-                                setDebitNoteAmount(totalAmount);
-                              }}
-                              className="h-7 px-2 text-xs gap-1"
-                            >
-                              <FileWarningIcon className="size-3" aria-hidden="true" />
-                              Debit Note
-                            </Button>
-                          )}
+                          {canManageAdminPurchase &&
+                            rec.status !== "REVERSED" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setDebitNoteTarget(rec);
+                                  setDebitNoteReason("");
+                                  setDebitNoteAmount(totalAmount);
+                                }}
+                                className="h-7 px-2 text-xs gap-1"
+                              >
+                                <FileWarningIcon
+                                  className="size-3"
+                                  aria-hidden="true"
+                                />
+                                Debit Note
+                              </Button>
+                            )}
                         </div>
                       );
                     },
@@ -705,10 +776,19 @@ export function PurchasesPage() {
       >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className={receiptStep === "confirm" ? "flex items-center gap-2" : undefined}>
+            <DialogTitle
+              className={
+                receiptStep === "confirm"
+                  ? "flex items-center gap-2"
+                  : undefined
+              }
+            >
               {receiptStep === "confirm" ? (
                 <>
-                  <TruckIcon className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+                  <TruckIcon
+                    className="h-5 w-5 text-primary shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>Confirm Purchase Receipt Posting</span>
                 </>
               ) : (
@@ -724,295 +804,319 @@ export function PurchasesPage() {
 
           {receiptStep === "form" ? (
             <>
-
-          <div className="mt-2 flex flex-col gap-4">
-              {/* Supplier Selection */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                  <Label
-                    htmlFor="purchase-supplier-select"
-                    className="text-xs font-semibold text-muted-foreground"
+              <div className="mt-2 flex flex-col gap-4">
+                {/* Supplier Selection */}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label
+                      htmlFor="purchase-supplier-select"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
+                      Supplier / Mandi Vendor
+                    </Label>
+                    <Link
+                      to="/suppliers"
+                      className="text-xs text-primary hover:underline font-medium"
+                    >
+                      + Manage Suppliers
+                    </Link>
+                  </div>
+                  <Select
+                    value={activeSupplier?.id || undefined}
+                    onValueChange={setSelectedSupplierId}
                   >
-                    Supplier / Mandi Vendor
-                  </Label>
-                  <Link
-                    to="/suppliers"
-                    className="text-xs text-primary hover:underline font-medium"
-                  >
-                    + Manage Suppliers
-                  </Link>
+                    <SelectTrigger
+                      id="purchase-supplier-select"
+                      className="font-medium"
+                    >
+                      <SelectValue placeholder="Select supplier" />
+                    </SelectTrigger>
+                    <SelectContent
+                      searchable
+                      searchPlaceholder="Search suppliers..."
+                      emptyMessage="No suppliers available."
+                      emptyAction={
+                        canManageAdminPurchase ? (
+                          <Link
+                            to="/suppliers"
+                            className="text-xs font-medium text-primary hover:underline"
+                          >
+                            + Add Supplier
+                          </Link>
+                        ) : undefined
+                      }
+                    >
+                      {suppliers.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name} ({s.code})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Select
-                  value={activeSupplier?.id || undefined}
-                  onValueChange={setSelectedSupplierId}
-                >
-                  <SelectTrigger id="purchase-supplier-select" className="font-medium">
-                    <SelectValue placeholder="Select supplier" />
-                  </SelectTrigger>
-                  <SelectContent
-                    searchable
-                    searchPlaceholder="Search suppliers..."
-                    emptyMessage="No suppliers available."
-                    emptyAction={
-                      canManageAdminPurchase ? (
-                        <Link
-                          to="/suppliers"
-                          className="text-xs font-medium text-primary hover:underline"
-                        >
-                          + Add Supplier
-                        </Link>
-                      ) : undefined
-                    }
-                  >
-                    {suppliers.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name} ({s.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
-              {/* Warehouse selection */}
-              <div className="flex flex-col gap-1.5">
-                <Label
-                  htmlFor="purchase-warehouse-select"
-                  className="text-xs font-semibold text-muted-foreground"
-                >
-                  Receiving Warehouse
-                </Label>
-                <Select
-                  value={activeWarehouse?.id || undefined}
-                  onValueChange={setSelectedWarehouseId}
-                >
-                  <SelectTrigger id="purchase-warehouse-select">
-                    <SelectValue placeholder="Select warehouse" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {warehouses.map((w) => (
-                      <SelectItem key={w.id} value={w.id}>
-                        {w.code} · {w.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Receipt Number & Invoice */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Warehouse selection */}
                 <div className="flex flex-col gap-1.5">
                   <Label
-                    htmlFor="purchase-receipt-number-input"
+                    htmlFor="purchase-warehouse-select"
                     className="text-xs font-semibold text-muted-foreground"
                   >
-                    Receipt #
+                    Receiving Warehouse
+                  </Label>
+                  <Select
+                    value={activeWarehouse?.id || undefined}
+                    onValueChange={setSelectedWarehouseId}
+                  >
+                    <SelectTrigger id="purchase-warehouse-select">
+                      <SelectValue placeholder="Select warehouse" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {warehouses.map((w) => (
+                        <SelectItem key={w.id} value={w.id}>
+                          {w.code} · {w.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Receipt Number & Invoice */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <Label
+                      htmlFor="purchase-receipt-number-input"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
+                      Receipt #
+                    </Label>
+                    <Input
+                      id="purchase-receipt-number-input"
+                      type="text"
+                      value={receiptNumber}
+                      onChange={(e) => setReceiptNumber(e.target.value)}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label
+                      htmlFor="purchase-supplier-invoice-input"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
+                      Supplier Invoice #
+                    </Label>
+                    <Input
+                      id="purchase-supplier-invoice-input"
+                      type="text"
+                      value={supplierInvoiceNumber}
+                      onChange={(e) => setSupplierInvoiceNumber(e.target.value)}
+                      className="font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Item selection */}
+                <div className="flex flex-col gap-1.5">
+                  <Label
+                    htmlFor="purchase-item-select"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
+                    Raw Material Item
+                  </Label>
+                  <Select
+                    value={activeItem?.id || undefined}
+                    onValueChange={setSelectedItemId}
+                  >
+                    <SelectTrigger
+                      id="purchase-item-select"
+                      className="font-medium"
+                    >
+                      <SelectValue placeholder="Select raw material or packaging item" />
+                    </SelectTrigger>
+                    <SelectContent
+                      searchable
+                      searchPlaceholder="Search raw materials..."
+                      emptyMessage="No raw material items available."
+                      emptyAction={
+                        canManageAdminPurchase ? (
+                          <Link
+                            to="/stock"
+                            className="text-xs font-medium text-primary hover:underline"
+                          >
+                            + Add Item in Stock
+                          </Link>
+                        ) : undefined
+                      }
+                    >
+                      {rawItems.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name} ({item.sku}) ·{" "}
+                          {item.baseUom?.symbol || "units"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Quantity and Rate */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <Label
+                      htmlFor="purchase-quantity-input"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
+                      Quantity received
+                    </Label>
+                    <Input
+                      id="purchase-quantity-input"
+                      type="number"
+                      step="1"
+                      min="1"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Number(e.target.value))}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label
+                      htmlFor="purchase-unit-price-input"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
+                      Unit Purchase Rate (₹)
+                    </Label>
+                    <Input
+                      id="purchase-unit-price-input"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={unitPrice}
+                      onChange={(e) => setUnitPrice(Number(e.target.value))}
+                      className="font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Calculated Line Total */}
+                <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Total Payable:
+                  </span>
+                  <span className="text-sm font-bold text-foreground font-mono tabular-nums">
+                    {formatINR(lineTotal)}
+                  </span>
+                </div>
+
+                {/* Notes */}
+                <div className="flex flex-col gap-1.5">
+                  <Label
+                    htmlFor="purchase-notes-input"
+                    className="text-xs font-semibold text-muted-foreground"
+                  >
+                    Notes / Vehicle Details
                   </Label>
                   <Input
-                    id="purchase-receipt-number-input"
+                    id="purchase-notes-input"
                     type="text"
-                    value={receiptNumber}
-                    onChange={(e) => setReceiptNumber(e.target.value)}
-                    className="font-mono"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor="purchase-supplier-invoice-input"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Supplier Invoice #
-                  </Label>
-                  <Input
-                    id="purchase-supplier-invoice-input"
-                    type="text"
-                    value={supplierInvoiceNumber}
-                    onChange={(e) => setSupplierInvoiceNumber(e.target.value)}
-                    className="font-mono"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="e.g. Mandi Lot #481, Truck TN-38-AX-1029"
                   />
                 </div>
               </div>
 
-              {/* Item selection */}
-              <div className="flex flex-col gap-1.5">
-                <Label
-                  htmlFor="purchase-item-select"
-                  className="text-xs font-semibold text-muted-foreground"
+              <DialogFooter className="mt-6 border-t border-border pt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowModal(false)}
+                  disabled={createReceiptMutation.isPending}
                 >
-                  Raw Material Item
-                </Label>
-                <Select
-                  value={activeItem?.id || undefined}
-                  onValueChange={setSelectedItemId}
-                >
-                  <SelectTrigger id="purchase-item-select" className="font-medium">
-                    <SelectValue placeholder="Select raw material or packaging item" />
-                  </SelectTrigger>
-                  <SelectContent
-                    searchable
-                    searchPlaceholder="Search raw materials..."
-                    emptyMessage="No raw material items available."
-                    emptyAction={
-                      canManageAdminPurchase ? (
-                        <Link
-                          to="/stock"
-                          className="text-xs font-medium text-primary hover:underline"
-                        >
-                          + Add Item in Stock
-                        </Link>
-                      ) : undefined
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (!activeSupplier) {
+                      toast.error("Please select a supplier");
+                      return;
                     }
-                  >
-                    {rawItems.map((item) => (
-                      <SelectItem key={item.id} value={item.id}>
-                        {item.name} ({item.sku}) · {item.baseUom?.symbol || "units"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Quantity and Rate */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor="purchase-quantity-input"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Quantity received
-                  </Label>
-                  <Input
-                    id="purchase-quantity-input"
-                    type="number"
-                    step="1"
-                    min="1"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                    className="font-mono"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label
-                    htmlFor="purchase-unit-price-input"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Unit Purchase Rate (₹)
-                  </Label>
-                  <Input
-                    id="purchase-unit-price-input"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={unitPrice}
-                    onChange={(e) => setUnitPrice(Number(e.target.value))}
-                    className="font-mono"
-                  />
-                </div>
-              </div>
-
-              {/* Calculated Line Total */}
-              <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                <span className="text-xs font-medium text-muted-foreground">
-                  Total Payable:
-                </span>
-                <span className="text-sm font-bold text-foreground font-mono tabular-nums">
-                  {formatINR(lineTotal)}
-                </span>
-              </div>
-
-              {/* Notes */}
-              <div className="flex flex-col gap-1.5">
-                <Label
-                  htmlFor="purchase-notes-input"
-                  className="text-xs font-semibold text-muted-foreground"
+                    if (!activeItem) {
+                      toast.error("Please select an inventory item");
+                      return;
+                    }
+                    if (!Number(quantity) || Number(quantity) <= 0) {
+                      toast.error(
+                        "Please enter a valid quantity greater than zero",
+                      );
+                      return;
+                    }
+                    if (Number(unitPrice) < 0) {
+                      toast.error("Unit price cannot be negative");
+                      return;
+                    }
+                    setReceiptStep("confirm");
+                  }}
+                  disabled={createReceiptMutation.isPending}
+                  className="gap-2"
                 >
-                  Notes / Vehicle Details
-                </Label>
-                <Input
-                  id="purchase-notes-input"
-                  type="text"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="e.g. Mandi Lot #481, Truck TN-38-AX-1029"
-                />
-              </div>
-            </div>
-
-            <DialogFooter className="mt-6 border-t border-border pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowModal(false)}
-                disabled={createReceiptMutation.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  if (!activeSupplier) {
-                    toast.error("Please select a supplier");
-                    return;
-                  }
-                  if (!activeItem) {
-                    toast.error("Please select an inventory item");
-                    return;
-                  }
-                  if (!Number(quantity) || Number(quantity) <= 0) {
-                    toast.error("Please enter a valid quantity greater than zero");
-                    return;
-                  }
-                  if (Number(unitPrice) < 0) {
-                    toast.error("Unit price cannot be negative");
-                    return;
-                  }
-                  setReceiptStep("confirm");
-                }}
-                disabled={createReceiptMutation.isPending}
-                className="gap-2"
-              >
-                <CheckCircle2Icon className="h-4 w-4" />
-                Review & confirm
-              </Button>
-            </DialogFooter>
+                  <CheckCircle2Icon className="h-4 w-4" />
+                  Review & confirm
+                </Button>
+              </DialogFooter>
             </>
           ) : activeSupplier && activeItem ? (
             <>
               <div className="mt-2 flex flex-col gap-3">
                 <p className="text-sm text-foreground">
-                  You are about to record an inward goods receipt and book supplier accounts payable.
+                  You are about to record an inward goods receipt and book
+                  supplier accounts payable.
                 </p>
                 <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1.5">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Receipt Number:</span>
-                    <span className="font-mono font-medium text-foreground">{receiptNumber}</span>
+                    <span className="text-muted-foreground">
+                      Receipt Number:
+                    </span>
+                    <span className="font-mono font-medium text-foreground">
+                      {receiptNumber}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Supplier:</span>
-                    <span className="font-semibold text-foreground">{activeSupplier.name}</span>
+                    <span className="font-semibold text-foreground">
+                      {activeSupplier.name}
+                    </span>
                   </div>
                   {supplierInvoiceNumber && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Supplier Inv #:</span>
+                      <span className="text-muted-foreground">
+                        Supplier Inv #:
+                      </span>
                       <span className="font-mono">{supplierInvoiceNumber}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Inward Item:</span>
-                    <span className="font-medium text-foreground">{activeItem.name} ({activeItem.sku})</span>
+                    <span className="font-medium text-foreground">
+                      {activeItem.name} ({activeItem.sku})
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Quantity:</span>
                     <span className="font-mono font-medium">
-                      {formatQuantity(Number(quantity))} {activeItem.baseUom?.code || "KG"}
+                      {formatQuantity(Number(quantity))}{" "}
+                      {activeItem.baseUom?.code || "KG"}
                     </span>
                   </div>
                   <div className="flex justify-between border-t border-border/50 pt-1 font-semibold">
                     <span className="text-foreground">Total Inward Value:</span>
-                    <span className="font-mono text-foreground">{formatINR(lineTotal)}</span>
+                    <span className="font-mono text-foreground">
+                      {formatINR(lineTotal)}
+                    </span>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Legal & financial warning: This transaction increases physical inventory balances and generates an accounts payable liability in the general ledger. Posted receipts cannot be deleted.
+                  Legal & financial warning: This transaction increases physical
+                  inventory balances and generates an accounts payable liability
+                  in the general ledger. Posted receipts cannot be deleted.
                 </p>
               </div>
               <DialogFooter className="mt-6 border-t border-border pt-4">
@@ -1031,7 +1135,9 @@ export function PurchasesPage() {
                   disabled={createReceiptMutation.isPending}
                   onClick={() => createReceiptMutation.mutate()}
                 >
-                  {createReceiptMutation.isPending ? "Posting..." : "Confirm & Post Inward Goods"}
+                  {createReceiptMutation.isPending
+                    ? "Posting..."
+                    : "Confirm & Post Inward Goods"}
                 </Button>
               </DialogFooter>
             </>
@@ -1052,15 +1158,25 @@ export function PurchasesPage() {
         {detailReceipt && (
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Purchase Receipt {detailReceipt.receiptNumber}</DialogTitle>
+              <DialogTitle>
+                Purchase Receipt {detailReceipt.receiptNumber}
+              </DialogTitle>
               <DialogDescription>
-                {detailReceipt.supplier.name} ({detailReceipt.supplier.code}) · {formatDate(detailReceipt.postedAt)}
+                {detailReceipt.supplier.name} ({detailReceipt.supplier.code}) ·{" "}
+                {formatDate(detailReceipt.postedAt)}
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-3 text-xs">
               <div className="rounded-lg bg-muted/40 p-3 flex flex-col gap-1">
-                <div>Warehouse: <strong>{detailReceipt.warehouse.name}</strong></div>
-                <div>Supplier Invoice: <strong className="font-mono">{detailReceipt.supplierInvoiceNumber || "—"}</strong></div>
+                <div>
+                  Warehouse: <strong>{detailReceipt.warehouse.name}</strong>
+                </div>
+                <div>
+                  Supplier Invoice:{" "}
+                  <strong className="font-mono">
+                    {detailReceipt.supplierInvoiceNumber || "—"}
+                  </strong>
+                </div>
                 <div>Notes: {detailReceipt.notes || "—"}</div>
               </div>
               <Table>
@@ -1076,55 +1192,75 @@ export function PurchasesPage() {
                   {detailReceipt.lines.map((l) => (
                     <TableRow key={l.id}>
                       <TableCell>{l.inventoryItem.name}</TableCell>
-                      <TableCell className="text-right font-mono">{Number(l.quantity)} {l.inventoryItem.baseUom?.symbol}</TableCell>
-                      <TableCell className="text-right">{formatINR(l.unitPrice)}</TableCell>
-                      <TableCell className="text-right font-semibold">{formatINR(l.totalPrice)}</TableCell>
+                      <TableCell className="text-right font-mono">
+                        {Number(l.quantity)} {l.inventoryItem.baseUom?.symbol}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatINR(l.unitPrice)}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {formatINR(l.totalPrice)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-              {canManageAdminPurchase && detailReceipt.status !== "REVERSED" && (
-                <div className="flex flex-col gap-1.5 border-t pt-3">
-                  <Label htmlFor="pr-reverse-reason" className="text-xs">
-                    Reversal Reason (optional, reverses stock if unconsumed)
-                  </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="pr-reverse-reason"
-                      value={reverseReason}
-                      onChange={(e) => setReverseReason(e.target.value)}
-                      placeholder="e.g. Duplicate receipt entry"
-                      className="h-8 text-xs"
-                    />
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      disabled={!reverseReason.trim()}
-                      onClick={async () => {
-                        try {
-                          await apiClient.post(
-                            `/inventory/purchase-receipts/${detailReceipt.id}/reverse`,
-                            { reason: reverseReason.trim() },
-                          );
-                          queryClient.invalidateQueries({ queryKey: ["purchase-receipts"] });
-                          queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
-                          setDetailReceipt(null);
-                          toast.success("Purchase receipt reversed.");
-                        } catch (err) {
-                          toast.error(extractErrorMessage(err, "Failed to reverse receipt"));
-                        }
-                      }}
-                      className="h-8 gap-1 text-xs shrink-0"
-                    >
-                      <RotateCcwIcon className="size-3.5" />
-                      Reverse
-                    </Button>
+              {canManageAdminPurchase &&
+                detailReceipt.status !== "REVERSED" && (
+                  <div className="flex flex-col gap-1.5 border-t pt-3">
+                    <Label htmlFor="pr-reverse-reason" className="text-xs">
+                      Reversal Reason (optional, reverses stock if unconsumed)
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="pr-reverse-reason"
+                        value={reverseReason}
+                        onChange={(e) => setReverseReason(e.target.value)}
+                        placeholder="e.g. Duplicate receipt entry"
+                        className="h-8 text-xs"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        disabled={!reverseReason.trim()}
+                        onClick={async () => {
+                          try {
+                            await apiClient.post(
+                              `/inventory/purchase-receipts/${detailReceipt.id}/reverse`,
+                              { reason: reverseReason.trim() },
+                            );
+                            queryClient.invalidateQueries({
+                              queryKey: ["purchase-receipts"],
+                            });
+                            queryClient.invalidateQueries({
+                              queryKey: ["inventory-balances"],
+                            });
+                            setDetailReceipt(null);
+                            toast.success("Purchase receipt reversed.");
+                          } catch (err) {
+                            toast.error(
+                              extractErrorMessage(
+                                err,
+                                "Failed to reverse receipt",
+                              ),
+                            );
+                          }
+                        }}
+                        className="h-8 gap-1 text-xs shrink-0"
+                      >
+                        <RotateCcwIcon className="size-3.5" />
+                        Reverse
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
             <DialogFooter className="border-t pt-4">
-              <Button variant="outline" size="sm" onClick={() => setDetailReceipt(null)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDetailReceipt(null)}
+              >
                 Close
               </Button>
             </DialogFooter>
@@ -1144,12 +1280,15 @@ export function PurchasesPage() {
             <DialogHeader>
               <DialogTitle>Issue Supplier Debit Note</DialogTitle>
               <DialogDescription>
-                Against {debitNoteTarget.receiptNumber} · {debitNoteTarget.supplier.name}
+                Against {debitNoteTarget.receiptNumber} ·{" "}
+                {debitNoteTarget.supplier.name}
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-3 py-2">
               <div className="flex flex-col gap-1">
-                <Label htmlFor="dn-amount" className="text-xs">Taxable Amount (₹)</Label>
+                <Label htmlFor="dn-amount" className="text-xs">
+                  Taxable Amount (₹)
+                </Label>
                 <Input
                   id="dn-amount"
                   type="number"
@@ -1160,7 +1299,9 @@ export function PurchasesPage() {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <Label htmlFor="dn-reason" className="text-xs">Reason</Label>
+                <Label htmlFor="dn-reason" className="text-xs">
+                  Reason
+                </Label>
                 <Input
                   id="dn-reason"
                   value={debitNoteReason}
@@ -1170,7 +1311,11 @@ export function PurchasesPage() {
               </div>
             </div>
             <DialogFooter className="border-t pt-4">
-              <Button variant="outline" size="sm" onClick={() => setDebitNoteTarget(null)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDebitNoteTarget(null)}
+              >
                 Cancel
               </Button>
               <Button
@@ -1186,11 +1331,15 @@ export function PurchasesPage() {
                       taxAmount: 0,
                       totalAmount: debitNoteAmount,
                     });
-                    queryClient.invalidateQueries({ queryKey: ["debit-notes"] });
+                    queryClient.invalidateQueries({
+                      queryKey: ["debit-notes"],
+                    });
                     setDebitNoteTarget(null);
                     toast.success("Debit note issued.");
                   } catch (err) {
-                    toast.error(extractErrorMessage(err, "Failed to issue debit note"));
+                    toast.error(
+                      extractErrorMessage(err, "Failed to issue debit note"),
+                    );
                   }
                 }}
               >

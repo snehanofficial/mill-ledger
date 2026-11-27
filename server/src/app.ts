@@ -20,7 +20,10 @@ import { mastersRouter } from "./modules/masters/masters.routes.js";
 import { timelineRouter } from "./modules/timeline/timeline.routes.js";
 import { exportRouter } from "./modules/export/export.routes.js";
 import { publicRouter } from "./modules/public/public.routes.js";
-import { errorHandler, sendErrorResponse } from "./middleware/error.middleware.js";
+import {
+  errorHandler,
+  sendErrorResponse,
+} from "./middleware/error.middleware.js";
 import { isAllowedOrigin } from "./lib/origins.js";
 import { requestIdMiddleware } from "./middleware/request-id.middleware.js";
 import { requestLogger } from "./middleware/request-logger.middleware.js";
@@ -66,7 +69,9 @@ export function createApp() {
   // REQ-062 & Owner Decision 2: Prevent search engine indexing of authenticated ERP APIs and private routes
   app.use((req, res, next) => {
     const cleanPath = req.path === "/" ? "/" : req.path.replace(/\/+$/, "");
-    const isPublicAsset = /\.(css|js|svg|png|ico|woff2|webmanifest)$/i.test(cleanPath);
+    const isPublicAsset = /\.(css|js|svg|png|ico|woff2|webmanifest)$/i.test(
+      cleanPath,
+    );
     if (!PUBLIC_HTML_PATHS.has(cleanPath) && !isPublicAsset) {
       res.setHeader("X-Robots-Tag", "noindex, nofollow");
     }
@@ -170,7 +175,11 @@ export function createApp() {
       }
       const cleanPath = req.path.replace(/^\/+|\/+$/g, "");
       if (cleanPath) {
-        const prerenderedFile = path.join(clientDistPath, cleanPath, "index.html");
+        const prerenderedFile = path.join(
+          clientDistPath,
+          cleanPath,
+          "index.html",
+        );
         if (fs.existsSync(prerenderedFile)) {
           return res.sendFile(prerenderedFile);
         }

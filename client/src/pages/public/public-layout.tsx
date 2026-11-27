@@ -21,7 +21,11 @@ export function PublicLayout({
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <PublicHeader />
-      <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 focus:outline-none"
+      >
         {showBreadcrumbs && routeMeta && routeMeta.breadcrumbs.length > 1 && (
           <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
             <PublicBreadcrumbs items={routeMeta.breadcrumbs} />

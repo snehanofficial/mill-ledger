@@ -20,11 +20,7 @@ import {
 } from "@/components/ui/loading-error-empty";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  BarChart2Icon,
-  PlusCircleIcon,
-  RefreshCwIcon,
-} from "lucide-react";
+import { BarChart2Icon, PlusCircleIcon, RefreshCwIcon } from "lucide-react";
 import type {
   BomRecipe,
   InventoryBalanceItem,

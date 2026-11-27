@@ -83,4 +83,3 @@ export function extractRequestId(error: unknown): string | undefined {
     e.requestId
   );
 }
-

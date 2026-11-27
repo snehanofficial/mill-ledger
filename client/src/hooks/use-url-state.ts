@@ -20,7 +20,7 @@ export interface UseUrlStateOptions {
 export function useUrlState<T extends string = string>(
   key: string,
   defaultValue: string = "",
-  options: UseUrlStateOptions = { replace: true }
+  options: UseUrlStateOptions = { replace: true },
 ): [T, (newValue: T | string | ((prev: T) => T)) => void] {
   const [searchParams, setSearchParams] = useSearchParams();
   const debounceMs = options.debounceMs ?? 0;
@@ -72,10 +72,10 @@ export function useUrlState<T extends string = string>(
           }
           return next;
         },
-        { replace }
+        { replace },
       );
     },
-    [key, defaultValue, setSearchParams, replace]
+    [key, defaultValue, setSearchParams, replace],
   );
 
   const setValue = useCallback(
@@ -122,10 +122,10 @@ export function useUrlState<T extends string = string>(
           }
           return next;
         },
-        { replace }
+        { replace },
       );
     },
-    [debounceMs, commitToUrl, setSearchParams, key, defaultValue, replace]
+    [debounceMs, commitToUrl, setSearchParams, key, defaultValue, replace],
   );
 
   return [debounceMs > 0 ? localValue : urlValue, setValue];

@@ -13,7 +13,11 @@ import {
 } from "@mill-ledger/shared";
 import { parsePaginationQuery } from "../../utils/pagination.js";
 
-export { createPurchaseReceiptSchema, createSupplierSchema, updateSupplierSchema };
+export {
+  createPurchaseReceiptSchema,
+  createSupplierSchema,
+  updateSupplierSchema,
+};
 
 export const purchaseRouter = Router();
 
@@ -106,10 +110,12 @@ export async function handleCreateSupplier(
 // Router-level authentication & authorization for purchase subsystem
 // Requires 'purchase' resource permissions (OWASP A01:2021 & API5:2023 - F-021)
 purchaseRouter.use(requireAuth);
-purchaseRouter.use((req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  const action = req.method === "POST" ? "create" : "read";
-  return authorize("purchase", action)(req, res, next);
-});
+purchaseRouter.use(
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const action = req.method === "POST" ? "create" : "read";
+    return authorize("purchase", action)(req, res, next);
+  },
+);
 
 // Primary endpoints mounted under /api/v1/purchase-receipts
 purchaseRouter.post("/", handlePostPurchaseReceipt);

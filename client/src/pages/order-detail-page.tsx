@@ -9,7 +9,11 @@ import {
 } from "@/lib/api-contracts";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatINR, formatQuantity, formatDateTime } from "@/lib/formatters";
-import { RecordHeader, LifecycleSteps, type LifecycleStep } from "@/components/ui/page-header";
+import {
+  RecordHeader,
+  LifecycleSteps,
+  type LifecycleStep,
+} from "@/components/ui/page-header";
 import { EntityLifecycleTimeline } from "@/components/timeline/entity-lifecycle-timeline";
 import { ErrorState, SkeletonTable } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
@@ -67,7 +71,8 @@ interface OrderLine {
 interface OrderDetail {
   id: string;
   orderNumber: string;
-  status: "DRAFT" | "SUBMITTED" | "UNDER_REVIEW" | "APPROVED" | "REJECTED" | "CLOSED";
+  status:
+    "DRAFT" | "SUBMITTED" | "UNDER_REVIEW" | "APPROVED" | "REJECTED" | "CLOSED";
   fulfilmentStatus: "UNFULFILLED" | "PARTIALLY_FULFILLED" | "FULFILLED";
   deliveryState: string;
   notes: string | null;
@@ -188,16 +193,23 @@ export function OrderDetailPage() {
         "/inventory/balances",
       );
     },
-    enabled: isAdmin && (order?.status === "SUBMITTED" || order?.status === "UNDER_REVIEW"),
+    enabled:
+      isAdmin &&
+      (order?.status === "SUBMITTED" || order?.status === "UNDER_REVIEW"),
   });
 
   useEffect(() => {
     if (!order) return;
-    const initial: Record<string, { approvedQuantity: string; approvedUnitPrice: string }> = {};
+    const initial: Record<
+      string,
+      { approvedQuantity: string; approvedUnitPrice: string }
+    > = {};
     for (const line of order.lines) {
       initial[line.id] = {
         approvedQuantity: String(line.approvedQuantity ?? line.quotedQuantity),
-        approvedUnitPrice: String(line.approvedUnitPrice ?? line.quotedUnitPrice),
+        approvedUnitPrice: String(
+          line.approvedUnitPrice ?? line.quotedUnitPrice,
+        ),
       };
     }
     setLineEdits(initial);
@@ -287,7 +299,10 @@ export function OrderDetailPage() {
       <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
         <ErrorState
           title="Unable to load order"
-          description={extractErrorMessage(error, "Order record could not be loaded.")}
+          description={extractErrorMessage(
+            error,
+            "Order record could not be loaded.",
+          )}
           onRetry={() => refetch()}
         />
       </div>
@@ -295,7 +310,8 @@ export function OrderDetailPage() {
   }
 
   const canReview =
-    isAdmin && (order.status === "SUBMITTED" || order.status === "UNDER_REVIEW");
+    isAdmin &&
+    (order.status === "SUBMITTED" || order.status === "UNDER_REVIEW");
   const canEditDraft = isSalesman && order.status === "DRAFT";
   const canCreateInvoice =
     isAdmin &&
@@ -322,7 +338,9 @@ export function OrderDetailPage() {
       if ((line.liveShortage ?? 0) > 0) return true;
       const stock = getStockForLine(line);
       const requested = Number(
-        lineEdits[line.id]?.approvedQuantity ?? line.approvedQuantity ?? line.quotedQuantity,
+        lineEdits[line.id]?.approvedQuantity ??
+          line.approvedQuantity ??
+          line.quotedQuantity,
       );
       return stock ? requested > stock.available : false;
     });
@@ -330,11 +348,11 @@ export function OrderDetailPage() {
   const steps: LifecycleStep[] = [
     {
       label: "Order submitted",
-      state:
+      state: order.status === "DRAFT" ? "current" : "completed",
+      detail:
         order.status === "DRAFT"
-          ? "current"
-          : "completed",
-      detail: order.status === "DRAFT" ? "Local/Server draft" : formatDateTime(order.submittedAt ?? order.createdAt),
+          ? "Local/Server draft"
+          : formatDateTime(order.submittedAt ?? order.createdAt),
     },
     {
       label: "Commercial approval",
@@ -450,7 +468,11 @@ export function OrderDetailPage() {
                   });
                   toast.success(`Downloaded ${filename}`);
                 } catch (err) {
-                  toast.error(err instanceof Error ? err.message : "Failed to download PDF");
+                  toast.error(
+                    err instanceof Error
+                      ? err.message
+                      : "Failed to download PDF",
+                  );
                 }
               }}
               className="gap-1.5"
@@ -480,7 +502,10 @@ export function OrderDetailPage() {
           role="alert"
           className="flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm"
         >
-          <XCircleIcon className="size-5 shrink-0 text-destructive mt-0.5" aria-hidden="true" />
+          <XCircleIcon
+            className="size-5 shrink-0 text-destructive mt-0.5"
+            aria-hidden="true"
+          />
           <div className="space-y-1">
             <p className="font-semibold text-destructive">Order rejected</p>
             <p className="text-foreground">
@@ -488,7 +513,8 @@ export function OrderDetailPage() {
             </p>
             {isSalesman && (
               <p className="text-xs text-muted-foreground pt-1">
-                Next step: Create a new order with adjusted quantities or contact the admin desk.
+                Next step: Create a new order with adjusted quantities or
+                contact the admin desk.
               </p>
             )}
           </div>
@@ -509,7 +535,9 @@ export function OrderDetailPage() {
               Available-to-promise (ATP) stock shortage detected
             </p>
             <p className="text-amber-800 dark:text-amber-300">
-              One or more requested quantities exceed available finished stock. Adjust approved quantities to match available stock (with an override reason), wait for production, or reject the order.
+              One or more requested quantities exceed available finished stock.
+              Adjust approved quantities to match available stock (with an
+              override reason), wait for production, or reject the order.
             </p>
           </div>
         </div>
@@ -518,7 +546,10 @@ export function OrderDetailPage() {
       {/* Order Lines */}
       <section aria-labelledby="order-lines-heading" className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 id="order-lines-heading" className="text-base font-semibold text-foreground">
+          <h2
+            id="order-lines-heading"
+            className="text-base font-semibold text-foreground"
+          >
             Order lines
           </h2>
           <span className="text-xs text-muted-foreground">
@@ -539,7 +570,9 @@ export function OrderDetailPage() {
                 <TableHead className="text-right">
                   {canReview ? "Approve price" : "Approved price"}
                 </TableHead>
-                {canReview && <TableHead className="text-right">ATP / Shortage</TableHead>}
+                {canReview && (
+                  <TableHead className="text-right">ATP / Shortage</TableHead>
+                )}
                 <TableHead className="text-right">Tax</TableHead>
                 <TableHead className="text-right">Line total</TableHead>
               </TableRow>
@@ -549,13 +582,15 @@ export function OrderDetailPage() {
                 const edit = lineEdits[line.id];
                 const stock = getStockForLine(line);
                 const reqQty = Number(
-                  edit?.approvedQuantity ?? line.approvedQuantity ?? line.quotedQuantity,
+                  edit?.approvedQuantity ??
+                    line.approvedQuantity ??
+                    line.quotedQuantity,
                 );
                 const available = stock?.available;
                 const shortage =
                   available !== undefined
                     ? Math.max(0, reqQty - available)
-                    : line.liveShortage ?? 0;
+                    : (line.liveShortage ?? 0);
 
                 return (
                   <TableRow key={line.id}>
@@ -577,7 +612,10 @@ export function OrderDetailPage() {
                           min={0}
                           step="1"
                           aria-label={`Approved quantity for ${line.productVariant.name}`}
-                          value={edit?.approvedQuantity ?? String(line.quotedQuantity)}
+                          value={
+                            edit?.approvedQuantity ??
+                            String(line.quotedQuantity)
+                          }
                           onChange={(e) =>
                             setLineEdits((prev) => ({
                               ...prev,
@@ -606,7 +644,10 @@ export function OrderDetailPage() {
                           min={0}
                           step="0.01"
                           aria-label={`Approved unit price for ${line.productVariant.name}`}
-                          value={edit?.approvedUnitPrice ?? String(line.quotedUnitPrice)}
+                          value={
+                            edit?.approvedUnitPrice ??
+                            String(line.quotedUnitPrice)
+                          }
                           onChange={(e) =>
                             setLineEdits((prev) => ({
                               ...prev,
@@ -619,7 +660,9 @@ export function OrderDetailPage() {
                           className="ml-auto h-9 w-28 text-right tabular-nums"
                         />
                       ) : (
-                        formatINR(line.approvedUnitPrice ?? line.quotedUnitPrice)
+                        formatINR(
+                          line.approvedUnitPrice ?? line.quotedUnitPrice,
+                        )
                       )}
                     </TableCell>
                     {canReview && (
@@ -631,7 +674,8 @@ export function OrderDetailPage() {
                             </span>
                             {shortage > 0 && (
                               <div className="text-destructive font-medium">
-                                Short: {formatQuantity(shortage, { unit: "pkts" })}
+                                Short:{" "}
+                                {formatQuantity(shortage, { unit: "pkts" })}
                               </div>
                             )}
                           </div>
@@ -661,11 +705,15 @@ export function OrderDetailPage() {
           className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4"
         >
           <div className="space-y-1">
-            <h2 id="review-decision-heading" className="text-base font-semibold">
+            <h2
+              id="review-decision-heading"
+              className="text-base font-semibold"
+            >
               Commercial review & reservation
             </h2>
             <p className="text-xs text-muted-foreground">
-              Approving reserves available finished stock atomically. Invoice posting and physical dispatch happen as separate steps afterwards.
+              Approving reserves available finished stock atomically. Invoice
+              posting and physical dispatch happen as separate steps afterwards.
             </p>
           </div>
 
@@ -813,7 +861,10 @@ export function OrderDetailPage() {
                 <span className="font-medium text-foreground tabular-nums">
                   {order.reservations
                     .filter((r) => r.status === "ACTIVE")
-                    .reduce((sum, r) => sum + Number(r.reservedQuantity), 0)}{" "}
+                    .reduce(
+                      (sum, r) => sum + Number(r.reservedQuantity),
+                      0,
+                    )}{" "}
                   pkts
                 </span>
               </p>

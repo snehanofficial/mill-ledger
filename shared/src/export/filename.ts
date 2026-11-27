@@ -38,7 +38,9 @@ function formatFilenameDate(date?: Date | string): string {
  * - Single-document exports with a document identifier: `INV-2026-0001.pdf`
  * - Tabular / report exports: `MillLedger_Sales_Register_2026-11-27.xlsx`
  */
-export function buildExportFilename(options: BuildExportFilenameOptions): string {
+export function buildExportFilename(
+  options: BuildExportFilenameOptions,
+): string {
   const ext = options.extension.toLowerCase();
   const safeId = options.identifier ? sanitizeSegment(options.identifier) : "";
 
@@ -46,7 +48,8 @@ export function buildExportFilename(options: BuildExportFilenameOptions): string
     return `${safeId}.${ext}`;
   }
 
-  const orgPrefix = sanitizeSegment(options.orgName || "MillLedger") || "MillLedger";
+  const orgPrefix =
+    sanitizeSegment(options.orgName || "MillLedger") || "MillLedger";
   const shortOrg = orgPrefix.split("_")[0] || "MillLedger";
   const mod = sanitizeSegment(options.module) || "Export";
   const datePart = formatFilenameDate(options.date);

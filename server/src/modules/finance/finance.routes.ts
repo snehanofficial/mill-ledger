@@ -65,11 +65,17 @@ financeRouter.get(
 
       const orgId = getSessionOrgId(req);
       const invoice = await financeService.getInvoiceById(invoiceId);
-      if (invoice.organization?.code !== orgId && invoice.organizationId !== orgId) {
+      if (
+        invoice.organization?.code !== orgId &&
+        invoice.organizationId !== orgId
+      ) {
         throw new AppError("Invoice not found", 404);
       }
       const pdfBuffer = await generateInvoicePdfBuffer(invoice);
-      const safeFileName = invoice.invoiceNumber.replace(/[^a-zA-Z0-9_-]/g, "_");
+      const safeFileName = invoice.invoiceNumber.replace(
+        /[^a-zA-Z0-9_-]/g,
+        "_",
+      );
 
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(

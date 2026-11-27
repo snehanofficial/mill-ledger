@@ -22,7 +22,11 @@ export function classifyReferrerChannel(referrer: string): string {
   if (!referrer) return "direct";
   try {
     const host = new URL(referrer).hostname.toLowerCase();
-    if (AI_REFERRER_HOSTS.some((aiHost) => host === aiHost || host.endsWith(`.${aiHost}`))) {
+    if (
+      AI_REFERRER_HOSTS.some(
+        (aiHost) => host === aiHost || host.endsWith(`.${aiHost}`),
+      )
+    ) {
       return "ai_search";
     }
     if (
@@ -75,7 +79,10 @@ export function trackPublicEvent(
   // No tracking IDs are hardcoded; events only forward if the host script is configured.
   const win = window as unknown as {
     gtag?: (...args: unknown[]) => void;
-    plausible?: (name: string, opts?: { props?: Record<string, string | undefined> }) => void;
+    plausible?: (
+      name: string,
+      opts?: { props?: Record<string, string | undefined> },
+    ) => void;
   };
 
   if (typeof win.gtag === "function") {

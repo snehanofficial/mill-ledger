@@ -51,7 +51,9 @@ describe("F-007: Concurrency race condition in sales order approval (ATP stock o
   afterAll(async () => {
     // Teardown test artifacts
     await prisma.$transaction(async (tx) => {
-      await tx.$executeRawUnsafe("SET LOCAL mill_ledger.bypass_immutability = 'on'");
+      await tx.$executeRawUnsafe(
+        "SET LOCAL mill_ledger.bypass_immutability = 'on'",
+      );
       if (createdOrderIds.length > 0) {
         await tx.stockReservation.deleteMany({
           where: { salesOrderId: { in: createdOrderIds } },
@@ -142,7 +144,11 @@ describe("F-007: Concurrency race condition in sales order approval (ATP stock o
       salesService
         .approveSalesOrder(o.id, {}, adminUser)
         .then(() => ({ success: true, orderId: o.id, error: null }))
-        .catch((err) => ({ success: false, orderId: o.id, error: err.message })),
+        .catch((err) => ({
+          success: false,
+          orderId: o.id,
+          error: err.message,
+        })),
     );
 
     const results = await Promise.all(approvePromises);

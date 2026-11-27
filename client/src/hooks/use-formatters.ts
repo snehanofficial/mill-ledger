@@ -25,19 +25,32 @@ export function useFormatters() {
   return {
     language,
     locale,
-    formatINR: (amount: Parameters<typeof baseFormatINR>[0], options?: FormatINROptions) =>
-      baseFormatINR(amount, { locale, ...options }),
-    formatQuantity: (amount: Parameters<typeof baseFormatQuantity>[0], options?: FormatQuantityOptions) =>
-      baseFormatQuantity(amount, { locale, ...options }),
-    formatDate: (date: Parameters<typeof baseFormatDate>[0], options?: FormatDateOptions) =>
-      baseFormatDate(date, options, locale),
+    formatINR: (
+      amount: Parameters<typeof baseFormatINR>[0],
+      options?: FormatINROptions,
+    ) => baseFormatINR(amount, { locale, ...options }),
+    formatQuantity: (
+      amount: Parameters<typeof baseFormatQuantity>[0],
+      options?: FormatQuantityOptions,
+    ) => baseFormatQuantity(amount, { locale, ...options }),
+    formatDate: (
+      date: Parameters<typeof baseFormatDate>[0],
+      options?: FormatDateOptions,
+    ) => baseFormatDate(date, options, locale),
     formatDateShort: (date: Parameters<typeof baseFormatDateShort>[0]) =>
       baseFormatDateShort(date, locale),
-    formatDateTime: (date: Parameters<typeof baseFormatDateTime>[0], options?: FormatDateOptions) =>
-      baseFormatDateTime(date, options, locale),
-    formatTime: (date: Parameters<typeof baseFormatTime>[0], options?: FormatDateOptions) =>
-      baseFormatTime(date, options, locale),
-    compareStrings: (a: string | null | undefined, b: string | null | undefined, options?: Intl.CollatorOptions) =>
-      baseCompareStrings(a, b, locale, options),
+    formatDateTime: (
+      date: Parameters<typeof baseFormatDateTime>[0],
+      options?: FormatDateOptions,
+    ) => baseFormatDateTime(date, options, locale),
+    formatTime: (
+      date: Parameters<typeof baseFormatTime>[0],
+      options?: FormatDateOptions,
+    ) => baseFormatTime(date, options, locale),
+    compareStrings: (
+      a: string | null | undefined,
+      b: string | null | undefined,
+      options?: Intl.CollatorOptions,
+    ) => baseCompareStrings(a, b, locale, options),
   };
 }

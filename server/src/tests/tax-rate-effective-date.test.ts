@@ -89,7 +89,9 @@ describe("F-014: Dynamic Statutory TaxRate Master Resolution and Effective Date 
         customerId,
         warehouseId,
         orderNumber: `SO-TAX-BASE-${runId}`,
-        lines: [{ productVariantId: testVariantId, quantity: 10, unitPrice: 100 }],
+        lines: [
+          { productVariantId: testVariantId, quantity: 10, unitPrice: 100 },
+        ],
       },
       adminUser,
     );
@@ -120,7 +122,11 @@ describe("F-014: Dynamic Statutory TaxRate Master Resolution and Effective Date 
         sku: `SKU-UNCONF-${runId}`,
         name: "Unconfigured Variant",
         packSize: 1,
-        uomId: (await prisma.unitOfMeasure.findFirstOrThrow({ where: { organizationId: orgId, code: "PACKET" } })).id,
+        uomId: (
+          await prisma.unitOfMeasure.findFirstOrThrow({
+            where: { organizationId: orgId, code: "PACKET" },
+          })
+        ).id,
       },
     });
 
@@ -131,7 +137,9 @@ describe("F-014: Dynamic Statutory TaxRate Master Resolution and Effective Date 
           customerId,
           warehouseId,
           orderNumber: `SO-TAX-FAIL-${runId}`,
-          lines: [{ productVariantId: unconfVariant.id, quantity: 1, unitPrice: 100 }],
+          lines: [
+            { productVariantId: unconfVariant.id, quantity: 1, unitPrice: 100 },
+          ],
         },
         adminUser,
       ),
@@ -147,7 +155,9 @@ describe("F-014: Dynamic Statutory TaxRate Master Resolution and Effective Date 
         warehouseId,
         orderNumber: `SO-TAX-HIST-${runId}`,
         notes: runId,
-        lines: [{ productVariantId: testVariantId, quantity: 10, unitPrice: 100 }],
+        lines: [
+          { productVariantId: testVariantId, quantity: 10, unitPrice: 100 },
+        ],
       },
       adminUser,
     );
@@ -178,7 +188,9 @@ describe("F-014: Dynamic Statutory TaxRate Master Resolution and Effective Date 
     const schedules = await financeService.getTaxRates(orgId, testHsn);
     expect(schedules).toHaveLength(2);
     const oldSchedule = schedules.find((s) => Number(s.rate) === 5.0);
-    expect(oldSchedule?.effectiveTo?.toISOString()).toBe(new Date("2026-04-01T00:00:00Z").toISOString());
+    expect(oldSchedule?.effectiveTo?.toISOString()).toBe(
+      new Date("2026-04-01T00:00:00Z").toISOString(),
+    );
 
     // 3. Create and approve order 2 for execution in April 2026
     const { order: order2 } = await salesService.createSalesOrder(
@@ -189,7 +201,9 @@ describe("F-014: Dynamic Statutory TaxRate Master Resolution and Effective Date 
         orderNumber: `SO-TAX-FUTURE-${runId}`,
         orderDate: new Date("2026-04-05T10:00:00Z"),
         notes: runId,
-        lines: [{ productVariantId: testVariantId, quantity: 10, unitPrice: 100 }],
+        lines: [
+          { productVariantId: testVariantId, quantity: 10, unitPrice: 100 },
+        ],
       },
       adminUser,
     );
@@ -230,6 +244,8 @@ describe("F-014: Dynamic Statutory TaxRate Master Resolution and Effective Date 
         effectiveFrom: new Date("2026-03-15T00:00:00Z"),
         effectiveTo: new Date("2026-05-15T00:00:00Z"),
       }),
-    ).rejects.toThrow(/TAX_CONFIGURATION_ERROR: Overlapping tax rate schedule detected/);
+    ).rejects.toThrow(
+      /TAX_CONFIGURATION_ERROR: Overlapping tax rate schedule detected/,
+    );
   });
 });

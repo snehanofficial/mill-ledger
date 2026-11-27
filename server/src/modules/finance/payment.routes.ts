@@ -59,12 +59,15 @@ paymentRouter.get(
       const q = typeof req.query.q === "string" ? req.query.q : undefined;
       const onlyDue = req.query.due === "DUE" || req.query.onlyDue === "true";
       const { limit, offset } = parsePaginationQuery(req.query);
-      const result = await paymentService.getReceivablesSummaryPaginated(orgId, {
-        q,
-        onlyDue,
-        limit,
-        offset,
-      });
+      const result = await paymentService.getReceivablesSummaryPaginated(
+        orgId,
+        {
+          q,
+          onlyDue,
+          limit,
+          offset,
+        },
+      );
       res.json(result);
     } catch (err) {
       next(err);

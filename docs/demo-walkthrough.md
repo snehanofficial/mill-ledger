@@ -4,14 +4,14 @@ This walkthrough uses the **MillLedger Foods Pvt Ltd** (`MILL`) demonstration da
 
 ## Demo Login Credentials (Auto-Login Ready)
 
-| Role | Email | Password | Best Used For |
-|---|---|---|---|
-| Admin | `admin@millledger.local` | `AdminPassword123!` | Full walkthrough (recommended) |
-| Owner | `owner@millledger.local` | `OwnerPassword123!` | Executive dashboard & approvals |
-| Salesman | `salesman@millledger.local` | `SalesmanPassword123!` | Field order entry & assigned accounts |
-| Production | `production@millledger.local` | `ProductionPassword123!` | Recipes, BOMs & production runs |
-| Operator | `operator@millledger.local` | `OperatorPassword123!` | Floor production runs |
-| Accountant | `accountant@millledger.local` | `AccountantPassword123!` | GST invoices, payments & exports |
+| Role       | Email                         | Password                 | Best Used For                         |
+| ---------- | ----------------------------- | ------------------------ | ------------------------------------- |
+| Admin      | `admin@millledger.local`      | `AdminPassword123!`      | Full walkthrough (recommended)        |
+| Owner      | `owner@millledger.local`      | `OwnerPassword123!`      | Executive dashboard & approvals       |
+| Salesman   | `salesman@millledger.local`   | `SalesmanPassword123!`   | Field order entry & assigned accounts |
+| Production | `production@millledger.local` | `ProductionPassword123!` | Recipes, BOMs & production runs       |
+| Operator   | `operator@millledger.local`   | `OperatorPassword123!`   | Floor production runs                 |
+| Accountant | `accountant@millledger.local` | `AccountantPassword123!` | GST invoices, payments & exports      |
 
 ---
 

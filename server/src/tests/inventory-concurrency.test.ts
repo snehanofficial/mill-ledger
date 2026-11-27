@@ -42,7 +42,9 @@ describe("MLD-011: Inventory atomic concurrency and non-negative constraints", (
   afterAll(async () => {
     // Clean up test purchase receipts
     await prisma.$transaction(async (tx) => {
-      await tx.$executeRawUnsafe("SET LOCAL mill_ledger.bypass_immutability = 'on'");
+      await tx.$executeRawUnsafe(
+        "SET LOCAL mill_ledger.bypass_immutability = 'on'",
+      );
       await tx.purchaseReceiptLine.deleteMany({
         where: {
           purchaseReceipt: {
@@ -74,21 +76,20 @@ describe("MLD-011: Inventory atomic concurrency and non-negative constraints", (
 
     // Launch 10 simultaneous purchase receipts
     const promises = Array.from({ length: concurrencyCount }, (_, i) =>
-      inventoryService.postPurchaseReceipt(
-        {
-          organizationId: orgId,
-          supplierId,
-          warehouseId,
-          receiptNumber: `PR-CONCURRENCY-${Date.now()}-${i}`,
-          items: [
-            {
-              inventoryItemId: flourItemId,
-              quantity: qtyPerReceipt,
-              unitPrice: 50,
-              uomId,
-            },
-          ],
-        }),
+      inventoryService.postPurchaseReceipt({
+        organizationId: orgId,
+        supplierId,
+        warehouseId,
+        receiptNumber: `PR-CONCURRENCY-${Date.now()}-${i}`,
+        items: [
+          {
+            inventoryItemId: flourItemId,
+            quantity: qtyPerReceipt,
+            unitPrice: 50,
+            uomId,
+          },
+        ],
+      }),
     );
 
     const results = await Promise.all(promises);

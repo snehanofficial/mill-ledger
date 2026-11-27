@@ -15,18 +15,28 @@ describe("F-036 Regression Test: Dashboard Sales Revenue Line-less Invoice Recon
     await resetOperationalData();
     await seedBenchmarkMasters();
 
-    const org = await prisma.organization.findUniqueOrThrow({ where: { code: "MILL" } });
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { code: "MILL" },
+    });
     orgId = org.id;
 
-    const cust = await prisma.customer.findFirstOrThrow({ where: { code: "CUST-RET-A" } });
+    const cust = await prisma.customer.findFirstOrThrow({
+      where: { code: "CUST-RET-A" },
+    });
     customerId = cust.id;
   });
 
   it("reconciles dashboard total revenue exactly with SQL SUM(totalAmount) even when invoices lack line items", async () => {
     // 1. Create a normal invoice with lines: ₹7,875
-    const warehouse = await prisma.warehouse.findFirstOrThrow({ where: { code: "WH-1" } });
-    const salesman = await prisma.user.findFirstOrThrow({ where: { email: "salesman1@millledger.local" } });
-    const variant = await prisma.productVariant.findFirstOrThrow({ where: { sku: "VAR-MURUKKU-200G" } });
+    const warehouse = await prisma.warehouse.findFirstOrThrow({
+      where: { code: "WH-1" },
+    });
+    const salesman = await prisma.user.findFirstOrThrow({
+      where: { email: "salesman1@millledger.local" },
+    });
+    const variant = await prisma.productVariant.findFirstOrThrow({
+      where: { sku: "VAR-MURUKKU-200G" },
+    });
 
     const normalOrder = await prisma.salesOrder.create({
       data: {
@@ -121,23 +131,33 @@ describe("F-036 Regression Test: Dashboard Sales Revenue Line-less Invoice Recon
     expect(sqlTotalRevenue).toBe(19875.0); // 7875 + 12000
 
     // 4. Query reportingService sales report
-    const salesReport = await reportingService.getSalesReport({ organizationId: orgId });
+    const salesReport = await reportingService.getSalesReport({
+      organizationId: orgId,
+    });
     expect(salesReport.summary.grandTotal).toBe(sqlTotalRevenue);
 
     // 5. Query dashboard metrics
-    const dashboard = await reportingService.getOwnerDashboard({ organizationId: orgId });
+    const dashboard = await reportingService.getOwnerDashboard({
+      organizationId: orgId,
+    });
     expect(dashboard.metrics.totalRevenue).toBe(sqlTotalRevenue);
     expect(dashboard.metrics.totalInvoicesCount).toBe(Number(sqlRes[0].count));
 
     // 6. Verify line-less invoice is present in rows
-    const linelessRow = salesReport.rows.find((r) => r.invoiceId === linelessInvoice.id);
+    const linelessRow = salesReport.rows.find(
+      (r) => r.invoiceId === linelessInvoice.id,
+    );
     expect(linelessRow).toBeDefined();
     expect(Number(linelessRow?.lineTotal)).toBe(12000.0);
   });
 
   it("prevents posting new sales invoices from orders with zero line items", async () => {
-    const warehouse = await prisma.warehouse.findFirstOrThrow({ where: { code: "WH-1" } });
-    const salesman = await prisma.user.findFirstOrThrow({ where: { email: "salesman1@millledger.local" } });
+    const warehouse = await prisma.warehouse.findFirstOrThrow({
+      where: { code: "WH-1" },
+    });
+    const salesman = await prisma.user.findFirstOrThrow({
+      where: { email: "salesman1@millledger.local" },
+    });
 
     const emptyOrder = await prisma.salesOrder.create({
       data: {

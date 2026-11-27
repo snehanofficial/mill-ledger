@@ -516,7 +516,11 @@ describe("M8: Reporting, audit logs, and owner dashboard", () => {
       }),
     ]);
     const beforeProd = (await beforeProdRes.json()) as {
-      summary: { totalRunsCount: number; totalGoodQuantity: number; totalRunCost: number };
+      summary: {
+        totalRunsCount: number;
+        totalGoodQuantity: number;
+        totalRunCost: number;
+      };
     };
     const beforeDash = (await beforeDashRes.json()) as {
       varianceAlerts: unknown[];
@@ -578,19 +582,33 @@ describe("M8: Reporting, audit logs, and owner dashboard", () => {
       }),
     ]);
     const afterProd = (await afterProdRes.json()) as {
-      summary: { totalRunsCount: number; totalGoodQuantity: number; totalRunCost: number };
+      summary: {
+        totalRunsCount: number;
+        totalGoodQuantity: number;
+        totalRunCost: number;
+      };
     };
     const afterDash = (await afterDashRes.json()) as {
       varianceAlerts: Array<{ runNumber: string }>;
     };
 
-    expect(afterProd.summary.totalRunsCount).toBe(beforeProd.summary.totalRunsCount);
-    expect(afterProd.summary.totalGoodQuantity).toBe(beforeProd.summary.totalGoodQuantity);
-    expect(afterProd.summary.totalRunCost).toBe(beforeProd.summary.totalRunCost);
-    expect(afterDash.varianceAlerts).toHaveLength(beforeDash.varianceAlerts.length);
+    expect(afterProd.summary.totalRunsCount).toBe(
+      beforeProd.summary.totalRunsCount,
+    );
+    expect(afterProd.summary.totalGoodQuantity).toBe(
+      beforeProd.summary.totalGoodQuantity,
+    );
+    expect(afterProd.summary.totalRunCost).toBe(
+      beforeProd.summary.totalRunCost,
+    );
+    expect(afterDash.varianceAlerts).toHaveLength(
+      beforeDash.varianceAlerts.length,
+    );
     expect(
       afterDash.varianceAlerts.some(
-        (a) => a.runNumber === `RUN-REV-IGN-${ts}` || a.runNumber === `RUN-DFT-IGN-${ts}`,
+        (a) =>
+          a.runNumber === `RUN-REV-IGN-${ts}` ||
+          a.runNumber === `RUN-DFT-IGN-${ts}`,
       ),
     ).toBe(false);
   });

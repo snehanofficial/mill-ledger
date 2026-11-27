@@ -83,5 +83,11 @@ export function useScrollRestoration(containerId: string = "main-content") {
     if (window.scrollY !== 0) {
       window.scrollTo({ top: 0, behavior: "instant" });
     }
-  }, [containerId, location.key, location.pathname, location.hash, navigationType]);
+  }, [
+    containerId,
+    location.key,
+    location.pathname,
+    location.hash,
+    navigationType,
+  ]);
 }

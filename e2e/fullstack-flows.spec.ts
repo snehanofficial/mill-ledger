@@ -36,9 +36,7 @@ test.describe("Full-Stack Integrated Flows", () => {
     await expect(
       page.getByRole("button", { name: /Admin \/ Owner/i }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /Salesman/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /Salesman/i })).toBeVisible();
     await expect(
       page.getByRole("button", { name: /Accountant/i }),
     ).toBeVisible();
@@ -59,9 +57,7 @@ test.describe("Full-Stack Integrated Flows", () => {
     await expect(
       page.getByRole("button", { name: /Record Purchase Receipt/i }).first(),
     ).toBeVisible();
-    await expect(
-      page.getByText(/total recorded/i).first(),
-    ).toBeVisible();
+    await expect(page.getByText(/total recorded/i).first()).toBeVisible();
   });
 
   test("live customer directory renders real customer accounts", async ({
@@ -73,9 +69,7 @@ test.describe("Full-Stack Integrated Flows", () => {
     await expect(
       page.getByRole("heading", { name: "Customer Directory" }),
     ).toBeVisible();
-    await expect(
-      page.getByText(/total accounts/i),
-    ).toBeVisible();
+    await expect(page.getByText(/total accounts/i)).toBeVisible();
   });
 
   test("orders stream loads with action buttons and summary metrics", async ({

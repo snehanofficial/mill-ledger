@@ -36,7 +36,9 @@ export function ResourcesPage() {
               Mill Operations &amp; Accounting Guides
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
-              Technical guides explaining how MillLedger models inventory valuation, Indian GST billing, and offline field sales synchronization.
+              Technical guides explaining how MillLedger models inventory
+              valuation, Indian GST billing, and offline field sales
+              synchronization.
             </p>
           </div>
         </div>

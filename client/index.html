@@ -4,11 +4,13 @@
     <meta charset="UTF-8" />
     <!-- Pre-hydration language synchronization to prevent FOUC and TTS pronunciation distortion (WCAG 3.1.1 / F-086) -->
     <script>
-      (function() {
+      (function () {
         try {
           var activeUser = localStorage.getItem("mill_ledger_active_user");
           var userKey = activeUser ? "mill_ledger_lang_" + activeUser : null;
-          var lang = (userKey && localStorage.getItem(userKey)) || localStorage.getItem("mill_ledger_lang");
+          var lang =
+            (userKey && localStorage.getItem(userKey)) ||
+            localStorage.getItem("mill_ledger_lang");
           if (lang === "ta" || lang === "en") {
             document.documentElement.lang = lang;
           }

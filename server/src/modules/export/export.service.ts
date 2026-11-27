@@ -10,10 +10,7 @@ import type {
 import { renderTabularCsv } from "./csv.renderer.js";
 import { renderExcelWorkbook } from "./excel.renderer.js";
 import { renderTabularPdf } from "./pdf.renderer.js";
-import {
-  formatExportCurrency,
-  formatPeriodLabel,
-} from "./export.theme.js";
+import { formatExportCurrency, formatPeriodLabel } from "./export.theme.js";
 import {
   generateCustomerStatementPdfBuffer,
   generateOrderPdfBuffer,
@@ -35,7 +32,9 @@ export interface EntityExportFilters {
 }
 
 export class ExportService {
-  private async resolveOrg(orgIdOrCode: string): Promise<ExportOrganization & { id: string }> {
+  private async resolveOrg(
+    orgIdOrCode: string,
+  ): Promise<ExportOrganization & { id: string }> {
     const org = await prisma.organization.findFirst({
       where: { OR: [{ id: orgIdOrCode }, { code: orgIdOrCode }] },
       select: { id: true, code: true, name: true, gstin: true, state: true },
@@ -106,7 +105,11 @@ export class ExportService {
                   OR: [
                     { sku: { contains: filters.q, mode: "insensitive" } },
                     { name: { contains: filters.q, mode: "insensitive" } },
-                    { product: { name: { contains: filters.q, mode: "insensitive" } } },
+                    {
+                      product: {
+                        name: { contains: filters.q, mode: "insensitive" },
+                      },
+                    },
                   ],
                 }
               : {}),
@@ -133,11 +136,21 @@ export class ExportService {
         const columns: ExportColumn[] = [
           { key: "sku", header: "SKU", type: "text", width: 85 },
           { key: "name", header: "Variant Name", type: "text", width: 150 },
-          { key: "productName", header: "Product Family", type: "text", width: 120 },
+          {
+            key: "productName",
+            header: "Product Family",
+            type: "text",
+            width: 120,
+          },
           { key: "hsnCode", header: "HSN Code", type: "text", width: 70 },
           { key: "packSize", header: "Pack Size", type: "quantity", width: 72 },
           { key: "uom", header: "UOM", type: "text", width: 48 },
-          { key: "defaultPrice", header: "Base Price", type: "currency", width: 85 },
+          {
+            key: "defaultPrice",
+            header: "Base Price",
+            type: "currency",
+            width: 85,
+          },
           { key: "isActive", header: "Active", type: "boolean", width: 52 },
         ];
 
@@ -156,7 +169,13 @@ export class ExportService {
           ],
         };
         return {
-          content: await this.formatOutput(format, meta, "Products", columns, rows),
+          content: await this.formatOutput(
+            format,
+            meta,
+            "Products",
+            columns,
+            rows,
+          ),
           orgName: org.name,
         };
       }
@@ -214,7 +233,13 @@ export class ExportService {
           summaryItems: [{ label: "Customers", value: String(rows.length) }],
         };
         return {
-          content: await this.formatOutput(format, meta, "Customers", columns, rows),
+          content: await this.formatOutput(
+            format,
+            meta,
+            "Customers",
+            columns,
+            rows,
+          ),
           orgName: org.name,
         };
       }
@@ -240,8 +265,14 @@ export class ExportService {
             ...(filters.q
               ? {
                   OR: [
-                    { orderNumber: { contains: filters.q, mode: "insensitive" } },
-                    { customer: { name: { contains: filters.q, mode: "insensitive" } } },
+                    {
+                      orderNumber: { contains: filters.q, mode: "insensitive" },
+                    },
+                    {
+                      customer: {
+                        name: { contains: filters.q, mode: "insensitive" },
+                      },
+                    },
                   ],
                 }
               : {}),
@@ -269,8 +300,18 @@ export class ExportService {
           { key: "customerName", header: "Customer", type: "text", width: 145 },
           { key: "salesmanName", header: "Salesman", type: "text", width: 95 },
           { key: "status", header: "Status", type: "text", width: 78 },
-          { key: "fulfilmentStatus", header: "Fulfilment", type: "text", width: 82 },
-          { key: "taxableAmount", header: "Taxable", type: "currency", width: 82 },
+          {
+            key: "fulfilmentStatus",
+            header: "Fulfilment",
+            type: "text",
+            width: 82,
+          },
+          {
+            key: "taxableAmount",
+            header: "Taxable",
+            type: "currency",
+            width: 82,
+          },
           { key: "totalTaxAmount", header: "Tax", type: "currency", width: 68 },
           { key: "totalAmount", header: "Total", type: "currency", width: 88 },
         ];
@@ -289,11 +330,22 @@ export class ExportService {
           organization: org,
           summaryItems: [
             { label: "Orders", value: String(rows.length) },
-            { label: "Total Value", value: formatExportCurrency(totalAmount, true), bold: true },
+            {
+              label: "Total Value",
+              value: formatExportCurrency(totalAmount, true),
+              bold: true,
+            },
           ],
         };
         return {
-          content: await this.formatOutput(format, meta, "Sales Orders", columns, rows, totalsRow),
+          content: await this.formatOutput(
+            format,
+            meta,
+            "Sales Orders",
+            columns,
+            rows,
+            totalsRow,
+          ),
           orgName: org.name,
         };
       }
@@ -317,8 +369,18 @@ export class ExportService {
             ...(filters.q
               ? {
                   OR: [
-                    { invoiceNumber: { contains: filters.q, mode: "insensitive" } },
-                    { customerNameSnapshot: { contains: filters.q, mode: "insensitive" } },
+                    {
+                      invoiceNumber: {
+                        contains: filters.q,
+                        mode: "insensitive",
+                      },
+                    },
+                    {
+                      customerNameSnapshot: {
+                        contains: filters.q,
+                        mode: "insensitive",
+                      },
+                    },
                   ],
                 }
               : {}),
@@ -341,15 +403,35 @@ export class ExportService {
         const totalAmount = rows.reduce((s, r) => s + r.totalAmount, 0);
         const totalOut = rows.reduce((s, r) => s + r.outstandingAmount, 0);
         const columns: ExportColumn[] = [
-          { key: "invoiceNumber", header: "Invoice #", type: "text", width: 88 },
+          {
+            key: "invoiceNumber",
+            header: "Invoice #",
+            type: "text",
+            width: 88,
+          },
           { key: "postedAt", header: "Posted Date", type: "date", width: 68 },
           { key: "customerName", header: "Customer", type: "text", width: 140 },
-          { key: "deliveryState", header: "Place of Supply", type: "text", width: 85 },
+          {
+            key: "deliveryState",
+            header: "Place of Supply",
+            type: "text",
+            width: 85,
+          },
           { key: "status", header: "Status", type: "text", width: 78 },
-          { key: "taxableAmount", header: "Taxable", type: "currency", width: 80 },
+          {
+            key: "taxableAmount",
+            header: "Taxable",
+            type: "currency",
+            width: 80,
+          },
           { key: "totalTaxAmount", header: "Tax", type: "currency", width: 68 },
           { key: "totalAmount", header: "Total", type: "currency", width: 85 },
-          { key: "outstandingAmount", header: "Outstanding", type: "currency", width: 85 },
+          {
+            key: "outstandingAmount",
+            header: "Outstanding",
+            type: "currency",
+            width: 85,
+          },
         ];
         const totalsRow = {
           invoiceNumber: "Total",
@@ -367,12 +449,26 @@ export class ExportService {
           organization: org,
           summaryItems: [
             { label: "Invoices", value: String(rows.length) },
-            { label: "Total Invoiced", value: formatExportCurrency(totalAmount, true), bold: true },
-            { label: "Outstanding", value: formatExportCurrency(totalOut, true) },
+            {
+              label: "Total Invoiced",
+              value: formatExportCurrency(totalAmount, true),
+              bold: true,
+            },
+            {
+              label: "Outstanding",
+              value: formatExportCurrency(totalOut, true),
+            },
           ],
         };
         return {
-          content: await this.formatOutput(format, meta, "Invoices", columns, rows, totalsRow),
+          content: await this.formatOutput(
+            format,
+            meta,
+            "Invoices",
+            columns,
+            rows,
+            totalsRow,
+          ),
           orgName: org.name,
         };
       }
@@ -399,9 +495,23 @@ export class ExportService {
             ...(filters.q
               ? {
                   OR: [
-                    { paymentNumber: { contains: filters.q, mode: "insensitive" } },
-                    { customer: { name: { contains: filters.q, mode: "insensitive" } } },
-                    { referenceNumber: { contains: filters.q, mode: "insensitive" } },
+                    {
+                      paymentNumber: {
+                        contains: filters.q,
+                        mode: "insensitive",
+                      },
+                    },
+                    {
+                      customer: {
+                        name: { contains: filters.q, mode: "insensitive" },
+                      },
+                    },
+                    {
+                      referenceNumber: {
+                        contains: filters.q,
+                        mode: "insensitive",
+                      },
+                    },
                   ],
                 }
               : {}),
@@ -424,14 +534,34 @@ export class ExportService {
 
         const totalAmt = rows.reduce((s, r) => s + r.amount, 0);
         const columns: ExportColumn[] = [
-          { key: "paymentNumber", header: "Payment #", type: "text", width: 88 },
+          {
+            key: "paymentNumber",
+            header: "Payment #",
+            type: "text",
+            width: 88,
+          },
           { key: "paymentDate", header: "Date", type: "date", width: 68 },
           { key: "customerName", header: "Customer", type: "text", width: 145 },
           { key: "paymentMode", header: "Mode", type: "text", width: 70 },
-          { key: "referenceNumber", header: "Reference", type: "text", width: 90 },
+          {
+            key: "referenceNumber",
+            header: "Reference",
+            type: "text",
+            width: 90,
+          },
           { key: "amount", header: "Amount", type: "currency", width: 85 },
-          { key: "allocatedAmount", header: "Allocated", type: "currency", width: 82 },
-          { key: "unallocatedAmount", header: "Unallocated", type: "currency", width: 82 },
+          {
+            key: "allocatedAmount",
+            header: "Allocated",
+            type: "currency",
+            width: 82,
+          },
+          {
+            key: "unallocatedAmount",
+            header: "Unallocated",
+            type: "currency",
+            width: 82,
+          },
           { key: "status", header: "Status", type: "text", width: 65 },
         ];
         const totalsRow = {
@@ -449,11 +579,22 @@ export class ExportService {
           organization: org,
           summaryItems: [
             { label: "Payments", value: String(rows.length) },
-            { label: "Total Amount", value: formatExportCurrency(totalAmt, true), bold: true },
+            {
+              label: "Total Amount",
+              value: formatExportCurrency(totalAmt, true),
+              bold: true,
+            },
           ],
         };
         return {
-          content: await this.formatOutput(format, meta, "Payments", columns, rows, totalsRow),
+          content: await this.formatOutput(
+            format,
+            meta,
+            "Payments",
+            columns,
+            rows,
+            totalsRow,
+          ),
           orgName: org.name,
         };
       }
@@ -467,7 +608,11 @@ export class ExportService {
               ? {
                   OR: [
                     { name: { contains: filters.q, mode: "insensitive" } },
-                    { productVariant: { sku: { contains: filters.q, mode: "insensitive" } } },
+                    {
+                      productVariant: {
+                        sku: { contains: filters.q, mode: "insensitive" },
+                      },
+                    },
                   ],
                 }
               : {}),
@@ -496,11 +641,31 @@ export class ExportService {
           { key: "name", header: "Recipe Name", type: "text", width: 145 },
           { key: "version", header: "Version", type: "text", width: 55 },
           { key: "productSku", header: "Output SKU", type: "text", width: 85 },
-          { key: "productName", header: "Output Product", type: "text", width: 135 },
-          { key: "standardBatchSize", header: "Batch Size", type: "quantity", width: 72 },
-          { key: "expectedOutputQty", header: "Expected Output", type: "quantity", width: 78 },
+          {
+            key: "productName",
+            header: "Output Product",
+            type: "text",
+            width: 135,
+          },
+          {
+            key: "standardBatchSize",
+            header: "Batch Size",
+            type: "quantity",
+            width: 72,
+          },
+          {
+            key: "expectedOutputQty",
+            header: "Expected Output",
+            type: "quantity",
+            width: 78,
+          },
           { key: "outputUom", header: "UOM", type: "text", width: 50 },
-          { key: "ingredientCount", header: "Ingredients", type: "number", width: 65 },
+          {
+            key: "ingredientCount",
+            header: "Ingredients",
+            type: "number",
+            width: 65,
+          },
           { key: "isActive", header: "Active", type: "boolean", width: 52 },
         ];
         const meta: ExportDocumentMeta = {
@@ -512,7 +677,13 @@ export class ExportService {
           summaryItems: [{ label: "Recipes", value: String(rows.length) }],
         };
         return {
-          content: await this.formatOutput(format, meta, "Recipes", columns, rows),
+          content: await this.formatOutput(
+            format,
+            meta,
+            "Recipes",
+            columns,
+            rows,
+          ),
           orgName: org.name,
         };
       }
@@ -552,7 +723,13 @@ export class ExportService {
           organization: org,
         };
         return {
-          content: await this.formatOutput(format, meta, "Suppliers", columns, rows),
+          content: await this.formatOutput(
+            format,
+            meta,
+            "Suppliers",
+            columns,
+            rows,
+          ),
           orgName: org.name,
         };
       }
@@ -562,7 +739,11 @@ export class ExportService {
     }
   }
 
-  async generateOrderPdf(orderId: string, orgIdOrCode: string, user: UserContext) {
+  async generateOrderPdf(
+    orderId: string,
+    orgIdOrCode: string,
+    user: UserContext,
+  ) {
     const org = await this.resolveOrg(orgIdOrCode);
     const order = await prisma.salesOrder.findUnique({
       where: { id: orderId },
@@ -587,11 +768,18 @@ export class ExportService {
       entityId: order.id,
       details: { format: "PDF", orderNumber: order.orderNumber },
     });
-    const buffer = await generateOrderPdfBuffer({ ...order, organization: org });
+    const buffer = await generateOrderPdfBuffer({
+      ...order,
+      organization: org,
+    });
     return { buffer, orderNumber: order.orderNumber };
   }
 
-  async generatePaymentPdf(paymentId: string, orgIdOrCode: string, user: UserContext) {
+  async generatePaymentPdf(
+    paymentId: string,
+    orgIdOrCode: string,
+    user: UserContext,
+  ) {
     const org = await this.resolveOrg(orgIdOrCode);
     const payment = await prisma.payment.findUnique({
       where: { id: paymentId },
@@ -699,7 +887,8 @@ export class ExportService {
     rawEntries.sort((a, b) => a.date.getTime() - b.date.getTime());
     let runningBalance = 0;
     const entries = rawEntries.map((e) => {
-      runningBalance = Math.round((runningBalance + e.debit - e.credit) * 100) / 100;
+      runningBalance =
+        Math.round((runningBalance + e.debit - e.credit) * 100) / 100;
       return { ...e, balance: runningBalance };
     });
 
@@ -720,14 +909,20 @@ export class ExportService {
         totalInvoiced,
         totalCreditNotes,
         totalPaid,
-        netOutstanding: Math.round((totalInvoiced - totalCreditNotes - totalPaid) * 100) / 100,
+        netOutstanding:
+          Math.round((totalInvoiced - totalCreditNotes - totalPaid) * 100) /
+          100,
       },
       entries,
     });
     return { buffer, customerCode: customer.code };
   }
 
-  async generateRecipePdf(recipeId: string, orgIdOrCode: string, user: UserContext) {
+  async generateRecipePdf(
+    recipeId: string,
+    orgIdOrCode: string,
+    user: UserContext,
+  ) {
     const org = await this.resolveOrg(orgIdOrCode);
     const recipe = await prisma.recipe.findUnique({
       where: { id: recipeId },
@@ -751,13 +946,20 @@ export class ExportService {
       action: "EXPORT",
       entity: "RECIPE",
       entityId: recipe.id,
-      details: { format: "PDF", recipeName: recipe.name, version: recipe.version },
+      details: {
+        format: "PDF",
+        recipeName: recipe.name,
+        version: recipe.version,
+      },
     });
     const buffer = await generateRecipeSheetPdfBuffer({
       ...recipe,
       organization: org,
     });
-    return { buffer, recipeCode: `${recipe.productVariant.sku}_v${recipe.version}` };
+    return {
+      buffer,
+      recipeCode: `${recipe.productVariant.sku}_v${recipe.version}`,
+    };
   }
 }
 

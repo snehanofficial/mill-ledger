@@ -72,7 +72,9 @@ describe("Frontend Route-Level Role Authorization & Default Workspaces", () => {
       expect(isRoutePermitted("/production/today", "PRODUCTION")).toBe(true);
       expect(isRoutePermitted("/production/new", "PRODUCTION")).toBe(true);
       expect(isRoutePermitted("/production/history", "PRODUCTION")).toBe(true);
-      expect(isRoutePermitted("/production/runs/run-1", "PRODUCTION")).toBe(true);
+      expect(isRoutePermitted("/production/runs/run-1", "PRODUCTION")).toBe(
+        true,
+      );
       expect(isRoutePermitted("/production/recipes", "PRODUCTION")).toBe(true);
       expect(isRoutePermitted("/stock", "PRODUCTION")).toBe(true);
       expect(isRoutePermitted("/stock/item-1/ledger", "PRODUCTION")).toBe(true);
@@ -150,7 +152,13 @@ describe("Frontend Route-Level Role Authorization & Default Workspaces", () => {
   });
 
   describe("Exact parity with authorization matrix", () => {
-    const roles: Role[] = ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"];
+    const roles: Role[] = [
+      "ADMIN",
+      "SALESMAN",
+      "PRODUCTION",
+      "ACCOUNTANT",
+      "OWNER",
+    ];
     const expectedPermittedRoutes: Record<string, string[]> = {
       "/dashboard": ["ADMIN", "OWNER"],
       "/orders": ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
@@ -167,7 +175,13 @@ describe("Frontend Route-Level Role Authorization & Default Workspaces", () => {
       "/customers": ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
       "/reports": ["ADMIN", "ACCOUNTANT", "OWNER"],
       "/reports/sales": ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
-      "/reports/stock": ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
+      "/reports/stock": [
+        "ADMIN",
+        "SALESMAN",
+        "PRODUCTION",
+        "ACCOUNTANT",
+        "OWNER",
+      ],
       "/reports/production": ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
       "/reports/receivables": ["ADMIN", "ACCOUNTANT", "OWNER"],
       "/reports/gst": ["ADMIN", "ACCOUNTANT", "OWNER"],
@@ -176,7 +190,9 @@ describe("Frontend Route-Level Role Authorization & Default Workspaces", () => {
       "/settings": ["ADMIN", "OWNER"],
     };
 
-    for (const [route, expectedRoles] of Object.entries(expectedPermittedRoutes)) {
+    for (const [route, expectedRoles] of Object.entries(
+      expectedPermittedRoutes,
+    )) {
       it(`enforces exact role list for ${route}`, () => {
         for (const role of roles) {
           const shouldBeAllowed = expectedRoles.includes(role);

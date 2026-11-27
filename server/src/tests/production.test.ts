@@ -435,10 +435,9 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
       "ProductionPassword123!",
     );
 
-    const balRes = await fetch(
-      `${baseUrl}/api/v1/inventory/balances`,
-      { headers: { Cookie: productionCookie } },
-    );
+    const balRes = await fetch(`${baseUrl}/api/v1/inventory/balances`, {
+      headers: { Cookie: productionCookie },
+    });
     expect(balRes.status).toBe(200);
     const balData = (await balRes.json()) as {
       balances: Array<{ id: string; sku: string }>;
@@ -467,7 +466,6 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
         Cookie: productionCookie,
       },
       body: JSON.stringify({
-        
         warehouseId: "WH-1",
         recipeId: murukkuRecipe.id,
         runNumber: "RUN-CODE-RES-001",
@@ -478,17 +476,16 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
     });
     expect(postRes.status).toBe(201);
 
-    const listRes = await fetch(
-      `${baseUrl}/api/v1/production-runs`,
-      { headers: { Cookie: productionCookie } },
-    );
+    const listRes = await fetch(`${baseUrl}/api/v1/production-runs`, {
+      headers: { Cookie: productionCookie },
+    });
     expect(listRes.status).toBe(200);
     const listData = (await listRes.json()) as {
       runs: Array<{ runNumber: string }>;
     };
-    expect(
-      listData.runs.some((r) => r.runNumber === "RUN-CODE-RES-001"),
-    ).toBe(true);
+    expect(listData.runs.some((r) => r.runNumber === "RUN-CODE-RES-001")).toBe(
+      true,
+    );
   });
 
   it("IMP-011 & IMP-013: clones BOM recipe versions without mutating historical versions and enforces draft-only edit/delete", async () => {
@@ -536,7 +533,6 @@ describe("M4: Production execution, atomic posting, and reversals", () => {
         Cookie: prodCookie,
       },
       body: JSON.stringify({
-        
         warehouseId: "WH-1",
         recipeId: cloned.id,
         runNumber: `RUN-DRAFT-${Date.now()}`,

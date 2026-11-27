@@ -3,7 +3,10 @@ import { prisma } from "../db/client.js";
 import { resetOperationalData } from "../db/reset.js";
 import { seedBenchmarkMasters } from "../db/seed.js";
 import { financeService } from "../modules/finance/finance.service.js";
-import { calculateLineTax, calculateOrderOrInvoiceTax } from "../modules/finance/tax.util.js";
+import {
+  calculateLineTax,
+  calculateOrderOrInvoiceTax,
+} from "../modules/finance/tax.util.js";
 
 describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGST Act)", () => {
   let orgId: string;
@@ -16,7 +19,9 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
     await resetOperationalData();
     await seedBenchmarkMasters();
 
-    const org = await prisma.organization.findUniqueOrThrow({ where: { code: "MILL" } });
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { code: "MILL" },
+    });
     orgId = org.id;
 
     const uom = await prisma.unitOfMeasure.findFirstOrThrow({
@@ -24,11 +29,15 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
     });
     uomId = uom.id;
 
-    const custTn = await prisma.customer.findFirstOrThrow({ where: { code: "CUST-RET-A" } });
+    const custTn = await prisma.customer.findFirstOrThrow({
+      where: { code: "CUST-RET-A" },
+    });
     customerTnId = custTn.id;
 
     // Create an inter-state customer in Karnataka if not already present
-    let custKa = await prisma.customer.findFirst({ where: { gstin: "29AAAAA0000A1Z5" } });
+    let custKa = await prisma.customer.findFirst({
+      where: { gstin: "29AAAAA0000A1Z5" },
+    });
     if (!custKa) {
       custKa = await prisma.customer.create({
         data: {
@@ -71,8 +80,12 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
       },
     });
 
-    const warehouse = await prisma.warehouse.findFirstOrThrow({ where: { code: "WH-1" } });
-    const salesman = await prisma.user.findFirstOrThrow({ where: { email: "salesman1@millledger.local" } });
+    const warehouse = await prisma.warehouse.findFirstOrThrow({
+      where: { code: "WH-1" },
+    });
+    const salesman = await prisma.user.findFirstOrThrow({
+      where: { email: "salesman1@millledger.local" },
+    });
 
     // Create approved sales order directly
     const order = await prisma.salesOrder.create({
@@ -85,10 +98,10 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
         status: "APPROVED",
         deliveryState: "Tamil Nadu",
         taxableAmount: 758.94,
-        cgstAmount: 68.30,
-        sgstAmount: 68.30,
+        cgstAmount: 68.3,
+        sgstAmount: 68.3,
         igstAmount: 0.0,
-        totalTaxAmount: 136.60,
+        totalTaxAmount: 136.6,
         totalAmount: 895.54,
         lines: {
           create: {
@@ -99,7 +112,7 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
             approvedUnitPrice: 54.21,
             taxRate: 18.0,
             taxableAmount: 758.94,
-            taxAmount: 136.60,
+            taxAmount: 136.6,
             lineTotal: 895.54,
           },
         },
@@ -115,17 +128,17 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
     if (!invoice) throw new Error("Invoice was not created");
 
     expect(Number(invoice.taxableAmount)).toBe(758.94);
-    expect(Number(invoice.cgstAmount)).toBe(68.30);
-    expect(Number(invoice.sgstAmount)).toBe(68.30);
+    expect(Number(invoice.cgstAmount)).toBe(68.3);
+    expect(Number(invoice.sgstAmount)).toBe(68.3);
     expect(Number(invoice.igstAmount)).toBe(0);
-    expect(Number(invoice.totalTaxAmount)).toBe(136.60);
+    expect(Number(invoice.totalTaxAmount)).toBe(136.6);
     expect(Number(invoice.totalAmount)).toBe(895.54);
 
     const line = invoice.lines[0];
     expect(Number(line.taxableAmount)).toBe(758.94);
-    expect(Number(line.cgstAmount)).toBe(68.30);
-    expect(Number(line.sgstAmount)).toBe(68.30);
-    expect(Number(line.taxAmount)).toBe(136.60);
+    expect(Number(line.cgstAmount)).toBe(68.3);
+    expect(Number(line.sgstAmount)).toBe(68.3);
+    expect(Number(line.taxAmount)).toBe(136.6);
     expect(Number(line.lineTotal)).toBe(895.54);
   });
 
@@ -138,28 +151,68 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
     // Taxable: 16305.61, CGST: 1021.17, SGST: 1021.17, Total Tax: 2042.34, Grand Total: 18347.95
 
     const p5 = await prisma.product.create({
-      data: { organizationId: orgId, code: `PROD-5-${runId}`, name: "P5", taxRate: 5.0, hsnCode: "21069099" },
+      data: {
+        organizationId: orgId,
+        code: `PROD-5-${runId}`,
+        name: "P5",
+        taxRate: 5.0,
+        hsnCode: "21069099",
+      },
     });
     const v5 = await prisma.productVariant.create({
-      data: { productId: p5.id, sku: `VAR-P5-${runId}`, name: "V5", packSize: 1, uomId },
+      data: {
+        productId: p5.id,
+        sku: `VAR-P5-${runId}`,
+        name: "V5",
+        packSize: 1,
+        uomId,
+      },
     });
 
     const p18 = await prisma.product.create({
-      data: { organizationId: orgId, code: `PROD-18-${runId}`, name: "P18", taxRate: 18.0, hsnCode: "21069098" },
+      data: {
+        organizationId: orgId,
+        code: `PROD-18-${runId}`,
+        name: "P18",
+        taxRate: 18.0,
+        hsnCode: "21069098",
+      },
     });
     const v18 = await prisma.productVariant.create({
-      data: { productId: p18.id, sku: `VAR-P18-${runId}`, name: "V18", packSize: 1, uomId },
+      data: {
+        productId: p18.id,
+        sku: `VAR-P18-${runId}`,
+        name: "V18",
+        packSize: 1,
+        uomId,
+      },
     });
 
     const p12 = await prisma.product.create({
-      data: { organizationId: orgId, code: `PROD-12-${runId}`, name: "P12", taxRate: 12.0, hsnCode: "21069097" },
+      data: {
+        organizationId: orgId,
+        code: `PROD-12-${runId}`,
+        name: "P12",
+        taxRate: 12.0,
+        hsnCode: "21069097",
+      },
     });
     const v12 = await prisma.productVariant.create({
-      data: { productId: p12.id, sku: `VAR-P12-${runId}`, name: "V12", packSize: 1, uomId },
+      data: {
+        productId: p12.id,
+        sku: `VAR-P12-${runId}`,
+        name: "V12",
+        packSize: 1,
+        uomId,
+      },
     });
 
-    const warehouse = await prisma.warehouse.findFirstOrThrow({ where: { code: "WH-1" } });
-    const salesman = await prisma.user.findFirstOrThrow({ where: { email: "salesman1@millledger.local" } });
+    const warehouse = await prisma.warehouse.findFirstOrThrow({
+      where: { code: "WH-1" },
+    });
+    const salesman = await prisma.user.findFirstOrThrow({
+      where: { email: "salesman1@millledger.local" },
+    });
 
     const order = await prisma.salesOrder.create({
       data: {
@@ -207,7 +260,7 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
               quotedUnitPrice: 74.65,
               approvedUnitPrice: 74.65,
               taxRate: 5.0,
-              taxableAmount: 2090.20,
+              taxableAmount: 2090.2,
               taxAmount: 104.52,
               lineTotal: 2194.72,
             },
@@ -243,10 +296,18 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
     expect(Number(invoice.totalAmount)).toBe(18347.95);
 
     // Verify all header sums exactly equal line sums
-    const linesCgstSum = Number(invoice.lines.reduce((s, l) => s + Number(l.cgstAmount), 0).toFixed(2));
-    const linesSgstSum = Number(invoice.lines.reduce((s, l) => s + Number(l.sgstAmount), 0).toFixed(2));
-    const linesTaxSum = Number(invoice.lines.reduce((s, l) => s + Number(l.taxAmount), 0).toFixed(2));
-    const linesTotalSum = Number(invoice.lines.reduce((s, l) => s + Number(l.lineTotal), 0).toFixed(2));
+    const linesCgstSum = Number(
+      invoice.lines.reduce((s, l) => s + Number(l.cgstAmount), 0).toFixed(2),
+    );
+    const linesSgstSum = Number(
+      invoice.lines.reduce((s, l) => s + Number(l.sgstAmount), 0).toFixed(2),
+    );
+    const linesTaxSum = Number(
+      invoice.lines.reduce((s, l) => s + Number(l.taxAmount), 0).toFixed(2),
+    );
+    const linesTotalSum = Number(
+      invoice.lines.reduce((s, l) => s + Number(l.lineTotal), 0).toFixed(2),
+    );
 
     expect(linesCgstSum).toBe(1021.17);
     expect(linesSgstSum).toBe(1021.17);
@@ -265,28 +326,68 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
     // Taxable: 11545.62, IGST: 1333.07, Total Tax: 1333.07, Grand Total: 12878.69
 
     const p5 = await prisma.product.create({
-      data: { organizationId: orgId, code: `PROD-KA-5-${runId}`, name: "P5", taxRate: 5.0, hsnCode: "21069099" },
+      data: {
+        organizationId: orgId,
+        code: `PROD-KA-5-${runId}`,
+        name: "P5",
+        taxRate: 5.0,
+        hsnCode: "21069099",
+      },
     });
     const v5 = await prisma.productVariant.create({
-      data: { productId: p5.id, sku: `VAR-KA-5-${runId}`, name: "V5", packSize: 1, uomId },
+      data: {
+        productId: p5.id,
+        sku: `VAR-KA-5-${runId}`,
+        name: "V5",
+        packSize: 1,
+        uomId,
+      },
     });
 
     const p18 = await prisma.product.create({
-      data: { organizationId: orgId, code: `PROD-KA-18-${runId}`, name: "P18", taxRate: 18.0, hsnCode: "21069098" },
+      data: {
+        organizationId: orgId,
+        code: `PROD-KA-18-${runId}`,
+        name: "P18",
+        taxRate: 18.0,
+        hsnCode: "21069098",
+      },
     });
     const v18 = await prisma.productVariant.create({
-      data: { productId: p18.id, sku: `VAR-KA-18-${runId}`, name: "V18", packSize: 1, uomId },
+      data: {
+        productId: p18.id,
+        sku: `VAR-KA-18-${runId}`,
+        name: "V18",
+        packSize: 1,
+        uomId,
+      },
     });
 
     const p12 = await prisma.product.create({
-      data: { organizationId: orgId, code: `PROD-KA-12-${runId}`, name: "P12", taxRate: 12.0, hsnCode: "21069097" },
+      data: {
+        organizationId: orgId,
+        code: `PROD-KA-12-${runId}`,
+        name: "P12",
+        taxRate: 12.0,
+        hsnCode: "21069097",
+      },
     });
     const v12 = await prisma.productVariant.create({
-      data: { productId: p12.id, sku: `VAR-KA-12-${runId}`, name: "V12", packSize: 1, uomId },
+      data: {
+        productId: p12.id,
+        sku: `VAR-KA-12-${runId}`,
+        name: "V12",
+        packSize: 1,
+        uomId,
+      },
     });
 
-    const warehouse = await prisma.warehouse.findFirstOrThrow({ where: { code: "WH-1" } });
-    const salesman = await prisma.user.findFirstOrThrow({ where: { email: "salesman1@millledger.local" } });
+    const warehouse = await prisma.warehouse.findFirstOrThrow({
+      where: { code: "WH-1" },
+    });
+    const salesman = await prisma.user.findFirstOrThrow({
+      where: { email: "salesman1@millledger.local" },
+    });
 
     const order = await prisma.salesOrder.create({
       data: {
@@ -345,7 +446,7 @@ describe("F-010 Regression Test: Statutory GST Decimal Rounding (Section 170 CGS
               quotedUnitPrice: 178.24,
               approvedUnitPrice: 178.24,
               taxRate: 12.0,
-              taxableAmount: 7129.60,
+              taxableAmount: 7129.6,
               taxAmount: 855.55,
               lineTotal: 7985.15,
             },

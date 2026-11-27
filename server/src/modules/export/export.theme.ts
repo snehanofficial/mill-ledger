@@ -48,8 +48,7 @@ export interface PdfFontSet {
 }
 
 export function registerPdfFonts(doc: PDFKit.PDFDocument): PdfFontSet {
-  const hasDejaVu =
-    fs.existsSync(DEJAVU_REGULAR) && fs.existsSync(DEJAVU_BOLD);
+  const hasDejaVu = fs.existsSync(DEJAVU_REGULAR) && fs.existsSync(DEJAVU_BOLD);
 
   if (hasDejaVu) {
     doc.registerFont("MillSans", DEJAVU_REGULAR);
@@ -133,10 +132,7 @@ export function formatExportDateTime(val: unknown): string {
   }).format(d);
 }
 
-export function formatPeriodLabel(
-  startDate?: Date,
-  endDate?: Date,
-): string {
+export function formatPeriodLabel(startDate?: Date, endDate?: Date): string {
   if (startDate && endDate) {
     return `${formatExportDate(startDate)} to ${formatExportDate(endDate)}`;
   }

@@ -29,7 +29,9 @@ test.describe("5-Role Workspace & Permission Journeys", () => {
     await expect(
       page.getByRole("heading", { name: /My work & orders/i }),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: /New order/i })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /New order/i }),
+    ).toBeVisible();
 
     // Verify mobile horizontal overflow is 0
     const overflow = await page.evaluate(
@@ -43,9 +45,13 @@ test.describe("5-Role Workspace & Permission Journeys", () => {
 
     // Verify restricted routes are blocked with 403 Forbidden
     await page.goto("/invoices");
-    await expect(page.getByRole("heading", { name: /Access Denied|Forbidden|403/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Access Denied|Forbidden|403/i }),
+    ).toBeVisible();
     await page.goto("/settings");
-    await expect(page.getByRole("heading", { name: /Access Denied|Forbidden|403/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Access Denied|Forbidden|403/i }),
+    ).toBeVisible();
   });
 
   test("PRODUCTION lands on Today's runs, can open New run and Stock, and is blocked from Finance/Orders", async ({
@@ -65,9 +71,13 @@ test.describe("5-Role Workspace & Permission Journeys", () => {
 
     // Verify restricted routes are blocked
     await page.goto("/invoices");
-    await expect(page.getByRole("heading", { name: /Access Denied|Forbidden|403/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Access Denied|Forbidden|403/i }),
+    ).toBeVisible();
     await page.goto("/payments");
-    await expect(page.getByRole("heading", { name: /Access Denied|Forbidden|403/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Access Denied|Forbidden|403/i }),
+    ).toBeVisible();
   });
 
   test("ACCOUNTANT lands on Reporting home (read-only) and cannot access write routes", async ({
@@ -84,7 +94,9 @@ test.describe("5-Role Workspace & Permission Journeys", () => {
     await expect(
       page.getByRole("heading", { name: /Reporting home/i }),
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: /Sales register/i }).first()).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Sales register/i }).first(),
+    ).toBeVisible();
 
     // Can view receivables read-only
     await page.goto("/receivables");
@@ -94,9 +106,13 @@ test.describe("5-Role Workspace & Permission Journeys", () => {
 
     // Blocked from write forms
     await page.goto("/orders/new");
-    await expect(page.getByRole("heading", { name: /Access Denied|Forbidden|403/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Access Denied|Forbidden|403/i }),
+    ).toBeVisible();
     await page.goto("/payments/new");
-    await expect(page.getByRole("heading", { name: /Access Denied|Forbidden|403/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Access Denied|Forbidden|403/i }),
+    ).toBeVisible();
   });
 
   test("OWNER lands on Business overview and is blocked from operational write forms", async ({
@@ -116,9 +132,13 @@ test.describe("5-Role Workspace & Permission Journeys", () => {
 
     // Blocked from operational write forms
     await page.goto("/orders/new");
-    await expect(page.getByRole("heading", { name: /Access Denied|Forbidden|403/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Access Denied|Forbidden|403/i }),
+    ).toBeVisible();
     await page.goto("/production/new");
-    await expect(page.getByRole("heading", { name: /Access Denied|Forbidden|403/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Access Denied|Forbidden|403/i }),
+    ).toBeVisible();
   });
 
   test("ADMIN lands on Work queue and can navigate across Sales, Purchases, Finance, and Receivables", async ({

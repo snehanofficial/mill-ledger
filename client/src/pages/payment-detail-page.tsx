@@ -80,21 +80,26 @@ export function PaymentDetailPage() {
   const [bounceOpen, setBounceOpen] = useState(false);
   const [bounceReason, setBounceReason] = useState("");
 
-  const { data: payment, isLoading, isError, error, refetch } =
-    useQuery<PaymentDetail>({
-      queryKey: ["payment", paymentId],
-      queryFn: async () => {
-        const endpoint = `/payments/${paymentId}`;
-        const res = await apiClient.get(endpoint);
-        return assertEntityResponse<PaymentDetail & Record<string, unknown>>(
-          res.data,
-          "payment",
-          ["allocations"],
-          endpoint,
-        );
-      },
-      enabled: Boolean(paymentId),
-    });
+  const {
+    data: payment,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<PaymentDetail>({
+    queryKey: ["payment", paymentId],
+    queryFn: async () => {
+      const endpoint = `/payments/${paymentId}`;
+      const res = await apiClient.get(endpoint);
+      return assertEntityResponse<PaymentDetail & Record<string, unknown>>(
+        res.data,
+        "payment",
+        ["allocations"],
+        endpoint,
+      );
+    },
+    enabled: Boolean(paymentId),
+  });
 
   const { data: openInvoicesData } = useQuery<{
     invoices: Array<{
@@ -236,7 +241,11 @@ export function PaymentDetailPage() {
                   });
                   toast.success(`Downloaded ${filename}`);
                 } catch (err) {
-                  toast.error(err instanceof Error ? err.message : "Failed to download receipt");
+                  toast.error(
+                    err instanceof Error
+                      ? err.message
+                      : "Failed to download receipt",
+                  );
                 }
               }}
               className="gap-1.5"
@@ -290,7 +299,9 @@ export function PaymentDetailPage() {
                 <TableHead>Invoice #</TableHead>
                 <TableHead className="text-right">Invoice total</TableHead>
                 <TableHead className="text-right">Allocated amount</TableHead>
-                <TableHead className="text-right">Current outstanding</TableHead>
+                <TableHead className="text-right">
+                  Current outstanding
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -300,7 +311,8 @@ export function PaymentDetailPage() {
                     colSpan={4}
                     className="text-center text-xs text-muted-foreground py-6"
                   >
-                    No invoice allocations yet. Full amount remains as unallocated customer credit.
+                    No invoice allocations yet. Full amount remains as
+                    unallocated customer credit.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -342,7 +354,8 @@ export function PaymentDetailPage() {
           <DialogHeader>
             <DialogTitle>Allocate unallocated cash</DialogTitle>
             <DialogDescription>
-              Available unallocated balance: {formatINR(payment.unallocatedAmount)}
+              Available unallocated balance:{" "}
+              {formatINR(payment.unallocatedAmount)}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
@@ -355,7 +368,8 @@ export function PaymentDetailPage() {
                 <SelectContent>
                   {(openInvoicesData?.invoices ?? []).map((inv) => (
                     <SelectItem key={inv.id} value={inv.id}>
-                      {inv.invoiceNumber} — Due {formatINR(inv.outstandingAmount)}
+                      {inv.invoiceNumber} — Due{" "}
+                      {formatINR(inv.outstandingAmount)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -398,7 +412,8 @@ export function PaymentDetailPage() {
           <DialogHeader>
             <DialogTitle>Mark {payment.receiptNumber} as bounced</DialogTitle>
             <DialogDescription>
-              Restores all allocated invoice balances without deleting this payment record.
+              Restores all allocated invoice balances without deleting this
+              payment record.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">

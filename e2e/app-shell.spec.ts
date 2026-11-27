@@ -52,8 +52,12 @@ test.describe("MillLedger Application Shell", () => {
     expect(Math.round(sidebarBox?.width ?? 0)).toBe(248);
 
     // Navigation sections & items
-    await expect(sidebar.getByRole("link", { name: "Work queue" })).toBeVisible();
-    await expect(sidebar.getByRole("link", { name: "Order inbox" })).toBeVisible();
+    await expect(
+      sidebar.getByRole("link", { name: "Work queue" }),
+    ).toBeVisible();
+    await expect(
+      sidebar.getByRole("link", { name: "Order inbox" }),
+    ).toBeVisible();
     await expect(sidebar.getByRole("link", { name: "Stock" })).toBeVisible();
     await expect(sidebar.getByRole("link", { name: "Invoices" })).toBeVisible();
 

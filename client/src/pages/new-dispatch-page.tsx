@@ -4,7 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { formatQuantity } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
-import { ErrorState, EmptyState, SkeletonTable } from "@/components/ui/loading-error-empty";
+import {
+  ErrorState,
+  EmptyState,
+  SkeletonTable,
+} from "@/components/ui/loading-error-empty";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,7 +54,9 @@ export function NewDispatchPage() {
   const initialOrderId = searchParams.get("orderId") ?? "";
 
   const [selectedOrderId, setSelectedOrderId] = useState(initialOrderId);
-  const [lineQuantities, setLineQuantities] = useState<Record<string, string>>({});
+  const [lineQuantities, setLineQuantities] = useState<Record<string, string>>(
+    {},
+  );
   const [vehicleNumber, setVehicleNumber] = useState("");
   const [driverName, setDriverName] = useState("");
   const [driverPhone, setDriverPhone] = useState("");
@@ -113,7 +119,8 @@ export function NewDispatchPage() {
       queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
       queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
       const dspId = resData?.dispatch?.id ?? resData?.id;
-      const dspNum = resData?.dispatch?.dispatchNumber ?? resData?.dispatchNumber ?? "";
+      const dspNum =
+        resData?.dispatch?.dispatchNumber ?? resData?.dispatchNumber ?? "";
       toast.success(`Dispatch ${dspNum} posted and finished stock deducted.`);
       if (dspId) {
         navigate(`/dispatch/${dspId}`);
@@ -176,7 +183,8 @@ export function NewDispatchPage() {
               <SelectContent>
                 {eligibleOrders.map((o) => (
                   <SelectItem key={o.id} value={o.id}>
-                    {o.orderNumber} — {o.customer.name} ({o.fulfilmentStatus.replaceAll("_", " ")})
+                    {o.orderNumber} — {o.customer.name} (
+                    {o.fulfilmentStatus.replaceAll("_", " ")})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -191,20 +199,26 @@ export function NewDispatchPage() {
                     <TableRow>
                       <TableHead>Product</TableHead>
                       <TableHead className="text-right">Approved</TableHead>
-                      <TableHead className="text-right">Already dispatched</TableHead>
+                      <TableHead className="text-right">
+                        Already dispatched
+                      </TableHead>
                       <TableHead className="text-right">Remaining</TableHead>
                       <TableHead className="text-right">Dispatch now</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {selectedOrder.lines.map((line) => {
-                      const approved = Number(line.approvedQuantity ?? line.quotedQuantity);
+                      const approved = Number(
+                        line.approvedQuantity ?? line.quotedQuantity,
+                      );
                       const dispatched = Number(line.dispatchedQuantity ?? 0);
                       const remaining = Math.max(0, approved - dispatched);
                       return (
                         <TableRow key={line.id}>
                           <TableCell>
-                            <div className="font-medium">{line.productVariant.name}</div>
+                            <div className="font-medium">
+                              {line.productVariant.name}
+                            </div>
                             <div className="text-xs text-muted-foreground">
                               {line.productVariant.sku}
                             </div>
@@ -287,7 +301,8 @@ export function NewDispatchPage() {
                 <div>
                   <span className="font-medium">Physical stock impact: </span>
                   <span className="tabular-nums">
-                    Deducts {formatQuantity(totalToDispatch, { unit: "pkts" })} from finished goods and releases corresponding reservation.
+                    Deducts {formatQuantity(totalToDispatch, { unit: "pkts" })}{" "}
+                    from finished goods and releases corresponding reservation.
                   </span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -301,11 +316,15 @@ export function NewDispatchPage() {
                   <Button
                     variant="primary"
                     onClick={() => postDispatchMutation.mutate()}
-                    disabled={totalToDispatch <= 0 || postDispatchMutation.isPending}
+                    disabled={
+                      totalToDispatch <= 0 || postDispatchMutation.isPending
+                    }
                     className="gap-1.5"
                   >
                     <TruckIcon className="size-4" aria-hidden="true" />
-                    {postDispatchMutation.isPending ? "Posting..." : "Post dispatch"}
+                    {postDispatchMutation.isPending
+                      ? "Posting..."
+                      : "Post dispatch"}
                   </Button>
                 </div>
               </div>

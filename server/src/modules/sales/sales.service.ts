@@ -232,10 +232,7 @@ export class SalesService {
 
       const variant = await tx.productVariant.findFirst({
         where: {
-          OR: [
-            { id: line.productVariantId },
-            { sku: line.productVariantId },
-          ],
+          OR: [{ id: line.productVariantId }, { sku: line.productVariantId }],
         },
         include: {
           product: true,
@@ -376,10 +373,16 @@ export class SalesService {
       totalTaxAmount = Number((totalTaxAmount + lineTax).toFixed(2));
 
       if (isIntraState) {
-        cgstAmount = Number((cgstAmount + taxRes.cgstAmount.toNumber()).toFixed(2));
-        sgstAmount = Number((sgstAmount + taxRes.sgstAmount.toNumber()).toFixed(2));
+        cgstAmount = Number(
+          (cgstAmount + taxRes.cgstAmount.toNumber()).toFixed(2),
+        );
+        sgstAmount = Number(
+          (sgstAmount + taxRes.sgstAmount.toNumber()).toFixed(2),
+        );
       } else {
-        igstAmount = Number((igstAmount + taxRes.igstAmount.toNumber()).toFixed(2));
+        igstAmount = Number(
+          (igstAmount + taxRes.igstAmount.toNumber()).toFixed(2),
+        );
       }
 
       let shortage = 0;
@@ -448,11 +451,190 @@ export class SalesService {
     }
 
     try {
-      const txResult = await prisma.$transaction(async (tx) => {
-        // 1. Idempotency check
-        if (input.idempotencyKey) {
-          const existing = await tx.salesOrder.findUnique({
-            where: { idempotencyKey: input.idempotencyKey },
+      const txResult = await prisma.$transaction(
+        async (tx) => {
+          // 1. Idempotency check
+          if (input.idempotencyKey) {
+            const existing = await tx.salesOrder.findUnique({
+              where: { idempotencyKey: input.idempotencyKey },
+              include: {
+                lines: {
+                  include: {
+                    productVariant: true,
+                  },
+                },
+                customer: true,
+                salesman: true,
+                reservations: true,
+              },
+            });
+            if (existing) {
+              return { order: existing, shortages: [] };
+            }
+          }
+
+          // 2. Validate customer and assignment
+          const customer = await tx.customer.findFirst({
+            where: {
+              OR: [{ id: input.customerId }, { code: input.customerId }],
+            },
+          });
+          if (!customer) {
+            throw new AppError(`Customer ${input.customerId} not found`, 404);
+          }
+          if (!customer.isActive) {
+            throw new AppError(
+              `Customer ${customer.name} is archived and cannot receive new orders`,
+              400,
+            );
+          }
+
+          // If actor is SALESMAN, verify assignment
+          if (user.role === "SALESMAN") {
+            const assignment = await tx.salesmanCustomerAssignment.findUnique({
+              where: {
+                salesmanId_customerId: {
+                  salesmanId: user.id,
+                  customerId: customer.id,
+                },
+              },
+            });
+            if (!assignment) {
+              throw new AppError(
+                `Salesman is not assigned to customer ${customer.name}`,
+                403,
+              );
+            }
+          }
+
+          // Resolve organization ID (foreign key reference to Organization.id)
+          const targetOrg =
+            input.organizationId ||
+            user.organizationId ||
+            customer.organizationId ||
+            "MILL";
+          const organizationId = await this.resolveOrgId(targetOrg, tx);
+
+          // 3. Resolve warehouse within the organization
+          let warehouseId: string | undefined;
+          if (input.warehouseId) {
+            const wh = await requireActiveOrgWarehouse(
+              tx,
+              organizationId,
+              input.warehouseId,
+            );
+            warehouseId = wh.id;
+          } else {
+            const defaultWh = await tx.warehouse.findFirst({
+              where: { organizationId, isActive: true },
+              orderBy: { code: "asc" },
+            });
+            warehouseId = defaultWh?.id;
+          }
+          if (!warehouseId) {
+            throw new AppError("No active warehouse available for order", 400);
+          }
+
+          const orderNumber =
+            input.orderNumber ??
+            (await sequenceService.getNextOrderNumber(tx, organizationId));
+
+          // 4. Place of supply tax calculation & line preparation
+          const {
+            preparedLines,
+            taxableAmount,
+            cgstAmount,
+            sgstAmount,
+            igstAmount,
+            totalTaxAmount,
+            totalAmount,
+            hasLineRequiringApproval,
+            priceMismatchReasons,
+          } = await this.prepareOrderLinesAndTotals(tx, {
+            organizationId,
+            warehouseId,
+            deliveryState: customer.state,
+            lines: input.lines,
+            orderDate: input.orderDate,
+            pricedAt: input.pricedAt,
+          });
+
+          if (
+            input.status &&
+            input.status !== OrderStatus.DRAFT &&
+            input.status !== OrderStatus.SUBMITTED
+          ) {
+            throw new AppError(
+              "New sales orders can only be created with DRAFT or SUBMITTED status",
+              400,
+            );
+          }
+          let initialStatus: OrderStatus =
+            input.status === OrderStatus.DRAFT
+              ? OrderStatus.DRAFT
+              : OrderStatus.SUBMITTED;
+
+          // If any line has a discount between 5% and 15% or stale offline price, place order UNDER_REVIEW pending manager approval
+          if (
+            initialStatus === OrderStatus.SUBMITTED &&
+            (hasLineRequiringApproval || priceMismatchReasons.length > 0)
+          ) {
+            initialStatus = OrderStatus.UNDER_REVIEW;
+          }
+
+          const overrideReason =
+            priceMismatchReasons.length > 0
+              ? priceMismatchReasons.join("; ")
+              : undefined;
+
+          // Create Sales Order header
+          const order = await tx.salesOrder.create({
+            data: {
+              organizationId,
+              orderNumber,
+              customerId: customer.id,
+              salesmanId: user.id,
+              warehouseId,
+              status: initialStatus,
+              deliveryState: customer.state,
+              notes: input.notes,
+              overrideReason: overrideReason ?? null,
+              taxableAmount,
+              cgstAmount,
+              sgstAmount,
+              igstAmount,
+              totalTaxAmount,
+              totalAmount,
+              idempotencyKey: input.idempotencyKey,
+              submittedAt:
+                initialStatus === OrderStatus.SUBMITTED ||
+                initialStatus === OrderStatus.UNDER_REVIEW
+                  ? new Date()
+                  : null,
+            },
+          });
+
+          // Create order lines
+          for (const pl of preparedLines) {
+            await tx.salesOrderLine.create({
+              data: {
+                salesOrderId: order.id,
+                productVariantId: pl.productVariantId,
+                inventoryItemId: pl.inventoryItemId,
+                quotedQuantity: pl.quotedQuantity,
+                approvedQuantity: pl.approvedQuantity,
+                quotedUnitPrice: pl.quotedUnitPrice,
+                approvedUnitPrice: pl.approvedUnitPrice,
+                taxRate: pl.taxRate,
+                taxableAmount: pl.taxableAmount,
+                taxAmount: pl.taxAmount,
+                lineTotal: pl.lineTotal,
+              },
+            });
+          }
+
+          const fullOrder = await tx.salesOrder.findUnique({
+            where: { id: order.id },
             include: {
               lines: {
                 include: {
@@ -461,197 +643,21 @@ export class SalesService {
               },
               customer: true,
               salesman: true,
-              reservations: true,
             },
           });
-          if (existing) {
-            return { order: existing, shortages: [] };
-          }
-        }
 
-        // 2. Validate customer and assignment
-        const customer = await tx.customer.findFirst({
-          where: {
-            OR: [{ id: input.customerId }, { code: input.customerId }],
-          },
-        });
-        if (!customer) {
-          throw new AppError(`Customer ${input.customerId} not found`, 404);
-        }
-        if (!customer.isActive) {
-          throw new AppError(
-            `Customer ${customer.name} is archived and cannot receive new orders`,
-            400,
-          );
-        }
+          const result = {
+            order: fullOrder!,
+            shortages: preparedLines.map((l) => ({
+              productVariantId: l.productVariantId,
+              shortage: l.shortage,
+            })),
+          };
 
-        // If actor is SALESMAN, verify assignment
-        if (user.role === "SALESMAN") {
-          const assignment = await tx.salesmanCustomerAssignment.findUnique({
-            where: {
-              salesmanId_customerId: {
-                salesmanId: user.id,
-                customerId: customer.id,
-              },
-            },
-          });
-          if (!assignment) {
-            throw new AppError(
-              `Salesman is not assigned to customer ${customer.name}`,
-              403,
-            );
-          }
-        }
-
-        // Resolve organization ID (foreign key reference to Organization.id)
-        const targetOrg =
-          input.organizationId ||
-          user.organizationId ||
-          customer.organizationId ||
-          "MILL";
-        const organizationId = await this.resolveOrgId(targetOrg, tx);
-
-        // 3. Resolve warehouse within the organization
-        let warehouseId: string | undefined;
-        if (input.warehouseId) {
-          const wh = await requireActiveOrgWarehouse(
-            tx,
-            organizationId,
-            input.warehouseId,
-          );
-          warehouseId = wh.id;
-        } else {
-          const defaultWh = await tx.warehouse.findFirst({
-            where: { organizationId, isActive: true },
-            orderBy: { code: "asc" },
-          });
-          warehouseId = defaultWh?.id;
-        }
-        if (!warehouseId) {
-          throw new AppError("No active warehouse available for order", 400);
-        }
-
-        const orderNumber =
-          input.orderNumber ??
-          (await sequenceService.getNextOrderNumber(tx, organizationId));
-
-        // 4. Place of supply tax calculation & line preparation
-        const {
-          preparedLines,
-          taxableAmount,
-          cgstAmount,
-          sgstAmount,
-          igstAmount,
-          totalTaxAmount,
-          totalAmount,
-          hasLineRequiringApproval,
-          priceMismatchReasons,
-        } = await this.prepareOrderLinesAndTotals(tx, {
-          organizationId,
-          warehouseId,
-          deliveryState: customer.state,
-          lines: input.lines,
-          orderDate: input.orderDate,
-          pricedAt: input.pricedAt,
-        });
-
-        if (
-          input.status &&
-          input.status !== OrderStatus.DRAFT &&
-          input.status !== OrderStatus.SUBMITTED
-        ) {
-          throw new AppError(
-            "New sales orders can only be created with DRAFT or SUBMITTED status",
-            400,
-          );
-        }
-        let initialStatus: OrderStatus =
-          input.status === OrderStatus.DRAFT
-            ? OrderStatus.DRAFT
-            : OrderStatus.SUBMITTED;
-
-        // If any line has a discount between 5% and 15% or stale offline price, place order UNDER_REVIEW pending manager approval
-        if (
-          initialStatus === OrderStatus.SUBMITTED &&
-          (hasLineRequiringApproval || priceMismatchReasons.length > 0)
-        ) {
-          initialStatus = OrderStatus.UNDER_REVIEW;
-        }
-
-        const overrideReason =
-          priceMismatchReasons.length > 0
-            ? priceMismatchReasons.join("; ")
-            : undefined;
-
-        // Create Sales Order header
-        const order = await tx.salesOrder.create({
-          data: {
-            organizationId,
-            orderNumber,
-            customerId: customer.id,
-            salesmanId: user.id,
-            warehouseId,
-            status: initialStatus,
-            deliveryState: customer.state,
-            notes: input.notes,
-            overrideReason: overrideReason ?? null,
-            taxableAmount,
-            cgstAmount,
-            sgstAmount,
-            igstAmount,
-            totalTaxAmount,
-            totalAmount,
-            idempotencyKey: input.idempotencyKey,
-            submittedAt:
-              initialStatus === OrderStatus.SUBMITTED ||
-              initialStatus === OrderStatus.UNDER_REVIEW
-                ? new Date()
-                : null,
-          },
-        });
-
-        // Create order lines
-        for (const pl of preparedLines) {
-          await tx.salesOrderLine.create({
-            data: {
-              salesOrderId: order.id,
-              productVariantId: pl.productVariantId,
-              inventoryItemId: pl.inventoryItemId,
-              quotedQuantity: pl.quotedQuantity,
-              approvedQuantity: pl.approvedQuantity,
-              quotedUnitPrice: pl.quotedUnitPrice,
-              approvedUnitPrice: pl.approvedUnitPrice,
-              taxRate: pl.taxRate,
-              taxableAmount: pl.taxableAmount,
-              taxAmount: pl.taxAmount,
-              lineTotal: pl.lineTotal,
-            },
-          });
-        }
-
-        const fullOrder = await tx.salesOrder.findUnique({
-          where: { id: order.id },
-          include: {
-            lines: {
-              include: {
-                productVariant: true,
-              },
-            },
-            customer: true,
-            salesman: true,
-          },
-        });
-
-        const result = {
-          order: fullOrder!,
-          shortages: preparedLines.map((l) => ({
-            productVariantId: l.productVariantId,
-            shortage: l.shortage,
-          })),
-        };
-
-        return result;
-      }, { timeout: 30000, maxWait: 10000 });
+          return result;
+        },
+        { timeout: 30000, maxWait: 10000 },
+      );
 
       await auditService.log({
         organizationId: user.organizationId ?? undefined,
@@ -722,268 +728,273 @@ export class SalesService {
     input: ApproveOrderInput,
     adminUser: UserContext,
   ) {
-    const updatedOrder = await prisma.$transaction(async (tx) => {
-      const order = await tx.salesOrder.findUnique({
-        where: { id: orderId },
-        include: {
-          lines: {
-            include: {
-              productVariant: {
-                include: {
-                  priceLines: {
-                    where: { priceList: { isDefault: true } },
+    const updatedOrder = await prisma.$transaction(
+      async (tx) => {
+        const order = await tx.salesOrder.findUnique({
+          where: { id: orderId },
+          include: {
+            lines: {
+              include: {
+                productVariant: {
+                  include: {
+                    priceLines: {
+                      where: { priceList: { isDefault: true } },
+                    },
                   },
                 },
               },
             },
+            customer: true,
           },
-          customer: true,
-        },
-      });
+        });
 
-      if (!order) {
-        throw new AppError(`Order ${orderId} not found`, 404);
-      }
-
-      if (
-        order.status !== OrderStatus.SUBMITTED &&
-        order.status !== OrderStatus.UNDER_REVIEW
-      ) {
-        throw new AppError(
-          `Cannot approve order in status ${order.status}. Only SUBMITTED or UNDER_REVIEW orders can be approved.`,
-          400,
-        );
-      }
-
-      const isIntraState =
-        order.deliveryState.trim().toLowerCase() === "tamil nadu";
-      let totalTaxable = 0;
-      let totalTax = 0;
-      let cgstAmount = 0;
-      let sgstAmount = 0;
-      let igstAmount = 0;
-
-      // Track whether admin changed price or quantity
-      let hasOverrides = false;
-
-      // Acquire row-level locks on all involved inventory items in deterministic order (prevents concurrent overselling & deadlocks - F-007)
-      const involvedItemIds = [
-        ...new Set(
-          order.lines
-            .map((l) => l.inventoryItemId)
-            .filter((id): id is string => Boolean(id)),
-        ),
-      ].sort();
-
-      const lockedItems = new Map<string, number>();
-      for (const itemId of involvedItemIds) {
-        const rows = await tx.$queryRaw<
-          Array<{ id: string; currentStock: unknown }>
-        >`SELECT id, "currentStock" FROM "inventory_item" WHERE id = ${itemId} FOR UPDATE`;
-        if (rows[0]) {
-          lockedItems.set(itemId, Number(rows[0].currentStock));
-        }
-      }
-
-      for (const line of order.lines) {
-        const override = input.lineOverrides?.find((o) => o.lineId === line.id);
-        const approvedQty = override
-          ? override.approvedQuantity
-          : Number(line.quotedQuantity);
-        const approvedPrice =
-          override?.approvedUnitPrice !== undefined
-            ? override.approvedUnitPrice
-            : Number(line.quotedUnitPrice);
-
-        if (override?.approvedUnitPrice !== undefined) {
-          const overridePriceDec = new Prisma.Decimal(
-            override.approvedUnitPrice,
-          );
-          if (overridePriceDec.isNegative()) {
-            throw new AppError("Approved unit price cannot be negative", 400);
-          }
-          const defaultPrice = line.productVariant.priceLines?.[0]?.price;
-          const basePrice = defaultPrice ? Number(defaultPrice) : 50.0;
-          const baseDec = new Prisma.Decimal(basePrice);
-          if (overridePriceDec.lt(baseDec)) {
-            const discountPct = baseDec
-              .minus(overridePriceDec)
-              .dividedBy(baseDec)
-              .times(100);
-            if (discountPct.gt(15.0001)) {
-              throw new AppError(
-                `DISCOUNT_EXCEEDS_MAX_THRESHOLD: Approved unit price ${override.approvedUnitPrice} reflects a ${discountPct.toFixed(2)}% discount, which exceeds the maximum allowable 15% threshold against list price ${basePrice}`,
-                422,
-              );
-            }
-          }
+        if (!order) {
+          throw new AppError(`Order ${orderId} not found`, 404);
         }
 
         if (
-          approvedQty !== Number(line.quotedQuantity) ||
-          approvedPrice !== Number(line.quotedUnitPrice)
+          order.status !== OrderStatus.SUBMITTED &&
+          order.status !== OrderStatus.UNDER_REVIEW
         ) {
-          hasOverrides = true;
-        }
-
-        if (approvedQty <= 0) {
           throw new AppError(
-            "Approved quantity must be greater than zero",
+            `Cannot approve order in status ${order.status}. Only SUBMITTED or UNDER_REVIEW orders can be approved.`,
             400,
           );
         }
 
-        // Verify warehouse-level stock availability
-        if (line.inventoryItemId) {
-          const whBal = await getWarehouseItemBalance(
-            tx,
-            order.warehouseId,
-            line.inventoryItemId,
-          );
-          const onHand = Number(whBal.onHand);
+        const isIntraState =
+          order.deliveryState.trim().toLowerCase() === "tamil nadu";
+        let totalTaxable = 0;
+        let totalTax = 0;
+        let cgstAmount = 0;
+        let sgstAmount = 0;
+        let igstAmount = 0;
 
-          const resAgg = await tx.stockReservation.aggregate({
-            where: {
-              inventoryItemId: line.inventoryItemId,
-              warehouseId: order.warehouseId,
-              status: ReservationStatus.ACTIVE,
-              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-            },
-            _sum: {
-              reservedQuantity: true,
-              releasedQuantity: true,
-            },
-          });
-          const reserved = Math.max(
-            0,
-            Number(resAgg._sum.reservedQuantity ?? 0) -
-              Number(resAgg._sum.releasedQuantity ?? 0),
-          );
-          const available = Math.max(0, onHand - reserved);
+        // Track whether admin changed price or quantity
+        let hasOverrides = false;
 
-          if (available < approvedQty) {
-            const shortage = approvedQty - available;
+        // Acquire row-level locks on all involved inventory items in deterministic order (prevents concurrent overselling & deadlocks - F-007)
+        const involvedItemIds = [
+          ...new Set(
+            order.lines
+              .map((l) => l.inventoryItemId)
+              .filter((id): id is string => Boolean(id)),
+          ),
+        ].sort();
+
+        const lockedItems = new Map<string, number>();
+        for (const itemId of involvedItemIds) {
+          const rows = await tx.$queryRaw<
+            Array<{ id: string; currentStock: unknown }>
+          >`SELECT id, "currentStock" FROM "inventory_item" WHERE id = ${itemId} FOR UPDATE`;
+          if (rows[0]) {
+            lockedItems.set(itemId, Number(rows[0].currentStock));
+          }
+        }
+
+        for (const line of order.lines) {
+          const override = input.lineOverrides?.find(
+            (o) => o.lineId === line.id,
+          );
+          const approvedQty = override
+            ? override.approvedQuantity
+            : Number(line.quotedQuantity);
+          const approvedPrice =
+            override?.approvedUnitPrice !== undefined
+              ? override.approvedUnitPrice
+              : Number(line.quotedUnitPrice);
+
+          if (override?.approvedUnitPrice !== undefined) {
+            const overridePriceDec = new Prisma.Decimal(
+              override.approvedUnitPrice,
+            );
+            if (overridePriceDec.isNegative()) {
+              throw new AppError("Approved unit price cannot be negative", 400);
+            }
+            const defaultPrice = line.productVariant.priceLines?.[0]?.price;
+            const basePrice = defaultPrice ? Number(defaultPrice) : 50.0;
+            const baseDec = new Prisma.Decimal(basePrice);
+            if (overridePriceDec.lt(baseDec)) {
+              const discountPct = baseDec
+                .minus(overridePriceDec)
+                .dividedBy(baseDec)
+                .times(100);
+              if (discountPct.gt(15.0001)) {
+                throw new AppError(
+                  `DISCOUNT_EXCEEDS_MAX_THRESHOLD: Approved unit price ${override.approvedUnitPrice} reflects a ${discountPct.toFixed(2)}% discount, which exceeds the maximum allowable 15% threshold against list price ${basePrice}`,
+                  422,
+                );
+              }
+            }
+          }
+
+          if (
+            approvedQty !== Number(line.quotedQuantity) ||
+            approvedPrice !== Number(line.quotedUnitPrice)
+          ) {
+            hasOverrides = true;
+          }
+
+          if (approvedQty <= 0) {
             throw new AppError(
-              `Insufficient stock to approve order ${order.orderNumber}. Available: ${available}, Approved: ${approvedQty}, Shortage: ${shortage}`,
+              "Approved quantity must be greater than zero",
               400,
             );
           }
 
-          const expiresAt =
-            input.reservationExpiresAt !== undefined
-              ? input.reservationExpiresAt
-              : new Date(
-                  Date.now() +
-                    (input.reservationTtlHours ??
-                      DEFAULT_RESERVATION_TTL_HOURS) *
-                      60 *
-                      60 *
-                      1000,
-                );
+          // Verify warehouse-level stock availability
+          if (line.inventoryItemId) {
+            const whBal = await getWarehouseItemBalance(
+              tx,
+              order.warehouseId,
+              line.inventoryItemId,
+            );
+            const onHand = Number(whBal.onHand);
 
-          // Create active Stock Reservation with TTL policy (F-027)
-          await tx.stockReservation.create({
-            data: {
-              salesOrderId: order.id,
-              salesOrderLineId: line.id,
-              inventoryItemId: line.inventoryItemId,
+            const resAgg = await tx.stockReservation.aggregate({
+              where: {
+                inventoryItemId: line.inventoryItemId,
+                warehouseId: order.warehouseId,
+                status: ReservationStatus.ACTIVE,
+                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+              },
+              _sum: {
+                reservedQuantity: true,
+                releasedQuantity: true,
+              },
+            });
+            const reserved = Math.max(
+              0,
+              Number(resAgg._sum.reservedQuantity ?? 0) -
+                Number(resAgg._sum.releasedQuantity ?? 0),
+            );
+            const available = Math.max(0, onHand - reserved);
+
+            if (available < approvedQty) {
+              const shortage = approvedQty - available;
+              throw new AppError(
+                `Insufficient stock to approve order ${order.orderNumber}. Available: ${available}, Approved: ${approvedQty}, Shortage: ${shortage}`,
+                400,
+              );
+            }
+
+            const expiresAt =
+              input.reservationExpiresAt !== undefined
+                ? input.reservationExpiresAt
+                : new Date(
+                    Date.now() +
+                      (input.reservationTtlHours ??
+                        DEFAULT_RESERVATION_TTL_HOURS) *
+                        60 *
+                        60 *
+                        1000,
+                  );
+
+            // Create active Stock Reservation with TTL policy (F-027)
+            await tx.stockReservation.create({
+              data: {
+                salesOrderId: order.id,
+                salesOrderLineId: line.id,
+                inventoryItemId: line.inventoryItemId,
+                warehouseId: order.warehouseId,
+                reservedQuantity: approvedQty,
+                status: ReservationStatus.ACTIVE,
+                expiresAt,
+              },
+            });
+
+            await adjustWarehouseReserved(tx, {
+              organizationId: order.organizationId,
               warehouseId: order.warehouseId,
-              reservedQuantity: approvedQty,
-              status: ReservationStatus.ACTIVE,
-              expiresAt,
+              inventoryItemId: line.inventoryItemId,
+              delta: approvedQty,
+            });
+          }
+
+          const taxRate = Number(line.taxRate);
+          const taxRes = calculateLineTax(
+            {
+              quantity: approvedQty,
+              unitPrice: approvedPrice,
+              taxRate,
+            },
+            isIntraState,
+          );
+
+          const lineTaxable = taxRes.taxableAmount.toNumber();
+          const lineTax = taxRes.taxAmount.toNumber();
+          const lineTotal = taxRes.lineTotal.toNumber();
+
+          totalTaxable = Number((totalTaxable + lineTaxable).toFixed(2));
+          totalTax = Number((totalTax + lineTax).toFixed(2));
+
+          if (isIntraState) {
+            cgstAmount = Number(
+              (cgstAmount + taxRes.cgstAmount.toNumber()).toFixed(2),
+            );
+            sgstAmount = Number(
+              (sgstAmount + taxRes.sgstAmount.toNumber()).toFixed(2),
+            );
+          } else {
+            igstAmount = Number(
+              (igstAmount + taxRes.igstAmount.toNumber()).toFixed(2),
+            );
+          }
+
+          // Update line with approved values
+          await tx.salesOrderLine.update({
+            where: { id: line.id },
+            data: {
+              approvedQuantity: approvedQty,
+              approvedUnitPrice: approvedPrice,
+              taxableAmount: lineTaxable,
+              taxAmount: lineTax,
+              lineTotal,
             },
           });
-
-          await adjustWarehouseReserved(tx, {
-            organizationId: order.organizationId,
-            warehouseId: order.warehouseId,
-            inventoryItemId: line.inventoryItemId,
-            delta: approvedQty,
-          });
         }
 
-        const taxRate = Number(line.taxRate);
-        const taxRes = calculateLineTax(
-          {
-            quantity: approvedQty,
-            unitPrice: approvedPrice,
-            taxRate,
-          },
-          isIntraState,
-        );
-
-        const lineTaxable = taxRes.taxableAmount.toNumber();
-        const lineTax = taxRes.taxAmount.toNumber();
-        const lineTotal = taxRes.lineTotal.toNumber();
-
-        totalTaxable = Number((totalTaxable + lineTaxable).toFixed(2));
-        totalTax = Number((totalTax + lineTax).toFixed(2));
-
-        if (isIntraState) {
-          cgstAmount = Number(
-            (cgstAmount + taxRes.cgstAmount.toNumber()).toFixed(2),
-          );
-          sgstAmount = Number(
-            (sgstAmount + taxRes.sgstAmount.toNumber()).toFixed(2),
-          );
-        } else {
-          igstAmount = Number(
-            (igstAmount + taxRes.igstAmount.toNumber()).toFixed(2),
+        const requiresReason =
+          hasOverrides || order.status === OrderStatus.UNDER_REVIEW;
+        if (requiresReason && !input.overrideReason) {
+          throw new AppError(
+            "Manager approval for price discount or override requires a recorded reason",
+            400,
           );
         }
 
-        // Update line with approved values
-        await tx.salesOrderLine.update({
-          where: { id: line.id },
+        const totalAmount = Number((totalTaxable + totalTax).toFixed(2));
+
+        const updatedOrder = await tx.salesOrder.update({
+          where: { id: order.id },
           data: {
-            approvedQuantity: approvedQty,
-            approvedUnitPrice: approvedPrice,
-            taxableAmount: lineTaxable,
-            taxAmount: lineTax,
-            lineTotal,
+            status: OrderStatus.APPROVED,
+            approvedAt: new Date(),
+            approvedByUserId: adminUser.id,
+            overrideReason: input.overrideReason,
+            taxableAmount: totalTaxable,
+            cgstAmount,
+            sgstAmount,
+            igstAmount,
+            totalTaxAmount: totalTax,
+            totalAmount,
+          },
+          include: {
+            lines: {
+              include: {
+                productVariant: true,
+              },
+            },
+            reservations: true,
+            customer: true,
+            salesman: true,
           },
         });
-      }
 
-      const requiresReason =
-        hasOverrides || order.status === OrderStatus.UNDER_REVIEW;
-      if (requiresReason && !input.overrideReason) {
-        throw new AppError(
-          "Manager approval for price discount or override requires a recorded reason",
-          400,
-        );
-      }
-
-      const totalAmount = Number((totalTaxable + totalTax).toFixed(2));
-
-      const updatedOrder = await tx.salesOrder.update({
-        where: { id: order.id },
-        data: {
-          status: OrderStatus.APPROVED,
-          approvedAt: new Date(),
-          approvedByUserId: adminUser.id,
-          overrideReason: input.overrideReason,
-          taxableAmount: totalTaxable,
-          cgstAmount,
-          sgstAmount,
-          igstAmount,
-          totalTaxAmount: totalTax,
-          totalAmount,
-        },
-        include: {
-          lines: {
-            include: {
-              productVariant: true,
-            },
-          },
-          reservations: true,
-          customer: true,
-          salesman: true,
-        },
-      });
-
-      return updatedOrder;
-    }, { timeout: 30000, maxWait: 10000 });
+        return updatedOrder;
+      },
+      { timeout: 30000, maxWait: 10000 },
+    );
 
     await auditService.log({
       organizationId: adminUser.organizationId ?? undefined,
@@ -1217,7 +1228,9 @@ export class SalesService {
 
     if (options?.status && options.status !== "ALL") {
       if (options.status === "NEEDS_REVIEW") {
-        where.status = { in: [OrderStatus.SUBMITTED, OrderStatus.UNDER_REVIEW] };
+        where.status = {
+          in: [OrderStatus.SUBMITTED, OrderStatus.UNDER_REVIEW],
+        };
       } else if (options.status.includes(",")) {
         const statuses = options.status
           .split(",")
@@ -1294,7 +1307,6 @@ export class SalesService {
     >,
     refTime: Date,
   ) {
-
     // Collect all unique inventory item IDs across all orders and lines
     const allItemIds = Array.from(
       new Set(
@@ -1570,7 +1582,9 @@ export class SalesService {
       actorName: user.name,
       action: updated.status !== OrderStatus.DRAFT ? "SUBMIT" : "UPDATE",
       eventType:
-        updated.status !== OrderStatus.DRAFT ? "ORDER_SUBMITTED" : "ORDER_UPDATED",
+        updated.status !== OrderStatus.DRAFT
+          ? "ORDER_SUBMITTED"
+          : "ORDER_UPDATED",
       entity: "SalesOrder",
       entityId: updated.id,
       summary:

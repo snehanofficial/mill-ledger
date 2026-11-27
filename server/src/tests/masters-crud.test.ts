@@ -166,10 +166,9 @@ describe("IMP-009 & IMP-010: Customers ABAC/Assignments and Products/Variants/Pr
       "OwnerPassword123!",
     );
 
-    const getRes = await fetch(
-      `${baseUrl}/api/v1/masters/organization`,
-      { headers: { Cookie: ownerCookie } },
-    );
+    const getRes = await fetch(`${baseUrl}/api/v1/masters/organization`, {
+      headers: { Cookie: ownerCookie },
+    });
     expect(getRes.status).toBe(200);
 
     // Owner is read-only -> 403

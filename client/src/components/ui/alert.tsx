@@ -49,8 +49,13 @@ function Alert({
   const Icon = config.icon;
   return (
     <div
-      role={props.role || (variant === "danger" || variant === "warning" ? "alert" : "status")}
-      aria-live={props["aria-live"] || (variant === "danger" ? "assertive" : "polite")}
+      role={
+        props.role ||
+        (variant === "danger" || variant === "warning" ? "alert" : "status")
+      }
+      aria-live={
+        props["aria-live"] || (variant === "danger" ? "assertive" : "polite")
+      }
       data-slot="alert"
       className={cn(
         "flex gap-3 rounded-control border p-4 text-sm transition-colors shadow-xs",

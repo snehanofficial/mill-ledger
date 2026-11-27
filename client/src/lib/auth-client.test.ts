@@ -94,15 +94,15 @@ describe("authClient and OWASP authentication security", () => {
           email: "admin@millledger.local",
           password: "wrong",
         }),
-      ).rejects.toThrow(
-        "Too many sign-in attempts. Please try again later.",
-      );
+      ).rejects.toThrow("Too many sign-in attempts. Please try again later.");
     });
   });
 
   describe("authClient.signOut", () => {
     it("calls sign out and does not throw if network fails", async () => {
-      globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network offline"));
+      globalThis.fetch = vi
+        .fn()
+        .mockRejectedValue(new Error("Network offline"));
       await expect(authClient.signOut()).resolves.toBeUndefined();
     });
   });
@@ -171,9 +171,9 @@ describe("authClient and OWASP authentication security", () => {
 
   describe("requireEnvUrl", () => {
     it("strips trailing slashes and whitespace", () => {
-      expect(requireEnvUrl("  http://localhost:4000///  ", "VITE_BACKEND_URL")).toBe(
-        "http://localhost:4000",
-      );
+      expect(
+        requireEnvUrl("  http://localhost:4000///  ", "VITE_BACKEND_URL"),
+      ).toBe("http://localhost:4000");
     });
 
     it("throws when the required environment variable is missing or blank", () => {

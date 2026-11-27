@@ -16,18 +16,26 @@ describe("Origin validation and OWASP protection", () => {
 
       // 172.16.0.0/12
       expect(isPrivateNetworkOrLoopback("http://172.16.0.5:5173")).toBe(true);
-      expect(isPrivateNetworkOrLoopback("http://172.31.255.255:5173")).toBe(true);
+      expect(isPrivateNetworkOrLoopback("http://172.31.255.255:5173")).toBe(
+        true,
+      );
       expect(isPrivateNetworkOrLoopback("http://172.32.0.1:5173")).toBe(false);
 
       // 192.168.0.0/16
-      expect(isPrivateNetworkOrLoopback("http://192.168.1.100:5173")).toBe(true);
+      expect(isPrivateNetworkOrLoopback("http://192.168.1.100:5173")).toBe(
+        true,
+      );
       expect(isPrivateNetworkOrLoopback("http://192.168.0.1:8080")).toBe(true);
     });
 
     it("rejects public domains and malicious spoof attempts", () => {
       expect(isPrivateNetworkOrLoopback("https://evil.com")).toBe(false);
-      expect(isPrivateNetworkOrLoopback("http://attacker.org:5173")).toBe(false);
-      expect(isPrivateNetworkOrLoopback("http://10.attacker.com:5173")).toBe(false);
+      expect(isPrivateNetworkOrLoopback("http://attacker.org:5173")).toBe(
+        false,
+      );
+      expect(isPrivateNetworkOrLoopback("http://10.attacker.com:5173")).toBe(
+        false,
+      );
       expect(isPrivateNetworkOrLoopback("http://192.168.evil.com")).toBe(false);
       expect(isPrivateNetworkOrLoopback("javascript:alert(1)")).toBe(false);
     });

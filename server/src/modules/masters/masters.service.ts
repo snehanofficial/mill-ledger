@@ -237,7 +237,12 @@ export class MastersService {
       entity: "Product",
       entityId: product.id,
       summary: `Product ${product.name} (${product.code}) created`,
-      details: { code: product.code, name: product.name, hsnCode: product.hsnCode, taxRate: Number(product.taxRate) },
+      details: {
+        code: product.code,
+        name: product.name,
+        hsnCode: product.hsnCode,
+        taxRate: Number(product.taxRate),
+      },
     });
 
     return product;
@@ -294,7 +299,10 @@ export class MastersService {
         newValue: updated.hsnCode,
       });
     }
-    if (input.taxRate !== undefined && Number(existing.taxRate) !== Number(updated.taxRate)) {
+    if (
+      input.taxRate !== undefined &&
+      Number(existing.taxRate) !== Number(updated.taxRate)
+    ) {
       productChanges.push({
         field: "taxRate",
         label: "GST Rate",
@@ -303,7 +311,10 @@ export class MastersService {
         newValue: `${Number(updated.taxRate)}%`,
       });
     }
-    if (input.isActive !== undefined && existing.isActive !== updated.isActive) {
+    if (
+      input.isActive !== undefined &&
+      existing.isActive !== updated.isActive
+    ) {
       productChanges.push({
         field: "isActive",
         label: "Product Status",
@@ -341,7 +352,12 @@ export class MastersService {
             ? `Product ${updated.name} restored`
             : `Product ${updated.name} updated`,
       changes: productChanges,
-      details: { name: updated.name, hsnCode: updated.hsnCode, taxRate: Number(updated.taxRate), isActive: updated.isActive },
+      details: {
+        name: updated.name,
+        hsnCode: updated.hsnCode,
+        taxRate: Number(updated.taxRate),
+        isActive: updated.isActive,
+      },
     });
 
     return updated;
@@ -425,7 +441,12 @@ export class MastersService {
           role: "product",
         },
       ],
-      details: { productId: product.id, sku: variant.sku, name: variant.name, packSize: input.packSize },
+      details: {
+        productId: product.id,
+        sku: variant.sku,
+        name: variant.name,
+        packSize: input.packSize,
+      },
     });
 
     return variant;
@@ -484,7 +505,10 @@ export class MastersService {
         newValue: updated.name,
       });
     }
-    if (input.packSize !== undefined && Number(existing.packSize) !== Number(updated.packSize)) {
+    if (
+      input.packSize !== undefined &&
+      Number(existing.packSize) !== Number(updated.packSize)
+    ) {
       variantChanges.push({
         field: "packSize",
         label: "Pack Size",
@@ -493,7 +517,10 @@ export class MastersService {
         newValue: Number(updated.packSize),
       });
     }
-    if (input.isActive !== undefined && existing.isActive !== updated.isActive) {
+    if (
+      input.isActive !== undefined &&
+      existing.isActive !== updated.isActive
+    ) {
       variantChanges.push({
         field: "isActive",
         label: "Variant Status",
@@ -522,7 +549,11 @@ export class MastersService {
           role: "product",
         },
       ],
-      details: { productId: existing.productId, sku: updated.sku, isActive: updated.isActive },
+      details: {
+        productId: existing.productId,
+        sku: updated.sku,
+        isActive: updated.isActive,
+      },
     });
 
     return updated;
@@ -662,7 +693,9 @@ export class MastersService {
           field: "price",
           label: `${priceList.name} Rate`,
           kind: existingLine ? "changed" : "added",
-          previousValue: existingLine ? `₹${Number(existingLine.price).toFixed(2)}` : "Not set",
+          previousValue: existingLine
+            ? `₹${Number(existingLine.price).toFixed(2)}`
+            : "Not set",
           newValue: `₹${Number(input.price).toFixed(2)}`,
         },
       ],
@@ -725,7 +758,11 @@ export class MastersService {
       action: "UPDATE",
       entity: "Organization",
       entityId: orgId,
-      details: { name: updated.name, state: updated.state, gstin: updated.gstin },
+      details: {
+        name: updated.name,
+        state: updated.state,
+        gstin: updated.gstin,
+      },
     });
     return updated;
   }
@@ -795,7 +832,11 @@ export class MastersService {
       action: "CREATE",
       entity: "Facility",
       entityId: facility.id,
-      details: { code: facility.code, name: facility.name, state: facility.state },
+      details: {
+        code: facility.code,
+        name: facility.name,
+        state: facility.state,
+      },
     });
 
     return facility;
@@ -865,7 +906,13 @@ export class MastersService {
       },
       include: {
         facility: {
-          select: { id: true, code: true, name: true, state: true, isActive: true },
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            state: true,
+            isActive: true,
+          },
         },
       },
       orderBy: [{ isActive: "desc" }, { code: "asc" }],
@@ -931,7 +978,13 @@ export class MastersService {
       },
       include: {
         facility: {
-          select: { id: true, code: true, name: true, state: true, isActive: true },
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            state: true,
+            isActive: true,
+          },
         },
       },
     });
@@ -991,7 +1044,9 @@ export class MastersService {
           prisma.salesOrder.findFirst({
             where: {
               warehouseId: warehouse.id,
-              status: { in: ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED"] },
+              status: {
+                in: ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED"],
+              },
               fulfilmentStatus: { not: "FULFILLED" },
             },
           }),
@@ -1035,7 +1090,13 @@ export class MastersService {
       },
       include: {
         facility: {
-          select: { id: true, code: true, name: true, state: true, isActive: true },
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            state: true,
+            isActive: true,
+          },
         },
       },
     });

@@ -85,10 +85,9 @@ export class PaymentService {
           organizationId,
         );
 
-        const paymentAmount = new Prisma.Decimal(input.amount.toString()).toDecimalPlaces(
-          2,
-          Prisma.Decimal.ROUND_HALF_UP,
-        );
+        const paymentAmount = new Prisma.Decimal(
+          input.amount.toString(),
+        ).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
 
         const allocationsToCreate: Array<{
           salesInvoiceId: string;
@@ -167,10 +166,9 @@ export class PaymentService {
               .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
             const newOutstanding = Prisma.Decimal.max(
               new Prisma.Decimal(0),
-              outstanding.minus(allocAmount).toDecimalPlaces(
-                2,
-                Prisma.Decimal.ROUND_HALF_UP,
-              ),
+              outstanding
+                .minus(allocAmount)
+                .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP),
             );
             const newStatus = newOutstanding.lessThanOrEqualTo(0)
               ? InvoiceStatus.PAID
@@ -193,10 +191,9 @@ export class PaymentService {
 
           unallocated = Prisma.Decimal.max(
             new Prisma.Decimal(0),
-            paymentAmount.minus(totalAllocated).toDecimalPlaces(
-              2,
-              Prisma.Decimal.ROUND_HALF_UP,
-            ),
+            paymentAmount
+              .minus(totalAllocated)
+              .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP),
           );
         } else {
           // Auto allocate FIFO against customer open invoices
@@ -225,10 +222,9 @@ export class PaymentService {
               .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
             const newOutstanding = Prisma.Decimal.max(
               new Prisma.Decimal(0),
-              invOutstanding.minus(allocAmt).toDecimalPlaces(
-                2,
-                Prisma.Decimal.ROUND_HALF_UP,
-              ),
+              invOutstanding
+                .minus(allocAmt)
+                .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP),
             );
             const newStatus = newOutstanding.lessThanOrEqualTo(0)
               ? InvoiceStatus.PAID
@@ -248,10 +244,9 @@ export class PaymentService {
               amount: allocAmt,
             });
 
-            remaining = remaining.minus(allocAmt).toDecimalPlaces(
-              2,
-              Prisma.Decimal.ROUND_HALF_UP,
-            );
+            remaining = remaining
+              .minus(allocAmt)
+              .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
           }
 
           unallocated = Prisma.Decimal.max(new Prisma.Decimal(0), remaining);
@@ -1061,7 +1056,10 @@ export class PaymentService {
           Prisma.Decimal.ROUND_HALF_UP,
         );
         if (amt.lessThanOrEqualTo(0)) {
-          throw new AppError("Allocation amount must be greater than zero", 400);
+          throw new AppError(
+            "Allocation amount must be greater than zero",
+            400,
+          );
         }
         totalToAllocate = totalToAllocate.plus(amt);
       }
@@ -1115,10 +1113,9 @@ export class PaymentService {
           .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP);
         const newOutstanding = Prisma.Decimal.max(
           new Prisma.Decimal(0),
-          outstanding.minus(allocAmount).toDecimalPlaces(
-            2,
-            Prisma.Decimal.ROUND_HALF_UP,
-          ),
+          outstanding
+            .minus(allocAmount)
+            .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP),
         );
         const newStatus = newOutstanding.lessThanOrEqualTo(0)
           ? InvoiceStatus.PAID
@@ -1144,10 +1141,9 @@ export class PaymentService {
 
       const nextUnallocated = Prisma.Decimal.max(
         new Prisma.Decimal(0),
-        unallocated.minus(totalToAllocate).toDecimalPlaces(
-          2,
-          Prisma.Decimal.ROUND_HALF_UP,
-        ),
+        unallocated
+          .minus(totalToAllocate)
+          .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP),
       );
 
       const updated = await tx.payment.update({
@@ -1160,7 +1156,9 @@ export class PaymentService {
       });
 
       const allocatedInvoicesSummary = updated.allocations
-        .filter((a) => allocations.some((reqA) => reqA.salesInvoiceId === a.salesInvoiceId))
+        .filter((a) =>
+          allocations.some((reqA) => reqA.salesInvoiceId === a.salesInvoiceId),
+        )
         .map((a) => a.salesInvoice.invoiceNumber)
         .join(", ");
 
@@ -1192,7 +1190,11 @@ export class PaymentService {
               role: "customer",
             },
             ...updated.allocations
-              .filter((a) => allocations.some((reqA) => reqA.salesInvoiceId === a.salesInvoiceId))
+              .filter((a) =>
+                allocations.some(
+                  (reqA) => reqA.salesInvoiceId === a.salesInvoiceId,
+                ),
+              )
               .map((a) => ({
                 entityType: "SalesInvoice",
                 entityId: a.salesInvoiceId,
@@ -1242,7 +1244,10 @@ export class PaymentService {
         throw new AppError("Allocation has already been reversed", 400);
       }
       if (allocation.payment.status !== PaymentStatus.POSTED) {
-        throw new AppError("Can only adjust allocations on POSTED payments", 400);
+        throw new AppError(
+          "Can only adjust allocations on POSTED payments",
+          400,
+        );
       }
 
       const allocAmount = new Prisma.Decimal(allocation.amount).toDecimalPlaces(
@@ -1252,10 +1257,9 @@ export class PaymentService {
       const inv = allocation.salesInvoice;
       const newPaid = Prisma.Decimal.max(
         new Prisma.Decimal(0),
-        new Prisma.Decimal(inv.paidAmount).minus(allocAmount).toDecimalPlaces(
-          2,
-          Prisma.Decimal.ROUND_HALF_UP,
-        ),
+        new Prisma.Decimal(inv.paidAmount)
+          .minus(allocAmount)
+          .toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP),
       );
       const newOutstanding = new Prisma.Decimal(inv.outstandingAmount)
         .plus(allocAmount)

@@ -14,7 +14,11 @@ import {
   DataTableColumnHeader,
   type DataTableColumnMeta,
 } from "@/components/ui/data-table";
-import { ErrorState, EmptyState, SkeletonTable } from "@/components/ui/loading-error-empty";
+import {
+  ErrorState,
+  EmptyState,
+  SkeletonTable,
+} from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 
 interface LedgerMovement {
@@ -44,7 +48,10 @@ interface StockBalance {
   baseUom?: { code: string; name: string };
 }
 
-function getSourceDocHref(type: string | null, id: string | null): string | null {
+function getSourceDocHref(
+  type: string | null,
+  id: string | null,
+): string | null {
   if (!type || !id) return null;
   switch (type) {
     case "PURCHASE_RECEIPT":
@@ -139,7 +146,9 @@ export function StockLedgerPage() {
             {row.original.warehouseName}
           </span>
         ),
-        meta: { label: "Warehouse" } satisfies DataTableColumnMeta<LedgerMovement>,
+        meta: {
+          label: "Warehouse",
+        } satisfies DataTableColumnMeta<LedgerMovement>,
       },
       {
         id: "quantity",
@@ -216,8 +225,7 @@ export function StockLedgerPage() {
       },
       {
         id: "source",
-        accessorFn: (row) =>
-          row.referenceDocumentType || row.notes || "",
+        accessorFn: (row) => row.referenceDocumentType || row.notes || "",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="Source document" />
         ),
@@ -228,7 +236,10 @@ export function StockLedgerPage() {
             mov.referenceDocumentId,
           );
           return href ? (
-            <Link to={href} className="text-xs text-primary hover:underline whitespace-nowrap">
+            <Link
+              to={href}
+              className="text-xs text-primary hover:underline whitespace-nowrap"
+            >
               {mov.referenceDocumentType?.replaceAll("_", " ")}
             </Link>
           ) : (

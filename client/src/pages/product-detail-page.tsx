@@ -40,7 +40,12 @@ interface ProductDetailResponse {
       priceLines: Array<{
         id: string;
         price: number | string;
-        priceList: { id: string; code: string; name: string; isDefault: boolean };
+        priceList: {
+          id: string;
+          code: string;
+          name: string;
+          isDefault: boolean;
+        };
       }>;
       recipes: Array<{
         id: string;
@@ -56,18 +61,23 @@ interface ProductDetailResponse {
 export function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>();
 
-  const { data: product, isLoading, isError, error, refetch } =
-    useQuery<ProductDetailResponse["product"]>({
-      queryKey: ["product-detail", productId],
-      queryFn: async () => {
-        const endpoint = `/masters/products/${productId}`;
-        const res = await apiClient.get(endpoint);
-        return assertEntityResponse<
-          ProductDetailResponse["product"] & Record<string, unknown>
-        >(res.data, "product", ["variants"], endpoint);
-      },
-      enabled: Boolean(productId),
-    });
+  const {
+    data: product,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<ProductDetailResponse["product"]>({
+    queryKey: ["product-detail", productId],
+    queryFn: async () => {
+      const endpoint = `/masters/products/${productId}`;
+      const res = await apiClient.get(endpoint);
+      return assertEntityResponse<
+        ProductDetailResponse["product"] & Record<string, unknown>
+      >(res.data, "product", ["variants"], endpoint);
+    },
+    enabled: Boolean(productId),
+  });
 
   if (isLoading) {
     return (
@@ -137,13 +147,17 @@ export function ProductDetailPage() {
                   const recipes = v.recipes ?? [];
                   return (
                     <TableRow key={v.id}>
-                      <TableCell className="font-mono text-xs">{v.sku}</TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {v.sku}
+                      </TableCell>
                       <TableCell className="font-medium">{v.name}</TableCell>
                       <TableCell className="text-right tabular-nums">
                         {formatQuantity(Number(v.packSize))} {v.uom.symbol}
                       </TableCell>
                       <TableCell className="tabular-nums">
-                        {defaultPrice ? formatINR(defaultPrice.price) : "Not set"}
+                        {defaultPrice
+                          ? formatINR(defaultPrice.price)
+                          : "Not set"}
                       </TableCell>
                       <TableCell>
                         {recipes.length > 0 ? (
@@ -159,7 +173,9 @@ export function ProductDetailPage() {
                             ))}
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">None</span>
+                          <span className="text-xs text-muted-foreground">
+                            None
+                          </span>
                         )}
                       </TableCell>
                       <TableCell>

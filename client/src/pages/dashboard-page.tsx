@@ -174,8 +174,12 @@ export function DashboardPage() {
           </div>
           <p className="max-w-[60ch] text-sm text-muted-foreground">
             {isAdmin
-              ? t("Prioritised operational tasks: orders to review, invoices to post, and dispatches to fulfil.")
-              : t("Executive operational overview and real time reconciled business metrics")}
+              ? t(
+                  "Prioritised operational tasks: orders to review, invoices to post, and dispatches to fulfil.",
+                )
+              : t(
+                  "Executive operational overview and real time reconciled business metrics",
+                )}
           </p>
         </div>
 
@@ -207,10 +211,16 @@ export function DashboardPage() {
           className="rounded-xl border border-border bg-card p-4 space-y-3"
         >
           <div className="flex items-center justify-between">
-            <h2 id="admin-work-queue-heading" className="text-sm font-semibold text-foreground">
+            <h2
+              id="admin-work-queue-heading"
+              className="text-sm font-semibold text-foreground"
+            >
               Needs your action now
             </h2>
-            <Link to="/orders" className="text-xs font-medium text-primary hover:underline">
+            <Link
+              to="/orders"
+              className="text-xs font-medium text-primary hover:underline"
+            >
               Open Order inbox
             </Link>
           </div>
@@ -226,12 +236,18 @@ export function DashboardPage() {
                   to={`/orders/${o.id}`}
                   className="flex items-center justify-between text-xs text-primary hover:underline"
                 >
-                  <span>{o.orderNumber} ({o.customer.name})</span>
-                  <span className="tabular-nums">{formatINR(o.totalAmount)}</span>
+                  <span>
+                    {o.orderNumber} ({o.customer.name})
+                  </span>
+                  <span className="tabular-nums">
+                    {formatINR(o.totalAmount)}
+                  </span>
                 </Link>
               ))}
               {ordersToReview.length === 0 && (
-                <p className="text-xs text-muted-foreground">No submitted orders pending.</p>
+                <p className="text-xs text-muted-foreground">
+                  No submitted orders pending.
+                </p>
               )}
             </div>
 
@@ -246,12 +262,16 @@ export function DashboardPage() {
                   to={`/invoices/new?orderId=${o.id}`}
                   className="flex items-center justify-between text-xs text-primary hover:underline"
                 >
-                  <span>{o.orderNumber} ({o.customer.name})</span>
+                  <span>
+                    {o.orderNumber} ({o.customer.name})
+                  </span>
                   <span>Create invoice</span>
                 </Link>
               ))}
               {ordersToInvoice.length === 0 && (
-                <p className="text-xs text-muted-foreground">All approved orders invoiced.</p>
+                <p className="text-xs text-muted-foreground">
+                  All approved orders invoiced.
+                </p>
               )}
             </div>
 
@@ -266,12 +286,16 @@ export function DashboardPage() {
                   to={`/dispatch/new?orderId=${o.id}`}
                   className="flex items-center justify-between text-xs text-primary hover:underline"
                 >
-                  <span>{o.orderNumber} ({o.customer.name})</span>
+                  <span>
+                    {o.orderNumber} ({o.customer.name})
+                  </span>
                   <span>Prepare dispatch</span>
                 </Link>
               ))}
               {ordersToDispatch.length === 0 && (
-                <p className="text-xs text-muted-foreground">No pending dispatches.</p>
+                <p className="text-xs text-muted-foreground">
+                  No pending dispatches.
+                </p>
               )}
             </div>
           </div>
@@ -288,7 +312,10 @@ export function DashboardPage() {
         </div>
       ) : isError ? (
         <ErrorState
-          title={t("Failed to load overview data", "Failed to load overview data")}
+          title={t(
+            "Failed to load overview data",
+            "Failed to load overview data",
+          )}
           description={
             error instanceof Error ? error.message : "Unknown error occurred"
           }
@@ -385,7 +412,9 @@ export function DashboardPage() {
                 Today&apos;s Activity (IST)
               </span>
               <div className="flex items-baseline justify-between">
-                <span className="text-xl font-bold">{metrics?.todayOrdersCount ?? 0} orders</span>
+                <span className="text-xl font-bold">
+                  {metrics?.todayOrdersCount ?? 0} orders
+                </span>
                 <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                   {formatINR(metrics?.todayRevenue ?? 0)}
                 </span>
@@ -400,11 +429,24 @@ export function DashboardPage() {
                 Operational Alerts
               </span>
               <div className="text-xs flex flex-col gap-1">
-                <span className={data?.varianceAlerts?.length ? "text-amber-600 font-semibold" : "text-muted-foreground"}>
+                <span
+                  className={
+                    data?.varianceAlerts?.length
+                      ? "text-amber-600 font-semibold"
+                      : "text-muted-foreground"
+                  }
+                >
                   Yield variance alerts: {data?.varianceAlerts?.length ?? 0}
                 </span>
-                <span className={data?.lowStockAlerts?.length ? "text-amber-600 font-semibold" : "text-muted-foreground"}>
-                  Low-stock items (&le;50 ATP): {data?.lowStockAlerts?.length ?? 0}
+                <span
+                  className={
+                    data?.lowStockAlerts?.length
+                      ? "text-amber-600 font-semibold"
+                      : "text-muted-foreground"
+                  }
+                >
+                  Low-stock items (&le;50 ATP):{" "}
+                  {data?.lowStockAlerts?.length ?? 0}
                 </span>
               </div>
             </div>
@@ -414,7 +456,10 @@ export function DashboardPage() {
                 Unit Margin (Excl. GST)
               </span>
               {(data?.productMargins ?? []).slice(0, 2).map((m) => (
-                <div key={m.sku} className="flex items-center justify-between text-xs">
+                <div
+                  key={m.sku}
+                  className="flex items-center justify-between text-xs"
+                >
                   <span className="font-medium truncate">{m.name}</span>
                   <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
                     {m.unitCost > 0
@@ -451,7 +496,9 @@ export function DashboardPage() {
                       <TableHead>{t("Invoice")}</TableHead>
                       <TableHead>{t("Customer")}</TableHead>
                       <TableHead className="text-right">{t("Total")}</TableHead>
-                      <TableHead className="text-right">{t("Status")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("Status")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -519,9 +566,15 @@ export function DashboardPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>{t("Item")}</TableHead>
-                      <TableHead className="text-right">{t("On hand")}</TableHead>
-                      <TableHead className="text-right">{t("Unit cost")}</TableHead>
-                      <TableHead className="text-right">{t("Valuation")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("On hand")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("Unit cost")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("Valuation")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

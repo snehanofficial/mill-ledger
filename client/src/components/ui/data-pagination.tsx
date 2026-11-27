@@ -27,7 +27,10 @@ export interface DataPaginationProps {
   className?: string;
 }
 
-function getVisiblePages(current: number, totalPages: number): Array<number | "ellipsis"> {
+function getVisiblePages(
+  current: number,
+  totalPages: number,
+): Array<number | "ellipsis"> {
   if (totalPages <= 7) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
@@ -69,7 +72,10 @@ export function DataPagination({
   }
 
   const effectiveLimit = pagination?.limit ?? pageSize;
-  const totalPages = Math.max(1, pagination?.totalPages ?? Math.ceil(total / effectiveLimit));
+  const totalPages = Math.max(
+    1,
+    pagination?.totalPages ?? Math.ceil(total / effectiveLimit),
+  );
   const currentPage = Math.min(Math.max(1, page), totalPages);
   const rangeStart = (currentPage - 1) * effectiveLimit + 1;
   const rangeEnd = Math.min(currentPage * effectiveLimit, total);
@@ -87,8 +93,11 @@ export function DataPagination({
           Showing{" "}
           <span className="font-semibold text-foreground">{rangeStart}</span>
           {"–"}
-          <span className="font-semibold text-foreground">{rangeEnd}</span> of{" "}
-          <span className="font-semibold text-foreground">{total}</span> {itemLabel}
+          <span className="font-semibold text-foreground">
+            {rangeEnd}
+          </span> of{" "}
+          <span className="font-semibold text-foreground">{total}</span>{" "}
+          {itemLabel}
         </span>
 
         {onPageSizeChange && (
@@ -166,7 +175,9 @@ export function DataPagination({
             <PaginationItem>
               <button
                 type="button"
-                onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+                onClick={() =>
+                  onPageChange(Math.min(totalPages, currentPage + 1))
+                }
                 disabled={currentPage >= totalPages || isFetching}
                 aria-label="Go to next page"
                 className={cn(

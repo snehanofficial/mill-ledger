@@ -16,7 +16,11 @@ import {
   DataTableColumnHeader,
   type DataTableColumnMeta,
 } from "@/components/ui/data-table";
-import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
+import {
+  EmptyState,
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExportMenu } from "@/components/ui/export-menu";
@@ -29,7 +33,8 @@ interface SalesInvoice {
   financialYear: string;
   customerNameSnapshot: string;
   deliveryStateSnapshot: string;
-  status: "DRAFT" | "POSTED" | "CANCELLED_BY_CREDIT_NOTE" | "PAID" | "PARTIALLY_PAID";
+  status:
+    "DRAFT" | "POSTED" | "CANCELLED_BY_CREDIT_NOTE" | "PAID" | "PARTIALLY_PAID";
   taxableAmount: number;
   totalTaxAmount: number;
   totalAmount: number;
@@ -41,7 +46,9 @@ export function InvoicesPage() {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const canCreateInvoice = user?.role === "ADMIN";
-  const [searchQuery, setSearchQuery] = useUrlState("q", "", { debounceMs: 200 });
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 200,
+  });
   const [statusFilter, setStatusFilter] = useUrlState("status", "ALL");
   const { page, pageSize, offset, setPage, setPageSize, resetPage } =
     usePagination({ defaultPageSize: 20 });
@@ -50,7 +57,13 @@ export function InvoicesPage() {
     invoices: SalesInvoice[];
     pagination: PaginationMeta;
   }>({
-    queryKey: ["sales-invoices", page, pageSize, statusFilter, searchQuery.trim()],
+    queryKey: [
+      "sales-invoices",
+      page,
+      pageSize,
+      statusFilter,
+      searchQuery.trim(),
+    ],
     queryFn: async () => {
       const params = new URLSearchParams({
         limit: String(pageSize),
@@ -63,7 +76,11 @@ export function InvoicesPage() {
         params.set("q", searchQuery.trim());
       }
       const res = await apiClient.get(`/finance/invoices?${params.toString()}`);
-      return assertCollectionResponse(res.data, "invoices", "/finance/invoices");
+      return assertCollectionResponse(
+        res.data,
+        "invoices",
+        "/finance/invoices",
+      );
     },
     placeholderData: keepPreviousData,
   });
@@ -108,7 +125,9 @@ export function InvoicesPage() {
             {row.original.invoiceNumber}
           </Link>
         ),
-        meta: { label: "Invoice #" } satisfies DataTableColumnMeta<SalesInvoice>,
+        meta: {
+          label: "Invoice #",
+        } satisfies DataTableColumnMeta<SalesInvoice>,
       },
       {
         accessorKey: "customerNameSnapshot",
@@ -155,7 +174,11 @@ export function InvoicesPage() {
         id: "taxableAmount",
         accessorFn: (row) => Number(row.taxableAmount) || 0,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Taxable" align="right" />
+          <DataTableColumnHeader
+            column={column}
+            title="Taxable"
+            align="right"
+          />
         ),
         cell: ({ row }) => (
           <span className="tabular-nums whitespace-nowrap">
@@ -293,7 +316,9 @@ export function InvoicesPage() {
                 className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium hover:border-primary/50"
               >
                 <span>{ord.orderNumber}</span>
-                <span className="text-muted-foreground">{ord.customer.name}</span>
+                <span className="text-muted-foreground">
+                  {ord.customer.name}
+                </span>
                 <span className="tabular-nums font-semibold">
                   {formatINR(ord.totalAmount)}
                 </span>
@@ -305,22 +330,26 @@ export function InvoicesPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-1.5">
-          {["ALL", "POSTED", "PARTIALLY_PAID", "PAID", "CANCELLED_BY_CREDIT_NOTE"].map(
-            (st) => (
-              <Button
-                key={st}
-                variant={statusFilter === st ? "primary" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setStatusFilter(st);
-                  resetPage();
-                }}
-                className="h-8 text-xs"
-              >
-                {st === "ALL" ? "All" : st.replaceAll("_", " ")}
-              </Button>
-            ),
-          )}
+          {[
+            "ALL",
+            "POSTED",
+            "PARTIALLY_PAID",
+            "PAID",
+            "CANCELLED_BY_CREDIT_NOTE",
+          ].map((st) => (
+            <Button
+              key={st}
+              variant={statusFilter === st ? "primary" : "outline"}
+              size="sm"
+              onClick={() => {
+                setStatusFilter(st);
+                resetPage();
+              }}
+              className="h-8 text-xs"
+            >
+              {st === "ALL" ? "All" : st.replaceAll("_", " ")}
+            </Button>
+          ))}
         </div>
         <div className="relative w-full sm:w-64">
           <SearchIcon
@@ -356,24 +385,24 @@ export function InvoicesPage() {
         />
       ) : (
         <>
-        <DataTable
-          tableId="sales-invoices"
-          data={filtered}
-          columns={invoiceColumns}
-          getRowId={(r) => r.id}
-          ariaLabel="Sales invoices"
-          csvFilename="sales-invoices"
-        />
+          <DataTable
+            tableId="sales-invoices"
+            data={filtered}
+            columns={invoiceColumns}
+            getRowId={(r) => r.id}
+            ariaLabel="Sales invoices"
+            csvFilename="sales-invoices"
+          />
 
-        <DataPagination
-          pagination={data?.pagination}
-          page={page}
-          pageSize={pageSize}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-          isFetching={isFetching}
-          itemLabel="invoices"
-        />
+          <DataPagination
+            pagination={data?.pagination}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            isFetching={isFetching}
+            itemLabel="invoices"
+          />
         </>
       )}
     </div>

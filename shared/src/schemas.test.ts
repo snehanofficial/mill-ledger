@@ -125,7 +125,9 @@ describe("F-031 Shared Domain Validation Schemas Contract Parity", () => {
       actualGoodQty: 50,
       consumedMaterials: [],
     };
-    expect(postProductionRunSchema.safeParse(emptyMaterials).success).toBe(false);
+    expect(postProductionRunSchema.safeParse(emptyMaterials).success).toBe(
+      false,
+    );
   });
 
   it("validates inventory purchase receipt schema", () => {
@@ -156,7 +158,9 @@ describe("F-031 Shared Domain Validation Schemas Contract Parity", () => {
         },
       ],
     };
-    expect(createPurchaseReceiptSchema.safeParse(negativePrice).success).toBe(false);
+    expect(createPurchaseReceiptSchema.safeParse(negativePrice).success).toBe(
+      false,
+    );
   });
 
   it("validates finance and payment schemas", () => {

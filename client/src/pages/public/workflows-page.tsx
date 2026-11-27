@@ -57,7 +57,9 @@ export function WorkflowsPage() {
               How MillLedger Runs the Order-to-Audit Workflow
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
-              In food manufacturing, errors happen when shop-floor production, field sales orders, and GST billing live in separate tools. MillLedger links every step in one transactional ledger.
+              In food manufacturing, errors happen when shop-floor production,
+              field sales orders, and GST billing live in separate tools.
+              MillLedger links every step in one transactional ledger.
             </p>
           </div>
         </div>
@@ -71,7 +73,9 @@ export function WorkflowsPage() {
               className="rounded-xl border border-border bg-card p-6 sm:p-8 space-y-3"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-lg font-bold text-foreground">{item.step}</h2>
+                <h2 className="text-lg font-bold text-foreground">
+                  {item.step}
+                </h2>
                 <span className="rounded-md border border-border bg-muted px-2.5 py-1 font-mono text-xs text-foreground">
                   {item.rule}
                 </span>
@@ -88,13 +92,19 @@ export function WorkflowsPage() {
           <div className="pt-4 flex flex-wrap gap-3">
             <Link
               to="/demo"
-              className={buttonVariants({ variant: "primary", className: "min-h-[44px] px-6" })}
+              className={buttonVariants({
+                variant: "primary",
+                className: "min-h-[44px] px-6",
+              })}
             >
               Walk Through This Workflow in a Demo
             </Link>
             <Link
               to="/resources"
-              className={buttonVariants({ variant: "outline", className: "min-h-[44px] px-6" })}
+              className={buttonVariants({
+                variant: "outline",
+                className: "min-h-[44px] px-6",
+              })}
             >
               Read Technical Guides
             </Link>

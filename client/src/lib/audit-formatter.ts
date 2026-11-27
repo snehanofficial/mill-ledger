@@ -15,11 +15,7 @@ export interface AuditDiffEntry {
 }
 
 export type AuditBadgeVariant =
-  | "success"
-  | "info"
-  | "warning"
-  | "danger"
-  | "neutral";
+  "success" | "info" | "warning" | "danger" | "neutral";
 
 const SENSITIVE_KEY_PATTERN =
   /(password|secret|token|apikey|api_key|privatekey|private_key|hash|credential)/i;
@@ -161,7 +157,9 @@ export function formatAuditValue(value: unknown, key = ""): string {
     return safeValue ? "Yes" : "No";
   }
   if (typeof safeValue === "number") {
-    return Number.isFinite(safeValue) ? safeValue.toLocaleString("en-IN") : String(safeValue);
+    return Number.isFinite(safeValue)
+      ? safeValue.toLocaleString("en-IN")
+      : String(safeValue);
   }
   if (typeof safeValue === "string") {
     if (ISO_DATE_PATTERN.test(safeValue) && safeValue.includes("T")) {
@@ -281,7 +279,9 @@ export function summarizeAuditDetails(
   const diffs = extractAuditDiff(parsed.data);
   if (diffs !== null) {
     if (diffs.length === 0) {
-      return reason ? `No field changes (Reason: ${reason})` : "No field changes";
+      return reason
+        ? `No field changes (Reason: ${reason})`
+        : "No field changes";
     }
     const preview = diffs
       .slice(0, 2)
@@ -333,9 +333,14 @@ export function getActionBadgeVariant(action: string): AuditBadgeVariant {
     return "info";
   }
   if (
-    ["REVERSE", "ARCHIVE", "SALES_RETURN", "BOUNCE", "BOUNCED", "ADJUST"].includes(
-      normalized,
-    )
+    [
+      "REVERSE",
+      "ARCHIVE",
+      "SALES_RETURN",
+      "BOUNCE",
+      "BOUNCED",
+      "ADJUST",
+    ].includes(normalized)
   ) {
     return "warning";
   }

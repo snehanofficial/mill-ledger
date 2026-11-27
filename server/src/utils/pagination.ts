@@ -54,7 +54,9 @@ export function normalizePaginationOptions(
   const maxLimit = defaults.maxLimit ?? 100;
 
   const limit =
-    options?.limit !== undefined && Number.isFinite(options.limit) && options.limit >= 1
+    options?.limit !== undefined &&
+    Number.isFinite(options.limit) &&
+    options.limit >= 1
       ? Math.min(Math.floor(options.limit), maxLimit)
       : defaultLimit;
 

@@ -1339,7 +1339,11 @@ function MobileBottomNav({ role }: { role: UserRole }) {
     ];
   } else if (role === "PRODUCTION") {
     navItems = [
-      { label: t("nav.home", "Today"), href: "/production/today", icon: HomeIcon },
+      {
+        label: t("nav.home", "Today"),
+        href: "/production/today",
+        icon: HomeIcon,
+      },
       {
         label: t("nav.newRun", "New run"),
         href: "/production/new",
@@ -1374,7 +1378,11 @@ function MobileBottomNav({ role }: { role: UserRole }) {
   } else {
     // ADMIN / OWNER
     navItems = [
-      { label: t("nav.home", role === "ADMIN" ? "Queue" : "Overview"), href: homeHref, icon: HomeIcon },
+      {
+        label: t("nav.home", role === "ADMIN" ? "Queue" : "Overview"),
+        href: homeHref,
+        icon: HomeIcon,
+      },
       {
         label: t("nav.orders", "Orders"),
         href: "/orders",
@@ -1522,7 +1530,10 @@ export function AuthenticatedShell({
 
   const sections = useMemo(() => getNavSections(user.role), [user.role]);
   const handleOpenSearch = useCallback(() => setSearchOpen(true), []);
-  const handleOpenNotifications = useCallback(() => setNotificationsOpen(true), []);
+  const handleOpenNotifications = useCallback(
+    () => setNotificationsOpen(true),
+    [],
+  );
   const handleOpenOutbox = useCallback(() => setOutboxOpen(true), []);
   const handleOpenHelp = useCallback(() => setShowHelpModal(true), []);
 
@@ -1754,175 +1765,180 @@ export function AuthenticatedShell({
         {/* Confirm Logout Dialog if unsynced orders exist */}
         {confirmLogoutOpen && (
           <Dialog open={confirmLogoutOpen} onOpenChange={setConfirmLogoutOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogTitle>Pending orders stored locally</DialogTitle>
-            <p className="text-sm text-muted-foreground mt-2">
-              You have {pendingCount} unsynced order(s) stored on this device.
-              They are preserved securely for your account and will sync when
-              you sign back in. Do you still wish to sign out?
-            </p>
-            <div className="mt-4 flex justify-end gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setConfirmLogoutOpen(false)}
-              >
-                Stay signed in
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => {
-                  setConfirmLogoutOpen(false);
-                  onSignOut?.();
-                }}
-              >
-                Sign out anyway
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            <DialogContent className="sm:max-w-md">
+              <DialogTitle>Pending orders stored locally</DialogTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                You have {pendingCount} unsynced order(s) stored on this device.
+                They are preserved securely for your account and will sync when
+                you sign back in. Do you still wish to sign out?
+              </p>
+              <div className="mt-4 flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setConfirmLogoutOpen(false)}
+                >
+                  Stay signed in
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    setConfirmLogoutOpen(false);
+                    onSignOut?.();
+                  }}
+                >
+                  Sign out anyway
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         )}
 
         {/* Notifications sheet (F-065) */}
         {notificationsOpen && (
-        <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-          <SheetContent
-            side="right"
-            className="flex w-96 max-w-full flex-col p-0"
-          >
-            <div className="flex min-h-16 items-center justify-between border-b border-border py-3 pl-5 pr-16">
-              <div className="flex items-center gap-2">
-                <BellIcon
-                  className="size-4 text-foreground"
-                  aria-hidden="true"
-                />
-                <SheetTitle className="text-sm font-semibold">Notifications</SheetTitle>
-                <SheetDescription className="sr-only">
-                  Recent operational alerts and system notifications
-                </SheetDescription>
-                {unreadCount > 0 && (
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-2xs font-bold text-primary">
-                    {unreadCount}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {notifications.length > 0 && (
-              <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-5 py-2">
-                <div>
-                  {unreadCount > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={markAllAsRead}
-                      className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
-                    >
-                      Mark all read
-                    </Button>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearNotifications}
-                  aria-label="Clear all notifications"
-                  title="Clear all notifications"
-                  className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2Icon className="size-3.5" aria-hidden="true" />
-                  <span>Clear all</span>
-                </Button>
-              </div>
-            )}
-
-            <div className="flex-1 overflow-y-auto p-4">
-              {notifications.length === 0 ? (
-                <div className="flex h-64 flex-col items-center justify-center text-center">
+          <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+            <SheetContent
+              side="right"
+              className="flex w-96 max-w-full flex-col p-0"
+            >
+              <div className="flex min-h-16 items-center justify-between border-b border-border py-3 pl-5 pr-16">
+                <div className="flex items-center gap-2">
                   <BellIcon
-                    className="mb-3 size-8 text-muted-foreground"
+                    className="size-4 text-foreground"
                     aria-hidden="true"
                   />
-                  <p className="text-sm font-medium text-foreground">
-                    No notifications
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Activity and system events will appear here.
-                  </p>
+                  <SheetTitle className="text-sm font-semibold">
+                    Notifications
+                  </SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Recent operational alerts and system notifications
+                  </SheetDescription>
+                  {unreadCount > 0 && (
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-2xs font-bold text-primary">
+                      {unreadCount}
+                    </span>
+                  )}
                 </div>
-              ) : (
-                <div className="flex flex-col gap-2.5">
-                  {notifications.map((n) => (
-                    <button
-                      type="button"
-                      key={n.id}
-                      onClick={() => markAsRead(n.id)}
-                      className={cn(
-                        "group relative flex w-full flex-col gap-1 rounded-lg border p-3 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        n.read
-                          ? "border-border/60 bg-card/60 opacity-80"
-                          : "border-primary/30 bg-card shadow-xs",
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          {n.type === "success" && (
-                            <CheckCircleIcon className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                          )}
-                          {n.type === "error" && (
-                            <AlertCircleIcon className="size-4 shrink-0 text-destructive" />
-                          )}
-                          {n.type === "warning" && (
-                            <AlertCircleIcon className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                          )}
-                          {n.type === "info" && (
-                            <InfoIcon className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
-                          )}
-                          <span
-                            className={cn(
-                              "text-xs font-semibold leading-tight",
-                              n.read
-                                ? "text-muted-foreground"
-                                : "text-foreground",
-                            )}
-                          >
-                            {n.title}
-                          </span>
-                        </div>
-                        {!n.read && (
-                          <span
-                            className="size-2 shrink-0 rounded-full bg-primary"
-                            title="Unread"
-                          />
-                        )}
-                      </div>
-                      {n.description && (
-                        <p className="text-2xs text-muted-foreground pl-6">
-                          {n.description}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between pl-6 pt-1 text-3xs text-muted-foreground">
-                        <span>
-                          {new Date(n.timestamp).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                        <span className="capitalize">{n.type}</span>
-                      </div>
-                    </button>
-                  ))}
+              </div>
+
+              {notifications.length > 0 && (
+                <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-5 py-2">
+                  <div>
+                    {unreadCount > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={markAllAsRead}
+                        className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        Mark all read
+                      </Button>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearNotifications}
+                    aria-label="Clear all notifications"
+                    title="Clear all notifications"
+                    className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2Icon className="size-3.5" aria-hidden="true" />
+                    <span>Clear all</span>
+                  </Button>
                 </div>
               )}
-            </div>
-          </SheetContent>
-        </Sheet>
+
+              <div className="flex-1 overflow-y-auto p-4">
+                {notifications.length === 0 ? (
+                  <div className="flex h-64 flex-col items-center justify-center text-center">
+                    <BellIcon
+                      className="mb-3 size-8 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                    <p className="text-sm font-medium text-foreground">
+                      No notifications
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Activity and system events will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2.5">
+                    {notifications.map((n) => (
+                      <button
+                        type="button"
+                        key={n.id}
+                        onClick={() => markAsRead(n.id)}
+                        className={cn(
+                          "group relative flex w-full flex-col gap-1 rounded-lg border p-3 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          n.read
+                            ? "border-border/60 bg-card/60 opacity-80"
+                            : "border-primary/30 bg-card shadow-xs",
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            {n.type === "success" && (
+                              <CheckCircleIcon className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                            )}
+                            {n.type === "error" && (
+                              <AlertCircleIcon className="size-4 shrink-0 text-destructive" />
+                            )}
+                            {n.type === "warning" && (
+                              <AlertCircleIcon className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                            )}
+                            {n.type === "info" && (
+                              <InfoIcon className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                            )}
+                            <span
+                              className={cn(
+                                "text-xs font-semibold leading-tight",
+                                n.read
+                                  ? "text-muted-foreground"
+                                  : "text-foreground",
+                              )}
+                            >
+                              {n.title}
+                            </span>
+                          </div>
+                          {!n.read && (
+                            <span
+                              className="size-2 shrink-0 rounded-full bg-primary"
+                              title="Unread"
+                            />
+                          )}
+                        </div>
+                        {n.description && (
+                          <p className="text-2xs text-muted-foreground pl-6">
+                            {n.description}
+                          </p>
+                        )}
+                        <div className="flex items-center justify-between pl-6 pt-1 text-3xs text-muted-foreground">
+                          <span>
+                            {new Date(n.timestamp).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                          <span className="capitalize">{n.type}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         )}
 
         {/* Operational Documentation & Guide Modal (F-049) */}
         {showHelpModal && (
-          <HelpGuideModal open={showHelpModal} onOpenChange={setShowHelpModal} />
+          <HelpGuideModal
+            open={showHelpModal}
+            onOpenChange={setShowHelpModal}
+          />
         )}
       </SidebarProvider>
     </TooltipProvider>

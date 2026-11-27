@@ -91,8 +91,12 @@ test.describe("System-Wide Runtime & Contract Resilience", () => {
       await expect(page.locator("body")).not.toContainText(
         /Cannot read properties of undefined|Application Error/i,
       );
-      await expect(page.getByRole("heading", { name: "Invoices" })).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Payments" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Invoices" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Payments" }),
+      ).toBeVisible();
     }
 
     expect(pageErrors).toEqual([]);

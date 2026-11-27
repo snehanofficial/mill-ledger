@@ -20,12 +20,7 @@ export const TIMELINE_FILTER_TYPES = [
 export type TimelineFilterType = (typeof TIMELINE_FILTER_TYPES)[number];
 
 export type TimelineCategory =
-  | "DIRECT"
-  | "LIFECYCLE"
-  | "RELATED"
-  | "FINANCIAL"
-  | "OPERATIONAL"
-  | "SYSTEM";
+  "DIRECT" | "LIFECYCLE" | "RELATED" | "FINANCIAL" | "OPERATIONAL" | "SYSTEM";
 
 export type TimelineRelationshipType = "DIRECT" | "RELATED" | "IMPACT";
 

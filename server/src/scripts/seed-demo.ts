@@ -146,101 +146,106 @@ export async function resetDemoData(): Promise<{ deleted: boolean }> {
   const orgId = demoOrg.id;
   const demoEmails = DEMO_USERS.map((u) => u.email);
 
-  await prisma.$transaction(async (tx) => {
-    await tx.$executeRawUnsafe(
-      "SET LOCAL mill_ledger.bypass_immutability = 'on'",
-    );
+  await prisma.$transaction(
+    async (tx) => {
+      await tx.$executeRawUnsafe(
+        "SET LOCAL mill_ledger.bypass_immutability = 'on'",
+      );
 
-    await tx.auditLog.deleteMany({ where: { organizationId: orgId } });
-    await tx.paymentAllocation.deleteMany({
-      where: { payment: { organizationId: orgId } },
-    });
-    await tx.payment.deleteMany({ where: { organizationId: orgId } });
-    await tx.creditNote.deleteMany({ where: { organizationId: orgId } });
-    await tx.debitNoteLine.deleteMany({
-      where: { debitNote: { organizationId: orgId } },
-    });
-    await tx.debitNote.deleteMany({ where: { organizationId: orgId } });
-    await tx.dispatchLine.deleteMany({
-      where: { dispatch: { organizationId: orgId } },
-    });
-    await tx.dispatch.deleteMany({ where: { organizationId: orgId } });
-    await tx.salesInvoiceLine.deleteMany({
-      where: { salesInvoice: { organizationId: orgId } },
-    });
-    await tx.salesInvoice.deleteMany({ where: { organizationId: orgId } });
-    await tx.stockReservation.deleteMany({
-      where: { salesOrder: { organizationId: orgId } },
-    });
-    await tx.salesOrderLine.deleteMany({
-      where: { salesOrder: { organizationId: orgId } },
-    });
-    await tx.salesOrder.deleteMany({ where: { organizationId: orgId } });
+      await tx.auditLog.deleteMany({ where: { organizationId: orgId } });
+      await tx.paymentAllocation.deleteMany({
+        where: { payment: { organizationId: orgId } },
+      });
+      await tx.payment.deleteMany({ where: { organizationId: orgId } });
+      await tx.creditNote.deleteMany({ where: { organizationId: orgId } });
+      await tx.debitNoteLine.deleteMany({
+        where: { debitNote: { organizationId: orgId } },
+      });
+      await tx.debitNote.deleteMany({ where: { organizationId: orgId } });
+      await tx.dispatchLine.deleteMany({
+        where: { dispatch: { organizationId: orgId } },
+      });
+      await tx.dispatch.deleteMany({ where: { organizationId: orgId } });
+      await tx.salesInvoiceLine.deleteMany({
+        where: { salesInvoice: { organizationId: orgId } },
+      });
+      await tx.salesInvoice.deleteMany({ where: { organizationId: orgId } });
+      await tx.stockReservation.deleteMany({
+        where: { salesOrder: { organizationId: orgId } },
+      });
+      await tx.salesOrderLine.deleteMany({
+        where: { salesOrder: { organizationId: orgId } },
+      });
+      await tx.salesOrder.deleteMany({ where: { organizationId: orgId } });
 
-    await tx.productionRunReversal.deleteMany({
-      where: { originalRun: { organizationId: orgId } },
-    });
-    await tx.productionRunMaterial.deleteMany({
-      where: { productionRun: { organizationId: orgId } },
-    });
-    await tx.productionRun.deleteMany({ where: { organizationId: orgId } });
+      await tx.productionRunReversal.deleteMany({
+        where: { originalRun: { organizationId: orgId } },
+      });
+      await tx.productionRunMaterial.deleteMany({
+        where: { productionRun: { organizationId: orgId } },
+      });
+      await tx.productionRun.deleteMany({ where: { organizationId: orgId } });
 
-    await tx.stockTransferLine.deleteMany({
-      where: { stockTransfer: { organizationId: orgId } },
-    });
-    await tx.stockTransfer.deleteMany({ where: { organizationId: orgId } });
-    await tx.purchaseReceiptLine.deleteMany({
-      where: { purchaseReceipt: { organizationId: orgId } },
-    });
-    await tx.purchaseReceipt.deleteMany({ where: { organizationId: orgId } });
-    await tx.stockMovement.deleteMany({
-      where: { inventoryItem: { organizationId: orgId } },
-    });
-    await tx.warehouseStockBalance.deleteMany({
-      where: { organizationId: orgId },
-    });
+      await tx.stockTransferLine.deleteMany({
+        where: { stockTransfer: { organizationId: orgId } },
+      });
+      await tx.stockTransfer.deleteMany({ where: { organizationId: orgId } });
+      await tx.purchaseReceiptLine.deleteMany({
+        where: { purchaseReceipt: { organizationId: orgId } },
+      });
+      await tx.purchaseReceipt.deleteMany({ where: { organizationId: orgId } });
+      await tx.stockMovement.deleteMany({
+        where: { inventoryItem: { organizationId: orgId } },
+      });
+      await tx.warehouseStockBalance.deleteMany({
+        where: { organizationId: orgId },
+      });
 
-    await tx.recipeItem.deleteMany({
-      where: { recipe: { organizationId: orgId } },
-    });
-    await tx.recipe.deleteMany({ where: { organizationId: orgId } });
+      await tx.recipeItem.deleteMany({
+        where: { recipe: { organizationId: orgId } },
+      });
+      await tx.recipe.deleteMany({ where: { organizationId: orgId } });
 
-    await tx.priceListLine.deleteMany({
-      where: { priceList: { organizationId: orgId } },
-    });
-    await tx.priceList.deleteMany({ where: { organizationId: orgId } });
-    await tx.productVariant.deleteMany({
-      where: { product: { organizationId: orgId } },
-    });
-    await tx.product.deleteMany({ where: { organizationId: orgId } });
+      await tx.priceListLine.deleteMany({
+        where: { priceList: { organizationId: orgId } },
+      });
+      await tx.priceList.deleteMany({ where: { organizationId: orgId } });
+      await tx.productVariant.deleteMany({
+        where: { product: { organizationId: orgId } },
+      });
+      await tx.product.deleteMany({ where: { organizationId: orgId } });
 
-    await tx.inventoryItem.deleteMany({ where: { organizationId: orgId } });
-    await tx.unitConversion.deleteMany({
-      where: { fromUom: { organizationId: orgId } },
-    });
-    await tx.unitOfMeasure.deleteMany({ where: { organizationId: orgId } });
+      await tx.inventoryItem.deleteMany({ where: { organizationId: orgId } });
+      await tx.unitConversion.deleteMany({
+        where: { fromUom: { organizationId: orgId } },
+      });
+      await tx.unitOfMeasure.deleteMany({ where: { organizationId: orgId } });
 
-    await tx.salesmanCustomerAssignment.deleteMany({
-      where: { customer: { organizationId: orgId } },
-    });
-    await tx.customer.deleteMany({ where: { organizationId: orgId } });
-    await tx.supplier.deleteMany({ where: { organizationId: orgId } });
-    await tx.taxRate.deleteMany({ where: { organizationId: orgId } });
-    await tx.documentSequence.deleteMany({ where: { organizationId: orgId } });
-    await tx.warehouse.deleteMany({ where: { organizationId: orgId } });
-    await tx.facility.deleteMany({ where: { organizationId: orgId } });
+      await tx.salesmanCustomerAssignment.deleteMany({
+        where: { customer: { organizationId: orgId } },
+      });
+      await tx.customer.deleteMany({ where: { organizationId: orgId } });
+      await tx.supplier.deleteMany({ where: { organizationId: orgId } });
+      await tx.taxRate.deleteMany({ where: { organizationId: orgId } });
+      await tx.documentSequence.deleteMany({
+        where: { organizationId: orgId },
+      });
+      await tx.warehouse.deleteMany({ where: { organizationId: orgId } });
+      await tx.facility.deleteMany({ where: { organizationId: orgId } });
 
-    await tx.session.deleteMany({
-      where: { user: { email: { in: demoEmails } } },
-    });
-    await tx.account.deleteMany({
-      where: { user: { email: { in: demoEmails } } },
-    });
-    await tx.user.deleteMany({
-      where: { email: { in: demoEmails }, organizationId: orgId },
-    });
-    await tx.organization.delete({ where: { id: orgId } });
-  }, { timeout: 60000, maxWait: 10000 });
+      await tx.session.deleteMany({
+        where: { user: { email: { in: demoEmails } } },
+      });
+      await tx.account.deleteMany({
+        where: { user: { email: { in: demoEmails } } },
+      });
+      await tx.user.deleteMany({
+        where: { email: { in: demoEmails }, organizationId: orgId },
+      });
+      await tx.organization.delete({ where: { id: orgId } });
+    },
+    { timeout: 60000, maxWait: 10000 },
+  );
 
   return { deleted: true };
 }
@@ -1109,9 +1114,7 @@ export async function seedDemoData(): Promise<{
       status: "DRAFT",
       notes: "Initial draft order for Green Basket Retailers",
       idempotencyKey: "demo-so-001",
-      lines: [
-        { productVariantId: varRagi.id, quantity: 80, unitPrice: 150 },
-      ],
+      lines: [{ productVariantId: varRagi.id, quantity: 80, unitPrice: 150 }],
     },
     salesmanUser,
   );
@@ -1323,7 +1326,11 @@ export async function seedDemoData(): Promise<{
       amount: 28000,
       paymentMode: PaymentMode.BANK_TRANSFER,
       referenceNumber: "RTGS-DEMO-2026-004",
-      notes: "Consolidated RTGS settling " + inv3.invoiceNumber + " & part of " + inv4.invoiceNumber,
+      notes:
+        "Consolidated RTGS settling " +
+        inv3.invoiceNumber +
+        " & part of " +
+        inv4.invoiceNumber,
       idempotencyKey: "demo-pay-004",
       allocations: [
         { salesInvoiceId: inv3.id, amount: inv3Total },
@@ -1462,7 +1469,10 @@ export async function verifyDemoData() {
   for (const p of payments) {
     const amt = Number(p.amount);
     const unalloc = Number(p.unallocatedAmount);
-    const allocSum = p.allocations.reduce((acc, a) => acc + Number(a.amount), 0);
+    const allocSum = p.allocations.reduce(
+      (acc, a) => acc + Number(a.amount),
+      0,
+    );
     totalCollected += amt;
     if (Math.abs(amt - (allocSum + unalloc)) > 0.01) {
       paymentReconciled = false;
@@ -1496,7 +1506,9 @@ export async function verifyDemoData() {
     where: { organizationId: orgId, version: 2 },
   });
   const sampleOrder = orders.find((o) => o.orderNumber === "DEMO-SO-001")!;
-  const sampleInvoice = invoices.find((i) => i.salesOrderId === sampleOrder.id)!;
+  const sampleInvoice = invoices.find(
+    (i) => i.salesOrderId === sampleOrder.id,
+  )!;
   const samplePayment = payments[0]!;
 
   const timelines = await Promise.all([
@@ -1623,16 +1635,48 @@ async function main() {
   const report = await verifyDemoData();
   console.log("\n=== MillLedger Demo Foods — Seed & Verification Summary ===");
   console.table([
-    { Category: "Customers", Count: report.counts.customers, Verified: report.checks.referentialIntegrity ? "PASS" : "FAIL" },
+    {
+      Category: "Customers",
+      Count: report.counts.customers,
+      Verified: report.checks.referentialIntegrity ? "PASS" : "FAIL",
+    },
     { Category: "Products", Count: report.counts.products, Verified: "PASS" },
     { Category: "Recipes", Count: report.counts.recipes, Verified: "PASS" },
-    { Category: "Orders", Count: report.counts.orders, Verified: report.checks.referentialIntegrity ? "PASS" : "FAIL" },
-    { Category: "Invoices", Count: report.counts.invoices, Verified: report.checks.invoiceReconciliation ? "PASS" : "FAIL" },
-    { Category: "Payments", Count: report.counts.payments, Verified: report.checks.paymentReconciliation ? "PASS" : "FAIL" },
-    { Category: "Production Runs", Count: report.counts.productionRuns, Verified: "PASS" },
-    { Category: "Purchase Receipts", Count: report.counts.purchaseReceipts, Verified: "PASS" },
-    { Category: "Dispatches", Count: report.counts.dispatches, Verified: "PASS" },
-    { Category: "Audit Logs", Count: report.counts.auditLogs, Verified: report.checks.timelineCoverage ? "PASS" : "FAIL" },
+    {
+      Category: "Orders",
+      Count: report.counts.orders,
+      Verified: report.checks.referentialIntegrity ? "PASS" : "FAIL",
+    },
+    {
+      Category: "Invoices",
+      Count: report.counts.invoices,
+      Verified: report.checks.invoiceReconciliation ? "PASS" : "FAIL",
+    },
+    {
+      Category: "Payments",
+      Count: report.counts.payments,
+      Verified: report.checks.paymentReconciliation ? "PASS" : "FAIL",
+    },
+    {
+      Category: "Production Runs",
+      Count: report.counts.productionRuns,
+      Verified: "PASS",
+    },
+    {
+      Category: "Purchase Receipts",
+      Count: report.counts.purchaseReceipts,
+      Verified: "PASS",
+    },
+    {
+      Category: "Dispatches",
+      Count: report.counts.dispatches,
+      Verified: "PASS",
+    },
+    {
+      Category: "Audit Logs",
+      Count: report.counts.auditLogs,
+      Verified: report.checks.timelineCoverage ? "PASS" : "FAIL",
+    },
   ]);
   console.log("Financial & Integrity Checks:", JSON.stringify(report.checks));
   console.log("Totals & Timeline Event Counts:", JSON.stringify(report.totals));

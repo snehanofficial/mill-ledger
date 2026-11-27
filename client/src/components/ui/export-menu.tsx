@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { DownloadIcon, RefreshCwIcon, FileTextIcon, TableIcon, FileSpreadsheetIcon } from "lucide-react";
+import {
+  DownloadIcon,
+  RefreshCwIcon,
+  FileTextIcon,
+  TableIcon,
+  FileSpreadsheetIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -82,7 +88,10 @@ export function ExportMenu({
             onSelect={() => void handleExport("pdf")}
             className="cursor-pointer gap-2"
           >
-            <FileTextIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+            <FileTextIcon
+              className="size-4 text-muted-foreground"
+              aria-hidden="true"
+            />
             <div className="flex flex-col">
               <span className="text-sm font-medium">PDF Document</span>
               <span className="text-[11px] text-muted-foreground">
@@ -96,9 +105,14 @@ export function ExportMenu({
             onSelect={() => void handleExport("xlsx")}
             className="cursor-pointer gap-2"
           >
-            <FileSpreadsheetIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+            <FileSpreadsheetIcon
+              className="size-4 text-muted-foreground"
+              aria-hidden="true"
+            />
             <div className="flex flex-col">
-              <span className="text-sm font-medium">Excel Workbook (.xlsx)</span>
+              <span className="text-sm font-medium">
+                Excel Workbook (.xlsx)
+              </span>
               <span className="text-[11px] text-muted-foreground">
                 Formatted, filterable workbook
               </span>
@@ -110,7 +124,10 @@ export function ExportMenu({
             onSelect={() => void handleExport("csv")}
             className="cursor-pointer gap-2"
           >
-            <TableIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+            <TableIcon
+              className="size-4 text-muted-foreground"
+              aria-hidden="true"
+            />
             <div className="flex flex-col">
               <span className="text-sm font-medium">CSV Data</span>
               <span className="text-[11px] text-muted-foreground">

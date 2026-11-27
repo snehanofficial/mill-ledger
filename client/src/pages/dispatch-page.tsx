@@ -16,7 +16,11 @@ import {
   DataTableColumnHeader,
   type DataTableColumnMeta,
 } from "@/components/ui/data-table";
-import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
+import {
+  EmptyState,
+  SkeletonTable,
+  ErrorState,
+} from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +44,9 @@ export function DispatchPage() {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const canDispatch = user?.role === "ADMIN";
-  const [searchQuery, setSearchQuery] = useUrlState("q", "", { debounceMs: 200 });
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 200,
+  });
   const { page, pageSize, offset, setPage, setPageSize, resetPage } =
     usePagination({ defaultPageSize: 20 });
 
@@ -58,7 +64,11 @@ export function DispatchPage() {
         params.set("q", searchQuery.trim());
       }
       const res = await apiClient.get(`/sales/dispatches?${params.toString()}`);
-      return assertCollectionResponse(res.data, "dispatches", "/sales/dispatches");
+      return assertCollectionResponse(
+        res.data,
+        "dispatches",
+        "/sales/dispatches",
+      );
     },
     placeholderData: keepPreviousData,
   });
@@ -231,7 +241,9 @@ export function DispatchPage() {
                 className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium hover:border-primary/50"
               >
                 <span>{ord.orderNumber}</span>
-                <span className="text-muted-foreground">{ord.customer?.name}</span>
+                <span className="text-muted-foreground">
+                  {ord.customer?.name}
+                </span>
                 <Badge variant="outline" className="h-4 text-[10px]">
                   {ord.fulfilmentStatus.replaceAll("_", " ")}
                 </Badge>

@@ -57,7 +57,10 @@ export function SpreadsheetAlternativePage() {
               Spreadsheet Alternative for Small Food Manufacturing Mills
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
-              Spreadsheets work when a unit has one operator and a single product. Once field salesmen, multi-UOM raw materials, BOM yields, and GST invoicing scale up, manual sheets break down. Here is how MillLedger compares on daily mill operations.
+              Spreadsheets work when a unit has one operator and a single
+              product. Once field salesmen, multi-UOM raw materials, BOM yields,
+              and GST invoicing scale up, manual sheets break down. Here is how
+              MillLedger compares on daily mill operations.
             </p>
           </div>
         </div>
@@ -69,8 +72,12 @@ export function SpreadsheetAlternativePage() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th className="px-5 py-3.5 font-semibold">Operational Area</th>
-                  <th className="px-5 py-3.5 font-semibold">Manual Spreadsheets</th>
+                  <th className="px-5 py-3.5 font-semibold">
+                    Operational Area
+                  </th>
+                  <th className="px-5 py-3.5 font-semibold">
+                    Manual Spreadsheets
+                  </th>
                   <th className="px-5 py-3.5 font-semibold">MillLedger ERP</th>
                 </tr>
               </thead>
@@ -95,13 +102,19 @@ export function SpreadsheetAlternativePage() {
           <div className="flex flex-wrap gap-3">
             <Link
               to="/demo"
-              className={buttonVariants({ variant: "primary", className: "min-h-[44px] px-6" })}
+              className={buttonVariants({
+                variant: "primary",
+                className: "min-h-[44px] px-6",
+              })}
             >
               Request a Migration Walkthrough
             </Link>
             <Link
               to="/features"
-              className={buttonVariants({ variant: "outline", className: "min-h-[44px] px-6" })}
+              className={buttonVariants({
+                variant: "outline",
+                className: "min-h-[44px] px-6",
+              })}
             >
               Inspect All ERP Features
             </Link>

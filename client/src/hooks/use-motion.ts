@@ -41,7 +41,7 @@ export function useMotion() {
       }
       applyMotionPreference(paused);
     },
-    [applyMotionPreference]
+    [applyMotionPreference],
   );
 
   const toggleMotion = useCallback(() => {

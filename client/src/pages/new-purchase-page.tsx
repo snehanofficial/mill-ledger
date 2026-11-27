@@ -219,7 +219,9 @@ export function NewPurchasePage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="pr-rate">Rate per {activeItem?.baseUom?.code ?? "unit"} (₹)</Label>
+            <Label htmlFor="pr-rate">
+              Rate per {activeItem?.baseUom?.code ?? "unit"} (₹)
+            </Label>
             <Input
               id="pr-rate"
               type="number"
@@ -245,19 +247,22 @@ export function NewPurchasePage() {
 
         {/* Impact Preview */}
         <div className="rounded-md border border-border bg-muted/40 p-4 text-sm space-y-1">
-          <div className="font-semibold text-foreground">Posting impact preview</div>
+          <div className="font-semibold text-foreground">
+            Posting impact preview
+          </div>
           {activeItem && (
             <div className="text-muted-foreground">
               {activeItem.name}: On-hand changes from{" "}
               <strong className="text-foreground tabular-nums">
-                {formatQuantity(activeItem.onHand, { unit: activeItem.baseUom?.code ?? "unit" })}
+                {formatQuantity(activeItem.onHand, {
+                  unit: activeItem.baseUom?.code ?? "unit",
+                })}
               </strong>{" "}
               to{" "}
               <strong className="text-foreground tabular-nums">
-                {formatQuantity(
-                  Number(activeItem.onHand) + qtyNum,
-                  { unit: activeItem.baseUom?.code ?? "unit" },
-                )}
+                {formatQuantity(Number(activeItem.onHand) + qtyNum, {
+                  unit: activeItem.baseUom?.code ?? "unit",
+                })}
               </strong>
               . Receipt value:{" "}
               <strong className="text-foreground tabular-nums">

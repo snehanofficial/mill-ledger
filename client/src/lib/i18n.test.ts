@@ -123,12 +123,16 @@ describe("i18n Translation Dictionary", () => {
     });
 
     it("scopes storage key to user ID when provided", () => {
-      expect(getUserScopedLanguageKey("user-123")).toBe("mill_ledger_lang_user-123");
+      expect(getUserScopedLanguageKey("user-123")).toBe(
+        "mill_ledger_lang_user-123",
+      );
     });
 
     it("falls back to active user from localStorage if userId param omitted", () => {
       localStorage.setItem("mill_ledger_active_user", "session-user-999");
-      expect(getUserScopedLanguageKey()).toBe("mill_ledger_lang_session-user-999");
+      expect(getUserScopedLanguageKey()).toBe(
+        "mill_ledger_lang_session-user-999",
+      );
     });
 
     it("falls back to global key if no active user exists", () => {

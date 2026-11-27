@@ -170,16 +170,27 @@ export class UserService {
     }
 
     const role = input.role || "SALESMAN";
-    const validRoles: Role[] = ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"];
+    const validRoles: Role[] = [
+      "ADMIN",
+      "SALESMAN",
+      "PRODUCTION",
+      "ACCOUNTANT",
+      "OWNER",
+    ];
     if (!validRoles.includes(role)) {
       throw new AppError(`Invalid role: ${role}`, 400);
     }
 
     if (!input.organizationId) {
-      throw new AppError("Organization context is required to create user", 400);
+      throw new AppError(
+        "Organization context is required to create user",
+        400,
+      );
     }
     const org = await prisma.organization.findFirst({
-      where: { OR: [{ id: input.organizationId }, { code: input.organizationId }] },
+      where: {
+        OR: [{ id: input.organizationId }, { code: input.organizationId }],
+      },
       select: { id: true },
     });
     if (!org) {
@@ -232,7 +243,11 @@ export class UserService {
   /**
    * Update an existing user, enforcing the Last-Admin Demotion/Deactivation safeguard per organization
    */
-  async updateUser(id: string, input: UpdateUserInput, organizationId?: string) {
+  async updateUser(
+    id: string,
+    input: UpdateUserInput,
+    organizationId?: string,
+  ) {
     const user = await prisma.user.findFirst({
       where: {
         id,
@@ -245,7 +260,13 @@ export class UserService {
     }
 
     if (input.role) {
-      const validRoles: Role[] = ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"];
+      const validRoles: Role[] = [
+        "ADMIN",
+        "SALESMAN",
+        "PRODUCTION",
+        "ACCOUNTANT",
+        "OWNER",
+      ];
       if (!validRoles.includes(input.role)) {
         throw new AppError(`Invalid role: ${input.role}`, 400);
       }
@@ -294,7 +315,10 @@ export class UserService {
     });
 
     // Invalidate all active sessions immediately when a user is deactivated or role changes
-    if (input.isActive === false || (input.role !== undefined && input.role !== user.role)) {
+    if (
+      input.isActive === false ||
+      (input.role !== undefined && input.role !== user.role)
+    ) {
       await prisma.session.deleteMany({ where: { userId: id } });
     }
 
@@ -382,10 +406,7 @@ export class UserService {
 
     const result = await prisma.session.deleteMany({
       where: {
-        OR: [
-          { expiresAt: { lt: now } },
-          { createdAt: { lt: ninetyDaysAgo } },
-        ],
+        OR: [{ expiresAt: { lt: now } }, { createdAt: { lt: ninetyDaysAgo } }],
       },
     });
 

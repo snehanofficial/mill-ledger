@@ -41,7 +41,11 @@ export const lockoutPlugin = (): BetterAuthPlugin => ({
             if (!email) return;
 
             const returned = ctx.context.returned;
-            if (returned && isAPIError(returned) && returned.statusCode === 401) {
+            if (
+              returned &&
+              isAPIError(returned) &&
+              returned.statusCode === 401
+            ) {
               const { locked, attempts } = lockoutService.recordFailure(email);
               if (locked) {
                 console.warn(
@@ -124,7 +128,9 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url }) => {
-      console.log(`[Better Auth] Password reset link generated for ${user.email}: ${url}`);
+      console.log(
+        `[Better Auth] Password reset link generated for ${user.email}: ${url}`,
+      );
     },
   },
   user: {

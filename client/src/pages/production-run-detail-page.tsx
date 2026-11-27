@@ -82,21 +82,26 @@ export function ProductionRunDetailPage() {
   const [reverseOpen, setReverseOpen] = useState(false);
   const [reverseReason, setReverseReason] = useState("");
 
-  const { data: run, isLoading, isError, error, refetch } =
-    useQuery<RunDetail>({
-      queryKey: ["production-run", runId],
-      queryFn: async () => {
-        const endpoint = `/production-runs/${runId}`;
-        const res = await apiClient.get(endpoint);
-        return assertEntityResponse<RunDetail & Record<string, unknown>>(
-          res.data,
-          "run",
-          ["materials"],
-          endpoint,
-        );
-      },
-      enabled: Boolean(runId),
-    });
+  const {
+    data: run,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<RunDetail>({
+    queryKey: ["production-run", runId],
+    queryFn: async () => {
+      const endpoint = `/production-runs/${runId}`;
+      const res = await apiClient.get(endpoint);
+      return assertEntityResponse<RunDetail & Record<string, unknown>>(
+        res.data,
+        "run",
+        ["materials"],
+        endpoint,
+      );
+    },
+    enabled: Boolean(runId),
+  });
 
   const reverseMutation = useMutation({
     mutationFn: async () => {
@@ -115,7 +120,9 @@ export function ProductionRunDetailPage() {
       toast.success("Production run reversed.");
     },
     onError: (err: unknown) => {
-      toast.error(extractErrorMessage(err, "Failed to reverse production run."));
+      toast.error(
+        extractErrorMessage(err, "Failed to reverse production run."),
+      );
     },
   });
 
@@ -150,7 +157,10 @@ export function ProductionRunDetailPage() {
           <>
             <Badge variant="outline">{run.status}</Badge>
             {run.isYieldFlagged && (
-              <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+              <Badge
+                variant="outline"
+                className="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+              >
                 Yield variance: {Number(run.yieldVariancePct).toFixed(1)}%
               </Badge>
             )}
@@ -186,7 +196,10 @@ export function ProductionRunDetailPage() {
           role="alert"
           className="flex items-start gap-2.5 rounded-lg border border-amber-300 bg-amber-50/70 p-3.5 text-sm dark:border-amber-800 dark:bg-amber-950/30"
         >
-          <AlertTriangleIcon className="size-4 shrink-0 text-amber-700 mt-0.5" aria-hidden="true" />
+          <AlertTriangleIcon
+            className="size-4 shrink-0 text-amber-700 mt-0.5"
+            aria-hidden="true"
+          />
           <span>{run.packagingWarning}</span>
         </div>
       )}
@@ -217,16 +230,22 @@ export function ProductionRunDetailPage() {
             {formatINR(run.totalRunCost)}
           </div>
           <div className="text-xs text-muted-foreground tabular-nums">
-            Mat: {formatINR(run.directMaterialCost)} • Lab: {formatINR(run.directLaborCost)} • Util: {formatINR(run.utilityCost)}
+            Mat: {formatINR(run.directMaterialCost)} • Lab:{" "}
+            {formatINR(run.directLaborCost)} • Util:{" "}
+            {formatINR(run.utilityCost)}
           </div>
         </div>
         <div className="rounded-lg border border-border bg-card p-3">
-          <div className="text-xs text-muted-foreground">Cost per good packet</div>
+          <div className="text-xs text-muted-foreground">
+            Cost per good packet
+          </div>
           <div className="text-lg font-semibold tabular-nums">
             {formatINR(run.costPerGoodUnit)}
           </div>
           <div className="text-xs text-muted-foreground">
-            {run.postedAt ? `Posted ${formatDateTime(run.postedAt)}` : "Not posted"}
+            {run.postedAt
+              ? `Posted ${formatDateTime(run.postedAt)}`
+              : "Not posted"}
           </div>
         </div>
       </div>
@@ -304,7 +323,8 @@ export function ProductionRunDetailPage() {
           <DialogHeader>
             <DialogTitle>Reverse production run {run.runNumber}</DialogTitle>
             <DialogDescription>
-              Reverses raw material deductions and finished-goods output in the stock ledger without deleting the original run.
+              Reverses raw material deductions and finished-goods output in the
+              stock ledger without deleting the original run.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">

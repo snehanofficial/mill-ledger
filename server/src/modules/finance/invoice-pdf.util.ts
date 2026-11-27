@@ -67,7 +67,9 @@ export async function generateInvoicePdfBuffer(
       name: invoice.organization?.name || undefined,
       state: invoice.organization?.state || undefined,
       gstin:
-        invoice.companyGstinSnapshot || invoice.organization?.gstin || undefined,
+        invoice.companyGstinSnapshot ||
+        invoice.organization?.gstin ||
+        undefined,
       address: invoice.organization?.address || undefined,
     },
     footerNote: "System-generated GST Tax Invoice",
@@ -114,7 +116,10 @@ export async function generateInvoicePdfBuffer(
       .font(fonts.bold)
       .fontSize(8)
       .fillColor(EXPORT_THEME.colors.pineAction)
-      .text("INVOICE DETAILS", rightX, blockY, { width: rightW, align: "right" });
+      .text("INVOICE DETAILS", rightX, blockY, {
+        width: rightW,
+        align: "right",
+      });
 
     const detailLines = [
       `Invoice No: ${invoice.invoiceNumber}`,
@@ -153,9 +158,7 @@ export async function generateInvoicePdfBuffer(
 
     const drawHeader = (y: number): number => {
       const h = 20;
-      doc
-        .rect(margin, y, contentWidth, h)
-        .fill(EXPORT_THEME.colors.pine950);
+      doc.rect(margin, y, contentWidth, h).fill(EXPORT_THEME.colors.pine950);
       let cx = margin;
       for (const c of cols) {
         doc
@@ -198,9 +201,7 @@ export async function generateInvoicePdfBuffer(
       }
 
       if (idx % 2 === 1) {
-        doc
-          .rect(margin, y, contentWidth, rowH)
-          .fill(EXPORT_THEME.colors.zebra);
+        doc.rect(margin, y, contentWidth, rowH).fill(EXPORT_THEME.colors.zebra);
       }
 
       let cx = margin;
@@ -251,7 +252,10 @@ export async function generateInvoicePdfBuffer(
     };
 
     const sym = fonts.supportsRupeeGlyph;
-    addSummaryRow("Taxable Value", formatExportCurrency(invoice.taxableAmount, sym));
+    addSummaryRow(
+      "Taxable Value",
+      formatExportCurrency(invoice.taxableAmount, sym),
+    );
     if (Number(invoice.cgstAmount.toString()) > 0) {
       addSummaryRow("CGST", formatExportCurrency(invoice.cgstAmount, sym));
       addSummaryRow("SGST", formatExportCurrency(invoice.sgstAmount, sym));
@@ -281,7 +285,13 @@ export async function generateInvoicePdfBuffer(
     );
 
     doc
-      .roundedRect(summaryX, summaryTop - 6, summaryW, doc.y - summaryTop + 8, 4)
+      .roundedRect(
+        summaryX,
+        summaryTop - 6,
+        summaryW,
+        doc.y - summaryTop + 8,
+        4,
+      )
       .strokeColor(EXPORT_THEME.colors.borderLight)
       .lineWidth(0.75)
       .stroke();

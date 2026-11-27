@@ -33,7 +33,8 @@ describe("Public Inquiry API & Robots headers", () => {
         phone: "+91 98765 43210",
         email: "ram@kaverimills.in",
         inquiryType: "product_demo",
-        message: "We want to see BOM yield tracking and offline salesman ordering.",
+        message:
+          "We want to see BOM yield tracking and offline salesman ordering.",
         sourcePath: "/demo",
         utmSource: "google",
         utmMedium: "organic",

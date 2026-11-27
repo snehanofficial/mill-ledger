@@ -11,7 +11,10 @@ export interface BeforeInstallPromptEvent extends Event {
 }
 
 type NavigatorWithInstall = Navigator & {
-  install?: (options?: { manifest?: string; manifestId?: string }) => Promise<void>;
+  install?: (options?: {
+    manifest?: string;
+    manifestId?: string;
+  }) => Promise<void>;
   standalone?: boolean;
 };
 
@@ -28,7 +31,9 @@ export function hasNativeWebInstall(): boolean {
   if (typeof window === "undefined" || typeof Navigator === "undefined") {
     return false;
   }
-  return typeof (Navigator.prototype as NavigatorWithInstall).install === "function";
+  return (
+    typeof (Navigator.prototype as NavigatorWithInstall).install === "function"
+  );
 }
 
 export async function triggerPwaInstall(options: {
@@ -121,7 +126,9 @@ export function usePwaStatus(): PwaStatus {
     Boolean(navigator.storage) &&
     typeof navigator.storage.persist === "function";
 
-  const [storagePersisted, setStoragePersisted] = useState<boolean | null>(null);
+  const [storagePersisted, setStoragePersisted] = useState<boolean | null>(
+    null,
+  );
   const [isRequestingStorage, setIsRequestingStorage] = useState(false);
 
   const supportsWebInstall = hasNativeWebInstall();
@@ -149,7 +156,10 @@ export function usePwaStatus(): PwaStatus {
       void refreshStorageStatus();
     };
     const onFocusOrVisible = () => {
-      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "hidden"
+      ) {
         return;
       }
       void refreshStorageStatus();

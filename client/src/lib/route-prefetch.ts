@@ -7,7 +7,8 @@ export const ROUTE_CHUNK_LOADERS: Record<string, () => Promise<unknown>> = {
   "/": () => import("@/pages/public/landing-page"),
   "/features": () => import("@/pages/public/features-page"),
   "/workflows": () => import("@/pages/public/workflows-page"),
-  "/spreadsheet-alternative": () => import("@/pages/public/spreadsheet-alternative-page"),
+  "/spreadsheet-alternative": () =>
+    import("@/pages/public/spreadsheet-alternative-page"),
   "/resources": () => import("@/pages/public/resources-page"),
   "/security": () => import("@/pages/public/security-page"),
   "/about": () => import("@/pages/public/about-page"),

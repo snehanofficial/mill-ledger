@@ -44,7 +44,9 @@ inventoryRouter.get(
   authorize("purchase", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Receipt ID is required", 400);
       const receipt = await inventoryService.getPurchaseReceiptById(id);
       res.json({ receipt });
@@ -61,7 +63,9 @@ inventoryRouter.post(
   authorize("purchase", "update"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Receipt ID is required", 400);
       const result = await inventoryService.reversePurchaseReceipt(
         id,
@@ -244,7 +248,9 @@ inventoryRouter.put(
   authorize("inventory", "update"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       if (!id) throw new AppError("Item ID is required", 400);
       const item = await inventoryService.updateInventoryItem(
         id,

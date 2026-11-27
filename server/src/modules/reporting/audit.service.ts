@@ -76,11 +76,15 @@ export class AuditService {
           organizationId,
           userId: input.userId,
           userEmail: input.userEmail,
-          actorName: input.actorName ?? (input.userEmail ? input.userEmail.split("@")[0] : undefined),
+          actorName:
+            input.actorName ??
+            (input.userEmail ? input.userEmail.split("@")[0] : undefined),
           actorType: input.actorType ?? "USER",
           source: input.source ?? "API",
           action: input.action,
-          eventType: input.eventType ?? `${input.entity.toUpperCase()}_${input.action.toUpperCase()}`,
+          eventType:
+            input.eventType ??
+            `${input.entity.toUpperCase()}_${input.action.toUpperCase()}`,
           entity: input.entity,
           entityId: input.entityId,
           summary: input.summary,

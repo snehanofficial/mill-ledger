@@ -17,13 +17,15 @@ const REPORT_GROUPS = [
     items: [
       {
         title: "Sales register & analysis",
-        description: "Posted sales invoices, customer-wise sales, and product-wise sales.",
+        description:
+          "Posted sales invoices, customer-wise sales, and product-wise sales.",
         href: "/reports/sales",
         icon: BarChart2Icon,
       },
       {
         title: "GST outward summary",
-        description: "Taxable value, CGST, SGST, and IGST breakdown by rate and place of supply.",
+        description:
+          "Taxable value, CGST, SGST, and IGST breakdown by rate and place of supply.",
         href: "/reports/gst",
         icon: FileTextIcon,
       },
@@ -40,13 +42,15 @@ const REPORT_GROUPS = [
     items: [
       {
         title: "Stock valuation & ledger",
-        description: "Closing balances, weighted-average cost, and full movement ledger.",
+        description:
+          "Closing balances, weighted-average cost, and full movement ledger.",
         href: "/reports/stock",
         icon: BoxIcon,
       },
       {
         title: "Production & costing",
-        description: "Yield variance, material consumption variance, and cost per good packet.",
+        description:
+          "Yield variance, material consumption variance, and cost per good packet.",
         href: "/reports/production",
         icon: FactoryIcon,
       },

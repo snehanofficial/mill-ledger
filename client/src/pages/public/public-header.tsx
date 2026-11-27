@@ -17,8 +17,14 @@ export function PublicHeader() {
   const navLinks = [
     { href: "/", label: language === "ta" ? "முகப்பு" : "Home" },
     { href: "/features", label: language === "ta" ? "வசதிகள்" : "Features" },
-    { href: "/workflows", label: language === "ta" ? "செயல்முறைகள்" : "Workflows" },
-    { href: "/resources", label: language === "ta" ? "வழிகாட்டிகள்" : "Resources" },
+    {
+      href: "/workflows",
+      label: language === "ta" ? "செயல்முறைகள்" : "Workflows",
+    },
+    {
+      href: "/resources",
+      label: language === "ta" ? "வழிகாட்டிகள்" : "Resources",
+    },
     { href: "/contact", label: language === "ta" ? "தொடர்பு" : "Contact" },
   ];
 

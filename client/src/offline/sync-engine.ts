@@ -42,7 +42,12 @@ export async function refreshMasterDataSnapshot(
       apiClient.get<{ customers: Array<CachedCustomer> }>("/sales/customers"),
       apiClient.get<{
         products: Array<CachedProduct>;
-        pagination?: { limit: number; offset: number; count: number; total?: number };
+        pagination?: {
+          limit: number;
+          offset: number;
+          count: number;
+          total?: number;
+        };
       }>("/sales/products?limit=100&offset=0"),
     ]);
 
@@ -52,17 +57,22 @@ export async function refreshMasterDataSnapshot(
 
     const firstProductsPayload = assertCollectionResponse<{
       products: Array<CachedProduct>;
-      pagination?: { limit: number; offset: number; count: number; total?: number };
-    }>(
-      firstProdRes.data,
-      "products",
-      "/sales/products?limit=100&offset=0",
-    );
+      pagination?: {
+        limit: number;
+        offset: number;
+        count: number;
+        total?: number;
+      };
+    }>(firstProdRes.data, "products", "/sales/products?limit=100&offset=0");
 
     const allRawProducts = [...firstProductsPayload.products];
     const totalProducts =
       firstProductsPayload.pagination?.total ?? allRawProducts.length;
-    for (let offset = allRawProducts.length; offset < totalProducts; offset += 100) {
+    for (
+      let offset = allRawProducts.length;
+      offset < totalProducts;
+      offset += 100
+    ) {
       const nextEndpoint = `/sales/products?limit=100&offset=${offset}`;
       const nextRes = await apiClient.get<{ products: Array<CachedProduct> }>(
         nextEndpoint,

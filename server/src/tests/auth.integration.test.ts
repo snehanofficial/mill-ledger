@@ -295,13 +295,18 @@ describe("Better Auth and permission integration", () => {
       expect(ownOrgRes.status).toBe(200);
 
       // Attempt to access a different organization ID (BOLA attack)
-      const foreignOrgRes = await fetch(`${baseUrl}/api/v1/dashboard?organizationId=COMPETING_MILL_XYZ`, {
-        headers: { Cookie: cookie },
-      });
+      const foreignOrgRes = await fetch(
+        `${baseUrl}/api/v1/dashboard?organizationId=COMPETING_MILL_XYZ`,
+        {
+          headers: { Cookie: cookie },
+        },
+      );
 
       expect(foreignOrgRes.status).toBe(403);
       const data = await foreignOrgRes.json();
-      expect(data.message).toContain("Access denied to organization COMPETING_MILL_XYZ");
+      expect(data.message).toContain(
+        "Access denied to organization COMPETING_MILL_XYZ",
+      );
     });
   });
 });

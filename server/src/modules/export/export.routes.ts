@@ -44,7 +44,9 @@ exportRouter.get(
         });
       });
 
-      const format = String(req.query.format || "csv").toLowerCase() as ExportFormat;
+      const format = String(
+        req.query.format || "csv",
+      ).toLowerCase() as ExportFormat;
       if (!["pdf", "xlsx", "csv"].includes(format)) {
         throw new AppError(`Unsupported export format: ${format}`, 400);
       }
@@ -58,25 +60,30 @@ exportRouter.get(
         : undefined;
 
       const orgId = getSessionOrgId(req);
-      const { content, orgName } = await exportService.exportEntity(entity, format, {
-        organizationId: orgId,
-        q: typeof req.query.q === "string" ? req.query.q : undefined,
-        status: typeof req.query.status === "string" ? req.query.status : undefined,
-        paymentMode:
-          typeof req.query.paymentMode === "string"
-            ? req.query.paymentMode
-            : undefined,
-        startDate:
-          typeof req.query.startDate === "string" && req.query.startDate
-            ? new Date(req.query.startDate)
-            : undefined,
-        endDate:
-          typeof req.query.endDate === "string" && req.query.endDate
-            ? new Date(req.query.endDate)
-            : undefined,
-        ids,
-        user: req.user!,
-      });
+      const { content, orgName } = await exportService.exportEntity(
+        entity,
+        format,
+        {
+          organizationId: orgId,
+          q: typeof req.query.q === "string" ? req.query.q : undefined,
+          status:
+            typeof req.query.status === "string" ? req.query.status : undefined,
+          paymentMode:
+            typeof req.query.paymentMode === "string"
+              ? req.query.paymentMode
+              : undefined,
+          startDate:
+            typeof req.query.startDate === "string" && req.query.startDate
+              ? new Date(req.query.startDate)
+              : undefined,
+          endDate:
+            typeof req.query.endDate === "string" && req.query.endDate
+              ? new Date(req.query.endDate)
+              : undefined,
+          ids,
+          user: req.user!,
+        },
+      );
 
       const filename = buildExportFilename({
         orgName,
@@ -94,7 +101,10 @@ exportRouter.get(
       } else {
         res.setHeader("Content-Type", "application/pdf");
       }
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
       return res.send(content);
     } catch (err) {
       next(err);
@@ -109,7 +119,9 @@ exportRouter.get(
   authorize("order", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       const orgId = getSessionOrgId(req);
       const { buffer, orderNumber } = await exportService.generateOrderPdf(
         id,
@@ -122,7 +134,10 @@ exportRouter.get(
         extension: "pdf",
       });
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
       return res.send(buffer);
     } catch (err) {
       next(err);
@@ -136,7 +151,9 @@ exportRouter.get(
   authorize("payment", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       const orgId = getSessionOrgId(req);
       const { buffer, paymentNumber } = await exportService.generatePaymentPdf(
         id,
@@ -149,7 +166,10 @@ exportRouter.get(
         extension: "pdf",
       });
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
       return res.send(buffer);
     } catch (err) {
       next(err);
@@ -163,7 +183,9 @@ exportRouter.get(
   authorize("customer", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       const orgId = getSessionOrgId(req);
       const { buffer, customerCode } =
         await exportService.generateCustomerStatementPdf(id, orgId, req.user!);
@@ -173,7 +195,10 @@ exportRouter.get(
         extension: "pdf",
       });
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
       return res.send(buffer);
     } catch (err) {
       next(err);
@@ -187,7 +212,9 @@ exportRouter.get(
   authorize("production_run", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       const orgId = getSessionOrgId(req);
       const { buffer, recipeCode } = await exportService.generateRecipePdf(
         id,
@@ -200,7 +227,10 @@ exportRouter.get(
         extension: "pdf",
       });
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
       return res.send(buffer);
     } catch (err) {
       next(err);

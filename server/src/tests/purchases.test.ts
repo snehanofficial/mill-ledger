@@ -313,26 +313,20 @@ describe("M3: Purchases and inventory ledger integration", () => {
     );
 
     // 2. Salesman attempting to list purchase receipts under /api/v1/purchase-receipts is denied (HTTP 403 Forbidden)
-    const salesmanListRes = await fetch(
-      `${baseUrl}/api/v1/purchase-receipts`,
-      {
-        headers: { Cookie: salesmanCookie },
-      },
-    );
+    const salesmanListRes = await fetch(`${baseUrl}/api/v1/purchase-receipts`, {
+      headers: { Cookie: salesmanCookie },
+    });
     expect(salesmanListRes.status).toBe(403);
 
     // 3. Salesman attempting to create purchase receipt under /api/v1/purchase-receipts is denied (HTTP 403 Forbidden)
-    const salesmanPostRes = await fetch(
-      `${baseUrl}/api/v1/purchase-receipts`,
-      {
-        method: "POST",
-        headers: {
-          Cookie: salesmanCookie,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ receiptNumber: "ILLEGAL" }),
+    const salesmanPostRes = await fetch(`${baseUrl}/api/v1/purchase-receipts`, {
+      method: "POST",
+      headers: {
+        Cookie: salesmanCookie,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({ receiptNumber: "ILLEGAL" }),
+    });
     expect(salesmanPostRes.status).toBe(403);
 
     // 4. Admin querying non-existent ledger route on /api/v1/purchase-receipts gets HTTP 404 (separation of concerns: ledger is not a purchase-receipts route)
@@ -345,12 +339,9 @@ describe("M3: Purchases and inventory ledger integration", () => {
     expect(adminLedgerRes.status).toBe(404);
 
     // 5. Admin can access purchase receipts list under /api/v1/purchase-receipts (HTTP 200)
-    const adminListRes = await fetch(
-      `${baseUrl}/api/v1/purchase-receipts`,
-      {
-        headers: { Cookie: adminCookie },
-      },
-    );
+    const adminListRes = await fetch(`${baseUrl}/api/v1/purchase-receipts`, {
+      headers: { Cookie: adminCookie },
+    });
     expect(adminListRes.status).toBe(200);
     const adminListData = await adminListRes.json();
     expect(adminListData.receipts).toBeDefined();
@@ -394,7 +385,6 @@ describe("M3: Purchases and inventory ledger integration", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          
           supplierId: supplier.id,
           warehouseId: warehouse.id,
           receiptNumber: `PR-REV-DN-${Date.now()}`,
@@ -429,7 +419,10 @@ describe("M3: Purchases and inventory ledger integration", () => {
       }),
     });
     expect(dnRes.status).toBe(201);
-    const dn = (await dnRes.json()) as { debitNoteNumber: string; taxAmount: string | number };
+    const dn = (await dnRes.json()) as {
+      debitNoteNumber: string;
+      taxAmount: string | number;
+    };
     expect(dn.debitNoteNumber).toMatch(/^DN-/);
     expect(Number(dn.taxAmount)).toBe(0);
 

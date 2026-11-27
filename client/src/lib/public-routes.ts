@@ -17,7 +17,8 @@ export interface PublicRouteMeta {
 export const BRAND_ENTITY = {
   name: "MillLedger",
   legalName: "MillLedger",
-  category: "Order-to-Audit ERP and Shop Floor Ledger for Food Manufacturing Mills",
+  category:
+    "Order-to-Audit ERP and Shop Floor Ledger for Food Manufacturing Mills",
   description:
     "Order-to-audit ERP and shop floor ledger software for small food manufacturing mills in India. Covers atomic stock ledgers, BOM production with yield variance tracking, offline salesman order capture, ATP stock reservations, Indian GST invoicing, FIFO payment allocations, and role-based audit reporting.",
   contactEmail: "hello@mill-ledger.com",
@@ -194,7 +195,9 @@ export const PUBLIC_ROUTES: PublicRouteMeta[] = [
   },
 ];
 
-export function getPublicRouteMeta(pathname: string): PublicRouteMeta | undefined {
+export function getPublicRouteMeta(
+  pathname: string,
+): PublicRouteMeta | undefined {
   const normalized = pathname === "/" ? "/" : pathname.replace(/\/+$/, "");
   return PUBLIC_ROUTES.find((r) => r.path === normalized);
 }

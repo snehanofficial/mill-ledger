@@ -58,7 +58,10 @@ export interface DataTableBulkAction<TData> {
   variant?: "primary" | "secondary" | "outline" | "ghost" | "destructive";
   disabled?: boolean | ((selectedRows: TData[]) => boolean);
   hidden?: (selectedRows: TData[]) => boolean;
-  onClick: (selectedRows: TData[], clearSelection: () => void) => void | Promise<void>;
+  onClick: (
+    selectedRows: TData[],
+    clearSelection: () => void,
+  ) => void | Promise<void>;
 }
 
 export interface DataTableProps<TData> {
@@ -144,9 +147,15 @@ export function DataTableColumnHeader<TData, TValue>({
       {align === "right" ? (
         <>
           {sorted === "asc" ? (
-            <ArrowUpIcon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+            <ArrowUpIcon
+              className="size-3.5 shrink-0 text-primary"
+              aria-hidden="true"
+            />
           ) : sorted === "desc" ? (
-            <ArrowDownIcon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+            <ArrowDownIcon
+              className="size-3.5 shrink-0 text-primary"
+              aria-hidden="true"
+            />
           ) : (
             <ArrowUpDownIcon
               className="size-3.5 shrink-0 opacity-40 transition-opacity group-hover:opacity-100"
@@ -159,9 +168,15 @@ export function DataTableColumnHeader<TData, TValue>({
         <>
           <span>{title}</span>
           {sorted === "asc" ? (
-            <ArrowUpIcon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+            <ArrowUpIcon
+              className="size-3.5 shrink-0 text-primary"
+              aria-hidden="true"
+            />
           ) : sorted === "desc" ? (
-            <ArrowDownIcon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+            <ArrowDownIcon
+              className="size-3.5 shrink-0 text-primary"
+              aria-hidden="true"
+            />
           ) : (
             <ArrowUpDownIcon
               className="size-3.5 shrink-0 opacity-40 transition-opacity group-hover:opacity-100"
@@ -197,9 +212,10 @@ export function DataTable<TData>({
   const storageKey = `mill-ledger:table-cols:${tableId}`;
   const [sorting, setSorting] = React.useState<SortingState>(defaultSorting);
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(
-    () => readStoredVisibility(storageKey, defaultColumnVisibility),
-  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>(() =>
+      readStoredVisibility(storageKey, defaultColumnVisibility),
+    );
 
   React.useEffect(() => {
     try {
@@ -222,8 +238,12 @@ export function DataTable<TData>({
         return (
           <div className="flex items-center justify-center">
             <Checkbox
-              checked={isAllSelected ? true : isSomeSelected ? "indeterminate" : false}
-              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+              checked={
+                isAllSelected ? true : isSomeSelected ? "indeterminate" : false
+              }
+              onCheckedChange={(value) =>
+                table.toggleAllPageRowsSelected(!!value)
+              }
               aria-label="Select all rows on this page"
             />
           </div>
@@ -268,16 +288,16 @@ export function DataTable<TData>({
     getSortedRowModel: getSortedRowModel(),
   });
 
-  const selectedRows = table
-    .getSelectedRowModel()
-    .rows.map((r) => r.original);
+  const selectedRows = table.getSelectedRowModel().rows.map((r) => r.original);
   const selectedCount = selectedRows.length;
   const clearSelection = React.useCallback(() => setRowSelection({}), []);
 
   const hideableColumns = table
     .getAllColumns()
     .filter((col) => col.getCanHide());
-  const hiddenCount = hideableColumns.filter((col) => !col.getIsVisible()).length;
+  const hiddenCount = hideableColumns.filter(
+    (col) => !col.getIsVisible(),
+  ).length;
 
   const handleExportSelectedCsv = React.useCallback(() => {
     const exportCols = table
@@ -298,7 +318,8 @@ export function DataTable<TData>({
 
     const csvRows = rowsToExport.map((row) =>
       exportCols.map((col) => {
-        const meta = col.columnDef.meta as DataTableColumnMeta<TData> | undefined;
+        const meta = col.columnDef.meta as
+          DataTableColumnMeta<TData> | undefined;
         if (meta?.exportValue) {
           return meta.exportValue(row.original) ?? "";
         }
@@ -333,7 +354,8 @@ export function DataTable<TData>({
             {selectedCount > 0 ? (
               <>
                 <span className="text-xs font-semibold text-foreground tabular-nums">
-                  {selectedCount} {selectedCount === 1 ? "row" : "rows"} selected
+                  {selectedCount} {selectedCount === 1 ? "row" : "rows"}{" "}
+                  selected
                 </span>
                 <Button
                   variant="ghost"
@@ -358,7 +380,9 @@ export function DataTable<TData>({
                         variant={action.variant ?? "outline"}
                         size="sm"
                         disabled={isDisabled}
-                        onClick={() => action.onClick(selectedRows, clearSelection)}
+                        onClick={() =>
+                          action.onClick(selectedRows, clearSelection)
+                        }
                         className="h-9 text-xs"
                       >
                         {Icon && (
@@ -399,7 +423,8 @@ export function DataTable<TData>({
                     <span>Columns</span>
                     {hiddenCount > 0 && (
                       <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary tabular-nums">
-                        {hideableColumns.length - hiddenCount}/{hideableColumns.length}
+                        {hideableColumns.length - hiddenCount}/
+                        {hideableColumns.length}
                       </span>
                     )}
                   </Button>
@@ -410,8 +435,7 @@ export function DataTable<TData>({
                   <DropdownMenuGroup>
                     {hideableColumns.map((column) => {
                       const meta = column.columnDef.meta as
-                        | DataTableColumnMeta<TData>
-                        | undefined;
+                        DataTableColumnMeta<TData> | undefined;
                       const label =
                         meta?.label ||
                         (typeof column.columnDef.header === "string"
@@ -437,10 +461,15 @@ export function DataTable<TData>({
                       <DropdownMenuSeparator />
                       <DropdownMenuGroup>
                         <DropdownMenuItem
-                          onSelect={() => setColumnVisibility(defaultColumnVisibility)}
+                          onSelect={() =>
+                            setColumnVisibility(defaultColumnVisibility)
+                          }
                           className="min-h-9 text-xs text-muted-foreground"
                         >
-                          <RotateCcwIcon className="size-3.5" aria-hidden="true" />
+                          <RotateCcwIcon
+                            className="size-3.5"
+                            aria-hidden="true"
+                          />
                           Reset columns
                         </DropdownMenuItem>
                       </DropdownMenuGroup>
@@ -459,8 +488,7 @@ export function DataTable<TData>({
             <TableRow key={headerGroup.id} className="hover:bg-transparent">
               {headerGroup.headers.map((header) => {
                 const meta = header.column.columnDef.meta as
-                  | DataTableColumnMeta<TData>
-                  | undefined;
+                  DataTableColumnMeta<TData> | undefined;
                 const sorted = header.column.getIsSorted();
                 const ariaSort = header.column.getCanSort()
                   ? sorted === "asc"
@@ -499,7 +527,9 @@ export function DataTable<TData>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() ? "selected" : undefined}
-                onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+                onClick={
+                  onRowClick ? () => onRowClick(row.original) : undefined
+                }
                 className={cn(
                   onRowClick && "cursor-pointer",
                   rowClassName?.(row.original),
@@ -507,8 +537,7 @@ export function DataTable<TData>({
               >
                 {row.getVisibleCells().map((cell) => {
                   const meta = cell.column.columnDef.meta as
-                    | DataTableColumnMeta<TData>
-                    | undefined;
+                    DataTableColumnMeta<TData> | undefined;
                   return (
                     <TableCell
                       key={cell.id}
@@ -518,7 +547,10 @@ export function DataTable<TData>({
                         meta?.cellClassName,
                       )}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   );
                 })}

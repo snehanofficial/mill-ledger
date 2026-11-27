@@ -109,8 +109,14 @@ export function useSessionTimeout({
       onTimeoutRef.current();
     };
 
-    window.addEventListener("millledger:simulate-session-warning", handleSimulateWarning);
-    window.addEventListener("millledger:simulate-session-timeout", handleSimulateTimeout);
+    window.addEventListener(
+      "millledger:simulate-session-warning",
+      handleSimulateWarning,
+    );
+    window.addEventListener(
+      "millledger:simulate-session-timeout",
+      handleSimulateTimeout,
+    );
 
     return () => {
       clearInterval(checkInterval);

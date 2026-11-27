@@ -89,7 +89,7 @@ export async function requestPersistentStorage(): Promise<boolean> {
       if (!granted && !hasWarnedPersistence) {
         hasWarnedPersistence = true;
         console.info(
-          "Storage persistence not granted; offline outbox may be subject to browser eviction under disk pressure."
+          "Storage persistence not granted; offline outbox may be subject to browser eviction under disk pressure.",
         );
       }
       return granted;

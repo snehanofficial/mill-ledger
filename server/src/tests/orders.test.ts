@@ -464,7 +464,10 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       }),
     });
     expect(massAssignSmRes.status).toBe(400);
-    const smErr = (await massAssignSmRes.json()) as { error?: string; message?: string };
+    const smErr = (await massAssignSmRes.json()) as {
+      error?: string;
+      message?: string;
+    };
     expect(smErr.error || smErr.message).toBeDefined();
 
     // 2. Admin attempts to create order directly with status: "APPROVED" -> must also be rejected with 400
@@ -532,7 +535,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       }),
     });
     expect(defaultRes.status).toBe(201);
-    const defaultData = (await defaultRes.json()) as { order: { status: string } };
+    const defaultData = (await defaultRes.json()) as {
+      order: { status: string };
+    };
     expect(defaultData.order.status).toBe("SUBMITTED");
   });
 
@@ -576,8 +581,13 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       }),
     });
     expect(excessiveDiscountRes.status).toBe(422);
-    const excessiveErr = (await excessiveDiscountRes.json()) as { error?: string; message?: string };
-    expect(excessiveErr.error || excessiveErr.message).toContain("DISCOUNT_EXCEEDS_MAX_THRESHOLD");
+    const excessiveErr = (await excessiveDiscountRes.json()) as {
+      error?: string;
+      message?: string;
+    };
+    expect(excessiveErr.error || excessiveErr.message).toContain(
+      "DISCOUNT_EXCEEDS_MAX_THRESHOLD",
+    );
 
     // Also test 20% discount (₹40.00 against ₹50.00)
     const twentyPctDiscountRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
@@ -599,54 +609,69 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       }),
     });
     expect(twentyPctDiscountRes.status).toBe(422);
-    const twentyPctErr = (await twentyPctDiscountRes.json()) as { error?: string; message?: string };
-    expect(twentyPctErr.error || twentyPctErr.message).toContain("DISCOUNT_EXCEEDS_MAX_THRESHOLD");
+    const twentyPctErr = (await twentyPctDiscountRes.json()) as {
+      error?: string;
+      message?: string;
+    };
+    expect(twentyPctErr.error || twentyPctErr.message).toContain(
+      "DISCOUNT_EXCEEDS_MAX_THRESHOLD",
+    );
 
     // 2. Allow discount <= 5% (e.g. ₹47.50, which is exact 5% discount) under salesman discretion -> status SUBMITTED
-    const validSalesmanDiscountRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: salesman1Cookie,
+    const validSalesmanDiscountRes = await fetch(
+      `${baseUrl}/api/v1/sales/orders`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: salesman1Cookie,
+        },
+        body: JSON.stringify({
+          organizationId: org.id,
+          customerId: retailerA.id,
+          lines: [
+            {
+              productVariantId: murukkuVariant.id,
+              quantity: 10,
+              unitPrice: 47.5,
+            },
+          ],
+        }),
       },
-      body: JSON.stringify({
-        organizationId: org.id,
-        customerId: retailerA.id,
-        lines: [
-          {
-            productVariantId: murukkuVariant.id,
-            quantity: 10,
-            unitPrice: 47.5,
-          },
-        ],
-      }),
-    });
+    );
     expect(validSalesmanDiscountRes.status).toBe(201);
     const validSalesmanData = (await validSalesmanDiscountRes.json()) as {
-      order: { id: string; status: string; lines: Array<{ quotedUnitPrice: string | number }> };
+      order: {
+        id: string;
+        status: string;
+        lines: Array<{ quotedUnitPrice: string | number }>;
+      };
     };
     expect(validSalesmanData.order.status).toBe("SUBMITTED");
     expect(Number(validSalesmanData.order.lines[0].quotedUnitPrice)).toBe(47.5);
 
     // 3. Discount between 5% and 15% (e.g. ₹45.00, 10% discount) places order into UNDER_REVIEW
-    const managerApprovalRequiredRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: salesman1Cookie,
+    const managerApprovalRequiredRes = await fetch(
+      `${baseUrl}/api/v1/sales/orders`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: salesman1Cookie,
+        },
+        body: JSON.stringify({
+          organizationId: org.id,
+          customerId: retailerA.id,
+          lines: [
+            {
+              productVariantId: murukkuVariant.id,
+              quantity: 10,
+              unitPrice: 45.0,
+            },
+          ],
+        }),
       },
-      body: JSON.stringify({
-        organizationId: org.id,
-        customerId: retailerA.id,
-        lines: [
-          {
-            productVariantId: murukkuVariant.id,
-            quantity: 10,
-            unitPrice: 45.0,
-          },
-        ],
-      }),
-    });
+    );
     expect(managerApprovalRequiredRes.status).toBe(201);
     const underReviewData = (await managerApprovalRequiredRes.json()) as {
       order: { id: string; status: string };
@@ -667,7 +692,10 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       },
     );
     expect(approveNoReasonRes.status).toBe(400);
-    const approveNoReasonErr = (await approveNoReasonRes.json()) as { error?: string; message?: string };
+    const approveNoReasonErr = (await approveNoReasonRes.json()) as {
+      error?: string;
+      message?: string;
+    };
     expect(approveNoReasonErr.error || approveNoReasonErr.message).toContain(
       "Manager approval for price discount or override requires a recorded reason",
     );
@@ -682,7 +710,8 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
           Cookie: adminCookie,
         },
         body: JSON.stringify({
-          overrideReason: "Approved 10% volume discount by Sales Manager per OD-07",
+          overrideReason:
+            "Approved 10% volume discount by Sales Manager per OD-07",
         }),
       },
     );
@@ -699,23 +728,26 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
     expect(approvedOrderData.approvedByUserId).toBeDefined();
 
     // 6. Attempting to approve with line override exceeding 15% discount fails with HTTP 422
-    const submittedForApprovalRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: salesman1Cookie,
+    const submittedForApprovalRes = await fetch(
+      `${baseUrl}/api/v1/sales/orders`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: salesman1Cookie,
+        },
+        body: JSON.stringify({
+          organizationId: org.id,
+          customerId: retailerA.id,
+          lines: [
+            {
+              productVariantId: murukkuVariant.id,
+              quantity: 5,
+            },
+          ],
+        }),
       },
-      body: JSON.stringify({
-        organizationId: org.id,
-        customerId: retailerA.id,
-        lines: [
-          {
-            productVariantId: murukkuVariant.id,
-            quantity: 5,
-          },
-        ],
-      }),
-    });
+    );
     expect(submittedForApprovalRes.status).toBe(201);
     const submittedForApprovalData = (await submittedForApprovalRes.json()) as {
       order: { id: string; lines: Array<{ id: string }> };
@@ -744,8 +776,13 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       },
     );
     expect(excessiveOverrideRes.status).toBe(422);
-    const excessiveOverrideErr = (await excessiveOverrideRes.json()) as { error?: string; message?: string };
-    expect(excessiveOverrideErr.error || excessiveOverrideErr.message).toContain("DISCOUNT_EXCEEDS_MAX_THRESHOLD");
+    const excessiveOverrideErr = (await excessiveOverrideRes.json()) as {
+      error?: string;
+      message?: string;
+    };
+    expect(
+      excessiveOverrideErr.error || excessiveOverrideErr.message,
+    ).toContain("DISCOUNT_EXCEEDS_MAX_THRESHOLD");
 
     // 7. Update draft order cannot bypass approval to transition to APPROVED directly
     const draftRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
@@ -774,7 +811,10 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       },
     );
     expect(invalidStatusPutRes.status).toBe(400);
-    const invalidStatusErr = (await invalidStatusPutRes.json()) as { error?: string; message?: string };
+    const invalidStatusErr = (await invalidStatusPutRes.json()) as {
+      error?: string;
+      message?: string;
+    };
     expect(invalidStatusErr.error || invalidStatusErr.message).toContain(
       "Draft orders can only be updated to DRAFT or SUBMITTED status",
     );
@@ -804,7 +844,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
     );
 
     // 1. Check initial available stock for Murukku
-    const initialAvailability = await salesService.getAvailableStock(flourItem.id);
+    const initialAvailability = await salesService.getAvailableStock(
+      flourItem.id,
+    );
     const initialAvailable = initialAvailability.available;
     expect(initialAvailable).toBeGreaterThanOrEqual(10);
 
@@ -857,7 +899,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
     expect(activeReservation.expiresAt!.getTime()).toBeGreaterThan(Date.now());
 
     // 5. Verify available stock decreased by 10
-    const reservedAvailability = await salesService.getAvailableStock(flourItem.id);
+    const reservedAvailability = await salesService.getAvailableStock(
+      flourItem.id,
+    );
     expect(reservedAvailability.available).toBe(initialAvailable - 10);
 
     // 6. Sweep before expiration: reservation remains active
@@ -874,8 +918,12 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       },
     );
     expect(earlySweepRes.status).toBe(200);
-    const earlySweepData = (await earlySweepRes.json()) as { expiredReservationIds: string[] };
-    expect(earlySweepData.expiredReservationIds).not.toContain(activeReservation.id);
+    const earlySweepData = (await earlySweepRes.json()) as {
+      expiredReservationIds: string[];
+    };
+    expect(earlySweepData.expiredReservationIds).not.toContain(
+      activeReservation.id,
+    );
 
     // 7. Simulate passage of time past TTL (e.g. 2 hours in the future) and sweep
     const futureTime = new Date(Date.now() + 2 * 60 * 60 * 1000);
@@ -896,7 +944,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       expiredReservationIds: string[];
     };
     expect(expiredSweepData.expiredCount).toBeGreaterThanOrEqual(1);
-    expect(expiredSweepData.expiredReservationIds).toContain(activeReservation.id);
+    expect(expiredSweepData.expiredReservationIds).toContain(
+      activeReservation.id,
+    );
 
     // 8. Verify the reservation status is now EXPIRED
     const updatedReservation = await prisma.stockReservation.findUniqueOrThrow({
@@ -942,10 +992,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
     );
 
     // 1. Products catalog resolves finishedGoodsItemId/Sku and HSN taxRate from session org
-    const productsRes = await fetch(
-      `${baseUrl}/api/v1/sales/products`,
-      { headers: { Cookie: salesman1Cookie } },
-    );
+    const productsRes = await fetch(`${baseUrl}/api/v1/sales/products`, {
+      headers: { Cookie: salesman1Cookie },
+    });
     expect(productsRes.status).toBe(200);
     const productsData = (await productsRes.json()) as {
       products: Array<{
@@ -971,7 +1020,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
     const searchData = (await searchRes.json()) as {
       products: Array<{ sku: string; availableStock?: number }>;
     };
-    expect(searchData.products.some((p) => p.sku === "VAR-MURUKKU-200G")).toBe(true);
+    expect(searchData.products.some((p) => p.sku === "VAR-MURUKKU-200G")).toBe(
+      true,
+    );
     expect(typeof searchData.products[0]?.availableStock).toBe("number");
 
     const inStockRes = await fetch(
@@ -992,7 +1043,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
     const outOfStockData = (await outOfStockRes.json()) as {
       products: Array<{ availableStock: number }>;
     };
-    expect(outOfStockData.products.every((p) => p.availableStock <= 0)).toBe(true);
+    expect(outOfStockData.products.every((p) => p.availableStock <= 0)).toBe(
+      true,
+    );
 
     // 2. Salesman creates own DRAFT order (10 pkts -> ₹525.00), then edits lines to 20 pkts (₹1,050.00)
     const draftRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
@@ -1005,7 +1058,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
         customerId: retailerA.id,
         orderNumber: `SO-DRAFT-EDIT-${Date.now()}`,
         status: "DRAFT",
-        lines: [{ productVariantId: murukkuVariant.id, quantity: 10, unitPrice: 50 }],
+        lines: [
+          { productVariantId: murukkuVariant.id, quantity: 10, unitPrice: 50 },
+        ],
       }),
     });
     expect(draftRes.status).toBe(201);
@@ -1021,7 +1076,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
           Cookie: salesman2Cookie,
         },
         body: JSON.stringify({
-          lines: [{ productVariantId: murukkuVariant.id, quantity: 5, unitPrice: 50 }],
+          lines: [
+            { productVariantId: murukkuVariant.id, quantity: 5, unitPrice: 50 },
+          ],
         }),
       },
     );
@@ -1038,7 +1095,13 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
         },
         body: JSON.stringify({
           notes: "Updated to 20 pkts",
-          lines: [{ productVariantId: murukkuVariant.id, quantity: 20, unitPrice: 50 }],
+          lines: [
+            {
+              productVariantId: murukkuVariant.id,
+              quantity: 20,
+              unitPrice: 50,
+            },
+          ],
         }),
       },
     );
@@ -1078,7 +1141,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
       const custList = (await custListRes.json()) as {
         customers: Array<{ id: string }>;
       };
-      expect(custList.customers.some((c) => c.id === archivedCustomer.id)).toBe(false);
+      expect(custList.customers.some((c) => c.id === archivedCustomer.id)).toBe(
+        false,
+      );
 
       const archivedOrderRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
         method: "POST",
@@ -1089,7 +1154,9 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
         body: JSON.stringify({
           customerId: archivedCustomer.id,
           orderNumber: `SO-ARCH-${Date.now()}`,
-          lines: [{ productVariantId: murukkuVariant.id, quantity: 5, unitPrice: 50 }],
+          lines: [
+            { productVariantId: murukkuVariant.id, quantity: 5, unitPrice: 50 },
+          ],
         }),
       });
       expect(archivedOrderRes.status).toBe(400);

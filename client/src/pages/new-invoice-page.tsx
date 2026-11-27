@@ -4,7 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
-import { ErrorState, EmptyState, SkeletonTable } from "@/components/ui/loading-error-empty";
+import {
+  ErrorState,
+  EmptyState,
+  SkeletonTable,
+} from "@/components/ui/loading-error-empty";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -93,9 +97,12 @@ export function NewInvoicePage() {
     onSuccess: (resData) => {
       queryClient.invalidateQueries({ queryKey: ["sales-invoices"] });
       queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["approved-orders-for-invoice"] });
+      queryClient.invalidateQueries({
+        queryKey: ["approved-orders-for-invoice"],
+      });
       const invId = resData?.invoice?.id ?? resData?.id;
-      const invNumber = resData?.invoice?.invoiceNumber ?? resData?.invoiceNumber ?? "";
+      const invNumber =
+        resData?.invoice?.invoiceNumber ?? resData?.invoiceNumber ?? "";
       toast.success(`Invoice ${invNumber} posted.`);
       if (invId) {
         navigate(`/invoices/${invId}`);
@@ -152,14 +159,18 @@ export function NewInvoicePage() {
           <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="order-select">Approved sales order</Label>
-              <Select value={selectedOrderId} onValueChange={setSelectedOrderId}>
+              <Select
+                value={selectedOrderId}
+                onValueChange={setSelectedOrderId}
+              >
                 <SelectTrigger id="order-select" className="max-w-lg">
                   <SelectValue placeholder="Choose an approved order..." />
                 </SelectTrigger>
                 <SelectContent>
                   {eligibleOrders.map((o) => (
                     <SelectItem key={o.id} value={o.id}>
-                      {o.orderNumber} — {o.customer.name} ({formatINR(o.totalAmount)})
+                      {o.orderNumber} — {o.customer.name} (
+                      {formatINR(o.totalAmount)})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -170,15 +181,23 @@ export function NewInvoicePage() {
               <>
                 <div className="grid grid-cols-1 gap-4 rounded-md border border-border bg-muted/30 p-3 text-sm sm:grid-cols-3">
                   <div>
-                    <div className="text-xs text-muted-foreground">Customer</div>
-                    <div className="font-medium">{selectedOrder.customer.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Customer
+                    </div>
+                    <div className="font-medium">
+                      {selectedOrder.customer.name}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       GSTIN: {selectedOrder.customer.gstin || "Unregistered"}
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-muted-foreground">Place of supply</div>
-                    <div className="font-medium">{selectedOrder.deliveryState}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Place of supply
+                    </div>
+                    <div className="font-medium">
+                      {selectedOrder.deliveryState}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {Number(selectedOrder.igstAmount) > 0
                         ? "Inter-state (IGST)"
@@ -186,7 +205,9 @@ export function NewInvoicePage() {
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-muted-foreground">Stock effect</div>
+                    <div className="text-xs text-muted-foreground">
+                      Stock effect
+                    </div>
                     <div className="font-medium">No stock deduction</div>
                     <div className="text-xs text-muted-foreground">
                       Physical stock deducts on Dispatch
@@ -210,7 +231,9 @@ export function NewInvoicePage() {
                       {selectedOrder.lines.map((line) => (
                         <TableRow key={line.id}>
                           <TableCell>
-                            <div className="font-medium">{line.productVariant.name}</div>
+                            <div className="font-medium">
+                              {line.productVariant.name}
+                            </div>
                             <div className="text-xs text-muted-foreground">
                               {line.productVariant.sku}
                             </div>
@@ -222,7 +245,9 @@ export function NewInvoicePage() {
                             )}
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
-                            {formatINR(line.approvedUnitPrice ?? line.quotedUnitPrice)}
+                            {formatINR(
+                              line.approvedUnitPrice ?? line.quotedUnitPrice,
+                            )}
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
                             {formatINR(line.taxableAmount)}
@@ -240,7 +265,9 @@ export function NewInvoicePage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="invoice-notes">Invoice notes (optional)</Label>
+                  <Label htmlFor="invoice-notes">
+                    Invoice notes (optional)
+                  </Label>
                   <Textarea
                     id="invoice-notes"
                     rows={2}
@@ -252,12 +279,15 @@ export function NewInvoicePage() {
 
                 <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm">
-                    <span className="text-muted-foreground">Invoice total: </span>
+                    <span className="text-muted-foreground">
+                      Invoice total:{" "}
+                    </span>
                     <span className="text-lg font-semibold tabular-nums">
                       {formatINR(selectedOrder.totalAmount)}
                     </span>
                     <span className="ml-2 text-xs text-muted-foreground">
-                      (Posted invoices are immutable; corrections use credit notes.)
+                      (Posted invoices are immutable; corrections use credit
+                      notes.)
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -275,7 +305,9 @@ export function NewInvoicePage() {
                       className="gap-1.5"
                     >
                       <FileCheck2Icon className="size-4" aria-hidden="true" />
-                      {postInvoiceMutation.isPending ? "Posting..." : "Post invoice"}
+                      {postInvoiceMutation.isPending
+                        ? "Posting..."
+                        : "Post invoice"}
                     </Button>
                   </div>
                 </div>

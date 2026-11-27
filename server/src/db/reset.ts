@@ -6,7 +6,9 @@ import { prisma } from "./client.js";
  */
 export async function resetOperationalData() {
   await prisma.$transaction(async (tx) => {
-    await tx.$executeRawUnsafe("SET LOCAL mill_ledger.bypass_immutability = 'on'");
+    await tx.$executeRawUnsafe(
+      "SET LOCAL mill_ledger.bypass_immutability = 'on'",
+    );
     await tx.auditLog.deleteMany();
     await tx.paymentAllocation.deleteMany();
     await tx.payment.deleteMany();

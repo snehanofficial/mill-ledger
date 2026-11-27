@@ -13,10 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,7 +63,9 @@ export function ProductionRunRow({
         consumedMaterials: (run.materials ?? []).map((m) => ({
           inventoryItemId: m.inventoryItemId,
           actualQty:
-            Number(m.actualQty) > 0 ? Number(m.actualQty) : Number(m.plannedQty),
+            Number(m.actualQty) > 0
+              ? Number(m.actualQty)
+              : Number(m.plannedQty),
           damagedQty: Number(m.damagedQty) || 0,
         })),
       });
@@ -241,7 +240,9 @@ export function EditDraftRunDialog({ run, onClose }: EditDraftRunDialogProps) {
 
   useEffect(() => {
     if (run) {
-      setGoodQty(Number(run.actualGoodQty) || Number(run.expectedOutputQty) || 0);
+      setGoodQty(
+        Number(run.actualGoodQty) || Number(run.expectedOutputQty) || 0,
+      );
       setLabor(Number(run.directLaborCost) || 0);
       setUtility(Number(run.utilityCost) || 0);
       setNotes(run.notes || "");
@@ -280,7 +281,8 @@ export function EditDraftRunDialog({ run, onClose }: EditDraftRunDialogProps) {
         <DialogHeader>
           <DialogTitle>Edit Draft Run {run?.runNumber}</DialogTitle>
           <DialogDescription>
-            Adjust draft quantities or direct costs before posting to the stock ledger.
+            Adjust draft quantities or direct costs before posting to the stock
+            ledger.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 py-2">
@@ -360,7 +362,13 @@ export function ReverseRunDialog({ run, onClose }: ReverseRunDialogProps) {
   const { t } = useLanguage();
 
   const reverseMutation = useMutation({
-    mutationFn: async ({ runId, reason }: { runId: string; reason: string }) => {
+    mutationFn: async ({
+      runId,
+      reason,
+    }: {
+      runId: string;
+      reason: string;
+    }) => {
       const res = await apiClient.post(`/production-runs/${runId}/reverse`, {
         reason,
       });
@@ -392,9 +400,11 @@ export function ReverseRunDialog({ run, onClose }: ReverseRunDialogProps) {
           <DialogHeader>
             <DialogTitle>{t("Reverse Production Run")}</DialogTitle>
             <DialogDescription>
-              Reversing <span className="font-mono font-bold">{run.runNumber}</span>{" "}
-              will execute exact inverse stock movements to deduct{" "}
-              {run.actualGoodQty} finished packets and restore consumed raw materials.
+              Reversing{" "}
+              <span className="font-mono font-bold">{run.runNumber}</span> will
+              execute exact inverse stock movements to deduct{" "}
+              {run.actualGoodQty} finished packets and restore consumed raw
+              materials.
             </DialogDescription>
           </DialogHeader>
 
@@ -403,7 +413,10 @@ export function ReverseRunDialog({ run, onClose }: ReverseRunDialogProps) {
               role="alert"
               className="mt-2 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive"
             >
-              <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <AlertTriangleIcon
+                className="h-4 w-4 shrink-0"
+                aria-hidden="true"
+              />
               <span>
                 {extractErrorMessage(
                   reverseMutation.error,

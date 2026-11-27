@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
@@ -118,7 +123,11 @@ export function CustomersPage() {
         params.set("q", searchQuery.trim());
       }
       const res = await apiClient.get(`/sales/customers?${params.toString()}`);
-      return assertCollectionResponse(res.data, "customers", "/sales/customers");
+      return assertCollectionResponse(
+        res.data,
+        "customers",
+        "/sales/customers",
+      );
     },
     placeholderData: keepPreviousData,
   });
@@ -271,7 +280,8 @@ export function CustomersPage() {
             </Badge>
           </div>
           <p className="max-w-[60ch] text-sm text-muted-foreground">
-            Retailers, distributors, state tax jurisdictions, and sales assignments.
+            Retailers, distributors, state tax jurisdictions, and sales
+            assignments.
           </p>
         </div>
 
@@ -352,7 +362,10 @@ export function CustomersPage() {
         ) : isError ? (
           <div className="p-4">
             <ErrorState
-              title={t("Failed to load customer directory", "Failed to load customer directory")}
+              title={t(
+                "Failed to load customer directory",
+                "Failed to load customer directory",
+              )}
               description={
                 error instanceof Error
                   ? error.message
@@ -420,7 +433,9 @@ export function CustomersPage() {
                         {row.original.code}
                       </span>
                     ),
-                    meta: { label: "Account Code" } satisfies DataTableColumnMeta<Customer>,
+                    meta: {
+                      label: "Account Code",
+                    } satisfies DataTableColumnMeta<Customer>,
                   },
                   {
                     accessorKey: "name",
@@ -438,13 +453,17 @@ export function CustomersPage() {
                           {c.assignments && c.assignments.length > 0 && (
                             <span className="text-2xs text-muted-foreground">
                               Assigned:{" "}
-                              {c.assignments.map((a) => a.salesman.name).join(", ")}
+                              {c.assignments
+                                .map((a) => a.salesman.name)
+                                .join(", ")}
                             </span>
                           )}
                         </div>
                       );
                     },
-                    meta: { label: "Customer Name" } satisfies DataTableColumnMeta<Customer>,
+                    meta: {
+                      label: "Customer Name",
+                    } satisfies DataTableColumnMeta<Customer>,
                   },
                   {
                     accessorKey: "state",
@@ -456,11 +475,16 @@ export function CustomersPage() {
                     ),
                     cell: ({ row }) => (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
-                        <MapPinIcon className="size-3 text-muted-foreground" aria-hidden="true" />
+                        <MapPinIcon
+                          className="size-3 text-muted-foreground"
+                          aria-hidden="true"
+                        />
                         {row.original.state}
                       </div>
                     ),
-                    meta: { label: "Place of Supply" } satisfies DataTableColumnMeta<Customer>,
+                    meta: {
+                      label: "Place of Supply",
+                    } satisfies DataTableColumnMeta<Customer>,
                   },
                   {
                     id: "taxRegime",
@@ -476,7 +500,8 @@ export function CustomersPage() {
                     ),
                     cell: ({ row }) => {
                       const isIntraState =
-                        row.original.state?.trim().toLowerCase() === "tamil nadu";
+                        row.original.state?.trim().toLowerCase() ===
+                        "tamil nadu";
                       return (
                         <Badge
                           variant={isIntraState ? "secondary" : "outline"}
@@ -488,12 +513,17 @@ export function CustomersPage() {
                         </Badge>
                       );
                     },
-                    meta: { label: "Tax Regime" } satisfies DataTableColumnMeta<Customer>,
+                    meta: {
+                      label: "Tax Regime",
+                    } satisfies DataTableColumnMeta<Customer>,
                   },
                   {
                     accessorKey: "gstin",
                     header: ({ column }) => (
-                      <DataTableColumnHeader column={column} title={t("GSTIN")} />
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("GSTIN")}
+                      />
                     ),
                     cell: ({ row }) => {
                       const c = row.original;
@@ -501,11 +531,17 @@ export function CustomersPage() {
                         <div className="flex items-center gap-1.5 font-mono text-xs whitespace-nowrap">
                           <span>{c.gstin}</span>
                           {validateGstin(c.gstin).isValid ? (
-                            <Badge variant="success" className="text-[9px] px-1 py-0">
+                            <Badge
+                              variant="success"
+                              className="text-[9px] px-1 py-0"
+                            >
                               Valid
                             </Badge>
                           ) : (
-                            <Badge variant="danger" className="text-[9px] px-1 py-0">
+                            <Badge
+                              variant="danger"
+                              className="text-[9px] px-1 py-0"
+                            >
                               Invalid
                             </Badge>
                           )}
@@ -531,12 +567,21 @@ export function CustomersPage() {
                     ),
                     cell: ({ row }) =>
                       row.original.isActive ? (
-                        <Badge variant="success" className="text-[10px] gap-1 whitespace-nowrap">
-                          <CheckCircle2Icon className="size-2.5" aria-hidden="true" />
+                        <Badge
+                          variant="success"
+                          className="text-[10px] gap-1 whitespace-nowrap"
+                        >
+                          <CheckCircle2Icon
+                            className="size-2.5"
+                            aria-hidden="true"
+                          />
                           Active
                         </Badge>
                       ) : (
-                        <Badge variant="neutral" className="text-[10px] whitespace-nowrap">
+                        <Badge
+                          variant="neutral"
+                          className="text-[10px] whitespace-nowrap"
+                        >
                           Archived
                         </Badge>
                       ),
@@ -573,7 +618,10 @@ export function CustomersPage() {
                                 className="h-7 px-2 text-xs gap-1"
                                 aria-label={`Edit ${c.name}`}
                               >
-                                <PencilIcon className="size-3" aria-hidden="true" />
+                                <PencilIcon
+                                  className="size-3"
+                                  aria-hidden="true"
+                                />
                                 Edit
                               </Button>
                               <Button
@@ -587,7 +635,10 @@ export function CustomersPage() {
                                     : `Restore ${c.name}`
                                 }
                               >
-                                <ArchiveIcon className="size-3" aria-hidden="true" />
+                                <ArchiveIcon
+                                  className="size-3"
+                                  aria-hidden="true"
+                                />
                                 {c.isActive ? "Archive" : "Restore"}
                               </Button>
                             </>
@@ -847,7 +898,10 @@ export function CustomersPage() {
                       <SelectTrigger className="h-8 flex-1 text-xs">
                         <SelectValue placeholder="Select salesman to assign..." />
                       </SelectTrigger>
-                      <SelectContent searchable searchPlaceholder="Search salesmen...">
+                      <SelectContent
+                        searchable
+                        searchPlaceholder="Search salesmen..."
+                      >
                         {salesmen.map((s) => (
                           <SelectItem key={s.id} value={s.id}>
                             {s.name} ({s.email})

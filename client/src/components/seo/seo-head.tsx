@@ -27,7 +27,9 @@ function upsertMetaTag(
 }
 
 function upsertCanonicalLink(href: string): void {
-  let link = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+  let link = document.head.querySelector(
+    'link[rel="canonical"]',
+  ) as HTMLLinkElement | null;
   if (!link) {
     link = document.createElement("link");
     link.rel = "canonical";
@@ -38,7 +40,9 @@ function upsertCanonicalLink(href: string): void {
 
 function upsertJsonLd(data: Record<string, unknown>): void {
   const id = "millledger-route-jsonld";
-  let script = document.head.querySelector(`script#${id}`) as HTMLScriptElement | null;
+  let script = document.head.querySelector(
+    `script#${id}`,
+  ) as HTMLScriptElement | null;
   if (!script) {
     script = document.createElement("script");
     script.id = id;
@@ -64,18 +68,54 @@ export function useSeoHead(pathname: string): void {
     document.title = meta.title;
     upsertCanonicalLink(canonicalUrl);
 
-    upsertMetaTag('meta[name="description"]', { name: "description" }, meta.description);
+    upsertMetaTag(
+      'meta[name="description"]',
+      { name: "description" },
+      meta.description,
+    );
     upsertMetaTag('meta[name="robots"]', { name: "robots" }, "index, follow");
 
-    upsertMetaTag('meta[property="og:type"]', { property: "og:type" }, meta.ogType);
-    upsertMetaTag('meta[property="og:title"]', { property: "og:title" }, meta.title);
-    upsertMetaTag('meta[property="og:description"]', { property: "og:description" }, meta.description);
-    upsertMetaTag('meta[property="og:url"]', { property: "og:url" }, canonicalUrl);
-    upsertMetaTag('meta[property="og:image"]', { property: "og:image" }, ogImageUrl);
+    upsertMetaTag(
+      'meta[property="og:type"]',
+      { property: "og:type" },
+      meta.ogType,
+    );
+    upsertMetaTag(
+      'meta[property="og:title"]',
+      { property: "og:title" },
+      meta.title,
+    );
+    upsertMetaTag(
+      'meta[property="og:description"]',
+      { property: "og:description" },
+      meta.description,
+    );
+    upsertMetaTag(
+      'meta[property="og:url"]',
+      { property: "og:url" },
+      canonicalUrl,
+    );
+    upsertMetaTag(
+      'meta[property="og:image"]',
+      { property: "og:image" },
+      ogImageUrl,
+    );
 
-    upsertMetaTag('meta[name="twitter:title"]', { name: "twitter:title" }, meta.title);
-    upsertMetaTag('meta[name="twitter:description"]', { name: "twitter:description" }, meta.description);
-    upsertMetaTag('meta[name="twitter:image"]', { name: "twitter:image" }, ogImageUrl);
+    upsertMetaTag(
+      'meta[name="twitter:title"]',
+      { name: "twitter:title" },
+      meta.title,
+    );
+    upsertMetaTag(
+      'meta[name="twitter:description"]',
+      { name: "twitter:description" },
+      meta.description,
+    );
+    upsertMetaTag(
+      'meta[name="twitter:image"]',
+      { name: "twitter:image" },
+      ogImageUrl,
+    );
 
     upsertJsonLd(buildStructuredDataGraph(meta, appUrl));
   }, [pathname]);
@@ -92,10 +132,16 @@ export function PublicBreadcrumbs({ items }: { items: BreadcrumbItem[] }) {
           return (
             <li key={item.path} className="inline-flex items-center gap-1.5">
               {idx > 0 && (
-                <ChevronRightIcon className="size-3.5 text-muted-foreground/70" aria-hidden="true" />
+                <ChevronRightIcon
+                  className="size-3.5 text-muted-foreground/70"
+                  aria-hidden="true"
+                />
               )}
               {isLast ? (
-                <span aria-current="page" className="font-medium text-foreground">
+                <span
+                  aria-current="page"
+                  className="font-medium text-foreground"
+                >
                   {item.name}
                 </span>
               ) : (

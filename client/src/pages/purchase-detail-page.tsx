@@ -68,21 +68,26 @@ export function PurchaseDetailPage() {
   const [debitAmount, setDebitAmount] = useState("");
   const [debitReason, setDebitReason] = useState("");
 
-  const { data: receipt, isLoading, isError, error, refetch } =
-    useQuery<ReceiptDetail>({
-      queryKey: ["purchase-receipt", receiptId],
-      queryFn: async () => {
-        const endpoint = `/inventory/purchase-receipts/${receiptId}`;
-        const res = await apiClient.get(endpoint);
-        return assertEntityResponse<ReceiptDetail & Record<string, unknown>>(
-          res.data,
-          "receipt",
-          ["lines"],
-          endpoint,
-        );
-      },
-      enabled: Boolean(receiptId),
-    });
+  const {
+    data: receipt,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<ReceiptDetail>({
+    queryKey: ["purchase-receipt", receiptId],
+    queryFn: async () => {
+      const endpoint = `/inventory/purchase-receipts/${receiptId}`;
+      const res = await apiClient.get(endpoint);
+      return assertEntityResponse<ReceiptDetail & Record<string, unknown>>(
+        res.data,
+        "receipt",
+        ["lines"],
+        endpoint,
+      );
+    },
+    enabled: Boolean(receiptId),
+  });
 
   const reverseMutation = useMutation({
     mutationFn: async () => {
@@ -94,7 +99,9 @@ export function PurchaseDetailPage() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["purchase-receipt", receiptId] });
+      queryClient.invalidateQueries({
+        queryKey: ["purchase-receipt", receiptId],
+      });
       queryClient.invalidateQueries({ queryKey: ["purchase-receipts"] });
       queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
       setReverseOpen(false);
@@ -196,10 +203,14 @@ export function PurchaseDetailPage() {
         </div>
         <div>
           <div className="text-xs text-muted-foreground">Supplier bill ref</div>
-          <div className="font-medium">{receipt.supplierInvoiceNumber || "—"}</div>
+          <div className="font-medium">
+            {receipt.supplierInvoiceNumber || "—"}
+          </div>
         </div>
         <div>
-          <div className="text-xs text-muted-foreground">Total receipt value</div>
+          <div className="text-xs text-muted-foreground">
+            Total receipt value
+          </div>
           <div className="text-lg font-semibold tabular-nums">
             {formatINR(receipt.totalAmount)}
           </div>
@@ -229,10 +240,9 @@ export function PurchaseDetailPage() {
                   </div>
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {formatQuantity(
-                    line.quantity,
-                    { unit: line.inventoryItem?.baseUom?.code ?? "unit" },
-                  )}
+                  {formatQuantity(line.quantity, {
+                    unit: line.inventoryItem?.baseUom?.code ?? "unit",
+                  })}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {formatINR(line.unitPrice)}
@@ -259,7 +269,8 @@ export function PurchaseDetailPage() {
           <DialogHeader>
             <DialogTitle>Reverse {receipt.receiptNumber}</DialogTitle>
             <DialogDescription>
-              Reversing creates offsetting stock ledger entries without deleting the original receipt.
+              Reversing creates offsetting stock ledger entries without deleting
+              the original receipt.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">
@@ -294,7 +305,8 @@ export function PurchaseDetailPage() {
           <DialogHeader>
             <DialogTitle>Issue supplier debit note</DialogTitle>
             <DialogDescription>
-              Record a financial claim against {receipt.supplier.name} for {receipt.receiptNumber}.
+              Record a financial claim against {receipt.supplier.name} for{" "}
+              {receipt.receiptNumber}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">

@@ -1040,42 +1040,43 @@ export class ReportingService {
     }).format(now);
     const todayStartIst = new Date(`${istDateStr}T00:00:00+05:30`);
 
-    const [todayOrdersCount, todayInvoices, variantsWithCost] = await Promise.all([
-      prisma.salesOrder.count({
-        where: {
-          organizationId: orgId,
-          createdAt: { gte: todayStartIst },
-        },
-      }),
-      prisma.salesInvoice.findMany({
-        where: {
-          organizationId: orgId,
-          status: { not: InvoiceStatus.DRAFT },
-          postedAt: { gte: todayStartIst },
-        },
-        select: { taxableAmount: true },
-      }),
-      prisma.productVariant.findMany({
-        where: {
-          product: { organizationId: orgId },
-          isActive: true,
-        },
-        include: {
-          priceLines: {
-            where: { priceList: { isDefault: true } },
+    const [todayOrdersCount, todayInvoices, variantsWithCost] =
+      await Promise.all([
+        prisma.salesOrder.count({
+          where: {
+            organizationId: orgId,
+            createdAt: { gte: todayStartIst },
           },
-          recipes: {
-            include: {
-              productionRuns: {
-                where: { status: "POSTED" },
-                orderBy: { postedAt: "desc" },
-                take: 1,
+        }),
+        prisma.salesInvoice.findMany({
+          where: {
+            organizationId: orgId,
+            status: { not: InvoiceStatus.DRAFT },
+            postedAt: { gte: todayStartIst },
+          },
+          select: { taxableAmount: true },
+        }),
+        prisma.productVariant.findMany({
+          where: {
+            product: { organizationId: orgId },
+            isActive: true,
+          },
+          include: {
+            priceLines: {
+              where: { priceList: { isDefault: true } },
+            },
+            recipes: {
+              include: {
+                productionRuns: {
+                  where: { status: "POSTED" },
+                  orderBy: { postedAt: "desc" },
+                  take: 1,
+                },
               },
             },
           },
-        },
-      }),
-    ]);
+        }),
+      ]);
 
     const todayRevenue = todayInvoices.reduce(
       (sum, inv) => sum + Number(inv.taxableAmount),
@@ -1413,8 +1414,7 @@ export class ReportingService {
     reportType: string,
     params: ReportFilterParams,
     userContext?:
-      | UserContext
-      | { id?: string; email?: string; [key: string]: unknown },
+      UserContext | { id?: string; email?: string; [key: string]: unknown },
   ) {
     const [reportData, organization] = await Promise.all([
       this.resolveReportData(reportType, params),
@@ -1442,8 +1442,7 @@ export class ReportingService {
     reportType: string,
     params: ReportFilterParams,
     userContext?:
-      | UserContext
-      | { id?: string; email?: string; [key: string]: unknown },
+      UserContext | { id?: string; email?: string; [key: string]: unknown },
   ): Promise<Buffer> {
     const [reportData, organization] = await Promise.all([
       this.resolveReportData(reportType, params),
@@ -1471,8 +1470,7 @@ export class ReportingService {
     reportType: string,
     params: ReportFilterParams,
     userContext?:
-      | UserContext
-      | { id?: string; email?: string; [key: string]: unknown },
+      UserContext | { id?: string; email?: string; [key: string]: unknown },
   ): Promise<Buffer> {
     const [reportData, organization] = await Promise.all([
       this.resolveReportData(reportType, params),

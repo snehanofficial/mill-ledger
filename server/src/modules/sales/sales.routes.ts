@@ -39,12 +39,16 @@ salesRouter.get(
         req.query.includeInactive === undefined
           ? undefined
           : req.query.includeInactive === "true";
-      const result = await salesService.getCustomersPaginated(orgId, req.user!, {
-        q,
-        includeInactive,
-        limit,
-        offset,
-      });
+      const result = await salesService.getCustomersPaginated(
+        orgId,
+        req.user!,
+        {
+          q,
+          includeInactive,
+          limit,
+          offset,
+        },
+      );
       res.json(result);
     } catch (err) {
       next(err);
@@ -103,7 +107,10 @@ salesRouter.get(
       if (!customerId) {
         throw new AppError("Customer ID is required", 400);
       }
-      const customer = await salesService.getCustomerById(customerId, req.user!);
+      const customer = await salesService.getCustomerById(
+        customerId,
+        req.user!,
+      );
       res.json({ customer });
     } catch (err) {
       next(err);

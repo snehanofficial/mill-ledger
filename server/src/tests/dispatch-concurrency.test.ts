@@ -51,7 +51,9 @@ describe("F-008: Concurrency race condition in dispatch sequence generation", ()
 
   afterAll(async () => {
     await prisma.$transaction(async (tx) => {
-      await tx.$executeRawUnsafe("SET LOCAL mill_ledger.bypass_immutability = 'on'");
+      await tx.$executeRawUnsafe(
+        "SET LOCAL mill_ledger.bypass_immutability = 'on'",
+      );
       if (createdInvItemIds.length > 0) {
         await tx.stockMovement.deleteMany({
           where: { inventoryItemId: { in: createdInvItemIds } },
@@ -166,7 +168,11 @@ describe("F-008: Concurrency race condition in dispatch sequence generation", ()
           warehouseId,
         })
         .then((res) => ({ success: true, dispatch: res, error: null }))
-        .catch((err) => ({ success: false, dispatch: null, error: err.message })),
+        .catch((err) => ({
+          success: false,
+          dispatch: null,
+          error: err.message,
+        })),
     );
 
     const results = await Promise.all(dispatchPromises);
@@ -174,8 +180,10 @@ describe("F-008: Concurrency race condition in dispatch sequence generation", ()
     const failedDispatches = results.filter((r) => !r.success);
 
     // Assert that zero dispatches failed with unique constraint violations
-    const uniqueConstraintErrors = failedDispatches.filter((f) =>
-      f.error?.includes("Unique constraint failed") || f.error?.includes("dispatch_organizationId_dispatchNumber_key"),
+    const uniqueConstraintErrors = failedDispatches.filter(
+      (f) =>
+        f.error?.includes("Unique constraint failed") ||
+        f.error?.includes("dispatch_organizationId_dispatchNumber_key"),
     );
 
     expect(uniqueConstraintErrors).toHaveLength(0);
@@ -183,7 +191,9 @@ describe("F-008: Concurrency race condition in dispatch sequence generation", ()
     expect(successfulDispatches).toHaveLength(orderCount);
 
     // Verify all dispatch numbers are distinct
-    const dispatchNumbers = successfulDispatches.map((d) => d.dispatch!.dispatchNumber);
+    const dispatchNumbers = successfulDispatches.map(
+      (d) => d.dispatch!.dispatchNumber,
+    );
     const uniqueNumbers = new Set(dispatchNumbers);
     expect(uniqueNumbers.size).toBe(orderCount);
   });

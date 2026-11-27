@@ -6,10 +6,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HelpCircleIcon } from "lucide-react";
-import {
-  DOMAIN_GLOSSARY,
-  type DomainGlossaryKey,
-} from "@/lib/domain-glossary";
+import { DOMAIN_GLOSSARY, type DomainGlossaryKey } from "@/lib/domain-glossary";
 
 export interface DomainTooltipProps {
   term?: DomainGlossaryKey;

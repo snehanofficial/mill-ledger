@@ -120,237 +120,245 @@ export class InventoryService {
     }
 
     try {
-      const result = await prisma.$transaction(async (tx) => {
-      // 1. Idempotency check
-      if (input.idempotencyKey) {
-        const existingReceipt = await tx.purchaseReceipt.findUnique({
-          where: { idempotencyKey: input.idempotencyKey },
-          include: {
-            lines: {
+      const result = await prisma.$transaction(
+        async (tx) => {
+          // 1. Idempotency check
+          if (input.idempotencyKey) {
+            const existingReceipt = await tx.purchaseReceipt.findUnique({
+              where: { idempotencyKey: input.idempotencyKey },
               include: {
-                inventoryItem: true,
-                uom: true,
-              },
-            },
-          },
-        });
-
-        if (existingReceipt) {
-          return existingReceipt;
-        }
-      }
-
-      // Verify supplier, organization, and warehouse exist (resolving code or ID)
-      const resolvedOrgId = await this.resolveOrgId(input.organizationId);
-      const resolvedWarehouseId = await this.resolveWarehouseId(
-        input.warehouseId,
-        resolvedOrgId,
-      );
-
-      const supplier = await tx.supplier.findUnique({
-        where: { id: input.supplierId },
-      });
-      if (!supplier) {
-        throw new AppError(`Supplier ${input.supplierId} not found`, 404);
-      }
-
-      const warehouse = await tx.warehouse.findUnique({
-        where: { id: resolvedWarehouseId },
-      });
-      if (!warehouse) {
-        throw new AppError(`Warehouse ${input.warehouseId} not found`, 404);
-      }
-
-      // Calculate total amount
-      let totalAmount = 0;
-      for (const line of input.items) {
-        totalAmount += line.quantity * line.unitPrice;
-      }
-
-      // Create purchase receipt header
-      const receipt = await tx.purchaseReceipt.create({
-        data: {
-          organizationId: resolvedOrgId,
-          supplierId: input.supplierId,
-          warehouseId: resolvedWarehouseId,
-          receiptNumber: input.receiptNumber,
-          supplierInvoiceNumber: input.supplierInvoiceNumber,
-          totalAmount: totalAmount,
-          notes: input.notes,
-          idempotencyKey: input.idempotencyKey,
-          status: "POSTED",
-        },
-      });
-
-      // Process each line item
-      for (const itemInput of input.items) {
-        if (itemInput.quantity <= 0) {
-          throw new AppError(
-            "Purchase quantity must be greater than zero",
-            400,
-          );
-        }
-        if (itemInput.unitPrice < 0) {
-          throw new AppError("Purchase unit price cannot be negative", 400);
-        }
-
-        const items = await tx.$queryRaw<
-          Array<{
-            id: string;
-            name: string;
-            sku: string;
-            baseUomId: string;
-            currentStock: Prisma.Decimal.Value;
-            weightedAverageCost: Prisma.Decimal.Value;
-          }>
-        >`SELECT id, name, sku, "baseUomId", "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${itemInput.inventoryItemId} FOR UPDATE`;
-        const item = items[0];
-
-        if (!item) {
-          throw new AppError(
-            `Inventory item ${itemInput.inventoryItemId} not found`,
-            404,
-          );
-        }
-
-        // Resolve UOM by ID or code and normalize quantity to item's baseUomId
-        const enteredUom = await tx.unitOfMeasure.findFirst({
-          where: {
-            organizationId: resolvedOrgId,
-            OR: [{ id: itemInput.uomId }, { code: itemInput.uomId }],
-          },
-        });
-        if (!enteredUom) {
-          throw new AppError(`UOM ${itemInput.uomId} not found`, 404);
-        }
-
-        let conversionFactor = new Prisma.Decimal(1);
-        if (enteredUom.id !== item.baseUomId) {
-          const directConv = await tx.unitConversion.findUnique({
-            where: {
-              fromUomId_toUomId: {
-                fromUomId: enteredUom.id,
-                toUomId: item.baseUomId,
-              },
-            },
-          });
-          if (directConv) {
-            conversionFactor = new Prisma.Decimal(directConv.factor);
-          } else {
-            const reverseConv = await tx.unitConversion.findUnique({
-              where: {
-                fromUomId_toUomId: {
-                  fromUomId: item.baseUomId,
-                  toUomId: enteredUom.id,
+                lines: {
+                  include: {
+                    inventoryItem: true,
+                    uom: true,
+                  },
                 },
               },
             });
-            if (reverseConv) {
-              conversionFactor = new Prisma.Decimal(1).dividedBy(
-                new Prisma.Decimal(reverseConv.factor),
-              );
-            } else {
+
+            if (existingReceipt) {
+              return existingReceipt;
+            }
+          }
+
+          // Verify supplier, organization, and warehouse exist (resolving code or ID)
+          const resolvedOrgId = await this.resolveOrgId(input.organizationId);
+          const resolvedWarehouseId = await this.resolveWarehouseId(
+            input.warehouseId,
+            resolvedOrgId,
+          );
+
+          const supplier = await tx.supplier.findUnique({
+            where: { id: input.supplierId },
+          });
+          if (!supplier) {
+            throw new AppError(`Supplier ${input.supplierId} not found`, 404);
+          }
+
+          const warehouse = await tx.warehouse.findUnique({
+            where: { id: resolvedWarehouseId },
+          });
+          if (!warehouse) {
+            throw new AppError(`Warehouse ${input.warehouseId} not found`, 404);
+          }
+
+          // Calculate total amount
+          let totalAmount = 0;
+          for (const line of input.items) {
+            totalAmount += line.quantity * line.unitPrice;
+          }
+
+          // Create purchase receipt header
+          const receipt = await tx.purchaseReceipt.create({
+            data: {
+              organizationId: resolvedOrgId,
+              supplierId: input.supplierId,
+              warehouseId: resolvedWarehouseId,
+              receiptNumber: input.receiptNumber,
+              supplierInvoiceNumber: input.supplierInvoiceNumber,
+              totalAmount: totalAmount,
+              notes: input.notes,
+              idempotencyKey: input.idempotencyKey,
+              status: "POSTED",
+            },
+          });
+
+          // Process each line item
+          for (const itemInput of input.items) {
+            if (itemInput.quantity <= 0) {
               throw new AppError(
-                `No unit conversion configured between ${enteredUom.code} and base UOM for ${item.name}`,
+                "Purchase quantity must be greater than zero",
                 400,
               );
             }
+            if (itemInput.unitPrice < 0) {
+              throw new AppError("Purchase unit price cannot be negative", 400);
+            }
+
+            const items = await tx.$queryRaw<
+              Array<{
+                id: string;
+                name: string;
+                sku: string;
+                baseUomId: string;
+                currentStock: Prisma.Decimal.Value;
+                weightedAverageCost: Prisma.Decimal.Value;
+              }>
+            >`SELECT id, name, sku, "baseUomId", "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${itemInput.inventoryItemId} FOR UPDATE`;
+            const item = items[0];
+
+            if (!item) {
+              throw new AppError(
+                `Inventory item ${itemInput.inventoryItemId} not found`,
+                404,
+              );
+            }
+
+            // Resolve UOM by ID or code and normalize quantity to item's baseUomId
+            const enteredUom = await tx.unitOfMeasure.findFirst({
+              where: {
+                organizationId: resolvedOrgId,
+                OR: [{ id: itemInput.uomId }, { code: itemInput.uomId }],
+              },
+            });
+            if (!enteredUom) {
+              throw new AppError(`UOM ${itemInput.uomId} not found`, 404);
+            }
+
+            let conversionFactor = new Prisma.Decimal(1);
+            if (enteredUom.id !== item.baseUomId) {
+              const directConv = await tx.unitConversion.findUnique({
+                where: {
+                  fromUomId_toUomId: {
+                    fromUomId: enteredUom.id,
+                    toUomId: item.baseUomId,
+                  },
+                },
+              });
+              if (directConv) {
+                conversionFactor = new Prisma.Decimal(directConv.factor);
+              } else {
+                const reverseConv = await tx.unitConversion.findUnique({
+                  where: {
+                    fromUomId_toUomId: {
+                      fromUomId: item.baseUomId,
+                      toUomId: enteredUom.id,
+                    },
+                  },
+                });
+                if (reverseConv) {
+                  conversionFactor = new Prisma.Decimal(1).dividedBy(
+                    new Prisma.Decimal(reverseConv.factor),
+                  );
+                } else {
+                  throw new AppError(
+                    `No unit conversion configured between ${enteredUom.code} and base UOM for ${item.name}`,
+                    400,
+                  );
+                }
+              }
+            }
+
+            const currentStock = new Prisma.Decimal(item.currentStock || 0);
+            const currentAvgCost = new Prisma.Decimal(
+              item.weightedAverageCost || 0,
+            );
+            const enteredQty = new Prisma.Decimal(itemInput.quantity);
+            const enteredRate = new Prisma.Decimal(itemInput.unitPrice);
+            const lineTotal = enteredQty.mul(enteredRate);
+
+            const normalizedQty = enteredQty.mul(conversionFactor);
+            const normalizedRate = lineTotal.dividedBy(normalizedQty);
+
+            // Exact Weighted Average Cost formula using Decimal arithmetic:
+            // (currentStock * currentAvgCost + normalizedQty * normalizedRate) / (currentStock + normalizedQty)
+            const totalQty = currentStock.add(normalizedQty);
+            const newWeightedAverageCost = totalQty.gt(0)
+              ? currentStock
+                  .mul(currentAvgCost)
+                  .add(lineTotal)
+                  .dividedBy(totalQty)
+              : normalizedRate;
+
+            // Update inventory item balances atomically with row lock
+            await tx.inventoryItem.update({
+              where: { id: item.id },
+              data: {
+                currentStock: {
+                  increment: normalizedQty,
+                },
+                weightedAverageCost: newWeightedAverageCost,
+              },
+            });
+
+            // Create receipt line (preserving entered UOM, quantity, and rate)
+            await tx.purchaseReceiptLine.create({
+              data: {
+                purchaseReceiptId: receipt.id,
+                inventoryItemId: item.id,
+                quantity: enteredQty,
+                uomId: enteredUom.id,
+                unitPrice: enteredRate,
+                totalPrice: lineTotal,
+              },
+            });
+
+            // Record append-only stock movement in normalized base UOM
+            await tx.stockMovement.create({
+              data: {
+                inventoryItemId: item.id,
+                warehouseId: resolvedWarehouseId,
+                movementType: MovementType.PURCHASE_RECEIPT,
+                quantity: normalizedQty,
+                unitCost: normalizedRate,
+                totalCost: lineTotal,
+                referenceDocumentType: "PURCHASE_RECEIPT",
+                referenceDocumentId: receipt.id,
+                notes: `Purchase receipt ${input.receiptNumber} from ${supplier.name}`,
+              },
+            });
+
+            await adjustWarehouseOnHand(tx, {
+              organizationId: resolvedOrgId,
+              warehouseId: resolvedWarehouseId,
+              inventoryItemId: item.id,
+              delta: normalizedQty,
+            });
           }
-        }
 
-        const currentStock = new Prisma.Decimal(item.currentStock || 0);
-        const currentAvgCost = new Prisma.Decimal(item.weightedAverageCost || 0);
-        const enteredQty = new Prisma.Decimal(itemInput.quantity);
-        const enteredRate = new Prisma.Decimal(itemInput.unitPrice);
-        const lineTotal = enteredQty.mul(enteredRate);
-
-        const normalizedQty = enteredQty.mul(conversionFactor);
-        const normalizedRate = lineTotal.dividedBy(normalizedQty);
-
-        // Exact Weighted Average Cost formula using Decimal arithmetic:
-        // (currentStock * currentAvgCost + normalizedQty * normalizedRate) / (currentStock + normalizedQty)
-        const totalQty = currentStock.add(normalizedQty);
-        const newWeightedAverageCost = totalQty.gt(0)
-          ? currentStock.mul(currentAvgCost).add(lineTotal).dividedBy(totalQty)
-          : normalizedRate;
-
-        // Update inventory item balances atomically with row lock
-        await tx.inventoryItem.update({
-          where: { id: item.id },
-          data: {
-            currentStock: {
-              increment: normalizedQty,
+          return await tx.purchaseReceipt.findUniqueOrThrow({
+            where: { id: receipt.id },
+            include: {
+              lines: {
+                include: {
+                  inventoryItem: true,
+                  uom: true,
+                },
+              },
             },
-            weightedAverageCost: newWeightedAverageCost,
-          },
-        });
+          });
+        },
+        { timeout: 30000, maxWait: 10000 },
+      );
 
-        // Create receipt line (preserving entered UOM, quantity, and rate)
-        await tx.purchaseReceiptLine.create({
-          data: {
-            purchaseReceiptId: receipt.id,
-            inventoryItemId: item.id,
-            quantity: enteredQty,
-            uomId: enteredUom.id,
-            unitPrice: enteredRate,
-            totalPrice: lineTotal,
+      if (result) {
+        await auditService.log({
+          organizationId: result.organizationId,
+          userId: user?.id,
+          userEmail: user?.email,
+          action: "CREATE",
+          entity: "PurchaseReceipt",
+          entityId: result.id,
+          details: {
+            receiptNumber: result.receiptNumber,
+            supplierId: result.supplierId,
+            warehouseId: result.warehouseId,
+            lineCount: result.lines?.length ?? 0,
           },
-        });
-
-        // Record append-only stock movement in normalized base UOM
-        await tx.stockMovement.create({
-          data: {
-            inventoryItemId: item.id,
-            warehouseId: resolvedWarehouseId,
-            movementType: MovementType.PURCHASE_RECEIPT,
-            quantity: normalizedQty,
-            unitCost: normalizedRate,
-            totalCost: lineTotal,
-            referenceDocumentType: "PURCHASE_RECEIPT",
-            referenceDocumentId: receipt.id,
-            notes: `Purchase receipt ${input.receiptNumber} from ${supplier.name}`,
-          },
-        });
-
-        await adjustWarehouseOnHand(tx, {
-          organizationId: resolvedOrgId,
-          warehouseId: resolvedWarehouseId,
-          inventoryItemId: item.id,
-          delta: normalizedQty,
         });
       }
 
-      return await tx.purchaseReceipt.findUniqueOrThrow({
-        where: { id: receipt.id },
-        include: {
-          lines: {
-            include: {
-              inventoryItem: true,
-              uom: true,
-            },
-          },
-        },
-      });
-    }, { timeout: 30000, maxWait: 10000 });
-
-    if (result) {
-      await auditService.log({
-        organizationId: result.organizationId,
-        userId: user?.id,
-        userEmail: user?.email,
-        action: "CREATE",
-        entity: "PurchaseReceipt",
-        entityId: result.id,
-        details: {
-          receiptNumber: result.receiptNumber,
-          supplierId: result.supplierId,
-          warehouseId: result.warehouseId,
-          lineCount: result.lines?.length ?? 0,
-        },
-      });
-    }
-
-    return result;
+      return result;
     } catch (err: unknown) {
       if (
         input.idempotencyKey &&
@@ -1168,7 +1176,12 @@ export class InventoryService {
   }
 
   async createUom(
-    input: { organizationId?: string; code: string; name: string; symbol: string },
+    input: {
+      organizationId?: string;
+      code: string;
+      name: string;
+      symbol: string;
+    },
     user?: UserContext,
   ) {
     const orgId = await this.resolveOrgId(input.organizationId || "MILL");
@@ -1213,9 +1226,24 @@ export class InventoryService {
 
     const getDimension = (code: string): "MASS" | "VOLUME" | "COUNT" | null => {
       const c = code.toUpperCase();
-      if (["KG", "G", "GM", "GRAM", "GRAMS", "MG", "TON", "QUINTAL"].includes(c)) return "MASS";
+      if (
+        ["KG", "G", "GM", "GRAM", "GRAMS", "MG", "TON", "QUINTAL"].includes(c)
+      )
+        return "MASS";
       if (["L", "LTR", "LITRE", "LITRES", "ML"].includes(c)) return "VOLUME";
-      if (["PIECE", "PCS", "PACKET", "PKT", "CARTON", "CTN", "BOX", "DOZEN"].includes(c)) return "COUNT";
+      if (
+        [
+          "PIECE",
+          "PCS",
+          "PACKET",
+          "PKT",
+          "CARTON",
+          "CTN",
+          "BOX",
+          "DOZEN",
+        ].includes(c)
+      )
+        return "COUNT";
       return null;
     };
 
@@ -1328,7 +1356,11 @@ export class InventoryService {
       const movements = [];
       for (const line of receipt.lines) {
         const locked = await tx.$queryRaw<
-          Array<{ id: string; currentStock: Prisma.Decimal; weightedAverageCost: Prisma.Decimal }>
+          Array<{
+            id: string;
+            currentStock: Prisma.Decimal;
+            weightedAverageCost: Prisma.Decimal;
+          }>
         >`
           SELECT "id", "currentStock", "weightedAverageCost"
           FROM "inventory_item"
@@ -1348,7 +1380,9 @@ export class InventoryService {
           },
         });
 
-        const qty = origMovement ? Number(origMovement.quantity) : Number(line.quantity);
+        const qty = origMovement
+          ? Number(origMovement.quantity)
+          : Number(line.quantity);
         const unitCostToReverse = origMovement
           ? Number(origMovement.unitCost)
           : Number(line.unitPrice);
@@ -1444,161 +1478,168 @@ export class InventoryService {
       );
     }
 
-    const result = await prisma.$transaction(async (tx) => {
-      if (input.idempotencyKey) {
-        const existing = await tx.stockTransfer.findUnique({
-          where: { idempotencyKey: input.idempotencyKey },
-          include: {
-            fromWarehouse: true,
-            toWarehouse: true,
-            lines: { include: { inventoryItem: true } },
+    const result = await prisma.$transaction(
+      async (tx) => {
+        if (input.idempotencyKey) {
+          const existing = await tx.stockTransfer.findUnique({
+            where: { idempotencyKey: input.idempotencyKey },
+            include: {
+              fromWarehouse: true,
+              toWarehouse: true,
+              lines: { include: { inventoryItem: true } },
+            },
+          });
+          if (existing) {
+            return existing;
+          }
+        }
+
+        const fromWh = await requireActiveOrgWarehouse(
+          tx,
+          orgId,
+          input.fromWarehouseId,
+        );
+        const toWh = await requireActiveOrgWarehouse(
+          tx,
+          orgId,
+          input.toWarehouseId,
+        );
+
+        if (fromWh.id === toWh.id) {
+          throw new AppError(
+            "Source and destination warehouses must be different",
+            400,
+          );
+        }
+
+        const transferNumber = await sequenceService.getNextTransferNumber(
+          tx,
+          orgId,
+        );
+
+        const transfer = await tx.stockTransfer.create({
+          data: {
+            organizationId: orgId,
+            transferNumber,
+            fromWarehouseId: fromWh.id,
+            toWarehouseId: toWh.id,
+            status: "POSTED",
+            notes: input.notes?.trim() || undefined,
+            idempotencyKey: input.idempotencyKey,
+            postedAt: new Date(),
           },
         });
-        if (existing) {
-          return existing;
-        }
-      }
 
-      const fromWh = await requireActiveOrgWarehouse(
-        tx,
-        orgId,
-        input.fromWarehouseId,
-      );
-      const toWh = await requireActiveOrgWarehouse(tx, orgId, input.toWarehouseId);
-
-      if (fromWh.id === toWh.id) {
-        throw new AppError(
-          "Source and destination warehouses must be different",
-          400,
-        );
-      }
-
-      const transferNumber = await sequenceService.getNextTransferNumber(
-        tx,
-        orgId,
-      );
-
-      const transfer = await tx.stockTransfer.create({
-        data: {
-          organizationId: orgId,
-          transferNumber,
-          fromWarehouseId: fromWh.id,
-          toWarehouseId: toWh.id,
-          status: "POSTED",
-          notes: input.notes?.trim() || undefined,
-          idempotencyKey: input.idempotencyKey,
-          postedAt: new Date(),
-        },
-      });
-
-      for (const line of input.items) {
-        const lockedItem = await tx.$queryRaw<
-          Array<{
-            id: string;
-            name: string;
-            weightedAverageCost: Prisma.Decimal;
-          }>
-        >`
+        for (const line of input.items) {
+          const lockedItem = await tx.$queryRaw<
+            Array<{
+              id: string;
+              name: string;
+              weightedAverageCost: Prisma.Decimal;
+            }>
+          >`
           SELECT "id", "name", "weightedAverageCost"
           FROM "inventory_item"
           WHERE "id" = ${line.inventoryItemId}
             AND "organizationId" = ${orgId}
           FOR UPDATE
         `;
-        if (lockedItem.length === 0) {
-          throw new AppError(
-            `Inventory item ${line.inventoryItemId} not found in organization`,
-            404,
-          );
-        }
+          if (lockedItem.length === 0) {
+            throw new AppError(
+              `Inventory item ${line.inventoryItemId} not found in organization`,
+              404,
+            );
+          }
 
-        const item = lockedItem[0];
-        const qty = new Prisma.Decimal(line.quantity);
-        if (qty.lte(0)) {
-          throw new AppError("Transfer quantity must be positive", 400);
-        }
+          const item = lockedItem[0];
+          const qty = new Prisma.Decimal(line.quantity);
+          if (qty.lte(0)) {
+            throw new AppError("Transfer quantity must be positive", 400);
+          }
 
-        // Lock source warehouse balance row if present
-        await tx.$queryRaw`
+          // Lock source warehouse balance row if present
+          await tx.$queryRaw`
           SELECT "id" FROM "warehouse_stock_balance"
           WHERE "warehouseId" = ${fromWh.id}
             AND "inventoryItemId" = ${item.id}
           FOR UPDATE
         `;
 
-        const srcBal = await getWarehouseItemBalance(tx, fromWh.id, item.id);
-        if (srcBal.available.lt(qty)) {
-          throw new AppError(
-            `Insufficient available stock for ${item.name} in ${fromWh.code}: available ${srcBal.available.toString()}, requested ${qty.toString()}`,
-            409,
-          );
+          const srcBal = await getWarehouseItemBalance(tx, fromWh.id, item.id);
+          if (srcBal.available.lt(qty)) {
+            throw new AppError(
+              `Insufficient available stock for ${item.name} in ${fromWh.code}: available ${srcBal.available.toString()}, requested ${qty.toString()}`,
+              409,
+            );
+          }
+
+          const unitCost = new Prisma.Decimal(item.weightedAverageCost);
+          const totalCost = qty.mul(unitCost).toDecimalPlaces(2);
+
+          await tx.stockTransferLine.create({
+            data: {
+              stockTransferId: transfer.id,
+              inventoryItemId: item.id,
+              quantity: qty,
+              unitCost,
+              totalCost,
+            },
+          });
+
+          await tx.stockMovement.create({
+            data: {
+              inventoryItemId: item.id,
+              warehouseId: fromWh.id,
+              movementType: MovementType.TRANSFER_OUT,
+              quantity: qty.neg(),
+              unitCost,
+              totalCost: totalCost.neg(),
+              referenceDocumentType: "STOCK_TRANSFER",
+              referenceDocumentId: transfer.id,
+              notes: `Transfer ${transferNumber} to ${toWh.code}`,
+            },
+          });
+
+          await tx.stockMovement.create({
+            data: {
+              inventoryItemId: item.id,
+              warehouseId: toWh.id,
+              movementType: MovementType.TRANSFER_IN,
+              quantity: qty,
+              unitCost,
+              totalCost,
+              referenceDocumentType: "STOCK_TRANSFER",
+              referenceDocumentId: transfer.id,
+              notes: `Transfer ${transferNumber} from ${fromWh.code}`,
+            },
+          });
+
+          await adjustWarehouseOnHand(tx, {
+            organizationId: orgId,
+            warehouseId: fromWh.id,
+            inventoryItemId: item.id,
+            delta: qty.neg(),
+          });
+
+          await adjustWarehouseOnHand(tx, {
+            organizationId: orgId,
+            warehouseId: toWh.id,
+            inventoryItemId: item.id,
+            delta: qty,
+          });
         }
 
-        const unitCost = new Prisma.Decimal(item.weightedAverageCost);
-        const totalCost = qty.mul(unitCost).toDecimalPlaces(2);
-
-        await tx.stockTransferLine.create({
-          data: {
-            stockTransferId: transfer.id,
-            inventoryItemId: item.id,
-            quantity: qty,
-            unitCost,
-            totalCost,
+        return tx.stockTransfer.findUniqueOrThrow({
+          where: { id: transfer.id },
+          include: {
+            fromWarehouse: true,
+            toWarehouse: true,
+            lines: { include: { inventoryItem: true } },
           },
         });
-
-        await tx.stockMovement.create({
-          data: {
-            inventoryItemId: item.id,
-            warehouseId: fromWh.id,
-            movementType: MovementType.TRANSFER_OUT,
-            quantity: qty.neg(),
-            unitCost,
-            totalCost: totalCost.neg(),
-            referenceDocumentType: "STOCK_TRANSFER",
-            referenceDocumentId: transfer.id,
-            notes: `Transfer ${transferNumber} to ${toWh.code}`,
-          },
-        });
-
-        await tx.stockMovement.create({
-          data: {
-            inventoryItemId: item.id,
-            warehouseId: toWh.id,
-            movementType: MovementType.TRANSFER_IN,
-            quantity: qty,
-            unitCost,
-            totalCost,
-            referenceDocumentType: "STOCK_TRANSFER",
-            referenceDocumentId: transfer.id,
-            notes: `Transfer ${transferNumber} from ${fromWh.code}`,
-          },
-        });
-
-        await adjustWarehouseOnHand(tx, {
-          organizationId: orgId,
-          warehouseId: fromWh.id,
-          inventoryItemId: item.id,
-          delta: qty.neg(),
-        });
-
-        await adjustWarehouseOnHand(tx, {
-          organizationId: orgId,
-          warehouseId: toWh.id,
-          inventoryItemId: item.id,
-          delta: qty,
-        });
-      }
-
-      return tx.stockTransfer.findUniqueOrThrow({
-        where: { id: transfer.id },
-        include: {
-          fromWarehouse: true,
-          toWarehouse: true,
-          lines: { include: { inventoryItem: true } },
-        },
-      });
-    }, { timeout: 30000, maxWait: 10000 });
+      },
+      { timeout: 30000, maxWait: 10000 },
+    );
 
     await auditService.log({
       organizationId: orgId,

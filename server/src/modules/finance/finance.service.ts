@@ -762,7 +762,11 @@ export class FinanceService {
       where.OR = [
         { debitNoteNumber: { contains: q, mode: "insensitive" } },
         { supplier: { name: { contains: q, mode: "insensitive" } } },
-        { purchaseReceipt: { receiptNumber: { contains: q, mode: "insensitive" } } },
+        {
+          purchaseReceipt: {
+            receiptNumber: { contains: q, mode: "insensitive" },
+          },
+        },
       ];
     }
 

@@ -28,7 +28,10 @@ export const envSchema = z
   })
   .superRefine((data, ctx) => {
     if (data.NODE_ENV === "production") {
-      if (!data.BETTER_AUTH_SECRET || data.BETTER_AUTH_SECRET === DEV_DEFAULT_SECRET) {
+      if (
+        !data.BETTER_AUTH_SECRET ||
+        data.BETTER_AUTH_SECRET === DEV_DEFAULT_SECRET
+      ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["BETTER_AUTH_SECRET"],

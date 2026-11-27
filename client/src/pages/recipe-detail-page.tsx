@@ -61,18 +61,23 @@ interface RecipeDetailResponse {
 export function RecipeDetailPage() {
   const { recipeId } = useParams<{ recipeId: string }>();
 
-  const { data: recipe, isLoading, isError, error, refetch } =
-    useQuery<RecipeDetailResponse["recipe"]>({
-      queryKey: ["recipe-detail", recipeId],
-      queryFn: async () => {
-        const endpoint = `/production-runs/recipes/${recipeId}`;
-        const res = await apiClient.get(endpoint);
-        return assertEntityResponse<
-          RecipeDetailResponse["recipe"] & Record<string, unknown>
-        >(res.data, "recipe", ["items", "productionRuns"], endpoint);
-      },
-      enabled: Boolean(recipeId),
-    });
+  const {
+    data: recipe,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<RecipeDetailResponse["recipe"]>({
+    queryKey: ["recipe-detail", recipeId],
+    queryFn: async () => {
+      const endpoint = `/production-runs/recipes/${recipeId}`;
+      const res = await apiClient.get(endpoint);
+      return assertEntityResponse<
+        RecipeDetailResponse["recipe"] & Record<string, unknown>
+      >(res.data, "recipe", ["items", "productionRuns"], endpoint);
+    },
+    enabled: Boolean(recipeId),
+  });
 
   if (isLoading) {
     return (
@@ -119,13 +124,17 @@ export function RecipeDetailPage() {
           </Link>
         </div>
         <div>
-          <div className="text-xs text-muted-foreground">Standard batch size</div>
+          <div className="text-xs text-muted-foreground">
+            Standard batch size
+          </div>
           <div className="font-medium tabular-nums">
             {formatQuantity(Number(recipe.standardBatchSize))} kg
           </div>
         </div>
         <div>
-          <div className="text-xs text-muted-foreground">Revisions for variant</div>
+          <div className="text-xs text-muted-foreground">
+            Revisions for variant
+          </div>
           <div className="flex flex-wrap gap-1.5 pt-0.5">
             {(recipe.productVariant.recipes ?? []).map((r) => (
               <Link
@@ -169,11 +178,14 @@ export function RecipeDetailPage() {
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-xs">
-                      {item.itemType === "PACKAGING" ? "Packaging" : "Ingredient"}
+                      {item.itemType === "PACKAGING"
+                        ? "Packaging"
+                        : "Ingredient"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right font-mono tabular-nums">
-                    {formatQuantity(Number(item.plannedQty))} {item.uom?.symbol || ""}
+                    {formatQuantity(Number(item.plannedQty))}{" "}
+                    {item.uom?.symbol || ""}
                   </TableCell>
                   <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
                     ±{Number(item.tolerancePct ?? 5)}%

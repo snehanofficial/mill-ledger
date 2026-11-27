@@ -48,7 +48,9 @@ userRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       const user = await userService.getUserById(id, orgId);
       res.json({ user });
     } catch (err) {
@@ -98,7 +100,9 @@ userRouter.put(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       const { name, role, isActive } = req.body;
       const user = await userService.updateUser(
         id,
@@ -135,7 +139,9 @@ userRouter.patch(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       const { name, role, isActive } = req.body;
       const user = await userService.updateUser(
         id,
@@ -172,7 +178,9 @@ userRouter.delete(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
       const result = await userService.deleteUser(id, orgId);
 
       await auditService.log({

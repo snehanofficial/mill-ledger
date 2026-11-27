@@ -59,4 +59,6 @@ export type CreateFacilityInput = z.infer<typeof createFacilitySchema>;
 export type UpdateFacilityInput = z.infer<typeof updateFacilitySchema>;
 export type CreateWarehouseInput = z.infer<typeof createWarehouseSchema>;
 export type UpdateWarehouseInput = z.infer<typeof updateWarehouseSchema>;
-export type CreateStockTransferInput = z.infer<typeof createStockTransferSchema>;
+export type CreateStockTransferInput = z.infer<
+  typeof createStockTransferSchema
+>;

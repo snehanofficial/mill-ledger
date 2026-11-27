@@ -35,7 +35,9 @@ test.describe("Authentication and Route Protection Flow", () => {
     // Verify redirected back to originally requested route (/orders)
     await expect(page).toHaveURL(/\/orders$/);
     await expect(
-      page.getByRole("heading", { name: /Order inbox|My work & orders|Sales orders/i }),
+      page.getByRole("heading", {
+        name: /Order inbox|My work & orders|Sales orders/i,
+      }),
     ).toBeVisible();
   });
 
@@ -66,9 +68,9 @@ test.describe("Authentication and Route Protection Flow", () => {
 
     // Stays on login page and shows generic non-enumerating error alert
     await expect(page).toHaveURL(/\/auth\/login$/);
-    await expect(
-      page.getByRole("alert"),
-    ).toContainText(/Invalid email or password|Too many sign-in attempts/i);
+    await expect(page.getByRole("alert")).toContainText(
+      /Invalid email or password|Too many sign-in attempts/i,
+    );
   });
 
   test("password visibility toggle allows inspecting password securely", async ({

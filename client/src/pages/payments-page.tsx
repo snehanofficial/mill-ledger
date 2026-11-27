@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
@@ -493,7 +498,9 @@ export function PaymentsPage() {
             </h1>
           </div>
           <p className="max-w-[60ch] text-sm text-muted-foreground">
-            {t("Customer collections, invoice payment allocations, and receivables ledger")}
+            {t(
+              "Customer collections, invoice payment allocations, and receivables ledger",
+            )}
           </p>
         </div>
 
@@ -663,7 +670,9 @@ export function PaymentsPage() {
               <ErrorState
                 title={t("Failed to load payments", "Failed to load payments")}
                 description={
-                  paymentsError instanceof Error ? paymentsError.message : "Failed to load payments."
+                  paymentsError instanceof Error
+                    ? paymentsError.message
+                    : "Failed to load payments."
                 }
                 error={paymentsError}
                 onRetry={() => refetchPayments()}
@@ -763,7 +772,9 @@ export function PaymentsPage() {
                     </div>
                     {Number(p.unallocatedAmount) > 0 && (
                       <div className="flex justify-between items-center text-xs px-1">
-                        <span className="text-muted-foreground">Unallocated:</span>
+                        <span className="text-muted-foreground">
+                          Unallocated:
+                        </span>
                         <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
                           {formatINR(p.unallocatedAmount)}
                         </span>
@@ -777,7 +788,8 @@ export function PaymentsPage() {
                             key={a.id}
                             className="font-mono text-emerald-600 dark:text-emerald-400 mr-2"
                           >
-                            {a.salesInvoice?.invoiceNumber}: {formatINR(a.amount)}
+                            {a.salesInvoice?.invoiceNumber}:{" "}
+                            {formatINR(a.amount)}
                           </span>
                         ))}
                       </div>
@@ -789,168 +801,176 @@ export function PaymentsPage() {
               {/* Desktop Table View (md+ viewports) */}
               <div className="hidden md:block overflow-x-auto">
                 <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("Receipt number")}</TableHead>
-                    <TableHead>{t("Date")}</TableHead>
-                    <TableHead>{t("Customer")}</TableHead>
-                    <TableHead>{t("Mode and reference")}</TableHead>
-                    <TableHead className="text-right">{t("Total amount")}</TableHead>
-                    <TableHead className="text-right">{t("Unallocated")}</TableHead>
-                    <TableHead>{t("Allocated invoices")}</TableHead>
-                    <TableHead className="text-right">{t("Status")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPayments.length === 0 && payments.length > 0 && (
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={8} className="p-0">
-                        <EmptyState
-                          title={t("No payments match the selected filters.")}
-                          description="Clear the search or payment mode filter to view all payments."
-                          className="min-h-32 py-6"
-                          action={
-                            <Button
-                              variant="tertiary"
-                              size="sm"
-                              onClick={() => {
-                                setSearchQuery("");
-                                setModeFilter("ALL");
-                              }}
-                            >
-                              Clear filters
-                            </Button>
-                          }
-                        />
-                      </TableCell>
+                      <TableHead>{t("Receipt number")}</TableHead>
+                      <TableHead>{t("Date")}</TableHead>
+                      <TableHead>{t("Customer")}</TableHead>
+                      <TableHead>{t("Mode and reference")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("Total amount")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("Unallocated")}
+                      </TableHead>
+                      <TableHead>{t("Allocated invoices")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("Status")}
+                      </TableHead>
                     </TableRow>
-                  )}
-                  {filteredPayments.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell className="font-mono text-sm font-semibold text-foreground">
-                        {p.paymentNumber}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {formatDate(p.paymentDate)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">
-                            {p.customer?.name ?? "Customer"}
-                          </span>
-                          <span className="font-mono text-xs text-muted-foreground">
-                            {p.customer?.code}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col text-xs">
-                          <span className="font-medium">
-                            {p.paymentMode.replace(/_/g, " ")}
-                          </span>
-                          {p.referenceNumber && (
-                            <span className="font-mono text-muted-foreground">
-                              Ref: {p.referenceNumber}
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPayments.length === 0 && payments.length > 0 && (
+                      <TableRow>
+                        <TableCell colSpan={8} className="p-0">
+                          <EmptyState
+                            title={t("No payments match the selected filters.")}
+                            description="Clear the search or payment mode filter to view all payments."
+                            className="min-h-32 py-6"
+                            action={
+                              <Button
+                                variant="tertiary"
+                                size="sm"
+                                onClick={() => {
+                                  setSearchQuery("");
+                                  setModeFilter("ALL");
+                                }}
+                              >
+                                Clear filters
+                              </Button>
+                            }
+                          />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {filteredPayments.map((p) => (
+                      <TableRow key={p.id}>
+                        <TableCell className="font-mono text-sm font-semibold text-foreground">
+                          {p.paymentNumber}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {formatDate(p.paymentDate)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">
+                              {p.customer?.name ?? "Customer"}
                             </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-mono font-semibold">
-                        {formatINR(p.amount)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-xs">
-                        {Number(p.unallocatedAmount) > 0 ? (
-                          <span className="text-amber-600 dark:text-amber-400">
-                            {formatINR(p.unallocatedAmount)}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">₹0.00</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1 text-xs">
-                          {(p.allocations ?? []).length === 0 ? (
-                            <span className="italic text-muted-foreground">
-                              Unallocated advance
+                            <span className="font-mono text-xs text-muted-foreground">
+                              {p.customer?.code}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col text-xs">
+                            <span className="font-medium">
+                              {p.paymentMode.replace(/_/g, " ")}
+                            </span>
+                            {p.referenceNumber && (
+                              <span className="font-mono text-muted-foreground">
+                                Ref: {p.referenceNumber}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-semibold">
+                          {formatINR(p.amount)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-xs">
+                          {Number(p.unallocatedAmount) > 0 ? (
+                            <span className="text-amber-600 dark:text-amber-400">
+                              {formatINR(p.unallocatedAmount)}
                             </span>
                           ) : (
-                            (p.allocations ?? []).map((a) => (
-                              <div
-                                key={a.id}
-                                className="flex items-center gap-1 font-mono text-emerald-600 dark:text-emerald-400"
-                              >
-                                <span>
-                                  {a.salesInvoice?.invoiceNumber || "Invoice"}:
-                                </span>
-                                <span>{formatINR(a.amount)}</span>
-                              </div>
-                            ))
+                            <span className="text-muted-foreground">₹0.00</span>
                           )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Badge
-                            variant={
-                              p.status === "POSTED"
-                                ? "success"
-                                : p.status === "BOUNCED" || p.status === "REVERSED"
-                                  ? "danger"
-                                  : "default"
-                            }
-                          >
-                            {p.status}
-                          </Badge>
-                          {p.status === "POSTED" &&
-                            Number(p.unallocatedAmount) > 0 &&
-                            canRecordPayment && (
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1 text-xs">
+                            {(p.allocations ?? []).length === 0 ? (
+                              <span className="italic text-muted-foreground">
+                                Unallocated advance
+                              </span>
+                            ) : (
+                              (p.allocations ?? []).map((a) => (
+                                <div
+                                  key={a.id}
+                                  className="flex items-center gap-1 font-mono text-emerald-600 dark:text-emerald-400"
+                                >
+                                  <span>
+                                    {a.salesInvoice?.invoiceNumber || "Invoice"}
+                                    :
+                                  </span>
+                                  <span>{formatINR(a.amount)}</span>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Badge
+                              variant={
+                                p.status === "POSTED"
+                                  ? "success"
+                                  : p.status === "BOUNCED" ||
+                                      p.status === "REVERSED"
+                                    ? "danger"
+                                    : "default"
+                              }
+                            >
+                              {p.status}
+                            </Badge>
+                            {p.status === "POSTED" &&
+                              Number(p.unallocatedAmount) > 0 &&
+                              canRecordPayment && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setAllocatingPayment(p);
+                                    setPostAllocInvoiceId("");
+                                    setPostAllocAmount(
+                                      String(Number(p.unallocatedAmount)),
+                                    );
+                                  }}
+                                  className="h-7 px-2 text-xs"
+                                >
+                                  Allocate Cash
+                                </Button>
+                              )}
+                            {p.status === "POSTED" && canRecordPayment && (
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                  setAllocatingPayment(p);
-                                  setPostAllocInvoiceId("");
-                                  setPostAllocAmount(
-                                    String(Number(p.unallocatedAmount)),
-                                  );
+                                  setBouncingPayment(p);
+                                  setBounceReason("");
                                 }}
-                                className="h-7 px-2 text-xs"
+                                className="h-7 px-2 text-xs text-destructive hover:text-destructive"
                               >
-                                Allocate Cash
+                                Bounce / Reverse
                               </Button>
                             )}
-                          {p.status === "POSTED" && canRecordPayment && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setBouncingPayment(p);
-                                setBounceReason("");
-                              }}
-                              className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                            >
-                              Bounce / Reverse
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            <DataPagination
-              pagination={paymentsData?.pagination}
-              page={page}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
-              isFetching={fetchingPayments}
-              itemLabel="payments"
-              className="m-4"
-            />
-          </>
-        )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <DataPagination
+                pagination={paymentsData?.pagination}
+                page={page}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+                isFetching={fetchingPayments}
+                itemLabel="payments"
+                className="m-4"
+              />
+            </>
+          )}
         </div>
       )}
 
@@ -1016,13 +1036,17 @@ export function PaymentsPage() {
                   <div key={r.customerId} className="p-4 space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium text-foreground">{r.customerName}</p>
+                        <p className="font-medium text-foreground">
+                          {r.customerName}
+                        </p>
                         <span className="font-mono text-2xs text-muted-foreground">
                           {r.customerCode} ({r.state})
                         </span>
                       </div>
                       <Badge
-                        variant={r.openInvoicesCount > 0 ? "warning" : "secondary"}
+                        variant={
+                          r.openInvoicesCount > 0 ? "warning" : "secondary"
+                        }
                       >
                         {r.openInvoicesCount} open
                       </Badge>
@@ -1087,111 +1111,122 @@ export function PaymentsPage() {
               {/* Desktop Table View (md+ viewports) */}
               <div className="hidden md:block overflow-x-auto">
                 <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("Customer")}</TableHead>
-                    <TableHead>{t("State")}</TableHead>
-                    <TableHead className="text-right">{t("Total invoiced")}</TableHead>
-                    <TableHead className="text-right">{t("Credit notes")}</TableHead>
-                    <TableHead className="text-right">
-                      {t("Total collections")}
-                    </TableHead>
-                    <TableHead className="text-right">
-                      {t("Net outstanding")}
-                    </TableHead>
-                    <TableHead className="text-center">{t("Open invoices")}</TableHead>
-                    <TableHead className="text-right">{t("Actions")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredReceivables.length === 0 && receivables.length > 0 && (
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={8} className="p-0">
-                        <EmptyState
-                          title={t("No customer receivables match the search query.")}
-                          description="Clear the search query to view all customer receivables."
-                          className="min-h-32 py-6"
-                          action={
-                            <Button
-                              variant="tertiary"
-                              size="sm"
-                              onClick={() => setSearchQuery("")}
-                            >
-                              Clear search
-                            </Button>
-                          }
-                        />
-                      </TableCell>
+                      <TableHead>{t("Customer")}</TableHead>
+                      <TableHead>{t("State")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("Total invoiced")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("Credit notes")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("Total collections")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("Net outstanding")}
+                      </TableHead>
+                      <TableHead className="text-center">
+                        {t("Open invoices")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("Actions")}
+                      </TableHead>
                     </TableRow>
-                  )}
-                  {filteredReceivables.map((r) => (
-                    <TableRow key={r.customerId}>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium text-foreground">
-                            {r.customerName}
-                          </span>
-                          <span className="font-mono text-xs text-muted-foreground">
-                            {r.customerCode}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {r.state}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-xs">
-                        {formatINR(r.totalInvoiced)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                        {formatINR(r.totalCreditNotes)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-xs text-emerald-600 dark:text-emerald-400">
-                        {formatINR(r.totalPaid)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono font-semibold">
-                        {r.netOutstanding > 0 ? (
-                          <span className="text-amber-600 dark:text-amber-400">
-                            {formatINR(r.netOutstanding)}
-                          </span>
-                        ) : (
-                          <span className="text-emerald-600 dark:text-emerald-400">
-                            ₹0.00
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center font-mono text-xs">
-                        {r.openInvoicesCount}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            setSelectedCustomerIdForLedger(r.customerId)
-                          }
-                          className="h-8 gap-1.5 text-xs"
-                        >
-                          <HistoryIcon className="h-3.5 w-3.5" />
-                          View ledger
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            <DataPagination
-              pagination={receivablesData?.pagination}
-              page={recPage}
-              pageSize={recPageSize}
-              onPageChange={setRecPage}
-              onPageSizeChange={setRecPageSize}
-              isFetching={fetchingReceivables}
-              itemLabel="customers"
-              className="m-4"
-            />
-          </>
-        )}
+                  </TableHeader>
+                  <TableBody>
+                    {filteredReceivables.length === 0 &&
+                      receivables.length > 0 && (
+                        <TableRow>
+                          <TableCell colSpan={8} className="p-0">
+                            <EmptyState
+                              title={t(
+                                "No customer receivables match the search query.",
+                              )}
+                              description="Clear the search query to view all customer receivables."
+                              className="min-h-32 py-6"
+                              action={
+                                <Button
+                                  variant="tertiary"
+                                  size="sm"
+                                  onClick={() => setSearchQuery("")}
+                                >
+                                  Clear search
+                                </Button>
+                              }
+                            />
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    {filteredReceivables.map((r) => (
+                      <TableRow key={r.customerId}>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-foreground">
+                              {r.customerName}
+                            </span>
+                            <span className="font-mono text-xs text-muted-foreground">
+                              {r.customerCode}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {r.state}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-xs">
+                          {formatINR(r.totalInvoiced)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                          {formatINR(r.totalCreditNotes)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-xs text-emerald-600 dark:text-emerald-400">
+                          {formatINR(r.totalPaid)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-semibold">
+                          {r.netOutstanding > 0 ? (
+                            <span className="text-amber-600 dark:text-amber-400">
+                              {formatINR(r.netOutstanding)}
+                            </span>
+                          ) : (
+                            <span className="text-emerald-600 dark:text-emerald-400">
+                              ₹0.00
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center font-mono text-xs">
+                          {r.openInvoicesCount}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setSelectedCustomerIdForLedger(r.customerId)
+                            }
+                            className="h-8 gap-1.5 text-xs"
+                          >
+                            <HistoryIcon className="h-3.5 w-3.5" />
+                            View ledger
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <DataPagination
+                pagination={receivablesData?.pagination}
+                page={recPage}
+                pageSize={recPageSize}
+                onPageChange={setRecPage}
+                onPageSizeChange={setRecPageSize}
+                isFetching={fetchingReceivables}
+                itemLabel="customers"
+                className="m-4"
+              />
+            </>
+          )}
         </div>
       )}
 
@@ -1301,47 +1336,49 @@ export function PaymentsPage() {
                           <TableHead className="text-right">
                             {t("Credit (-)")}
                           </TableHead>
-                          <TableHead className="text-right">{t("Balance")}</TableHead>
+                          <TableHead className="text-right">
+                            {t("Balance")}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {(customerLedger.ledgerEntries ?? []).map((entry, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell className="text-xs text-muted-foreground">
-                              {formatDate(entry.date)}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  entry.documentType === "INVOICE"
-                                    ? "outline"
-                                    : entry.documentType === "PAYMENT"
-                                      ? "success"
-                                      : "default"
-                                }
-                                className="font-mono text-[10px]"
-                              >
-                                {entry.documentType}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="font-mono text-xs font-medium">
-                              {entry.documentNumber}
-                            </TableCell>
-                            <TableCell className="text-right font-mono text-xs">
-                              {entry.debit > 0
-                                ? formatINR(entry.debit)
-                                : "-"}
-                            </TableCell>
-                            <TableCell className="text-right font-mono text-xs text-emerald-600 dark:text-emerald-400">
-                              {entry.credit > 0
-                                ? formatINR(entry.credit)
-                                : "-"}
-                            </TableCell>
-                            <TableCell className="text-right font-mono text-xs font-bold">
-                              {formatINR(entry.balance)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                        {(customerLedger.ledgerEntries ?? []).map(
+                          (entry, idx) => (
+                            <TableRow key={idx}>
+                              <TableCell className="text-xs text-muted-foreground">
+                                {formatDate(entry.date)}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={
+                                    entry.documentType === "INVOICE"
+                                      ? "outline"
+                                      : entry.documentType === "PAYMENT"
+                                        ? "success"
+                                        : "default"
+                                  }
+                                  className="font-mono text-[10px]"
+                                >
+                                  {entry.documentType}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="font-mono text-xs font-medium">
+                                {entry.documentNumber}
+                              </TableCell>
+                              <TableCell className="text-right font-mono text-xs">
+                                {entry.debit > 0 ? formatINR(entry.debit) : "-"}
+                              </TableCell>
+                              <TableCell className="text-right font-mono text-xs text-emerald-600 dark:text-emerald-400">
+                                {entry.credit > 0
+                                  ? formatINR(entry.credit)
+                                  : "-"}
+                              </TableCell>
+                              <TableCell className="text-right font-mono text-xs font-bold">
+                                {formatINR(entry.balance)}
+                              </TableCell>
+                            </TableRow>
+                          ),
+                        )}
                       </TableBody>
                     </Table>
                   </div>
@@ -1377,7 +1414,9 @@ export function PaymentsPage() {
                   : "Record customer payment"}
               </DialogTitle>
             </div>
-            <DialogDescription className={paymentStep === "confirm" ? undefined : "sr-only"}>
+            <DialogDescription
+              className={paymentStep === "confirm" ? undefined : "sr-only"}
+            >
               {paymentStep === "confirm"
                 ? "Review the payment receipt details before posting to the accounting ledger."
                 : "Record receipt of customer payment and allocate against outstanding invoices"}
@@ -1395,7 +1434,10 @@ export function PaymentsPage() {
                   aria-live="assertive"
                   className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive"
                 >
-                  <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <AlertTriangleIcon
+                    className="h-4 w-4 shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>{paymentError}</span>
                 </div>
               )}
@@ -1422,7 +1464,10 @@ export function PaymentsPage() {
                   >
                     <SelectValue placeholder="Choose customer..." />
                   </SelectTrigger>
-                  <SelectContent searchable searchPlaceholder="Search customers...">
+                  <SelectContent
+                    searchable
+                    searchPlaceholder="Search customers..."
+                  >
                     {receivables.map((cust) => (
                       <SelectItem key={cust.customerId} value={cust.customerId}>
                         {cust.customerName} ({cust.customerCode}) | Outstanding:{" "}
@@ -1462,10 +1507,7 @@ export function PaymentsPage() {
                   >
                     Payment mode *
                   </Label>
-                  <Select
-                    value={paymentMode}
-                    onValueChange={setPaymentMode}
-                  >
+                  <Select value={paymentMode} onValueChange={setPaymentMode}>
                     <SelectTrigger
                       id="payment-mode-select"
                       className="font-medium"
@@ -1570,8 +1612,7 @@ export function PaymentsPage() {
                                 {inv.invoiceNumber}
                               </span>
                               <span className="text-[10px] text-muted-foreground">
-                                Outstanding:{" "}
-                                {formatINR(inv.outstandingAmount)}
+                                Outstanding: {formatINR(inv.outstandingAmount)}
                               </span>
                             </div>
                             <Input
@@ -1628,7 +1669,10 @@ export function PaymentsPage() {
                     aria-live="assertive"
                     className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive"
                   >
-                    <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <AlertTriangleIcon
+                      className="h-4 w-4 shrink-0"
+                      aria-hidden="true"
+                    />
                     <span>{paymentError}</span>
                   </div>
                 )}
@@ -1636,27 +1680,40 @@ export function PaymentsPage() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Customer:</span>
                     <span className="font-semibold text-foreground">
-                      {receivables.find((r) => r.customerId === pendingPaymentPayload.customerId)?.customerName ?? "Customer"}
+                      {receivables.find(
+                        (r) =>
+                          r.customerId === pendingPaymentPayload.customerId,
+                      )?.customerName ?? "Customer"}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Payment Amount:</span>
+                    <span className="text-muted-foreground">
+                      Payment Amount:
+                    </span>
                     <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                       {formatINR(pendingPaymentPayload.amount)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Payment Mode:</span>
-                    <span className="font-medium text-foreground">{pendingPaymentPayload.paymentMode}</span>
+                    <span className="font-medium text-foreground">
+                      {pendingPaymentPayload.paymentMode}
+                    </span>
                   </div>
                   {pendingPaymentPayload.referenceNumber && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Reference / Cheque #:</span>
-                      <span className="font-mono">{pendingPaymentPayload.referenceNumber}</span>
+                      <span className="text-muted-foreground">
+                        Reference / Cheque #:
+                      </span>
+                      <span className="font-mono">
+                        {pendingPaymentPayload.referenceNumber}
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Allocation Strategy:</span>
+                    <span className="text-muted-foreground">
+                      Allocation Strategy:
+                    </span>
                     <span className="font-medium text-foreground">
                       {pendingPaymentPayload.allocations !== undefined
                         ? pendingPaymentPayload.allocations.length > 0
@@ -1667,7 +1724,9 @@ export function PaymentsPage() {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Financial notice: This entry will immediately settle outstanding customer receivables and update cash/bank ledgers. This transaction cannot be deleted.
+                  Financial notice: This entry will immediately settle
+                  outstanding customer receivables and update cash/bank ledgers.
+                  This transaction cannot be deleted.
                 </p>
               </div>
               <DialogFooter className="border-t pt-4">
@@ -1690,7 +1749,9 @@ export function PaymentsPage() {
                     }
                   }}
                 >
-                  {paymentMutation.isPending ? "Posting..." : "Confirm & Post Payment"}
+                  {paymentMutation.isPending
+                    ? "Posting..."
+                    : "Confirm & Post Payment"}
                 </Button>
               </DialogFooter>
             </>
@@ -1724,7 +1785,10 @@ export function PaymentsPage() {
                   <SelectTrigger className="h-9 text-xs">
                     <SelectValue placeholder="Select invoice..." />
                   </SelectTrigger>
-                  <SelectContent searchable searchPlaceholder="Search invoices...">
+                  <SelectContent
+                    searchable
+                    searchPlaceholder="Search invoices..."
+                  >
                     {(postAllocInvoicesData?.invoices ?? [])
                       .filter((inv) => Number(inv.outstandingAmount) > 0)
                       .map((inv) => (
@@ -1790,7 +1854,8 @@ export function PaymentsPage() {
               <DialogTitle>Bounce / Reverse Payment</DialogTitle>
               <DialogDescription>
                 Reverse {bouncingPayment.paymentNumber} (
-                {formatINR(bouncingPayment.amount)}) and restore invoice balances.
+                {formatINR(bouncingPayment.amount)}) and restore invoice
+                balances.
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-3 py-2">

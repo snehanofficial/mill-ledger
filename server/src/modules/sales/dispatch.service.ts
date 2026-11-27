@@ -46,302 +46,305 @@ export class DispatchService {
    */
   async postDispatch(input: CreateDispatchInput, user?: UserContext) {
     try {
-      const result = await prisma.$transaction(async (tx) => {
-      // 1. Idempotency check
-      if (input.idempotencyKey) {
-        const existing = await tx.dispatch.findUnique({
-          where: { idempotencyKey: input.idempotencyKey },
-          include: {
-            lines: {
-              include: { inventoryItem: true },
-            },
-            salesOrder: true,
-            salesInvoice: true,
-          },
-        });
-        if (existing) {
-          return existing;
-        }
-      }
-
-      // 2. Fetch sales order
-      const order = await tx.salesOrder.findUnique({
-        where: { id: input.salesOrderId },
-        include: {
-          lines: {
-            include: {
-              productVariant: true,
-              reservations: {
-                where: { status: ReservationStatus.ACTIVE },
+      const result = await prisma.$transaction(
+        async (tx) => {
+          // 1. Idempotency check
+          if (input.idempotencyKey) {
+            const existing = await tx.dispatch.findUnique({
+              where: { idempotencyKey: input.idempotencyKey },
+              include: {
+                lines: {
+                  include: { inventoryItem: true },
+                },
+                salesOrder: true,
+                salesInvoice: true,
               },
-            },
-          },
-          invoices: {
-            where: { status: "POSTED" },
-          },
-        },
-      });
+            });
+            if (existing) {
+              return existing;
+            }
+          }
 
-      if (!order) {
-        throw new AppError(`Order ${input.salesOrderId} not found`, 404);
-      }
-
-      if (order.status !== "APPROVED") {
-        throw new AppError(
-          `Cannot dispatch order in status ${order.status}. Only APPROVED orders can be dispatched.`,
-          400,
-        );
-      }
-
-      const warehouseId = input.warehouseId
-        ? (
-            await requireActiveOrgWarehouse(
-              tx,
-              order.organizationId,
-              input.warehouseId,
-            )
-          ).id
-        : order.warehouseId;
-      const dispatchNumber = await sequenceService.getNextDispatchNumber(
-        tx,
-        order.organizationId,
-      );
-
-      const linkedInvoiceId = order.invoices[0]?.id;
-
-      // Create Dispatch header
-      const dispatch = await tx.dispatch.create({
-        data: {
-          organizationId: order.organizationId,
-          dispatchNumber,
-          salesOrderId: order.id,
-          salesInvoiceId: linkedInvoiceId,
-          warehouseId,
-          status: DispatchStatus.POSTED,
-          vehicleNumber: input.vehicleNumber,
-          driverName: input.driverName,
-          driverPhone: input.driverPhone,
-          notes: input.notes,
-          idempotencyKey: input.idempotencyKey,
-          dispatchedAt: new Date(),
-        },
-      });
-
-      let allLinesFulfilled = true;
-
-      for (const line of order.lines) {
-        const lineOverride = input.lines?.find(
-          (l) => l.salesOrderLineId === line.id,
-        );
-        const approvedQty = Number(line.approvedQuantity);
-        const alreadyDispatched = Number(line.dispatchedQuantity);
-        const remainingToDispatch = approvedQty - alreadyDispatched;
-
-        const qtyToDispatch =
-          lineOverride?.quantity !== undefined
-            ? lineOverride.quantity
-            : remainingToDispatch;
-
-        if (qtyToDispatch <= 0) {
-          continue;
-        }
-
-        if (qtyToDispatch > remainingToDispatch) {
-          throw new AppError(
-            `Cannot dispatch ${qtyToDispatch}. Remaining approved quantity is ${remainingToDispatch}`,
-            400,
-          );
-        }
-
-        const inventoryItemId =
-          line.inventoryItemId || line.productVariant.inventoryItemId;
-
-        if (!inventoryItemId) {
-          throw new AppError(
-            `No inventory item linked to product variant ${line.productVariant.sku}`,
-            400,
-          );
-        }
-
-        const invItems = await tx.$queryRaw<
-          Array<{
-            id: string;
-            name: string;
-            sku: string;
-            currentStock: unknown;
-            weightedAverageCost: unknown;
-          }>
-        >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${inventoryItemId} FOR UPDATE`;
-        const invItem = invItems[0];
-
-        if (!invItem) {
-          throw new AppError(
-            `Inventory item ${inventoryItemId} not found`,
-            404,
-          );
-        }
-
-        const currentStock = Number(invItem.currentStock);
-        if (currentStock < qtyToDispatch) {
-          throw new AppError(
-            `Insufficient physical on-hand stock for ${invItem.name}. Current: ${currentStock}, Dispatched: ${qtyToDispatch}`,
-            400,
-          );
-        }
-
-        // Release active stock reservation
-        const activeRes = line.reservations[0];
-        if (activeRes) {
-          const releasedSoFar = Number(activeRes.releasedQuantity);
-          const newReleased = releasedSoFar + qtyToDispatch;
-          const isFullyReleased =
-            newReleased >= Number(activeRes.reservedQuantity);
-
-          await tx.stockReservation.update({
-            where: { id: activeRes.id },
-            data: {
-              releasedQuantity: newReleased,
-              status: isFullyReleased
-                ? ReservationStatus.RELEASED
-                : ReservationStatus.ACTIVE,
+          // 2. Fetch sales order
+          const order = await tx.salesOrder.findUnique({
+            where: { id: input.salesOrderId },
+            include: {
+              lines: {
+                include: {
+                  productVariant: true,
+                  reservations: {
+                    where: { status: ReservationStatus.ACTIVE },
+                  },
+                },
+              },
+              invoices: {
+                where: { status: "POSTED" },
+              },
             },
           });
 
-          const releaseDelta = Math.min(
-            qtyToDispatch,
-            Math.max(0, Number(activeRes.reservedQuantity) - releasedSoFar),
-          );
-          if (releaseDelta > 0) {
-            await adjustWarehouseReserved(tx, {
-              organizationId: order.organizationId,
-              warehouseId: activeRes.warehouseId,
-              inventoryItemId,
-              delta: -releaseDelta,
-            });
+          if (!order) {
+            throw new AppError(`Order ${input.salesOrderId} not found`, 404);
           }
-        }
 
-        // Decrement physical on-hand stock
-        await tx.inventoryItem.update({
-          where: { id: inventoryItemId },
-          data: {
-            currentStock: {
-              decrement: qtyToDispatch,
+          if (order.status !== "APPROVED") {
+            throw new AppError(
+              `Cannot dispatch order in status ${order.status}. Only APPROVED orders can be dispatched.`,
+              400,
+            );
+          }
+
+          const warehouseId = input.warehouseId
+            ? (
+                await requireActiveOrgWarehouse(
+                  tx,
+                  order.organizationId,
+                  input.warehouseId,
+                )
+              ).id
+            : order.warehouseId;
+          const dispatchNumber = await sequenceService.getNextDispatchNumber(
+            tx,
+            order.organizationId,
+          );
+
+          const linkedInvoiceId = order.invoices[0]?.id;
+
+          // Create Dispatch header
+          const dispatch = await tx.dispatch.create({
+            data: {
+              organizationId: order.organizationId,
+              dispatchNumber,
+              salesOrderId: order.id,
+              salesInvoiceId: linkedInvoiceId,
+              warehouseId,
+              status: DispatchStatus.POSTED,
+              vehicleNumber: input.vehicleNumber,
+              driverName: input.driverName,
+              driverPhone: input.driverPhone,
+              notes: input.notes,
+              idempotencyKey: input.idempotencyKey,
+              dispatchedAt: new Date(),
             },
+          });
+
+          let allLinesFulfilled = true;
+
+          for (const line of order.lines) {
+            const lineOverride = input.lines?.find(
+              (l) => l.salesOrderLineId === line.id,
+            );
+            const approvedQty = Number(line.approvedQuantity);
+            const alreadyDispatched = Number(line.dispatchedQuantity);
+            const remainingToDispatch = approvedQty - alreadyDispatched;
+
+            const qtyToDispatch =
+              lineOverride?.quantity !== undefined
+                ? lineOverride.quantity
+                : remainingToDispatch;
+
+            if (qtyToDispatch <= 0) {
+              continue;
+            }
+
+            if (qtyToDispatch > remainingToDispatch) {
+              throw new AppError(
+                `Cannot dispatch ${qtyToDispatch}. Remaining approved quantity is ${remainingToDispatch}`,
+                400,
+              );
+            }
+
+            const inventoryItemId =
+              line.inventoryItemId || line.productVariant.inventoryItemId;
+
+            if (!inventoryItemId) {
+              throw new AppError(
+                `No inventory item linked to product variant ${line.productVariant.sku}`,
+                400,
+              );
+            }
+
+            const invItems = await tx.$queryRaw<
+              Array<{
+                id: string;
+                name: string;
+                sku: string;
+                currentStock: unknown;
+                weightedAverageCost: unknown;
+              }>
+            >`SELECT id, name, sku, "currentStock", "weightedAverageCost" FROM "inventory_item" WHERE id = ${inventoryItemId} FOR UPDATE`;
+            const invItem = invItems[0];
+
+            if (!invItem) {
+              throw new AppError(
+                `Inventory item ${inventoryItemId} not found`,
+                404,
+              );
+            }
+
+            const currentStock = Number(invItem.currentStock);
+            if (currentStock < qtyToDispatch) {
+              throw new AppError(
+                `Insufficient physical on-hand stock for ${invItem.name}. Current: ${currentStock}, Dispatched: ${qtyToDispatch}`,
+                400,
+              );
+            }
+
+            // Release active stock reservation
+            const activeRes = line.reservations[0];
+            if (activeRes) {
+              const releasedSoFar = Number(activeRes.releasedQuantity);
+              const newReleased = releasedSoFar + qtyToDispatch;
+              const isFullyReleased =
+                newReleased >= Number(activeRes.reservedQuantity);
+
+              await tx.stockReservation.update({
+                where: { id: activeRes.id },
+                data: {
+                  releasedQuantity: newReleased,
+                  status: isFullyReleased
+                    ? ReservationStatus.RELEASED
+                    : ReservationStatus.ACTIVE,
+                },
+              });
+
+              const releaseDelta = Math.min(
+                qtyToDispatch,
+                Math.max(0, Number(activeRes.reservedQuantity) - releasedSoFar),
+              );
+              if (releaseDelta > 0) {
+                await adjustWarehouseReserved(tx, {
+                  organizationId: order.organizationId,
+                  warehouseId: activeRes.warehouseId,
+                  inventoryItemId,
+                  delta: -releaseDelta,
+                });
+              }
+            }
+
+            // Decrement physical on-hand stock
+            await tx.inventoryItem.update({
+              where: { id: inventoryItemId },
+              data: {
+                currentStock: {
+                  decrement: qtyToDispatch,
+                },
+              },
+            });
+
+            await adjustWarehouseOnHand(tx, {
+              organizationId: order.organizationId,
+              warehouseId,
+              inventoryItemId,
+              delta: -qtyToDispatch,
+            });
+
+            // Append-only stock movement for physical dispatch deduction
+            const unitCost = Number(invItem.weightedAverageCost);
+            const totalCost = qtyToDispatch * unitCost;
+
+            await tx.stockMovement.create({
+              data: {
+                inventoryItemId,
+                warehouseId,
+                movementType: MovementType.DISPATCH,
+                quantity: -qtyToDispatch,
+                unitCost,
+                totalCost,
+                referenceDocumentType: "DISPATCH",
+                referenceDocumentId: dispatch.id,
+                notes: `Dispatch ${dispatchNumber} for order ${order.orderNumber}`,
+              },
+            });
+
+            // Create dispatch line
+            await tx.dispatchLine.create({
+              data: {
+                dispatchId: dispatch.id,
+                salesOrderLineId: line.id,
+                inventoryItemId,
+                quantity: qtyToDispatch,
+              },
+            });
+
+            // Update sales order line dispatched quantity
+            const newDispatched = alreadyDispatched + qtyToDispatch;
+            await tx.salesOrderLine.update({
+              where: { id: line.id },
+              data: {
+                dispatchedQuantity: newDispatched,
+              },
+            });
+
+            if (newDispatched < approvedQty) {
+              allLinesFulfilled = false;
+            }
+          }
+
+          // Update sales order fulfilment status
+          await tx.salesOrder.update({
+            where: { id: order.id },
+            data: {
+              fulfilmentStatus: allLinesFulfilled
+                ? FulfilmentStatus.FULFILLED
+                : FulfilmentStatus.PARTIALLY_FULFILLED,
+            },
+          });
+
+          return await tx.dispatch.findUnique({
+            where: { id: dispatch.id },
+            include: {
+              lines: {
+                include: { inventoryItem: true },
+              },
+              salesOrder: true,
+              salesInvoice: true,
+              warehouse: true,
+            },
+          });
+        },
+        { timeout: 30000, maxWait: 10000 },
+      );
+
+      if (result) {
+        await auditService.log({
+          organizationId: result.organizationId,
+          userId: user?.id,
+          userEmail: user?.email,
+          actorName: user?.name,
+          action: "DISPATCH",
+          eventType: "DISPATCH_POSTED",
+          entity: "Dispatch",
+          entityId: result.id,
+          summary: `Dispatch ${result.dispatchNumber} posted (${result.lines?.length ?? 0} line${(result.lines?.length ?? 0) === 1 ? "" : "s"})`,
+          relatedEntities: [
+            {
+              entityType: "SalesOrder",
+              entityId: result.salesOrderId,
+              label: result.salesOrder?.orderNumber,
+              role: "order",
+            },
+            ...(result.salesInvoiceId
+              ? [
+                  {
+                    entityType: "SalesInvoice",
+                    entityId: result.salesInvoiceId,
+                    label: result.salesInvoice?.invoiceNumber,
+                    role: "invoice",
+                  },
+                ]
+              : []),
+          ],
+          details: {
+            dispatchNumber: result.dispatchNumber,
+            salesOrderId: result.salesOrderId,
+            salesInvoiceId: result.salesInvoiceId,
+            lineCount: result.lines?.length ?? 0,
           },
         });
-
-        await adjustWarehouseOnHand(tx, {
-          organizationId: order.organizationId,
-          warehouseId,
-          inventoryItemId,
-          delta: -qtyToDispatch,
-        });
-
-        // Append-only stock movement for physical dispatch deduction
-        const unitCost = Number(invItem.weightedAverageCost);
-        const totalCost = qtyToDispatch * unitCost;
-
-        await tx.stockMovement.create({
-          data: {
-            inventoryItemId,
-            warehouseId,
-            movementType: MovementType.DISPATCH,
-            quantity: -qtyToDispatch,
-            unitCost,
-            totalCost,
-            referenceDocumentType: "DISPATCH",
-            referenceDocumentId: dispatch.id,
-            notes: `Dispatch ${dispatchNumber} for order ${order.orderNumber}`,
-          },
-        });
-
-        // Create dispatch line
-        await tx.dispatchLine.create({
-          data: {
-            dispatchId: dispatch.id,
-            salesOrderLineId: line.id,
-            inventoryItemId,
-            quantity: qtyToDispatch,
-          },
-        });
-
-        // Update sales order line dispatched quantity
-        const newDispatched = alreadyDispatched + qtyToDispatch;
-        await tx.salesOrderLine.update({
-          where: { id: line.id },
-          data: {
-            dispatchedQuantity: newDispatched,
-          },
-        });
-
-        if (newDispatched < approvedQty) {
-          allLinesFulfilled = false;
-        }
       }
 
-      // Update sales order fulfilment status
-      await tx.salesOrder.update({
-        where: { id: order.id },
-        data: {
-          fulfilmentStatus: allLinesFulfilled
-            ? FulfilmentStatus.FULFILLED
-            : FulfilmentStatus.PARTIALLY_FULFILLED,
-        },
-      });
-
-      return await tx.dispatch.findUnique({
-        where: { id: dispatch.id },
-        include: {
-          lines: {
-            include: { inventoryItem: true },
-          },
-          salesOrder: true,
-          salesInvoice: true,
-          warehouse: true,
-        },
-      });
-    }, { timeout: 30000, maxWait: 10000 });
-
-    if (result) {
-      await auditService.log({
-        organizationId: result.organizationId,
-        userId: user?.id,
-        userEmail: user?.email,
-        actorName: user?.name,
-        action: "DISPATCH",
-        eventType: "DISPATCH_POSTED",
-        entity: "Dispatch",
-        entityId: result.id,
-        summary: `Dispatch ${result.dispatchNumber} posted (${result.lines?.length ?? 0} line${(result.lines?.length ?? 0) === 1 ? "" : "s"})`,
-        relatedEntities: [
-          {
-            entityType: "SalesOrder",
-            entityId: result.salesOrderId,
-            label: result.salesOrder?.orderNumber,
-            role: "order",
-          },
-          ...(result.salesInvoiceId
-            ? [
-                {
-                  entityType: "SalesInvoice",
-                  entityId: result.salesInvoiceId,
-                  label: result.salesInvoice?.invoiceNumber,
-                  role: "invoice",
-                },
-              ]
-            : []),
-        ],
-        details: {
-          dispatchNumber: result.dispatchNumber,
-          salesOrderId: result.salesOrderId,
-          salesInvoiceId: result.salesInvoiceId,
-          lineCount: result.lines?.length ?? 0,
-        },
-      });
-    }
-
-    return result;
+      return result;
     } catch (err: unknown) {
       if (
         input.idempotencyKey &&
@@ -538,7 +541,10 @@ export class DispatchService {
         throw new AppError(`Dispatch ${input.dispatchId} not found`, 404);
       }
       if (dispatch.status !== DispatchStatus.POSTED) {
-        throw new AppError("Can only record returns against POSTED dispatches", 400);
+        throw new AppError(
+          "Can only record returns against POSTED dispatches",
+          400,
+        );
       }
 
       const movements = [];
@@ -575,7 +581,11 @@ export class DispatchService {
         }
 
         const locked = await tx.$queryRaw<
-          Array<{ id: string; currentStock: Prisma.Decimal; weightedAverageCost: Prisma.Decimal }>
+          Array<{
+            id: string;
+            currentStock: Prisma.Decimal;
+            weightedAverageCost: Prisma.Decimal;
+          }>
         >`
           SELECT "id", "currentStock", "weightedAverageCost"
           FROM "inventory_item"

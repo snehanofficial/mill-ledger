@@ -68,7 +68,8 @@ export function ForbiddenPage({ requiredRoles }: ForbiddenPageProps) {
         </h1>
 
         <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-          Your account role <span className="font-semibold text-foreground">({userRole})</span> is
+          Your account role{" "}
+          <span className="font-semibold text-foreground">({userRole})</span> is
           not authorized to access this operational view.
         </p>
 

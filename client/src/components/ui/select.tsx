@@ -59,8 +59,9 @@ function SelectValue(
   return <SelectPrimitive.Value data-slot="select-value" {...props} />;
 }
 
-interface SelectContentProps
-  extends React.ComponentProps<typeof SelectPrimitive.Content> {
+interface SelectContentProps extends React.ComponentProps<
+  typeof SelectPrimitive.Content
+> {
   searchable?: boolean;
   searchPlaceholder?: string;
   searchEmptyMessage?: string;
@@ -129,7 +130,10 @@ function SelectContent({
           props.onFocus?.(e);
           if (!searchable || isCoarsePointer()) return;
           if (e.target === inputRef.current) return;
-          if (!hasRedirectedInitialFocusRef.current || e.target === e.currentTarget) {
+          if (
+            !hasRedirectedInitialFocusRef.current ||
+            e.target === e.currentTarget
+          ) {
             hasRedirectedInitialFocusRef.current = true;
             inputRef.current?.focus({ preventScroll: true });
           }
@@ -223,8 +227,9 @@ function SelectContent({
   );
 }
 
-interface SelectItemProps
-  extends React.ComponentProps<typeof SelectPrimitive.Item> {
+interface SelectItemProps extends React.ComponentProps<
+  typeof SelectPrimitive.Item
+> {
   keywords?: string;
 }
 
@@ -243,7 +248,9 @@ function SelectItem({
     if (!normalizedQuery) return true;
     const labelText = extractText(children).toLowerCase();
     const extraText = keywords ? keywords.toLowerCase() : "";
-    return labelText.includes(normalizedQuery) || extraText.includes(normalizedQuery);
+    return (
+      labelText.includes(normalizedQuery) || extraText.includes(normalizedQuery)
+    );
   }, [searchable, searchQuery, children, keywords]);
 
   return (

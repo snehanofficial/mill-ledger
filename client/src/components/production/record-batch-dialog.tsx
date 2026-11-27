@@ -57,7 +57,9 @@ export function RecordProductionBatchDialog({
   const activeWarehouse =
     warehouses.find((w) => w.id === selectedWarehouseId) || warehouses[0];
 
-  const [selectedRecipeId, setSelectedRecipeId] = useState(initialRecipeId || "");
+  const [selectedRecipeId, setSelectedRecipeId] = useState(
+    initialRecipeId || "",
+  );
   const [batchCount, setBatchCount] = useState(1);
   const [actualGoodQty, setActualGoodQty] = useState(200);
   const [actualRejectedQty, setActualRejectedQty] = useState(0);
@@ -180,7 +182,8 @@ export function RecordProductionBatchDialog({
   const liveDirectMaterialCost = (activeRecipe?.items ?? []).reduce(
     (sum, item) => {
       const entry = getMaterialInput(item);
-      const wac = balanceById.get(item.inventoryItemId)?.weightedAverageCost ?? 0;
+      const wac =
+        balanceById.get(item.inventoryItemId)?.weightedAverageCost ?? 0;
       return sum + Number(entry.actualQty) * wac;
     },
     0,
@@ -191,7 +194,9 @@ export function RecordProductionBatchDialog({
       it.inventoryItem.sku === "PKG-CARTON" ||
       it.inventoryItem.name.toLowerCase().includes("carton"),
   );
-  const cartonsUsedLive = cartonLine ? getMaterialInput(cartonLine).actualQty : 0;
+  const cartonsUsedLive = cartonLine
+    ? getMaterialInput(cartonLine).actualQty
+    : 0;
   const cartonsHold = cartonsUsedLive * 20;
   const hasCartonShortage = Boolean(cartonLine) && cartonsHold < actualGoodQty;
 
@@ -230,14 +235,22 @@ export function RecordProductionBatchDialog({
                 setMaterialActuals({});
                 const nextRecipe = recipes.find((r) => r.id === val);
                 if (nextRecipe) {
-                  setActualGoodQty(Number(nextRecipe.expectedOutputQty) * batchCount);
+                  setActualGoodQty(
+                    Number(nextRecipe.expectedOutputQty) * batchCount,
+                  );
                 }
               }}
             >
-              <SelectTrigger id="production-recipe-select" className="font-medium">
+              <SelectTrigger
+                id="production-recipe-select"
+                className="font-medium"
+              >
                 <SelectValue placeholder="Select BOM recipe" />
               </SelectTrigger>
-              <SelectContent searchable searchPlaceholder="Search BOM recipes...">
+              <SelectContent
+                searchable
+                searchPlaceholder="Search BOM recipes..."
+              >
                 {recipes.map((r) => (
                   <SelectItem key={r.id} value={r.id}>
                     {r.name} · Target: {r.expectedOutputQty} pkts
@@ -361,7 +374,10 @@ export function RecordProductionBatchDialog({
                 const unitSym = item.uom?.symbol || bal?.baseUom?.symbol || "";
 
                 return (
-                  <div key={item.id} className="p-2.5 flex flex-col gap-1.5 text-xs">
+                  <div
+                    key={item.id}
+                    className="p-2.5 flex flex-col gap-1.5 text-xs"
+                  >
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium text-foreground">
                         {item.inventoryItem.name} ({unitSym})
@@ -437,10 +453,14 @@ export function RecordProductionBatchDialog({
                               : "text-muted-foreground"
                           }
                         >
-                          {varPct > 0 ? `+${varPct.toFixed(1)}%` : `${varPct.toFixed(1)}%`}
+                          {varPct > 0
+                            ? `+${varPct.toFixed(1)}%`
+                            : `${varPct.toFixed(1)}%`}
                         </span>
                         <div className="text-muted-foreground">
-                          {formatINR(entry.actualQty * (bal?.weightedAverageCost ?? 0))}
+                          {formatINR(
+                            entry.actualQty * (bal?.weightedAverageCost ?? 0),
+                          )}
                         </div>
                       </div>
                     </div>
@@ -456,7 +476,10 @@ export function RecordProductionBatchDialog({
               aria-live="polite"
               className="flex items-center gap-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20"
             >
-              <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <AlertTriangleIcon
+                className="h-4 w-4 shrink-0"
+                aria-hidden="true"
+              />
               <span>
                 Warning: {cartonsUsedLive} cartons represent {cartonsHold} of{" "}
                 {actualGoodQty} packets.
@@ -518,15 +541,23 @@ export function RecordProductionBatchDialog({
 
           <div className="rounded-lg bg-muted/50 p-3 text-xs flex flex-col gap-1">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">{t("Direct materials:")}</span>
-              <span className="font-semibold">{formatINR(liveDirectMaterialCost)}</span>
+              <span className="text-muted-foreground">
+                {t("Direct materials:")}
+              </span>
+              <span className="font-semibold">
+                {formatINR(liveDirectMaterialCost)}
+              </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">{t("Direct labour:")}</span>
+              <span className="text-muted-foreground">
+                {t("Direct labour:")}
+              </span>
               <span className="font-semibold">{formatINR(laborCost)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">{t("Gas and power:")}</span>
+              <span className="text-muted-foreground">
+                {t("Gas and power:")}
+              </span>
               <span className="font-semibold">{formatINR(utilityCost)}</span>
             </div>
             <div className="flex justify-between border-t pt-1 font-bold">
@@ -539,7 +570,10 @@ export function RecordProductionBatchDialog({
               <span>{t("Cost per good packet:")}</span>
               <span>
                 {actualGoodQty > 0
-                  ? formatINR((liveDirectMaterialCost + laborCost + utilityCost) / actualGoodQty)
+                  ? formatINR(
+                      (liveDirectMaterialCost + laborCost + utilityCost) /
+                        actualGoodQty,
+                    )
                   : "0.00"}
               </span>
             </div>
@@ -551,15 +585,25 @@ export function RecordProductionBatchDialog({
             role="alert"
             className="mt-4 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive"
           >
-            <AlertTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <AlertTriangleIcon
+              className="h-4 w-4 shrink-0"
+              aria-hidden="true"
+            />
             <span>
-              {extractErrorMessage(postMutation.error, "Failed to post production batch")}
+              {extractErrorMessage(
+                postMutation.error,
+                "Failed to post production batch",
+              )}
             </span>
           </div>
         )}
 
         <DialogFooter className="mt-6 flex-wrap gap-2 border-t pt-4">
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onOpenChange(false)}
+          >
             {t("Cancel")}
           </Button>
           <Button

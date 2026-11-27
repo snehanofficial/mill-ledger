@@ -76,23 +76,30 @@ export function DispatchDetailPage() {
 
   const [returnOpen, setReturnOpen] = useState(false);
   const [returnReason, setReturnReason] = useState("");
-  const [returnQuantities, setReturnQuantities] = useState<Record<string, string>>({});
+  const [returnQuantities, setReturnQuantities] = useState<
+    Record<string, string>
+  >({});
 
-  const { data: dispatch, isLoading, isError, error, refetch } =
-    useQuery<DispatchDetail>({
-      queryKey: ["dispatch", dispatchId],
-      queryFn: async () => {
-        const endpoint = `/sales/dispatches/${dispatchId}`;
-        const res = await apiClient.get(endpoint);
-        return assertEntityResponse<DispatchDetail & Record<string, unknown>>(
-          res.data,
-          "dispatch",
-          ["lines"],
-          endpoint,
-        );
-      },
-      enabled: Boolean(dispatchId),
-    });
+  const {
+    data: dispatch,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<DispatchDetail>({
+    queryKey: ["dispatch", dispatchId],
+    queryFn: async () => {
+      const endpoint = `/sales/dispatches/${dispatchId}`;
+      const res = await apiClient.get(endpoint);
+      return assertEntityResponse<DispatchDetail & Record<string, unknown>>(
+        res.data,
+        "dispatch",
+        ["lines"],
+        endpoint,
+      );
+    },
+    enabled: Boolean(dispatchId),
+  });
 
   useEffect(() => {
     if (!dispatch) return;
@@ -197,7 +204,8 @@ export function DispatchDetailPage() {
               to={`/invoices/${dispatch.salesInvoice.id}`}
               className="font-medium text-primary hover:underline"
             >
-              {dispatch.salesInvoice.invoiceNumber} ({formatINR(dispatch.salesInvoice.totalAmount)})
+              {dispatch.salesInvoice.invoiceNumber} (
+              {formatINR(dispatch.salesInvoice.totalAmount)})
             </Link>
           ) : (
             <span className="text-muted-foreground">Not linked</span>
@@ -209,7 +217,8 @@ export function DispatchDetailPage() {
             {dispatch.vehicleNumber || "No vehicle recorded"}
           </div>
           <div className="text-xs text-muted-foreground">
-            {dispatch.driverName || "—"} {dispatch.driverPhone ? `(${dispatch.driverPhone})` : ""}
+            {dispatch.driverName || "—"}{" "}
+            {dispatch.driverPhone ? `(${dispatch.driverPhone})` : ""}
           </div>
         </div>
       </div>
@@ -233,10 +242,9 @@ export function DispatchDetailPage() {
                   {line.inventoryItem?.name ?? "Finished goods"}
                 </TableCell>
                 <TableCell className="text-right font-medium tabular-nums">
-                  {formatQuantity(
-                    line.quantity,
-                    { unit: line.inventoryItem?.unitOfMeasure ?? "pkts" },
-                  )}
+                  {formatQuantity(line.quantity, {
+                    unit: line.inventoryItem?.unitOfMeasure ?? "pkts",
+                  })}
                 </TableCell>
               </TableRow>
             ))}
@@ -249,14 +257,19 @@ export function DispatchDetailPage() {
           <DialogHeader>
             <DialogTitle>Record sales return</DialogTitle>
             <DialogDescription>
-              Restores returned finished goods back into stock without deleting {dispatch.dispatchNumber}.
+              Restores returned finished goods back into stock without deleting{" "}
+              {dispatch.dispatchNumber}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
             {dispatch.lines.map((line) => (
-              <div key={line.id} className="flex items-center justify-between gap-3">
+              <div
+                key={line.id}
+                className="flex items-center justify-between gap-3"
+              >
                 <Label htmlFor={`ret-${line.id}`} className="text-sm">
-                  {line.inventoryItem?.name ?? line.inventoryItemId} (max {line.quantity})
+                  {line.inventoryItem?.name ?? line.inventoryItemId} (max{" "}
+                  {line.quantity})
                 </Label>
                 <Input
                   id={`ret-${line.id}`}

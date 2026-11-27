@@ -1,7 +1,7 @@
 # MillLedger — Complete User Journey & UX Blueprint
 
 **Document purpose:** Target experience specification for reorganising the existing MillLedger application around real user work, not a new feature backlog.
-  
+
 **Primary authority:** `Problem_Statement_Winter_Internship_Application_2026.md`, `docs/product-requirements.md`, `docs/business-rules.md`, `docs/authorization-matrix.md`, `docs/ui-ux-spec.md`, `docs/data-model.md`, `docs/benchmark.md`, current role navigation and route configuration.
 
 ---
@@ -72,15 +72,15 @@ These distinctions are business rules, not merely labels in the UI.
 
 Use a small number of role-filtered destinations. The same domain can have different actions for different roles, but do not create a different information architecture for every user.
 
-| Navigation group | What belongs here | What it helps the user complete |
-|---|---|---|
-| **Home / Work queue** | Role-specific landing page, pending tasks, exceptions, recent activity | Decide what needs attention now |
-| **Sales & fulfilment** | Orders, invoice queue, dispatch queue, customers | Convert accepted demand into fulfilled orders |
-| **Production** | Today's runs, new run, run history, recipe/BOM reference | Convert materials into saleable finished goods |
-| **Materials & stock** | Purchase receipts, stock summary, item ledger, suppliers | Receive and control material stock |
-| **Finance** | Payments, customer receivables, customer ledger | Record collections and understand money due |
-| **Reports & audit** | Sales, GST, purchase, stock, production, collections, ageing, audit, exports | Reconcile and inspect the business |
-| **Masters & settings** | Products/variants, BOM versions, customers, suppliers, price lists, tax/company setup, users/permissions | Maintain reference data and configuration |
+| Navigation group       | What belongs here                                                                                        | What it helps the user complete                |
+| ---------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| **Home / Work queue**  | Role-specific landing page, pending tasks, exceptions, recent activity                                   | Decide what needs attention now                |
+| **Sales & fulfilment** | Orders, invoice queue, dispatch queue, customers                                                         | Convert accepted demand into fulfilled orders  |
+| **Production**         | Today's runs, new run, run history, recipe/BOM reference                                                 | Convert materials into saleable finished goods |
+| **Materials & stock**  | Purchase receipts, stock summary, item ledger, suppliers                                                 | Receive and control material stock             |
+| **Finance**            | Payments, customer receivables, customer ledger                                                          | Record collections and understand money due    |
+| **Reports & audit**    | Sales, GST, purchase, stock, production, collections, ageing, audit, exports                             | Reconcile and inspect the business             |
+| **Masters & settings** | Products/variants, BOM versions, customers, suppliers, price lists, tax/company setup, users/permissions | Maintain reference data and configuration      |
 
 Do not show all seven groups to every role. Salesmen should see only their own sales workspace. Production should see production and stock tasks, not finance controls. Accountants should not see write actions. Owners should get visibility without becoming an implicit superuser.
 
@@ -150,6 +150,7 @@ Owner is a decision-maker, not automatically a superuser. Do not grant transacti
 ### 2.3 Navigation labels must describe business language
 
 Prefer:
+
 - “Today's runs” over “Production module”.
 - “Purchase receipts” or “Receive materials” over vague “Inventory actions”.
 - “Ready to dispatch” over a generic “Dispatch management”.
@@ -167,6 +168,7 @@ Every role should recognise the same basic structure even though their navigatio
 ### 3.1 Persistent shell
 
 **Desktop**
+
 - Left navigation with role-visible groups, clear active item, expandable group labels and accessible collapse behavior.
 - Stable header height; reserve space for sync/network, notifications and account controls so status changes do not shift the page.
 - Breadcrumbs for nested records. Breadcrumbs must lead to the parent list and preserve its search/filter context.
@@ -174,6 +176,7 @@ Every role should recognise the same basic structure even though their navigatio
 - Main content has a readable maximum width; dense tables may use the available width.
 
 **Mobile**
+
 - Salesman uses bottom navigation and a compact header.
 - Production uses touch-first navigation and large numeric controls.
 - Admin/owner/accountant pages reflow to a single column without ordinary horizontal page scrolling at 320 CSS px.
@@ -216,6 +219,7 @@ The primary action should change when a record changes state. Example: `Review o
 Tabs are for a small set of peer views of the same object or dataset. They are not a substitute for navigation.
 
 Recommended treatment:
+
 - Order lifecycle stages: use status filters/queue groupings, not separate nested tabs with hidden actions.
 - Device outbox: expose through the persistent sync indicator / outbox panel, not as a second business tab inside Orders.
 - Reports: give each major report a stable route; use a report index or secondary navigation. Tabs are acceptable only for truly peer views such as “By customer” and “By product” within Sales analysis.
@@ -240,6 +244,7 @@ All consequential business actions should follow one recognisable lifecycle:
 `Prepare → Review impact → Confirm / Post → View posted result`
 
 Before posting, show:
+
 - What is being posted and to which party/product/warehouse.
 - The quantities and monetary values involved.
 - The expected stock effect (on-hand, reserved, available-to-promise, or movement).
@@ -286,6 +291,7 @@ A salesman in the field needs to place a correct customer order quickly, even on
 **Default workspace:** the current `/orders` destination may remain the salesman landing route, but its visible identity should be `My work` or `My orders`, not an all-company order-management screen.
 
 Top of page:
+
 - Greeting and connectivity/sync state.
 - One dominant `New order` action.
 - Small useful counts: drafts, awaiting factory review, approved, dispatched.
@@ -333,6 +339,7 @@ Do not show factory-wide KPIs, all-customer balances or other salesmen's orders.
 `My orders` lists only the logged-in salesman's records. Search by order number/customer, filter by order status and date, and open a detail page.
 
 Order detail should show:
+
 - Order number, submitted timestamp, customer and delivery location.
 - Order lines, original quoted quantities/prices and totals.
 - Current order status and fulfilment status separately.
@@ -345,15 +352,15 @@ The salesman cannot approve, post invoices, dispatch, edit posted orders or allo
 
 ### Salesman page inventory
 
-| Page | Main content | Primary action |
-|---|---|---|
-| My work / My orders | Counts, drafts, order activity, sync issues | New order |
-| New order | Customer, product selection, quantities, price and cart | Review order |
-| Review order | Final customer and commercial summary | Submit order |
-| Order detail | Lifecycle, decision, invoice/dispatch references, timeline | State-dependent; usually none while waiting |
-| My customers | Assigned customers and quick contact context | Create order for this customer |
-| My sales summary | Own customer-wise/product-wise sales, if retained | Open filtered order list |
-| Device outbox | Queued, syncing, conflict and failed local records | Retry / resolve |
+| Page                | Main content                                               | Primary action                              |
+| ------------------- | ---------------------------------------------------------- | ------------------------------------------- |
+| My work / My orders | Counts, drafts, order activity, sync issues                | New order                                   |
+| New order           | Customer, product selection, quantities, price and cart    | Review order                                |
+| Review order        | Final customer and commercial summary                      | Submit order                                |
+| Order detail        | Lifecycle, decision, invoice/dispatch references, timeline | State-dependent; usually none while waiting |
+| My customers        | Assigned customers and quick contact context               | Create order for this customer              |
+| My sales summary    | Own customer-wise/product-wise sales, if retained          | Open filtered order list                    |
+| Device outbox       | Queued, syncing, conflict and failed local records         | Retry / resolve                             |
 
 ---
 
@@ -463,6 +470,7 @@ This is a receipt event, not a direct stock edit. A correction must be a linked 
 ### Journey A-06: resolve operational exceptions
 
 Give exceptions a dedicated queue rather than scattering warnings across pages. Each exception should state:
+
 - What happened.
 - Which transaction/item/customer is affected.
 - The business impact.
@@ -474,21 +482,21 @@ Examples: insufficient finished goods, production yield variance, consumption va
 
 ### Admin page inventory
 
-| Page | Purpose | Primary action |
-|---|---|---|
-| Work queue | Prioritised operational work and exceptions | Continue highest-priority task |
-| Order inbox | Review submitted orders | Review order |
-| Order review/detail | Verify commercial data and ATP | Approve / Reject |
-| Invoice queue/list | Find approved orders and posted invoices | Create invoice / Open invoice |
-| Invoice preparation | Validate tax and snapshot values | Post invoice |
-| Invoice detail | PDF, sharing, amount due, order and dispatch links | Prepare dispatch |
-| Dispatch queue | Orders awaiting physical fulfilment | Prepare dispatch |
-| Dispatch preparation | Quantities, driver/vehicle and stock effect | Post dispatch |
-| Dispatch detail | Posted dispatch and movements | Record return, if applicable |
-| Purchase receipts | Supplier material receipts | Receive materials |
-| Receipt detail | Receipt lines, valuation and stock movements | View ledger / controlled correction |
-| Payments | Collection register and receipt workflow | Record payment |
-| Customer balances | Customer-wise outstanding and ageing | Open customer ledger |
+| Page                 | Purpose                                            | Primary action                      |
+| -------------------- | -------------------------------------------------- | ----------------------------------- |
+| Work queue           | Prioritised operational work and exceptions        | Continue highest-priority task      |
+| Order inbox          | Review submitted orders                            | Review order                        |
+| Order review/detail  | Verify commercial data and ATP                     | Approve / Reject                    |
+| Invoice queue/list   | Find approved orders and posted invoices           | Create invoice / Open invoice       |
+| Invoice preparation  | Validate tax and snapshot values                   | Post invoice                        |
+| Invoice detail       | PDF, sharing, amount due, order and dispatch links | Prepare dispatch                    |
+| Dispatch queue       | Orders awaiting physical fulfilment                | Prepare dispatch                    |
+| Dispatch preparation | Quantities, driver/vehicle and stock effect        | Post dispatch                       |
+| Dispatch detail      | Posted dispatch and movements                      | Record return, if applicable        |
+| Purchase receipts    | Supplier material receipts                         | Receive materials                   |
+| Receipt detail       | Receipt lines, valuation and stock movements       | View ledger / controlled correction |
+| Payments             | Collection register and receipt workflow           | Record payment                      |
+| Customer balances    | Customer-wise outstanding and ageing               | Open customer ledger                |
 
 ---
 
@@ -505,6 +513,7 @@ The floor interface must prioritise quantities, units, legibility and safe posti
 **Default workspace:** `/production/today`.
 
 Top of page:
+
 - Production date/shift or current work period, if shifts are configured.
 - Dominant `Start production run` action.
 - Planned/queued runs and recently posted runs.
@@ -540,6 +549,7 @@ The post operation must be atomic. If any material or finished-stock write fails
 ### Journey P-02: review a posted production run
 
 The run detail page should show:
+
 - Run number, product, batch count, recipe version and production date.
 - Planned and actual quantities, with units.
 - Issued, consumed, returned, damaged, rejected and good-output quantities as separate rows.
@@ -558,6 +568,7 @@ If the production supervisor has the specific purchase-receipt permission, expos
 ### Journey P-04: check stock and the material ledger
 
 The stock view for production should default to raw materials and packaging. It should answer:
+
 - What quantity is physically on hand?
 - What is reserved/committed, if applicable?
 - What can be used for production?
@@ -568,14 +579,14 @@ Every balance opens the item ledger. A stock number without a movement history i
 
 ### Production page inventory
 
-| Page | Purpose | Primary action |
-|---|---|---|
-| Today's runs | Planned, ready, in-progress and recently posted work | Start production run |
-| New run | BOM-based actual production capture | Review production impact |
-| Production review | Variance, stock and costing preview | Post production run |
-| Run detail/history | Full production record and audit trail | Open stock ledger / controlled correction |
-| Materials & stock | Raw and packaging availability | View item ledger |
-| Recipe/BOM reference | Read current recipe/version and units | View recipe; changes only for authorised master-data users |
+| Page                 | Purpose                                              | Primary action                                             |
+| -------------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
+| Today's runs         | Planned, ready, in-progress and recently posted work | Start production run                                       |
+| New run              | BOM-based actual production capture                  | Review production impact                                   |
+| Production review    | Variance, stock and costing preview                  | Post production run                                        |
+| Run detail/history   | Full production record and audit trail               | Open stock ledger / controlled correction                  |
+| Materials & stock    | Raw and packaging availability                       | View item ledger                                           |
+| Recipe/BOM reference | Read current recipe/version and units                | View recipe; changes only for authorised master-data users |
 
 ---
 
@@ -590,6 +601,7 @@ The accountant or auditor needs to reconcile a selected period using posted sour
 **Recommended default destination:** `/reports/sales` or a dedicated `/reports` index, rather than `/invoices` as the only entry point. The invoice register remains one report/source view.
 
 At the beginning of every report show:
+
 - Report title and short definition.
 - Period and selected filters.
 - `Generated at` and `Data as of` timestamps.
@@ -612,19 +624,19 @@ At the beginning of every report show:
 
 ### Report catalogue and expected content
 
-| Report | Must answer | Drill-down target |
-|---|---|---|
-| Sales register | Invoice/date/customer/SKU/qty/taxable value/tax/total | Posted invoice |
-| Customer-wise sales | Sales and invoice value by customer | Customer and invoices |
-| Product-wise sales | Quantity and value by SKU/pack size | Product and invoice lines |
-| GST outward summary | Taxable value and applicable tax components by period/rate/place of supply | Posted invoice and tax lines |
-| Purchase register | Supplier, receipt, item, quantity, rate and value | Posted purchase receipt |
-| Stock summary/valuation | Opening, receipts, issues, adjustments, closing and valuation | Item ledger |
-| Stock ledger | Every movement with signed quantity, unit, source and running balance | Source document |
-| Production & costing | BOM version, planned/actual consumption, output, damage, variance, direct costs and cost/good packet | Production run |
-| Collections | Payment date, customer, mode, amount and allocations | Payment receipt and invoices |
-| Receivables & ageing | Customer/invoice balances by ageing bucket | Customer ledger/invoice |
-| Audit trail | Actor, timestamp, action, entity, reason and correlation reference | Source record where permitted |
+| Report                  | Must answer                                                                                          | Drill-down target             |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------- |
+| Sales register          | Invoice/date/customer/SKU/qty/taxable value/tax/total                                                | Posted invoice                |
+| Customer-wise sales     | Sales and invoice value by customer                                                                  | Customer and invoices         |
+| Product-wise sales      | Quantity and value by SKU/pack size                                                                  | Product and invoice lines     |
+| GST outward summary     | Taxable value and applicable tax components by period/rate/place of supply                           | Posted invoice and tax lines  |
+| Purchase register       | Supplier, receipt, item, quantity, rate and value                                                    | Posted purchase receipt       |
+| Stock summary/valuation | Opening, receipts, issues, adjustments, closing and valuation                                        | Item ledger                   |
+| Stock ledger            | Every movement with signed quantity, unit, source and running balance                                | Source document               |
+| Production & costing    | BOM version, planned/actual consumption, output, damage, variance, direct costs and cost/good packet | Production run                |
+| Collections             | Payment date, customer, mode, amount and allocations                                                 | Payment receipt and invoices  |
+| Receivables & ageing    | Customer/invoice balances by ageing bucket                                                           | Customer ledger/invoice       |
+| Audit trail             | Actor, timestamp, action, entity, reason and correlation reference                                   | Source record where permitted |
 
 ### Journey F-02: investigate a discrepancy
 
@@ -658,6 +670,7 @@ The owner needs a reliable, current view of business health and exceptions, with
 **Default workspace:** `/dashboard` for OWNER.
 
 The page should tell the owner:
+
 - What has happened today / in the selected period?
 - What is at risk or needs a decision?
 - Is the factory producing close to plan?
@@ -702,17 +715,17 @@ Every metric must be labelled correctly. Do not imply that a partial operational
 
 The user experience must connect roles without forcing one role to perform another role's work.
 
-| Stage | Responsible role | What they do | System hand-off / next owner |
-|---|---|---|---|
-| Customer demand | Salesman | Creates and submits order | Admin order inbox |
-| Commercial review | Admin | Checks customer, price, quantity, tax context and ATP; approves/rejects | Approved order and stock reservation, or rejection back to salesman |
-| Billing | Admin | Posts GST invoice from approved order | Posted invoice and receivable; dispatch queue |
-| Physical fulfilment | Admin | Posts actual dispatch quantity | Finished stock deducted; fulfilment status updated |
-| Collection | Admin | Records payment and allocation | Customer/invoice outstanding recalculated; accountant/owner visibility updated |
-| Material receipt | Admin or specifically authorised Production user | Posts supplier receipt | Raw/packaging stock and valuation updated; production availability refreshed |
-| Production | Production Supervisor | Posts BOM-based actual run | Raw/packaging movements, finished stock receipt, cost and variance updated |
-| Reconciliation | Accountant/Auditor | Reviews period reports and source records | Export-ready evidence; no transaction mutation |
-| Oversight | Owner | Reviews business outcomes and exceptions | Escalation to role authorised to act |
+| Stage               | Responsible role                                 | What they do                                                            | System hand-off / next owner                                                   |
+| ------------------- | ------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Customer demand     | Salesman                                         | Creates and submits order                                               | Admin order inbox                                                              |
+| Commercial review   | Admin                                            | Checks customer, price, quantity, tax context and ATP; approves/rejects | Approved order and stock reservation, or rejection back to salesman            |
+| Billing             | Admin                                            | Posts GST invoice from approved order                                   | Posted invoice and receivable; dispatch queue                                  |
+| Physical fulfilment | Admin                                            | Posts actual dispatch quantity                                          | Finished stock deducted; fulfilment status updated                             |
+| Collection          | Admin                                            | Records payment and allocation                                          | Customer/invoice outstanding recalculated; accountant/owner visibility updated |
+| Material receipt    | Admin or specifically authorised Production user | Posts supplier receipt                                                  | Raw/packaging stock and valuation updated; production availability refreshed   |
+| Production          | Production Supervisor                            | Posts BOM-based actual run                                              | Raw/packaging movements, finished stock receipt, cost and variance updated     |
+| Reconciliation      | Accountant/Auditor                               | Reviews period reports and source records                               | Export-ready evidence; no transaction mutation                                 |
+| Oversight           | Owner                                            | Reviews business outcomes and exceptions                                | Escalation to role authorised to act                                           |
 
 ### The system's responsibility at each hand-off
 
@@ -728,28 +741,28 @@ The user experience must connect roles without forcing one role to perform anoth
 
 The following is the target page hierarchy. Keep existing routes where they are sound; add detail routes where the current UX relies on dialogs for deep work.
 
-| Target destination | Existing route to retain/use | Suggested additions or adjustments |
-|---|---|---|
-| Role work queue | `/dashboard` for ADMIN/OWNER | Make dashboard role-aware only where permissions allow; keep owner and admin views distinct |
-| Salesman home / My orders | `/orders` | Treat this as the seller's workspace; remove factory-wide presentation |
-| New order | `/orders/new` | Dedicated page; never rely on a modal embedded in the list page |
-| Order detail/review | `/orders` list currently | Add `/orders/:orderId` for status, review and source history |
-| Invoice register | `/invoices` | Separate creation/review from immutable posted detail |
-| Invoice detail | `/invoices` currently | Add `/invoices/:invoiceId` |
-| Dispatch queue | `/dispatch` | Add `/dispatch/:dispatchId` and a dedicated dispatch preparation route if needed |
-| Production today | `/production/today` | Keep as production home |
-| New production run | `/production/new` | Dedicated wizard/workspace and distinct review-before-post step |
-| Production history | `/production/history` | Add `/production/runs/:runId` detail |
-| Purchases/receipts | `/purchases` | Add `/purchases/:receiptId`; move create receipt to dedicated page/drawer based on complexity (prefer page) |
-| Stock overview | `/stock` | Item row opens `/stock/:itemId/ledger` or an equivalent deep-linked ledger view |
-| Customers | `/customers` | Add `/customers/:customerId` with profile, assigned-salesman scope and permitted ledger summary |
-| Products | `/products` | Add product/variant detail containing pack size, current price and BOM reference/version where authorised |
-| Suppliers | `/suppliers` | Add `/suppliers/:supplierId` with receipt history; no finance write access for production role |
-| Payments | `/payments` | Keep payment register and record-payment flow distinct from receivables analysis |
-| Receivables | Current payment/report sections | Give customer balances/ageing a stable route such as `/receivables` or `/reports/receivables` |
-| Reports | `/reports/*` | Keep each major report deep-linkable; add a report index if needed |
-| Export history | `/exports` | Demote under Reports & audit; report exports should start from the report being viewed |
-| Settings | `/settings` | Group setup by company/tax, users/roles, price rules and operational policies; permission-gate each section |
+| Target destination        | Existing route to retain/use    | Suggested additions or adjustments                                                                          |
+| ------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Role work queue           | `/dashboard` for ADMIN/OWNER    | Make dashboard role-aware only where permissions allow; keep owner and admin views distinct                 |
+| Salesman home / My orders | `/orders`                       | Treat this as the seller's workspace; remove factory-wide presentation                                      |
+| New order                 | `/orders/new`                   | Dedicated page; never rely on a modal embedded in the list page                                             |
+| Order detail/review       | `/orders` list currently        | Add `/orders/:orderId` for status, review and source history                                                |
+| Invoice register          | `/invoices`                     | Separate creation/review from immutable posted detail                                                       |
+| Invoice detail            | `/invoices` currently           | Add `/invoices/:invoiceId`                                                                                  |
+| Dispatch queue            | `/dispatch`                     | Add `/dispatch/:dispatchId` and a dedicated dispatch preparation route if needed                            |
+| Production today          | `/production/today`             | Keep as production home                                                                                     |
+| New production run        | `/production/new`               | Dedicated wizard/workspace and distinct review-before-post step                                             |
+| Production history        | `/production/history`           | Add `/production/runs/:runId` detail                                                                        |
+| Purchases/receipts        | `/purchases`                    | Add `/purchases/:receiptId`; move create receipt to dedicated page/drawer based on complexity (prefer page) |
+| Stock overview            | `/stock`                        | Item row opens `/stock/:itemId/ledger` or an equivalent deep-linked ledger view                             |
+| Customers                 | `/customers`                    | Add `/customers/:customerId` with profile, assigned-salesman scope and permitted ledger summary             |
+| Products                  | `/products`                     | Add product/variant detail containing pack size, current price and BOM reference/version where authorised   |
+| Suppliers                 | `/suppliers`                    | Add `/suppliers/:supplierId` with receipt history; no finance write access for production role              |
+| Payments                  | `/payments`                     | Keep payment register and record-payment flow distinct from receivables analysis                            |
+| Receivables               | Current payment/report sections | Give customer balances/ageing a stable route such as `/receivables` or `/reports/receivables`               |
+| Reports                   | `/reports/*`                    | Keep each major report deep-linkable; add a report index if needed                                          |
+| Export history            | `/exports`                      | Demote under Reports & audit; report exports should start from the report being viewed                      |
+| Settings                  | `/settings`                     | Group setup by company/tax, users/roles, price rules and operational policies; permission-gate each section |
 
 The route additions above are experience recommendations, not a claim that those routes already exist. Update route guards, breadcrumbs, deep links and tests together when implementing them.
 
@@ -759,29 +772,29 @@ The route additions above are experience recommendations, not a claim that those
 
 A user should not have to guess which button represents the main action.
 
-| Page / state | Primary action | Secondary actions |
-|---|---|---|
-| Salesman home | New order | Continue draft; view an order |
-| New order | Review order | Save draft; cancel |
-| Order review (salesman) | Submit order | Save draft; go back to edit |
-| Order inbox | Review submitted order | Filter; refresh |
-| Submitted order detail (admin) | Approve order | Reject; adjust quantity/price with reason |
-| Approved order detail | Create invoice | View reservation; view customer |
-| Invoice preparation | Post invoice | Return to order; correct missing master data |
-| Posted invoice detail | Prepare dispatch | Download PDF; share; view order/payment history |
-| Dispatch preparation | Post dispatch | Save draft; revise quantities |
-| Posted dispatch detail | View fulfilment / record return | Download/print dispatch record |
-| Purchase receipts | Receive materials | Search; view receipt |
-| Purchase receipt review | Post receipt | Save draft; cancel |
-| Today's production runs | Start production run | Open run; view material exception |
-| Production run preparation | Review production impact | Save draft; return to edit |
-| Production run review | Post production run | Return to edit |
-| Posted production run | View stock impact | Open ledger; controlled correction |
-| Stock overview | View item ledger | Filter; export |
-| Payment register | Record payment | View receipt; allocate unallocated balance |
-| Customer balances | Open customer ledger | Filter by ageing |
-| Report page | Export current report | Change date/entity filters; drill down |
-| Owner overview | Open highest-priority exception | Change period; open source report |
+| Page / state                   | Primary action                  | Secondary actions                               |
+| ------------------------------ | ------------------------------- | ----------------------------------------------- |
+| Salesman home                  | New order                       | Continue draft; view an order                   |
+| New order                      | Review order                    | Save draft; cancel                              |
+| Order review (salesman)        | Submit order                    | Save draft; go back to edit                     |
+| Order inbox                    | Review submitted order          | Filter; refresh                                 |
+| Submitted order detail (admin) | Approve order                   | Reject; adjust quantity/price with reason       |
+| Approved order detail          | Create invoice                  | View reservation; view customer                 |
+| Invoice preparation            | Post invoice                    | Return to order; correct missing master data    |
+| Posted invoice detail          | Prepare dispatch                | Download PDF; share; view order/payment history |
+| Dispatch preparation           | Post dispatch                   | Save draft; revise quantities                   |
+| Posted dispatch detail         | View fulfilment / record return | Download/print dispatch record                  |
+| Purchase receipts              | Receive materials               | Search; view receipt                            |
+| Purchase receipt review        | Post receipt                    | Save draft; cancel                              |
+| Today's production runs        | Start production run            | Open run; view material exception               |
+| Production run preparation     | Review production impact        | Save draft; return to edit                      |
+| Production run review          | Post production run             | Return to edit                                  |
+| Posted production run          | View stock impact               | Open ledger; controlled correction              |
+| Stock overview                 | View item ledger                | Filter; export                                  |
+| Payment register               | Record payment                  | View receipt; allocate unallocated balance      |
+| Customer balances              | Open customer ledger            | Filter by ageing                                |
+| Report page                    | Export current report           | Change date/entity filters; drill down          |
+| Owner overview                 | Open highest-priority exception | Change period; open source report               |
 
 There must be only one visually dominant primary action per page state. If two actions are equally important, the page should present the user with a decision first, not two competing filled buttons.
 
@@ -792,6 +805,7 @@ There must be only one visually dominant primary action per page state. If two a
 Every important record needs a consistent detail workspace.
 
 ### Header
+
 - Record type and human-readable reference number.
 - Current status and any separate fulfilment/financial state.
 - Party/product/date context.
@@ -799,6 +813,7 @@ Every important record needs a consistent detail workspace.
 - Breadcrumb back to the list, preserving filters.
 
 ### Main content
+
 1. **Summary:** what this record represents and its current result.
 2. **Lines / contents:** items, quantities, UOM, rate, tax/cost where relevant.
 3. **Business impact:** stock, receivables, costing or variance effects.
@@ -807,6 +822,7 @@ Every important record needs a consistent detail workspace.
 6. **Documents:** PDF/attachments/export where relevant.
 
 ### Action area
+
 - Only show actions the current user is authorised to perform in this state.
 - Hide impossible actions; explain unavailable actions when the user needs to understand why.
 - Posted records have no ordinary edit/delete action.
@@ -819,6 +835,7 @@ Every important record needs a consistent detail workspace.
 ### 9.1 Stock visibility
 
 Every stock surface must distinguish:
+
 - **On hand:** physical ledger balance.
 - **Reserved:** stock committed to active approved orders.
 - **Available to promise:** `on hand - active reservations`.
@@ -828,6 +845,7 @@ Show units and data-as-of time. A shortage must show exact requested quantity, A
 ### 9.2 Production variance
 
 Use explicit planned and actual columns, not only red/green badges. For every material:
+
 - Planned quantity and unit.
 - Actual consumed quantity and unit.
 - Variance quantity.
@@ -835,6 +853,7 @@ Use explicit planned and actual columns, not only red/green badges. For every ma
 - Tolerance and whether it is exceeded.
 
 For yield:
+
 - Expected good output.
 - Actual good output.
 - Yield variance quantity and percentage.
@@ -857,6 +876,7 @@ Show invoice total, credit notes, payments allocated, remaining outstanding and 
 ### 9.6 Returns and reversals
 
 Do not place a generic `Undo` action on posted records. Use named correction flows:
+
 - invoice correction → credit note;
 - dispatch correction/return → linked return or reversal record;
 - purchase correction → linked return, reversal or adjustment;
@@ -872,6 +892,7 @@ The original transaction remains visible.
 These are mandatory quality conditions for the target experience, not optional polish.
 
 ### Accessibility
+
 - WCAG 2.2 AA target.
 - Semantic landmarks and correct heading order.
 - Visible labels for all controls; descriptions and errors programmatically associated.
@@ -884,6 +905,7 @@ These are mandatory quality conditions for the target experience, not optional p
 - Respect reduced motion and user text scaling.
 
 ### Mobile and floor use
+
 - Salesman order entry designed for a phone and one-handed use where practical.
 - Production data entry designed for a tablet or shared floor device, with large numeric fields and clear units.
 - No tiny icon-only critical actions.
@@ -891,6 +913,7 @@ These are mandatory quality conditions for the target experience, not optional p
 - Keep the most frequent task near the top of the page.
 
 ### Low-bandwidth and resilience
+
 - Minimise unnecessary network calls and large page payloads.
 - Keep route/page geometry stable while data loads.
 - Show cached vs current data clearly.
@@ -920,22 +943,22 @@ The benchmark must be runnable from the UI in the same order as the business sto
 
 ### Required benchmark figures to remain visible and traceable
 
-| Result | Expected |
-|---|---:|
-| Flour closing balance | 120 kg |
-| Oil closing balance | 19.5 L |
-| Spice mix closing balance | 3.8 kg |
-| Pouches closing balance | 306 pieces |
-| Cartons closing balance | 21 pieces |
-| Finished stock after production | 238 packets |
-| Finished stock after dispatch | 88 packets |
-| Yield variance | −6%, flagged |
-| Oil variance | +5%, flagged |
-| Retailer A invoice total | ₹7,875 |
-| Retailer A outstanding after payment | ₹3,875 |
-| Distributor B shortage | 32 packets |
-| Production run total cost | ₹5,855 |
-| Cost per good packet | approximately ₹31.14 |
+| Result                               |             Expected |
+| ------------------------------------ | -------------------: |
+| Flour closing balance                |               120 kg |
+| Oil closing balance                  |               19.5 L |
+| Spice mix closing balance            |               3.8 kg |
+| Pouches closing balance              |           306 pieces |
+| Cartons closing balance              |            21 pieces |
+| Finished stock after production      |          238 packets |
+| Finished stock after dispatch        |           88 packets |
+| Yield variance                       |         −6%, flagged |
+| Oil variance                         |         +5%, flagged |
+| Retailer A invoice total             |               ₹7,875 |
+| Retailer A outstanding after payment |               ₹3,875 |
+| Distributor B shortage               |           32 packets |
+| Production run total cost            |               ₹5,855 |
+| Cost per good packet                 | approximately ₹31.14 |
 
 The UI may present a simplified journey, but it must not simplify away these business events or their ledger effects.
 
@@ -988,6 +1011,7 @@ Do not start by restyling every card or rewriting every page independently. Fix 
 ### Phase 5 — Evidence-based verification
 
 Run the complete benchmark through each relevant role. Also test:
+
 - salesman offline order replay and duplicate prevention;
 - stale ATP and concurrent approval attempts;
 - quantity/price override with mandatory reason;
@@ -1006,6 +1030,7 @@ Do not declare a page complete merely because it renders or its API returns data
 ## 13. Acceptance criteria for the complete experience
 
 ### Navigation and discoverability
+
 - [ ] Each role lands in a workspace that reflects its primary responsibility.
 - [ ] No role sees irrelevant transactional navigation.
 - [ ] Every important workflow has an obvious starting point.
@@ -1014,6 +1039,7 @@ Do not declare a page complete merely because it renders or its API returns data
 - [ ] Cross-module hand-offs are linked from the source record.
 
 ### Sales
+
 - [ ] A repeat salesman order takes under 60 seconds in normal online conditions.
 - [ ] Customer, price list, UOM and tax context are clear before submission.
 - [ ] Draft, queued, server-accepted and approved states cannot be confused.
@@ -1021,6 +1047,7 @@ Do not declare a page complete merely because it renders or its API returns data
 - [ ] Salesman access remains restricted to assigned customers and own orders.
 
 ### Admin
+
 - [ ] Admin can work from one prioritised queue.
 - [ ] Approval shows ATP and exact shortage.
 - [ ] Any quantity/price override retains the original quote and requires a reason.
@@ -1028,6 +1055,7 @@ Do not declare a page complete merely because it renders or its API returns data
 - [ ] Payment entry visibly allocates to invoice(s) and shows any unallocated remainder.
 
 ### Production
+
 - [ ] New run captures a fixed BOM/recipe version.
 - [ ] Planned/actual, issued/consumed/returned/damaged, good/rejected output are distinct.
 - [ ] Variance formulas, denominator, units and tolerance are explicit.
@@ -1035,18 +1063,21 @@ Do not declare a page complete merely because it renders or its API returns data
 - [ ] Posted run detail links to each resulting stock movement.
 
 ### Accountant / Auditor
+
 - [ ] Read-only permissions apply in UI and API.
 - [ ] All required reports have period/filter/freshness metadata.
 - [ ] Every material total can be drilled to source records.
 - [ ] Exported output uses the same role scope and filters as the on-screen report.
 
 ### Owner
+
 - [ ] Key metrics are labelled by period and data freshness.
 - [ ] Exceptions have source links and a responsible next actor.
 - [ ] Estimated/partial costing is not represented as statutory net profit.
 - [ ] Owner permissions do not bypass the permission model.
 
 ### Shared interaction quality
+
 - [ ] Long forms use pages/workspaces, not nested modals.
 - [ ] There is one dominant primary action per page state.
 - [ ] Important status and errors are not communicated by colour/toast alone.

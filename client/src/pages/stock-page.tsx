@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
@@ -303,7 +308,11 @@ export function StockPage() {
       postedAt: string;
     }>;
   }>({
-    queryKey: ["inventory-item-ledger", selectedLedgerItem?.id, warehouseFilter],
+    queryKey: [
+      "inventory-item-ledger",
+      selectedLedgerItem?.id,
+      warehouseFilter,
+    ],
     enabled: selectedLedgerItem !== null,
     queryFn: async () => {
       const qs =
@@ -357,7 +366,9 @@ export function StockPage() {
       if (searchQuery.trim()) {
         params.set("q", searchQuery.trim());
       }
-      const res = await apiClient.get(`/inventory/balances?${params.toString()}`);
+      const res = await apiClient.get(
+        `/inventory/balances?${params.toString()}`,
+      );
       return assertCollectionResponse(
         res.data,
         "balances",
@@ -536,9 +547,7 @@ export function StockPage() {
             {t("Valued Stock Total")}
           </span>
           <span className="text-2xl font-bold text-foreground">
-            {isLoading
-              ? "—"
-              : formatINR(totalInventoryValue)}
+            {isLoading ? "—" : formatINR(totalInventoryValue)}
           </span>
         </div>
       </div>
@@ -632,7 +641,10 @@ export function StockPage() {
                 <SelectItem value="OUT_OF_STOCK">Out of stock</SelectItem>
               </SelectContent>
             </Select>
-            <Badge variant="outline" className="gap-1.5 text-xs text-emerald-600">
+            <Badge
+              variant="outline"
+              className="gap-1.5 text-xs text-emerald-600"
+            >
               <CheckCircleIcon className="size-3.5" aria-hidden="true" />
               <span>Movements Reconciled</span>
             </Badge>
@@ -646,9 +658,14 @@ export function StockPage() {
         ) : isError ? (
           <div className="p-4">
             <ErrorState
-              title={t("Failed to load inventory balances", "Failed to load inventory balances")}
+              title={t(
+                "Failed to load inventory balances",
+                "Failed to load inventory balances",
+              )}
               description={
-                error instanceof Error ? error.message : "Ensure the server is running and database seed is completed."
+                error instanceof Error
+                  ? error.message
+                  : "Ensure the server is running and database seed is completed."
               }
               error={error}
               onRetry={() => refetch()}
@@ -790,7 +807,10 @@ export function StockPage() {
 
                     <div className="flex items-center justify-between text-xs pt-1 gap-2">
                       <span className="text-muted-foreground">
-                        Value: <strong className="text-foreground">{formatINR(totalValue)}</strong>
+                        Value:{" "}
+                        <strong className="text-foreground">
+                          {formatINR(totalValue)}
+                        </strong>
                       </span>
                       <div className="flex items-center gap-1.5">
                         {canManageInventory && (
@@ -803,7 +823,10 @@ export function StockPage() {
                             }}
                             className="min-h-[44px] px-3 text-xs gap-1.5"
                           >
-                            <PencilIcon className="size-3.5" aria-hidden="true" />
+                            <PencilIcon
+                              className="size-3.5"
+                              aria-hidden="true"
+                            />
                             Edit
                           </Button>
                         )}
@@ -813,7 +836,10 @@ export function StockPage() {
                           onClick={() => setSelectedLedgerItem(item)}
                           className="min-h-[44px] px-3 text-xs gap-1.5"
                         >
-                          <BookOpenIcon className="size-3.5" aria-hidden="true" />
+                          <BookOpenIcon
+                            className="size-3.5"
+                            aria-hidden="true"
+                          />
                           View Ledger
                         </Button>
                       </div>
@@ -856,7 +882,10 @@ export function StockPage() {
                         accessorKey: "sku",
                         enableHiding: false,
                         header: ({ column }) => (
-                          <DataTableColumnHeader column={column} title={t("SKU")} />
+                          <DataTableColumnHeader
+                            column={column}
+                            title={t("SKU")}
+                          />
                         ),
                         cell: ({ row }) => (
                           <Link
@@ -866,12 +895,17 @@ export function StockPage() {
                             {row.original.sku}
                           </Link>
                         ),
-                        meta: { label: "SKU" } satisfies DataTableColumnMeta<InventoryBalance>,
+                        meta: {
+                          label: "SKU",
+                        } satisfies DataTableColumnMeta<InventoryBalance>,
                       },
                       {
                         accessorKey: "name",
                         header: ({ column }) => (
-                          <DataTableColumnHeader column={column} title={t("Item Name")} />
+                          <DataTableColumnHeader
+                            column={column}
+                            title={t("Item Name")}
+                          />
                         ),
                         cell: ({ row }) => (
                           <Link
@@ -881,22 +915,31 @@ export function StockPage() {
                             {row.original.name}
                           </Link>
                         ),
-                        meta: { label: "Item Name" } satisfies DataTableColumnMeta<InventoryBalance>,
+                        meta: {
+                          label: "Item Name",
+                        } satisfies DataTableColumnMeta<InventoryBalance>,
                       },
                       {
                         accessorKey: "category",
                         header: ({ column }) => (
-                          <DataTableColumnHeader column={column} title={t("Category")} />
+                          <DataTableColumnHeader
+                            column={column}
+                            title={t("Category")}
+                          />
                         ),
                         cell: ({ row }) => {
                           const categoryConfig = CATEGORY_LABELS[
-                            row.original.category as keyof typeof CATEGORY_LABELS
+                            row.original
+                              .category as keyof typeof CATEGORY_LABELS
                           ] || {
                             label: row.original.category,
                             variant: "secondary" as const,
                           };
                           return (
-                            <Badge variant={categoryConfig.variant} className="text-xs whitespace-nowrap">
+                            <Badge
+                              variant={categoryConfig.variant}
+                              className="text-xs whitespace-nowrap"
+                            >
                               {categoryConfig.label}
                             </Badge>
                           );
@@ -904,15 +947,20 @@ export function StockPage() {
                         meta: {
                           label: "Category",
                           exportValue: (r) =>
-                            CATEGORY_LABELS[r.category as keyof typeof CATEGORY_LABELS]?.label ||
-                            r.category,
+                            CATEGORY_LABELS[
+                              r.category as keyof typeof CATEGORY_LABELS
+                            ]?.label || r.category,
                         } satisfies DataTableColumnMeta<InventoryBalance>,
                       },
                       {
                         id: "onHand",
                         accessorFn: (row) => Number(row.onHand) || 0,
                         header: ({ column }) => (
-                          <DataTableColumnHeader column={column} title={t("On Hand")} align="right" />
+                          <DataTableColumnHeader
+                            column={column}
+                            title={t("On Hand")}
+                            align="right"
+                          />
                         ),
                         cell: ({ row }) => (
                           <span className="font-medium tabular-nums whitespace-nowrap">
@@ -932,7 +980,11 @@ export function StockPage() {
                         id: "reserved",
                         accessorFn: (row) => Number(row.reserved) || 0,
                         header: ({ column }) => (
-                          <DataTableColumnHeader column={column} title={t("Reserved")} align="right" />
+                          <DataTableColumnHeader
+                            column={column}
+                            title={t("Reserved")}
+                            align="right"
+                          />
                         ),
                         cell: ({ row }) => (
                           <span className="font-mono text-xs text-amber-700 dark:text-amber-400 tabular-nums whitespace-nowrap">
@@ -949,7 +1001,11 @@ export function StockPage() {
                         id: "available",
                         accessorFn: (row) => Number(row.available) || 0,
                         header: ({ column }) => (
-                          <DataTableColumnHeader column={column} title={t("Available (ATP)")} align="right" />
+                          <DataTableColumnHeader
+                            column={column}
+                            title={t("Available (ATP)")}
+                            align="right"
+                          />
                         ),
                         cell: ({ row }) => (
                           <span className="font-mono text-xs font-semibold text-emerald-700 dark:text-emerald-400 tabular-nums whitespace-nowrap">
@@ -964,15 +1020,22 @@ export function StockPage() {
                       },
                       {
                         id: "weightedAverageCost",
-                        accessorFn: (row) => Number(row.weightedAverageCost) || 0,
+                        accessorFn: (row) =>
+                          Number(row.weightedAverageCost) || 0,
                         header: ({ column }) => (
-                          <DataTableColumnHeader column={column} title={t("Avg Unit Cost")} align="right" />
+                          <DataTableColumnHeader
+                            column={column}
+                            title={t("Avg Unit Cost")}
+                            align="right"
+                          />
                         ),
                         cell: ({ row }) => (
                           <span className="text-muted-foreground tabular-nums whitespace-nowrap">
                             {formatINR(row.original.weightedAverageCost, {
                               maximumFractionDigits:
-                                row.original.weightedAverageCost % 1 === 0 ? 2 : 3,
+                                row.original.weightedAverageCost % 1 === 0
+                                  ? 2
+                                  : 3,
                             })}
                           </span>
                         ),
@@ -984,13 +1047,21 @@ export function StockPage() {
                       },
                       {
                         id: "totalValue",
-                        accessorFn: (row) => Number(row.onHand) * Number(row.weightedAverageCost),
+                        accessorFn: (row) =>
+                          Number(row.onHand) * Number(row.weightedAverageCost),
                         header: ({ column }) => (
-                          <DataTableColumnHeader column={column} title={t("Total Value")} align="right" />
+                          <DataTableColumnHeader
+                            column={column}
+                            title={t("Total Value")}
+                            align="right"
+                          />
                         ),
                         cell: ({ row }) => (
                           <span className="font-medium text-foreground tabular-nums whitespace-nowrap">
-                            {formatINR(row.original.onHand * row.original.weightedAverageCost)}
+                            {formatINR(
+                              row.original.onHand *
+                                row.original.weightedAverageCost,
+                            )}
                           </span>
                         ),
                         meta: {
@@ -1001,9 +1072,14 @@ export function StockPage() {
                       },
                       {
                         id: "reconciled",
-                        accessorFn: (row) => (row.reconciled ? "Balanced" : "Variance"),
+                        accessorFn: (row) =>
+                          row.reconciled ? "Balanced" : "Variance",
                         header: ({ column }) => (
-                          <DataTableColumnHeader column={column} title={t("Ledger Status")} align="center" />
+                          <DataTableColumnHeader
+                            column={column}
+                            title={t("Ledger Status")}
+                            align="center"
+                          />
                         ),
                         cell: ({ row }) =>
                           row.original.reconciled ? (
@@ -1011,7 +1087,10 @@ export function StockPage() {
                               className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 whitespace-nowrap"
                               title="Ledger sum equals on-hand balance"
                             >
-                              <CheckCircleIcon className="size-3.5" aria-hidden="true" />
+                              <CheckCircleIcon
+                                className="size-3.5"
+                                aria-hidden="true"
+                              />
                               Balanced
                             </span>
                           ) : (
@@ -1019,7 +1098,10 @@ export function StockPage() {
                               className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 whitespace-nowrap"
                               title="Ledger variance detected"
                             >
-                              <AlertTriangleIcon className="size-3.5" aria-hidden="true" />
+                              <AlertTriangleIcon
+                                className="size-3.5"
+                                aria-hidden="true"
+                              />
                               Variance
                             </span>
                           ),
@@ -1048,7 +1130,10 @@ export function StockPage() {
                                   }}
                                   className="h-7 px-2.5 text-xs gap-1"
                                 >
-                                  <PencilIcon className="size-3" aria-hidden="true" />
+                                  <PencilIcon
+                                    className="size-3"
+                                    aria-hidden="true"
+                                  />
                                   Edit
                                 </Button>
                               )}
@@ -1058,7 +1143,10 @@ export function StockPage() {
                                 onClick={() => setSelectedLedgerItem(item)}
                                 className="h-7 px-2.5 text-xs gap-1"
                               >
-                                <BookOpenIcon className="size-3" aria-hidden="true" />
+                                <BookOpenIcon
+                                  className="size-3"
+                                  aria-hidden="true"
+                                />
                                 Ledger
                               </Button>
                             </div>
@@ -1100,10 +1188,12 @@ export function StockPage() {
           <DialogContent className="max-w-3xl">
             <DialogHeader>
               <DialogTitle>
-                Stock Ledger: {selectedLedgerItem.name} ({selectedLedgerItem.sku})
+                Stock Ledger: {selectedLedgerItem.name} (
+                {selectedLedgerItem.sku})
               </DialogTitle>
               <DialogDescription>
-                On Hand: {formatQuantity(selectedLedgerItem.onHand)} {selectedLedgerItem.baseUom.symbol} | Reserved:{" "}
+                On Hand: {formatQuantity(selectedLedgerItem.onHand)}{" "}
+                {selectedLedgerItem.baseUom.symbol} | Reserved:{" "}
                 {formatQuantity(selectedLedgerItem.reserved)} | Available (ATP):{" "}
                 {formatQuantity(selectedLedgerItem.available)}
               </DialogDescription>
@@ -1145,7 +1235,10 @@ export function StockPage() {
                           })}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="font-mono text-2xs">
+                          <Badge
+                            variant="outline"
+                            className="font-mono text-2xs"
+                          >
                             {m.movementType}
                           </Badge>
                         </TableCell>
@@ -1202,50 +1295,108 @@ export function StockPage() {
           <div className="flex flex-col gap-3 py-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
-                <Label htmlFor="item-sku" className="text-xs">SKU</Label>
-                <Input id="item-sku" value={itemSku} onChange={(e) => setItemSku(e.target.value)} placeholder="RM-SUGAR" />
+                <Label htmlFor="item-sku" className="text-xs">
+                  SKU
+                </Label>
+                <Input
+                  id="item-sku"
+                  value={itemSku}
+                  onChange={(e) => setItemSku(e.target.value)}
+                  placeholder="RM-SUGAR"
+                />
               </div>
               <div className="flex flex-col gap-1">
                 <Label className="text-xs">Category</Label>
-                <Select value={itemCategory} onValueChange={(v) => setItemCategory(v as "RAW_MATERIAL" | "PACKAGING" | "FINISHED_GOODS")}>
-                  <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <Select
+                  value={itemCategory}
+                  onValueChange={(v) =>
+                    setItemCategory(
+                      v as "RAW_MATERIAL" | "PACKAGING" | "FINISHED_GOODS",
+                    )
+                  }
+                >
+                  <SelectTrigger className="h-9 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="RAW_MATERIAL">Raw Material</SelectItem>
                     <SelectItem value="PACKAGING">Packaging</SelectItem>
-                    <SelectItem value="FINISHED_GOODS">Finished Goods</SelectItem>
+                    <SelectItem value="FINISHED_GOODS">
+                      Finished Goods
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="item-name" className="text-xs">Item Name</Label>
-              <Input id="item-name" value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="Refined Sugar" />
+              <Label htmlFor="item-name" className="text-xs">
+                Item Name
+              </Label>
+              <Input
+                id="item-name"
+                value={itemName}
+                onChange={(e) => setItemName(e.target.value)}
+                placeholder="Refined Sugar"
+              />
             </div>
             <div className="flex flex-col gap-1">
               <Label className="text-xs">Base UOM</Label>
               <Select value={itemUomId} onValueChange={setItemUomId}>
-                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {(uomsData?.uoms ?? []).map((u) => (
-                    <SelectItem key={u.id} value={u.id}>{u.name} ({u.symbol})</SelectItem>
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.name} ({u.symbol})
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
-                <Label htmlFor="item-open-qty" className="text-xs">Opening Stock</Label>
-                <Input id="item-open-qty" type="number" min={0} value={itemOpeningStock} onChange={(e) => setItemOpeningStock(Number(e.target.value))} />
+                <Label htmlFor="item-open-qty" className="text-xs">
+                  Opening Stock
+                </Label>
+                <Input
+                  id="item-open-qty"
+                  type="number"
+                  min={0}
+                  value={itemOpeningStock}
+                  onChange={(e) => setItemOpeningStock(Number(e.target.value))}
+                />
               </div>
               <div className="flex flex-col gap-1">
-                <Label htmlFor="item-open-cost" className="text-xs">Opening Unit Cost (₹)</Label>
-                <Input id="item-open-cost" type="number" min={0} step="0.01" value={itemOpeningCost} onChange={(e) => setItemOpeningCost(Number(e.target.value))} />
+                <Label htmlFor="item-open-cost" className="text-xs">
+                  Opening Unit Cost (₹)
+                </Label>
+                <Input
+                  id="item-open-cost"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={itemOpeningCost}
+                  onChange={(e) => setItemOpeningCost(Number(e.target.value))}
+                />
               </div>
             </div>
           </div>
           <DialogFooter className="border-t pt-4">
-            <Button variant="outline" size="sm" onClick={() => setShowAddItemModal(false)}>Cancel</Button>
-            <Button size="sm" disabled={addItemMutation.isPending || !itemSku.trim() || !itemName.trim()} onClick={() => addItemMutation.mutate()}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAddItemModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={
+                addItemMutation.isPending || !itemSku.trim() || !itemName.trim()
+              }
+              onClick={() => addItemMutation.mutate()}
+            >
               Create Item
             </Button>
           </DialogFooter>
@@ -1265,8 +1416,13 @@ export function StockPage() {
             <div className="flex flex-col gap-1">
               <Label className="text-xs">Inventory Item</Label>
               <Select value={adjItemId} onValueChange={setAdjItemId}>
-                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent searchable searchPlaceholder="Search inventory items...">
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent
+                  searchable
+                  searchPlaceholder="Search inventory items..."
+                >
                   {balances.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
                       {b.name} ({b.sku}) · On Hand: {b.onHand}
@@ -1276,17 +1432,46 @@ export function StockPage() {
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="adj-qty" className="text-xs">Adjustment Quantity (+ or -)</Label>
-              <Input id="adj-qty" type="number" step="1" value={adjQty} onChange={(e) => setAdjQty(Number(e.target.value))} />
+              <Label htmlFor="adj-qty" className="text-xs">
+                Adjustment Quantity (+ or -)
+              </Label>
+              <Input
+                id="adj-qty"
+                type="number"
+                step="1"
+                value={adjQty}
+                onChange={(e) => setAdjQty(Number(e.target.value))}
+              />
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="adj-reason" className="text-xs">Reason</Label>
-              <Input id="adj-reason" value={adjReason} onChange={(e) => setAdjReason(e.target.value)} placeholder="Physical count reconciliation" />
+              <Label htmlFor="adj-reason" className="text-xs">
+                Reason
+              </Label>
+              <Input
+                id="adj-reason"
+                value={adjReason}
+                onChange={(e) => setAdjReason(e.target.value)}
+                placeholder="Physical count reconciliation"
+              />
             </div>
           </div>
           <DialogFooter className="border-t pt-4">
-            <Button variant="outline" size="sm" onClick={() => setShowAdjustModal(false)}>Cancel</Button>
-            <Button size="sm" disabled={adjustStockMutation.isPending || adjQty === 0 || !adjReason.trim()} onClick={() => adjustStockMutation.mutate()}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAdjustModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={
+                adjustStockMutation.isPending ||
+                adjQty === 0 ||
+                !adjReason.trim()
+              }
+              onClick={() => adjustStockMutation.mutate()}
+            >
               Post Adjustment
             </Button>
           </DialogFooter>
@@ -1309,7 +1494,9 @@ export function StockPage() {
           </DialogHeader>
           <div className="flex flex-col gap-3 py-2">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="edit-item-name" className="text-xs">Item Name</Label>
+              <Label htmlFor="edit-item-name" className="text-xs">
+                Item Name
+              </Label>
               <Input
                 id="edit-item-name"
                 value={editItemName}
@@ -1318,7 +1505,11 @@ export function StockPage() {
             </div>
           </div>
           <DialogFooter className="border-t pt-4">
-            <Button variant="outline" size="sm" onClick={() => setEditingItem(null)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditingItem(null)}
+            >
               Cancel
             </Button>
             <Button
@@ -1338,7 +1529,8 @@ export function StockPage() {
           <DialogHeader>
             <DialogTitle>Units of Measure & Conversions</DialogTitle>
             <DialogDescription>
-              Configure base units and dimension-safe conversion factors (e.g. 1 kg = 1000 g, 1 carton = 20 packets).
+              Configure base units and dimension-safe conversion factors (e.g. 1
+              kg = 1000 g, 1 carton = 20 packets).
             </DialogDescription>
           </DialogHeader>
 
@@ -1349,7 +1541,9 @@ export function StockPage() {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
-                  <Label htmlFor="uom-code" className="text-xs">Code</Label>
+                  <Label htmlFor="uom-code" className="text-xs">
+                    Code
+                  </Label>
                   <Input
                     id="uom-code"
                     placeholder="G"
@@ -1358,7 +1552,9 @@ export function StockPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label htmlFor="uom-symbol" className="text-xs">Symbol</Label>
+                  <Label htmlFor="uom-symbol" className="text-xs">
+                    Symbol
+                  </Label>
                   <Input
                     id="uom-symbol"
                     placeholder="g"
@@ -1368,7 +1564,9 @@ export function StockPage() {
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <Label htmlFor="uom-name" className="text-xs">Unit Name</Label>
+                <Label htmlFor="uom-name" className="text-xs">
+                  Unit Name
+                </Label>
                 <Input
                   id="uom-name"
                   placeholder="Gram"
@@ -1378,14 +1576,23 @@ export function StockPage() {
               </div>
               <Button
                 size="sm"
-                disabled={createUomMutation.isPending || !uomCode.trim() || !uomName.trim() || !uomSymbol.trim()}
+                disabled={
+                  createUomMutation.isPending ||
+                  !uomCode.trim() ||
+                  !uomName.trim() ||
+                  !uomSymbol.trim()
+                }
                 onClick={() => createUomMutation.mutate()}
               >
                 Add UOM
               </Button>
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {(uomsData?.uoms ?? []).map((u) => (
-                  <Badge key={u.id} variant="outline" className="font-mono text-2xs">
+                  <Badge
+                    key={u.id}
+                    variant="outline"
+                    className="font-mono text-2xs"
+                  >
                     {u.code} ({u.symbol})
                   </Badge>
                 ))}
@@ -1398,7 +1605,9 @@ export function StockPage() {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
-                  <Label htmlFor="conv-from" className="text-xs">From UOM</Label>
+                  <Label htmlFor="conv-from" className="text-xs">
+                    From UOM
+                  </Label>
                   <Select value={convFromId} onValueChange={setConvFromId}>
                     <SelectTrigger id="conv-from" className="h-9 text-xs">
                       <SelectValue />
@@ -1413,7 +1622,9 @@ export function StockPage() {
                   </Select>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Label htmlFor="conv-to" className="text-xs">To UOM</Label>
+                  <Label htmlFor="conv-to" className="text-xs">
+                    To UOM
+                  </Label>
                   <Select value={convToId} onValueChange={setConvToId}>
                     <SelectTrigger id="conv-to" className="h-9 text-xs">
                       <SelectValue />
@@ -1429,7 +1640,9 @@ export function StockPage() {
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <Label htmlFor="conv-factor" className="text-xs">Factor (1 From = N To)</Label>
+                <Label htmlFor="conv-factor" className="text-xs">
+                  Factor (1 From = N To)
+                </Label>
                 <Input
                   id="conv-factor"
                   type="number"
@@ -1441,18 +1654,30 @@ export function StockPage() {
               </div>
               <Button
                 size="sm"
-                disabled={createConversionMutation.isPending || !convFromId || !convToId || convFactor <= 0}
+                disabled={
+                  createConversionMutation.isPending ||
+                  !convFromId ||
+                  !convToId ||
+                  convFactor <= 0
+                }
                 onClick={() => createConversionMutation.mutate()}
               >
                 Add Conversion
               </Button>
               <div className="max-h-28 overflow-y-auto space-y-1 pt-1 text-xs">
                 {(uomsData?.conversions ?? []).length === 0 ? (
-                  <p className="text-muted-foreground">No conversions configured.</p>
+                  <p className="text-muted-foreground">
+                    No conversions configured.
+                  </p>
                 ) : (
                   (uomsData?.conversions ?? []).map((c) => (
-                    <div key={c.id} className="flex items-center justify-between rounded bg-muted/40 px-2 py-1 font-mono text-2xs">
-                      <span>1 {c.fromUom.code} = {Number(c.factor)} {c.toUom.code}</span>
+                    <div
+                      key={c.id}
+                      className="flex items-center justify-between rounded bg-muted/40 px-2 py-1 font-mono text-2xs"
+                    >
+                      <span>
+                        1 {c.fromUom.code} = {Number(c.factor)} {c.toUom.code}
+                      </span>
                     </div>
                   ))
                 )}
@@ -1461,7 +1686,11 @@ export function StockPage() {
           </div>
 
           <DialogFooter className="border-t pt-4">
-            <Button variant="outline" size="sm" onClick={() => setShowUomsModal(false)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowUomsModal(false)}
+            >
               Close
             </Button>
           </DialogFooter>
@@ -1474,13 +1703,16 @@ export function StockPage() {
           <DialogHeader>
             <DialogTitle>Inter-Warehouse Stock Transfer</DialogTitle>
             <DialogDescription>
-              Move available inventory between active warehouses with traceable ledger movements.
+              Move available inventory between active warehouses with traceable
+              ledger movements.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="trf-from" className="text-xs font-semibold">From Warehouse</Label>
+                <Label htmlFor="trf-from" className="text-xs font-semibold">
+                  From Warehouse
+                </Label>
                 <Select value={trfFromWhId} onValueChange={setTrfFromWhId}>
                   <SelectTrigger id="trf-from">
                     <SelectValue placeholder="Source" />
@@ -1495,7 +1727,9 @@ export function StockPage() {
                 </Select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="trf-to" className="text-xs font-semibold">To Warehouse</Label>
+                <Label htmlFor="trf-to" className="text-xs font-semibold">
+                  To Warehouse
+                </Label>
                 <Select value={trfToWhId} onValueChange={setTrfToWhId}>
                   <SelectTrigger id="trf-to">
                     <SelectValue placeholder="Destination" />
@@ -1511,7 +1745,9 @@ export function StockPage() {
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="trf-item" className="text-xs font-semibold">Inventory Item</Label>
+              <Label htmlFor="trf-item" className="text-xs font-semibold">
+                Inventory Item
+              </Label>
               <Select value={trfItemId} onValueChange={setTrfItemId}>
                 <SelectTrigger id="trf-item">
                   <SelectValue placeholder="Select item" />
@@ -1526,7 +1762,9 @@ export function StockPage() {
               </Select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="trf-qty" className="text-xs font-semibold">Quantity</Label>
+              <Label htmlFor="trf-qty" className="text-xs font-semibold">
+                Quantity
+              </Label>
               <Input
                 id="trf-qty"
                 type="number"
@@ -1537,7 +1775,9 @@ export function StockPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="trf-notes" className="text-xs font-semibold">Notes (Optional)</Label>
+              <Label htmlFor="trf-notes" className="text-xs font-semibold">
+                Notes (Optional)
+              </Label>
               <Input
                 id="trf-notes"
                 value={trfNotes}
@@ -1547,7 +1787,11 @@ export function StockPage() {
             </div>
           </div>
           <DialogFooter className="border-t pt-4">
-            <Button variant="outline" size="sm" onClick={() => setShowTransferModal(false)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowTransferModal(false)}
+            >
               Cancel
             </Button>
             <Button

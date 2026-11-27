@@ -1,9 +1,11 @@
 # Branch Protection & CI Quality Gates Runbook
 
 ## 1. Overview
+
 The `main` branch of `mill-ledger` is protected by automated branch protection rules and GitHub Actions continuous integration quality gates in accordance with NIST SP 800-218 and CIS Software Supply Chain Security guidelines.
 
 ## 2. Active Branch Protection Policy (on `main`)
+
 - **Required Status Checks**:
   - `Lint, Typecheck, Test & Benchmark` must pass before any commit can merge into `main`.
   - `strict: true` (branch must be up-to-date with `main` before merging).
@@ -14,7 +16,9 @@ The `main` branch of `mill-ledger` is protected by automated branch protection r
   - `enforce_admins: false` (Sole administrator maintains emergency hotfix capabilities if automated runner infrastructure fails).
 
 ## 3. GitHub Actions Continuous Integration Gates
+
 Every push and pull request against `main` and `remediation/**` triggers `.github/workflows/ci.yml`:
+
 1. **Linter**: `pnpm lint` (0 errors on oxlint across all workspaces).
 2. **Type Safety**: `pnpm typecheck` (strict TypeScript compilation with 0 errors).
 3. **Database Migrations**: `prisma migrate deploy` against live PostgreSQL service.
@@ -29,11 +33,13 @@ Every push and pull request against `main` and `remediation/**` triggers `.githu
 ## 4. Operational API Commands
 
 ### Verify Current Protection
+
 ```bash
 gh api repos/snehanofficial/mill-ledger/branches/main/protection
 ```
 
 ### Re-apply Branch Protection Policy
+
 ```bash
 gh api -X PUT repos/snehanofficial/mill-ledger/branches/main/protection \
   -H "Accept: application/vnd.github+json" \

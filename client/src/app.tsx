@@ -512,7 +512,9 @@ const router = createBrowserRouter([
           {
             path: ":invoiceId",
             element: (
-              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/invoices/:invoiceId"]}>
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/invoices/:invoiceId"]}
+              >
                 <InvoiceDetailPage />
               </RoleGuard>
             ),
@@ -547,7 +549,9 @@ const router = createBrowserRouter([
           {
             path: ":dispatchId",
             element: (
-              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/dispatch/:dispatchId"]}>
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/dispatch/:dispatchId"]}
+              >
                 <DispatchDetailPage />
               </RoleGuard>
             ),
@@ -582,7 +586,9 @@ const router = createBrowserRouter([
           {
             path: ":paymentId",
             element: (
-              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/payments/:paymentId"]}>
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/payments/:paymentId"]}
+              >
                 <PaymentDetailPage />
               </RoleGuard>
             ),
@@ -608,7 +614,9 @@ const router = createBrowserRouter([
           {
             path: ":customerId",
             element: (
-              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/receivables/:customerId"]}>
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/receivables/:customerId"]}
+              >
                 <CustomerLedgerPage />
               </RoleGuard>
             ),
@@ -634,7 +642,9 @@ const router = createBrowserRouter([
           {
             path: ":itemId/ledger",
             element: (
-              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/stock/:itemId/ledger"]}>
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/stock/:itemId/ledger"]}
+              >
                 <StockLedgerPage />
               </RoleGuard>
             ),
@@ -669,7 +679,9 @@ const router = createBrowserRouter([
           {
             path: ":receiptId",
             element: (
-              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/purchases/:receiptId"]}>
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/purchases/:receiptId"]}
+              >
                 <PurchaseDetailPage />
               </RoleGuard>
             ),
@@ -748,7 +760,9 @@ const router = createBrowserRouter([
             path: "recipes/:recipeId",
             element: (
               <RoleGuard
-                allowedRoles={ROUTE_PERMISSIONS["/production/recipes/:recipeId"]}
+                allowedRoles={
+                  ROUTE_PERMISSIONS["/production/recipes/:recipeId"]
+                }
               >
                 <RecipeDetailPage />
               </RoleGuard>
@@ -775,7 +789,9 @@ const router = createBrowserRouter([
           {
             path: ":customerId",
             element: (
-              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/customers/:customerId"]}>
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/customers/:customerId"]}
+              >
                 <CustomerDetailPage />
               </RoleGuard>
             ),
@@ -801,7 +817,9 @@ const router = createBrowserRouter([
           {
             path: ":productId",
             element: (
-              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/products/:productId"]}>
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/products/:productId"]}
+              >
                 <ProductDetailPage />
               </RoleGuard>
             ),

@@ -16,19 +16,34 @@ describe("F-028: Dexie IndexedDB Purge on Sign-Out (OWASP ASVS 8.3.1 / 3.5.3)", 
       meta: vi.fn().mockResolvedValue(undefined),
     };
 
-    offlineDb.customers = { clear: clearMocks.customers } as unknown as typeof offlineDb.customers;
-    offlineDb.products = { clear: clearMocks.products } as unknown as typeof offlineDb.products;
-    offlineDb.outbox = { clear: clearMocks.outbox } as unknown as typeof offlineDb.outbox;
-    offlineDb.meta = { clear: clearMocks.meta } as unknown as typeof offlineDb.meta;
-    offlineDb.transaction = vi.fn().mockImplementation(async (_mode, _tables, fn) => {
-      await fn();
-    }) as unknown as typeof offlineDb.transaction;
+    offlineDb.customers = {
+      clear: clearMocks.customers,
+    } as unknown as typeof offlineDb.customers;
+    offlineDb.products = {
+      clear: clearMocks.products,
+    } as unknown as typeof offlineDb.products;
+    offlineDb.outbox = {
+      clear: clearMocks.outbox,
+    } as unknown as typeof offlineDb.outbox;
+    offlineDb.meta = {
+      clear: clearMocks.meta,
+    } as unknown as typeof offlineDb.meta;
+    offlineDb.transaction = vi
+      .fn()
+      .mockImplementation(async (_mode, _tables, fn) => {
+        await fn();
+      }) as unknown as typeof offlineDb.transaction;
 
     await offlineDb.purgeOnSignOut();
 
     expect(offlineDb.transaction).toHaveBeenCalledWith(
       "rw",
-      [offlineDb.customers, offlineDb.products, offlineDb.outbox, offlineDb.meta],
+      [
+        offlineDb.customers,
+        offlineDb.products,
+        offlineDb.outbox,
+        offlineDb.meta,
+      ],
       expect.any(Function),
     );
     expect(clearMocks.customers).toHaveBeenCalledTimes(1);
@@ -38,8 +53,12 @@ describe("F-028: Dexie IndexedDB Purge on Sign-Out (OWASP ASVS 8.3.1 / 3.5.3)", 
   });
 
   it("automatically invokes offlineDb.purgeOnSignOut when authClient.signOut is called", async () => {
-    const purgeSpy = vi.spyOn(offlineDb, "purgeOnSignOut").mockResolvedValue(undefined);
-    globalThis.fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true })));
+    const purgeSpy = vi
+      .spyOn(offlineDb, "purgeOnSignOut")
+      .mockResolvedValue(undefined);
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ success: true })));
 
     await authClient.signOut();
 

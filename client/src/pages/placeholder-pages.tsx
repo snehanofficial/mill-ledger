@@ -5,7 +5,9 @@ import { buttonVariants } from "@/components/ui/button";
 export function NotFoundPage() {
   useEffect(() => {
     document.title = "Page Not Found | MillLedger";
-    let meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    let meta = document.querySelector(
+      'meta[name="robots"]',
+    ) as HTMLMetaElement | null;
     if (!meta) {
       meta = document.createElement("meta");
       meta.name = "robots";
@@ -20,19 +22,14 @@ export function NotFoundPage() {
         404 - Page Not Found
       </h1>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        The requested route does not exist. Return to the MillLedger home page or request a product walkthrough.
+        The requested route does not exist. Return to the MillLedger home page
+        or request a product walkthrough.
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-        <Link
-          to="/"
-          className={buttonVariants({ variant: "primary" })}
-        >
+        <Link to="/" className={buttonVariants({ variant: "primary" })}>
           Return Home
         </Link>
-        <Link
-          to="/features"
-          className={buttonVariants({ variant: "outline" })}
-        >
+        <Link to="/features" className={buttonVariants({ variant: "outline" })}>
           Explore ERP Features
         </Link>
       </div>

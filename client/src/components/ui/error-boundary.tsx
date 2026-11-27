@@ -12,7 +12,10 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
@@ -33,7 +36,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     console.error("[Client ErrorBoundary]", {
       name: error.name,
       message: error.message,
-      route: typeof window !== "undefined" ? window.location.pathname : undefined,
+      route:
+        typeof window !== "undefined" ? window.location.pathname : undefined,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
       timestamp: new Date().toISOString(),
@@ -65,11 +69,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <div className="w-full max-w-md rounded-xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
             <div className="flex items-center gap-3 text-amber-600 dark:text-amber-500">
               <AlertTriangle className="h-6 w-6 shrink-0" aria-hidden="true" />
-              <h1 className="text-lg font-semibold tracking-tight">Application Error</h1>
+              <h1 className="text-lg font-semibold tracking-tight">
+                Application Error
+              </h1>
             </div>
 
             <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">
-              An unexpected error prevented this view from rendering. Your recorded data remains safe.
+              An unexpected error prevented this view from rendering. Your
+              recorded data remains safe.
             </p>
 
             {this.state.error?.message && (
@@ -88,11 +95,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 <RotateCcw className="h-4 w-4" />
                 Try again
               </Button>
-              <Button
-                size="sm"
-                onClick={this.handleReload}
-                className="gap-2"
-              >
+              <Button size="sm" onClick={this.handleReload} className="gap-2">
                 <RefreshCw className="h-4 w-4" />
                 Reload application
               </Button>

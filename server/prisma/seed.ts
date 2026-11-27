@@ -90,7 +90,9 @@ export async function seedUsers() {
 
   for (const user of SEED_USERS) {
     if (process.env.NODE_ENV === "production" && user.role === "ADMIN") {
-      console.warn("Skipping default admin user creation in production environment per OD-02. Use pnpm admin:bootstrap.");
+      console.warn(
+        "Skipping default admin user creation in production environment per OD-02. Use pnpm admin:bootstrap.",
+      );
       continue;
     }
     const existing = await prisma.user.findUnique({
@@ -586,10 +588,34 @@ export async function seedBenchmarkMasters() {
   // 11. Statutory Tax Rates (5%, 12%, 18%, 0% GST Slabs)
   const taxDate = new Date("2026-01-01T00:00:00Z");
   const statutorySlabs = [
-    { hsnCode: "21069099", rate: 5.0, cgstRate: 2.5, sgstRate: 2.5, igstRate: 5.0 },
-    { hsnCode: "21069098", rate: 18.0, cgstRate: 9.0, sgstRate: 9.0, igstRate: 18.0 },
-    { hsnCode: "21069097", rate: 12.0, cgstRate: 6.0, sgstRate: 6.0, igstRate: 12.0 },
-    { hsnCode: "21069090", rate: 0.0, cgstRate: 0.0, sgstRate: 0.0, igstRate: 0.0 },
+    {
+      hsnCode: "21069099",
+      rate: 5.0,
+      cgstRate: 2.5,
+      sgstRate: 2.5,
+      igstRate: 5.0,
+    },
+    {
+      hsnCode: "21069098",
+      rate: 18.0,
+      cgstRate: 9.0,
+      sgstRate: 9.0,
+      igstRate: 18.0,
+    },
+    {
+      hsnCode: "21069097",
+      rate: 12.0,
+      cgstRate: 6.0,
+      sgstRate: 6.0,
+      igstRate: 12.0,
+    },
+    {
+      hsnCode: "21069090",
+      rate: 0.0,
+      cgstRate: 0.0,
+      sgstRate: 0.0,
+      igstRate: 0.0,
+    },
   ];
 
   for (const slab of statutorySlabs) {

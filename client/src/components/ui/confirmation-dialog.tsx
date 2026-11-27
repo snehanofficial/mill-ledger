@@ -45,10 +45,7 @@ function ConfirmationDialog({
   children,
 }: ConfirmationDialogProps) {
   const { t } = useLanguage();
-  const rootProps =
-    open !== undefined
-      ? { open, onOpenChange }
-      : {};
+  const rootProps = open !== undefined ? { open, onOpenChange } : {};
 
   return (
     <AlertDialog {...rootProps}>
@@ -63,7 +60,9 @@ function ConfirmationDialog({
       ) : null}
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{typeof title === "string" ? t(title) : title}</AlertDialogTitle>
+          <AlertDialogTitle>
+            {typeof title === "string" ? t(title) : title}
+          </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="text-sm text-muted-foreground">{description}</div>
           </AlertDialogDescription>

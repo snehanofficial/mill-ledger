@@ -345,14 +345,11 @@ describe("Warehouse management, warehouse-level inventory, and organization isol
     expect(crossWhRes.status).toBe(404);
 
     // 3. Last-admin guard is scoped per organization: Org B admin cannot deactivate self even though MILL has admins
-    const selfDeactRes = await fetch(
-      `${baseUrl}/api/v1/users/${orgBAdminId}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Cookie: orgBCookie },
-        body: JSON.stringify({ isActive: false }),
-      },
-    );
+    const selfDeactRes = await fetch(`${baseUrl}/api/v1/users/${orgBAdminId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Cookie: orgBCookie },
+      body: JSON.stringify({ isActive: false }),
+    });
     expect(selfDeactRes.status).toBe(400);
   });
 });

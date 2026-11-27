@@ -79,7 +79,9 @@ describe("Express application HTTP integration", () => {
     it("returns JSON 404 envelope on unmapped routes", async () => {
       const response = await fetch(`${baseUrl}/api/v1/does-not-exist`);
       expect(response.status).toBe(404);
-      expect(response.headers.get("content-type")).toContain("application/json");
+      expect(response.headers.get("content-type")).toContain(
+        "application/json",
+      );
 
       const data = await response.json();
       expect(data).toMatchObject({

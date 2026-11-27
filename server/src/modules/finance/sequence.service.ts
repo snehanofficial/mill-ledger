@@ -143,12 +143,7 @@ export class SequenceService {
     organizationId: string,
     year: string = new Date().getFullYear().toString(),
   ): Promise<string> {
-    const seq = await this.getNextSequence(
-      tx,
-      organizationId,
-      "PAYMENT",
-      year,
-    );
+    const seq = await this.getNextSequence(tx, organizationId, "PAYMENT", year);
     return `REC-${year}-${seq.toString().padStart(4, "0")}`;
   }
 
