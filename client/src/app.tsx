@@ -41,9 +41,19 @@ const DashboardPage = lazy(() =>
 const StockPage = lazy(() =>
   import("@/pages/stock-page").then((m) => ({ default: m.StockPage })),
 );
-const ProductionPage = lazy(() =>
-  import("@/pages/production-page").then((m) => ({
-    default: m.ProductionPage,
+const ProductionTodayPage = lazy(() =>
+  import("@/pages/production-today-page").then((m) => ({
+    default: m.ProductionTodayPage,
+  })),
+);
+const ProductionHistoryPage = lazy(() =>
+  import("@/pages/production-history-page").then((m) => ({
+    default: m.ProductionHistoryPage,
+  })),
+);
+const ProductionRecipesPage = lazy(() =>
+  import("@/pages/production-recipes-page").then((m) => ({
+    default: m.ProductionRecipesPage,
   })),
 );
 const OrdersPage = lazy(() =>
@@ -549,7 +559,7 @@ const router = createBrowserRouter([
             path: "today",
             element: (
               <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/production/today"]}>
-                <ProductionPage />
+                <ProductionTodayPage />
               </RoleGuard>
             ),
             handle: productionTodayHandle,
@@ -558,7 +568,7 @@ const router = createBrowserRouter([
             path: "new",
             element: (
               <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/production/new"]}>
-                <ProductionPage />
+                <ProductionTodayPage initialOpenNewBatch />
               </RoleGuard>
             ),
             handle: productionNewHandle,
@@ -569,7 +579,7 @@ const router = createBrowserRouter([
               <RoleGuard
                 allowedRoles={ROUTE_PERMISSIONS["/production/history"]}
               >
-                <ProductionPage />
+                <ProductionHistoryPage />
               </RoleGuard>
             ),
             handle: productionHistoryHandle,
@@ -591,7 +601,7 @@ const router = createBrowserRouter([
               <RoleGuard
                 allowedRoles={ROUTE_PERMISSIONS["/production/recipes"]}
               >
-                <ProductionPage />
+                <ProductionRecipesPage />
               </RoleGuard>
             ),
             handle: productionRecipesHandle,
