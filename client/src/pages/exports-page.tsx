@@ -224,8 +224,8 @@ export function ExportsPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1 flex flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-page-title text-foreground">
               Enterprise Data Export Hub
@@ -239,7 +239,7 @@ export function ExportsPage() {
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge
             variant="success"
             className="text-xs"

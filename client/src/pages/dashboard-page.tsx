@@ -151,9 +151,9 @@ export function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1 flex flex-col gap-1">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {isAdmin ? t("Work queue") : t("Business overview")}
             </h1>
@@ -165,7 +165,7 @@ export function DashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {data?.asOf && (
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <ClockIcon className="h-3.5 w-3.5" />

@@ -272,7 +272,7 @@ export function InvoiceDetailPage() {
       />
 
       {/* Statutory Snapshot */}
-      <div className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-card p-4 text-sm sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-card p-4 text-sm md:grid-cols-3">
         <div>
           <div className="text-xs text-muted-foreground">Billed to</div>
           <div className="font-medium">{invoice.customerNameSnapshot}</div>

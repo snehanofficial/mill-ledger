@@ -938,7 +938,7 @@ function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
         onClick={onOpen}
         aria-label={t("Search (Ctrl+K)", "Search (Ctrl+K)")}
         aria-keyshortcuts="Meta+K Control+K"
-        className="hidden sm:flex w-52 justify-start text-muted-foreground hover:text-foreground h-9 px-3"
+        className="hidden lg:flex w-48 xl:w-52 justify-start text-muted-foreground hover:text-foreground h-9 px-3"
       >
         <SearchIcon className="mr-2 size-4 shrink-0" aria-hidden />
         <span className="flex-1 text-left truncate font-normal">
@@ -952,7 +952,7 @@ function HeaderSearchButton({ onOpen }: { onOpen: () => void }) {
         size="icon"
         onClick={onOpen}
         aria-label={t("Search", "Search")}
-        className="sm:hidden size-9"
+        className="lg:hidden size-9"
       >
         <SearchIcon className="size-4 shrink-0" aria-hidden />
       </Button>
@@ -980,7 +980,7 @@ function ShellBreadcrumbs({ role }: { role: UserRole }) {
               <BreadcrumbItem
                 className={cn(
                   "min-w-0",
-                  isLast ? "max-w-full shrink-0" : "hidden md:inline-flex",
+                  isLast ? "max-w-full" : "hidden md:inline-flex",
                 )}
               >
                 {isLast ? (
@@ -1157,8 +1157,8 @@ function StickyHeader({
           )}
         </Button>
 
-        {/* Sync status: fixed-width area to prevent layout shift */}
-        <div className="min-w-20 flex justify-end">
+        {/* Sync status: fixed-width area on desktop to prevent layout shift */}
+        <div className="min-w-0 lg:min-w-20 flex justify-end">
           <SyncIndicator
             state={syncState}
             onClick={onOpenOutbox}
@@ -1178,7 +1178,7 @@ function StickyHeader({
             className="h-8 gap-1.5 px-2.5 text-xs font-medium cursor-pointer"
           >
             <DownloadIcon className="size-3.5 shrink-0" aria-hidden="true" />
-            <span className="hidden sm:inline">{t("Install", "Install")}</span>
+            <span className="hidden lg:inline">{t("Install", "Install")}</span>
           </Button>
         )}
 

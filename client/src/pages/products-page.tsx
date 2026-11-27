@@ -455,8 +455,8 @@ export function ProductsPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Products, Pack Sizes &amp; Price Lists
           </h1>

@@ -33,13 +33,13 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between",
+        "flex flex-col gap-3 border-b border-border pb-4 lg:flex-row lg:items-start lg:justify-between",
         className,
       )}
     >
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl break-words">
             {title}
           </h1>
           {badge}
@@ -50,16 +50,18 @@ export function PageHeader({
           </p>
         )}
       </div>
-      <div className="flex flex-wrap items-center gap-2 shrink-0">
-        {asOf && (
-          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground mr-1">
-            <ClockIcon className="size-3.5 shrink-0" aria-hidden="true" />
-            <span>As of {formatTime(asOf)}</span>
-          </span>
-        )}
-        {secondaryActions}
-        {primaryAction}
-      </div>
+      {(asOf || secondaryActions || primaryAction) && (
+        <div className="flex flex-wrap items-center gap-2 lg:max-w-[55%] lg:justify-end">
+          {asOf && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground mr-1">
+              <ClockIcon className="size-3.5 shrink-0" aria-hidden="true" />
+              <span>As of {formatTime(asOf)}</span>
+            </span>
+          )}
+          {secondaryActions}
+          {primaryAction}
+        </div>
+      )}
     </div>
   );
 }
@@ -99,10 +101,10 @@ export function RecordHeader({
           <span>{backLabel}</span>
         </Link>
       </div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-xl font-semibold tracking-tight text-foreground tabular-nums sm:text-2xl">
+            <h1 className="text-xl font-semibold tracking-tight text-foreground tabular-nums sm:text-2xl break-words">
               {reference}
             </h1>
             {statuses}
@@ -111,10 +113,12 @@ export function RecordHeader({
             <p className="text-sm text-muted-foreground">{subtitle}</p>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {secondaryActions}
-          {primaryAction}
-        </div>
+        {(secondaryActions || primaryAction) && (
+          <div className="flex flex-wrap items-center gap-2 lg:max-w-[60%] lg:justify-end">
+            {secondaryActions}
+            {primaryAction}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -111,7 +111,7 @@ export function StockLedgerPage() {
       />
 
       {item && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-sm">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 text-sm">
           <div className="rounded-lg border border-border bg-card p-3">
             <div className="text-xs text-muted-foreground">On hand</div>
             <div className="text-lg font-semibold tabular-nums">
