@@ -8,8 +8,10 @@ import {
 import type { UserContext } from "@mill-ledger/shared";
 import { AppError } from "../../middleware/error.middleware.js";
 import { auditService } from "./audit.service.js";
-import ExcelJS from "exceljs";
-import PDFDocument from "pdfkit";
+import { buildReportExportSpec } from "../export/report-schemas.js";
+import { renderTabularCsv } from "../export/csv.renderer.js";
+import { renderExcelWorkbook } from "../export/excel.renderer.js";
+import { renderTabularPdf } from "../export/pdf.renderer.js";
 
 export interface ReportFilterParams {
   organizationId?: string;
@@ -1367,25 +1369,6 @@ export class ReportingService {
     };
   }
 
-  /**
-   * Neutralize potential formula injection characters for CSV export per CWE-1236 & OWASP
-   */
-  sanitizeCSVCell(val: unknown): string {
-    if (val === null || val === undefined) return '""';
-    let str = String(val).replace(/"/g, '""');
-    if (
-      typeof val !== "number" &&
-      typeof val !== "boolean" &&
-      /^[=+\-@\t\r]/.test(str)
-    ) {
-      str = `'${str}`;
-    }
-    return `"${str}"`;
-  }
-
-  /**
-   * 9. Export Report to CSV format
-   */
   private async resolveReportData(
     reportType: string,
     params: ReportFilterParams,
@@ -1418,21 +1401,12 @@ export class ReportingService {
     }
   }
 
-  private extractTabularRows(reportData: ReportExportData): {
-    headers: string[];
-    rows: Record<string, unknown>[];
-  } {
-    const rows: Record<string, unknown>[] =
-      (reportData.rows as Record<string, unknown>[]) ||
-      (reportData.b2bSupplies as Record<string, unknown>[]) ||
-      [];
-    if (rows.length === 0) {
-      return { headers: [], rows: [] };
-    }
-    const headers = Object.keys(rows[0]).filter(
-      (k) => typeof rows[0][k] !== "object" || rows[0][k] instanceof Date,
-    );
-    return { headers, rows };
+  private async getOrganizationForExport(orgIdOrCode?: string) {
+    const orgId = await this.resolveOrgId(orgIdOrCode);
+    return await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { id: true, code: true, name: true, gstin: true, state: true },
+    });
   }
 
   async exportToCSV(
@@ -1442,7 +1416,10 @@ export class ReportingService {
       | UserContext
       | { id?: string; email?: string; [key: string]: unknown },
   ) {
-    const reportData = await this.resolveReportData(reportType, params);
+    const [reportData, organization] = await Promise.all([
+      this.resolveReportData(reportType, params),
+      this.getOrganizationForExport(params.organizationId),
+    ]);
 
     await auditService.log({
       organizationId: params.organizationId,
@@ -1453,23 +1430,12 @@ export class ReportingService {
       details: { reportType, format: "CSV" },
     });
 
-    const { headers, rows } = this.extractTabularRows(reportData);
-    if (rows.length === 0) {
-      return `Report: ${reportData.reportTitle}\nGenerated At: ${reportData.generatedAt}\nNo records found`;
-    }
-
-    const csvLines = [
-      `# Report: ${reportData.reportTitle}`,
-      `# Generated At: ${new Date().toISOString()}`,
-      headers.join(","),
-    ];
-
-    for (const r of rows) {
-      const line = headers.map((h) => this.sanitizeCSVCell(r[h]));
-      csvLines.push(line.join(","));
-    }
-
-    return csvLines.join("\n");
+    const spec = buildReportExportSpec(reportType, reportData, {
+      organization,
+      startDate: params.startDate,
+      endDate: params.endDate,
+    });
+    return renderTabularCsv(spec.primaryColumns, spec.primaryRows);
   }
 
   async exportToXLSX(
@@ -1479,7 +1445,10 @@ export class ReportingService {
       | UserContext
       | { id?: string; email?: string; [key: string]: unknown },
   ): Promise<Buffer> {
-    const reportData = await this.resolveReportData(reportType, params);
+    const [reportData, organization] = await Promise.all([
+      this.resolveReportData(reportType, params),
+      this.getOrganizationForExport(params.organizationId),
+    ]);
 
     await auditService.log({
       organizationId: params.organizationId,
@@ -1490,37 +1459,12 @@ export class ReportingService {
       details: { reportType, format: "XLSX" },
     });
 
-    const { headers, rows } = this.extractTabularRows(reportData);
-    const workbook = new ExcelJS.Workbook();
-    workbook.creator = "MillLedger ERP";
-    workbook.created = new Date();
-
-    const title = reportData.reportTitle || `${reportType.toUpperCase()} Report`;
-    const sheet = workbook.addWorksheet(title.slice(0, 31));
-    sheet.addRow([title]);
-    sheet.addRow([`Generated At: ${new Date().toISOString()}`]);
-    sheet.addRow([]);
-
-    if (headers.length === 0) {
-      sheet.addRow(["No records found"]);
-    } else {
-      const headerRow = sheet.addRow(headers);
-      headerRow.font = { bold: true };
-      for (const r of rows) {
-        sheet.addRow(
-          headers.map((h) => {
-            const v = r[h];
-            return v instanceof Date ? v.toISOString() : (v ?? "");
-          }),
-        );
-      }
-      sheet.columns.forEach((col) => {
-        col.width = 18;
-      });
-    }
-
-    const arrayBuffer = await workbook.xlsx.writeBuffer();
-    return Buffer.from(arrayBuffer);
+    const spec = buildReportExportSpec(reportType, reportData, {
+      organization,
+      startDate: params.startDate,
+      endDate: params.endDate,
+    });
+    return await renderExcelWorkbook(spec.meta, spec.excelSheets);
   }
 
   async exportToPDF(
@@ -1530,7 +1474,10 @@ export class ReportingService {
       | UserContext
       | { id?: string; email?: string; [key: string]: unknown },
   ): Promise<Buffer> {
-    const reportData = await this.resolveReportData(reportType, params);
+    const [reportData, organization] = await Promise.all([
+      this.resolveReportData(reportType, params),
+      this.getOrganizationForExport(params.organizationId),
+    ]);
 
     await auditService.log({
       organizationId: params.organizationId,
@@ -1541,83 +1488,12 @@ export class ReportingService {
       details: { reportType, format: "PDF" },
     });
 
-    const { headers, rows } = this.extractTabularRows(reportData);
-
-    return await new Promise<Buffer>((resolve, reject) => {
-      const doc = new PDFDocument({
-        size: "A4",
-        layout: "landscape",
-        margin: 32,
-      });
-      const chunks: Buffer[] = [];
-      doc.on("data", (chunk: Buffer) => chunks.push(chunk));
-      doc.on("end", () => resolve(Buffer.concat(chunks)));
-      doc.on("error", (err) => reject(err));
-
-      const title = reportData.reportTitle || `${reportType.toUpperCase()} Report`;
-      doc.fontSize(15).font("Helvetica-Bold").text(title);
-      doc
-        .fontSize(8)
-        .font("Helvetica")
-        .fillColor("#4b5563")
-        .text(`Generated: ${new Date().toISOString()} | Records: ${rows.length}`);
-      doc.moveDown(0.75);
-
-      if (headers.length === 0) {
-        doc.fontSize(10).fillColor("#111827").text("No records found.");
-      } else {
-        const displayHeaders = headers.slice(0, 8);
-        const usableWidth = 778;
-        const colWidth = Math.floor(usableWidth / displayHeaders.length);
-
-        const drawHeader = (y: number) => {
-          doc.rect(32, y - 3, usableWidth, 16).fill("#f3f4f6");
-          doc.fillColor("#111827").font("Helvetica-Bold").fontSize(7.5);
-          displayHeaders.forEach((h, idx) => {
-            doc.text(h, 34 + idx * colWidth, y, {
-              width: colWidth - 4,
-              ellipsis: true,
-            });
-          });
-        };
-
-        let y = doc.y;
-        drawHeader(y);
-        y += 18;
-        doc.font("Helvetica").fontSize(7.5).fillColor("#111827");
-
-        for (const r of rows) {
-          if (y > 540) {
-            doc.addPage();
-            y = 32;
-            drawHeader(y);
-            y += 18;
-            doc.font("Helvetica").fontSize(7.5).fillColor("#111827");
-          }
-          displayHeaders.forEach((h, idx) => {
-            const raw = r[h];
-            const text =
-              raw instanceof Date
-                ? raw.toISOString().slice(0, 10)
-                : raw === null || raw === undefined
-                  ? ""
-                  : String(raw);
-            doc.text(text, 34 + idx * colWidth, y, {
-              width: colWidth - 4,
-              ellipsis: true,
-            });
-          });
-          y += 15;
-          doc
-            .moveTo(32, y - 3)
-            .lineTo(32 + usableWidth, y - 3)
-            .strokeColor("#e5e7eb")
-            .stroke();
-        }
-      }
-
-      doc.end();
+    const spec = buildReportExportSpec(reportType, reportData, {
+      organization,
+      startDate: params.startDate,
+      endDate: params.endDate,
     });
+    return await renderTabularPdf(spec.meta, spec.pdfSections);
   }
 }
 

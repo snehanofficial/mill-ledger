@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { buildExportFilename } from "@mill-ledger/shared";
 import {
   authorize,
   getSessionOrgId,
@@ -150,11 +151,12 @@ const handleReportExport = async (
         params,
         req.user,
       );
-      res.setHeader("Content-Type", "text/csv");
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${reportType}-report-${new Date().toISOString().slice(0, 10)}.csv"`,
-      );
+      const filename = buildExportFilename({
+        module: `${reportType}-Report`,
+        extension: "csv",
+      });
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
       return res.send(csvContent);
     } else if (format === "xlsx") {
       const xlsxBuffer = await reportingService.exportToXLSX(
@@ -162,14 +164,15 @@ const handleReportExport = async (
         params,
         req.user,
       );
+      const filename = buildExportFilename({
+        module: `${reportType}-Report`,
+        extension: "xlsx",
+      });
       res.setHeader(
         "Content-Type",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${reportType}-report-${new Date().toISOString().slice(0, 10)}.xlsx"`,
-      );
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
       return res.send(xlsxBuffer);
     } else if (format === "pdf") {
       const pdfBuffer = await reportingService.exportToPDF(
@@ -177,11 +180,12 @@ const handleReportExport = async (
         params,
         req.user,
       );
+      const filename = buildExportFilename({
+        module: `${reportType}-Report`,
+        extension: "pdf",
+      });
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${reportType}-report-${new Date().toISOString().slice(0, 10)}.pdf"`,
-      );
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
       return res.send(pdfBuffer);
     } else {
       // JSON export
@@ -233,10 +237,14 @@ const handleReportExport = async (
         details: { reportType, format: "JSON" },
       });
 
+      const jsonFilename = buildExportFilename({
+        module: `${reportType}-Report`,
+        extension: "json",
+      });
       res.setHeader("Content-Type", "application/json");
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename="${reportType}-report-${new Date().toISOString().slice(0, 10)}.json"`,
+        `attachment; filename="${jsonFilename}"`,
       );
       return res.json(data);
     }

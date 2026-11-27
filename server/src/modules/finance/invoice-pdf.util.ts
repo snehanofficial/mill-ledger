@@ -1,4 +1,15 @@
-import PDFDocument from "pdfkit";
+import {
+  EXPORT_THEME,
+  formatExportCurrency,
+  formatExportDate,
+  formatExportNumber,
+} from "../export/export.theme.js";
+import {
+  createPdfContext,
+  drawStandardPdfHeader,
+  stampPdfFooters,
+} from "../export/pdf.renderer.js";
+import type { ExportDocumentMeta } from "../export/export.types.js";
 
 export interface InvoicePdfData {
   invoiceNumber: string;
@@ -22,6 +33,7 @@ export interface InvoicePdfData {
   organization?: {
     name: string;
     state: string;
+    gstin?: string | null;
     address?: string | null;
   } | null;
   salesOrder?: {
@@ -39,204 +51,260 @@ export interface InvoicePdfData {
   }>;
 }
 
-function formatAmount(val: { toString(): string } | number): string {
-  const num = Number(val.toString());
-  return `INR ${num.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
 export async function generateInvoicePdfBuffer(
   invoice: InvoicePdfData,
 ): Promise<Buffer> {
-  return await new Promise<Buffer>((resolve, reject) => {
-    const doc = new PDFDocument({ size: "A4", margin: 40 });
-    const chunks: Buffer[] = [];
+  const ctx = createPdfContext({ layout: "portrait", margin: 36 });
+  const { doc, fonts, margin, contentWidth, pageHeight } = ctx;
+  const bottomLimit = pageHeight - margin - 22;
 
+  const meta: ExportDocumentMeta = {
+    title: "TAX INVOICE",
+    documentType: "Commercial Tax Invoice",
+    referenceId: invoice.invoiceNumber,
+    generatedAt: new Date(),
+    organization: {
+      name: invoice.organization?.name || undefined,
+      state: invoice.organization?.state || undefined,
+      gstin:
+        invoice.companyGstinSnapshot || invoice.organization?.gstin || undefined,
+      address: invoice.organization?.address || undefined,
+    },
+    footerNote: "System-generated GST Tax Invoice",
+  };
+
+  return await new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
     doc.on("data", (chunk: Buffer) => chunks.push(chunk));
     doc.on("end", () => resolve(Buffer.concat(chunks)));
     doc.on("error", (err) => reject(err));
 
-    const orgName = invoice.organization?.name || "MillLedger Foods Pvt Ltd";
-    const orgState = invoice.organization?.state || "Tamil Nadu";
-    const postedDate = new Date(invoice.postedAt).toLocaleDateString("en-IN", {
-      timeZone: "Asia/Kolkata",
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
+    drawStandardPdfHeader(ctx, meta);
+
+    // Billed To & Invoice Metadata two-column box
+    const blockY = doc.y;
+    const leftW = contentWidth * 0.54;
+    const rightX = margin + contentWidth * 0.58;
+    const rightW = contentWidth * 0.42;
+
+    doc
+      .font(fonts.bold)
+      .fontSize(8)
+      .fillColor(EXPORT_THEME.colors.pineAction)
+      .text("BILLED TO", margin, blockY);
+
+    doc
+      .font(fonts.bold)
+      .fontSize(10)
+      .fillColor(EXPORT_THEME.colors.pine950)
+      .text(invoice.customerNameSnapshot, margin, doc.y + 2, { width: leftW });
+
+    const customerLines = [
+      `Place of Supply: ${invoice.deliveryStateSnapshot}`,
+      `GSTIN: ${invoice.customerGstinSnapshot || "Unregistered"}`,
+    ];
+    doc
+      .font(fonts.regular)
+      .fontSize(8.5)
+      .fillColor(EXPORT_THEME.colors.pine700)
+      .text(customerLines.join("\n"), margin, doc.y + 2, { width: leftW });
+    const leftEndY = doc.y;
+
+    doc
+      .font(fonts.bold)
+      .fontSize(8)
+      .fillColor(EXPORT_THEME.colors.pineAction)
+      .text("INVOICE DETAILS", rightX, blockY, { width: rightW, align: "right" });
+
+    const detailLines = [
+      `Invoice No: ${invoice.invoiceNumber}`,
+      `Financial Year: ${invoice.financialYear}`,
+      `Invoice Date: ${formatExportDate(invoice.postedAt)}`,
+      invoice.dueDate ? `Due Date: ${formatExportDate(invoice.dueDate)}` : null,
+      `Status: ${invoice.status.replaceAll("_", " ")}`,
+      invoice.salesOrder?.orderNumber
+        ? `Order Ref: ${invoice.salesOrder.orderNumber}`
+        : null,
+    ].filter(Boolean) as string[];
+
+    doc
+      .font(fonts.regular)
+      .fontSize(8.5)
+      .fillColor(EXPORT_THEME.colors.pine950)
+      .text(detailLines.join("\n"), rightX, blockY + 12, {
+        width: rightW,
+        align: "right",
+      });
+
+    doc.y = Math.max(leftEndY, doc.y) + 14;
+
+    // Line items table
+    const cols = [
+      { label: "#", width: 22, align: "center" as const },
+      { label: "Item Description", width: 135, align: "left" as const },
+      { label: "HSN", width: 54, align: "left" as const },
+      { label: "Qty", width: 42, align: "right" as const },
+      { label: "Rate", width: 54, align: "right" as const },
+      { label: "GST %", width: 38, align: "right" as const },
+      { label: "Taxable", width: 64, align: "right" as const },
+      { label: "Tax", width: 52, align: "right" as const },
+      { label: "Total", width: contentWidth - 461, align: "right" as const },
+    ];
+
+    const drawHeader = (y: number): number => {
+      const h = 20;
+      doc
+        .rect(margin, y, contentWidth, h)
+        .fill(EXPORT_THEME.colors.pine950);
+      let cx = margin;
+      for (const c of cols) {
+        doc
+          .font(fonts.bold)
+          .fontSize(7.5)
+          .fillColor(EXPORT_THEME.colors.white)
+          .text(c.label, cx + 4, y + 6, {
+            width: c.width - 8,
+            align: c.align,
+          });
+        cx += c.width;
+      }
+      return y + h;
+    };
+
+    let y = drawHeader(doc.y);
+
+    invoice.lines.forEach((line, idx) => {
+      const cells = [
+        String(idx + 1),
+        line.productNameSnapshot,
+        line.hsnCodeSnapshot || "—",
+        formatExportNumber(line.quantity, 2),
+        formatExportNumber(line.unitPrice, 2),
+        `${Number(line.taxRate.toString()).toFixed(1)}%`,
+        formatExportNumber(line.taxableAmount, 2),
+        formatExportNumber(line.taxAmount, 2),
+        formatExportNumber(line.lineTotal, 2),
+      ];
+
+      doc.font(fonts.regular).fontSize(8);
+      const nameHeight = doc.heightOfString(cells[1], {
+        width: cols[1].width - 8,
+      });
+      const rowH = Math.max(19, nameHeight + 10);
+
+      if (y + rowH > bottomLimit) {
+        doc.addPage();
+        y = drawHeader(margin);
+      }
+
+      if (idx % 2 === 1) {
+        doc
+          .rect(margin, y, contentWidth, rowH)
+          .fill(EXPORT_THEME.colors.zebra);
+      }
+
+      let cx = margin;
+      cols.forEach((c, ci) => {
+        doc
+          .font(ci === 8 ? fonts.bold : fonts.regular)
+          .fontSize(8)
+          .fillColor(EXPORT_THEME.colors.pine950)
+          .text(cells[ci], cx + 4, y + 5, {
+            width: c.width - 8,
+            align: c.align,
+          });
+        cx += c.width;
+      });
+
+      doc
+        .moveTo(margin, y + rowH)
+        .lineTo(margin + contentWidth, y + rowH)
+        .strokeColor(EXPORT_THEME.colors.borderLight)
+        .lineWidth(0.5)
+        .stroke();
+
+      y += rowH;
     });
 
-    // Header
-    doc.fontSize(18).font("Helvetica-Bold").text("TAX INVOICE", { align: "right" });
-    doc.moveUp();
-    doc.fontSize(16).font("Helvetica-Bold").text(orgName);
-    doc
-      .fontSize(9)
-      .font("Helvetica")
-      .text(`State: ${orgState}`)
-      .text(`GSTIN: ${invoice.companyGstinSnapshot}`);
+    doc.y = y + 14;
 
-    doc.moveDown(0.75);
-    doc
-      .moveTo(40, doc.y)
-      .lineTo(555, doc.y)
-      .strokeColor("#cccccc")
-      .stroke();
-    doc.moveDown(0.75);
-
-    // Invoice metadata & Customer block
-    const metaTop = doc.y;
-    doc.fontSize(9).font("Helvetica-Bold").text("Billed To:", 40, metaTop);
-    doc
-      .font("Helvetica")
-      .text(invoice.customerNameSnapshot, 40, metaTop + 14)
-      .text(`Place of Supply: ${invoice.deliveryStateSnapshot}`)
-      .text(
-        `GSTIN: ${invoice.customerGstinSnapshot || "Unregistered"}`,
-      );
-
-    doc
-      .font("Helvetica-Bold")
-      .text(`Invoice No: ${invoice.invoiceNumber}`, 330, metaTop, {
-        align: "right",
-        width: 225,
-      });
-    doc
-      .font("Helvetica")
-      .text(`Financial Year: ${invoice.financialYear}`, 330, metaTop + 14, {
-        align: "right",
-        width: 225,
-      })
-      .text(`Date: ${postedDate}`, { align: "right", width: 225 })
-      .text(`Status: ${invoice.status}`, { align: "right", width: 225 });
-
-    if (invoice.salesOrder?.orderNumber) {
-      doc.text(`Order Ref: ${invoice.salesOrder.orderNumber}`, {
-        align: "right",
-        width: 225,
-      });
+    // Keep totals block together
+    const summaryHeight = 125;
+    if (doc.y + summaryHeight > bottomLimit) {
+      doc.addPage();
+      doc.y = margin;
     }
 
-    doc.moveDown(1.5);
+    const summaryW = 240;
+    const summaryX = margin + contentWidth - summaryW;
+    const summaryTop = doc.y;
 
-    // Line items table header
-    const tableTop = doc.y;
-    const cols = {
-      item: 40,
-      hsn: 220,
-      qty: 275,
-      rate: 325,
-      taxable: 390,
-      tax: 455,
-      total: 505,
-    };
-
-    doc.rect(40, tableTop - 4, 515, 18).fill("#f3f4f6");
-    doc.fillColor("#111827").fontSize(8).font("Helvetica-Bold");
-    doc.text("Item Description", cols.item + 4, tableTop);
-    doc.text("HSN", cols.hsn, tableTop);
-    doc.text("Qty", cols.qty, tableTop, { width: 40, align: "right" });
-    doc.text("Rate", cols.rate, tableTop, { width: 55, align: "right" });
-    doc.text("Taxable", cols.taxable, tableTop, { width: 55, align: "right" });
-    doc.text("Tax", cols.tax, tableTop, { width: 45, align: "right" });
-    doc.text("Total", cols.total, tableTop, { width: 48, align: "right" });
-
-    let rowY = tableTop + 20;
-    doc.font("Helvetica").fontSize(8.5).fillColor("#111827");
-
-    for (const line of invoice.lines) {
-      if (rowY > 720) {
-        doc.addPage();
-        rowY = 50;
-      }
-      doc.text(line.productNameSnapshot, cols.item + 4, rowY, { width: 170 });
-      doc.text(line.hsnCodeSnapshot, cols.hsn, rowY, { width: 50 });
-      doc.text(Number(line.quantity.toString()).toString(), cols.qty, rowY, {
-        width: 40,
-        align: "right",
-      });
-      doc.text(Number(line.unitPrice.toString()).toFixed(2), cols.rate, rowY, {
-        width: 55,
-        align: "right",
-      });
-      doc.text(
-        Number(line.taxableAmount.toString()).toFixed(2),
-        cols.taxable,
-        rowY,
-        { width: 55, align: "right" },
-      );
-      doc.text(Number(line.taxAmount.toString()).toFixed(2), cols.tax, rowY, {
-        width: 45,
-        align: "right",
-      });
-      doc.text(
-        Number(line.lineTotal.toString()).toFixed(2),
-        cols.total,
-        rowY,
-        { width: 48, align: "right" },
-      );
-
-      rowY += 20;
-      doc
-        .moveTo(40, rowY - 4)
-        .lineTo(555, rowY - 4)
-        .strokeColor("#e5e7eb")
-        .stroke();
-    }
-
-    doc.y = rowY + 12;
-
-    // Totals block
-    const summaryX = 330;
-    const summaryWidth = 225;
     const addSummaryRow = (label: string, value: string, bold = false) => {
-      const y = doc.y;
+      const rowY = doc.y;
       doc
-        .font(bold ? "Helvetica-Bold" : "Helvetica")
-        .fontSize(bold ? 10 : 9)
-        .text(label, summaryX, y, { width: 115, align: "left" })
-        .text(value, summaryX + 115, y, { width: 110, align: "right" });
-      doc.moveDown(0.4);
+        .font(bold ? fonts.bold : fonts.regular)
+        .fontSize(bold ? 9.5 : 8.5)
+        .fillColor(EXPORT_THEME.colors.pine950)
+        .text(label, summaryX + 8, rowY, { width: 112, align: "left" })
+        .text(value, summaryX + 120, rowY, { width: 112, align: "right" });
+      doc.y = rowY + (bold ? 16 : 14);
     };
 
-    addSummaryRow("Taxable Value:", formatAmount(invoice.taxableAmount));
+    const sym = fonts.supportsRupeeGlyph;
+    addSummaryRow("Taxable Value", formatExportCurrency(invoice.taxableAmount, sym));
     if (Number(invoice.cgstAmount.toString()) > 0) {
-      addSummaryRow("CGST:", formatAmount(invoice.cgstAmount));
-      addSummaryRow("SGST:", formatAmount(invoice.sgstAmount));
+      addSummaryRow("CGST", formatExportCurrency(invoice.cgstAmount, sym));
+      addSummaryRow("SGST", formatExportCurrency(invoice.sgstAmount, sym));
     }
     if (Number(invoice.igstAmount.toString()) > 0) {
-      addSummaryRow("IGST:", formatAmount(invoice.igstAmount));
+      addSummaryRow("IGST", formatExportCurrency(invoice.igstAmount, sym));
     }
+
     doc
-      .moveTo(summaryX, doc.y)
-      .lineTo(summaryX + summaryWidth, doc.y)
-      .strokeColor("#9ca3af")
+      .moveTo(summaryX, doc.y + 2)
+      .lineTo(summaryX + summaryW, doc.y + 2)
+      .strokeColor(EXPORT_THEME.colors.borderStrong)
+      .lineWidth(0.75)
       .stroke();
-    doc.moveDown(0.4);
-    addSummaryRow("Invoice Total:", formatAmount(invoice.totalAmount), true);
-    addSummaryRow("Paid Amount:", formatAmount(invoice.paidAmount));
-    addSummaryRow("Outstanding:", formatAmount(invoice.outstandingAmount), true);
+    doc.y += 6;
+
+    addSummaryRow(
+      "Invoice Total",
+      formatExportCurrency(invoice.totalAmount, sym),
+      true,
+    );
+    addSummaryRow("Paid Amount", formatExportCurrency(invoice.paidAmount, sym));
+    addSummaryRow(
+      "Outstanding Balance",
+      formatExportCurrency(invoice.outstandingAmount, sym),
+      true,
+    );
+
+    doc
+      .roundedRect(summaryX, summaryTop - 6, summaryW, doc.y - summaryTop + 8, 4)
+      .strokeColor(EXPORT_THEME.colors.borderLight)
+      .lineWidth(0.75)
+      .stroke();
 
     if (invoice.notes) {
-      doc.moveDown(1);
+      doc.y += 14;
+      if (doc.y + 40 > bottomLimit) {
+        doc.addPage();
+        doc.y = margin;
+      }
       doc
+        .font(fonts.bold)
         .fontSize(8)
-        .font("Helvetica-Bold")
-        .text("Notes:", 40)
-        .font("Helvetica")
-        .text(invoice.notes, 40);
+        .fillColor(EXPORT_THEME.colors.pine700)
+        .text("Notes", margin, doc.y);
+      doc
+        .font(fonts.regular)
+        .fontSize(8.5)
+        .fillColor(EXPORT_THEME.colors.pine950)
+        .text(invoice.notes, margin, doc.y + 2, { width: contentWidth });
     }
 
-    doc.moveDown(2);
-    doc
-      .fontSize(8)
-      .fillColor("#6b7280")
-      .text("This is a system-generated GST tax invoice.", 40, doc.y, {
-        align: "center",
-        width: 515,
-      });
-
+    stampPdfFooters(ctx, meta);
     doc.end();
   });
 }

@@ -18,6 +18,7 @@ import { paymentRouter } from "./modules/finance/payment.routes.js";
 import { reportingRouter } from "./modules/reporting/reporting.routes.js";
 import { mastersRouter } from "./modules/masters/masters.routes.js";
 import { timelineRouter } from "./modules/timeline/timeline.routes.js";
+import { exportRouter } from "./modules/export/export.routes.js";
 import { errorHandler, sendErrorResponse } from "./middleware/error.middleware.js";
 import { isAllowedOrigin } from "./lib/origins.js";
 import { requestIdMiddleware } from "./middleware/request-id.middleware.js";
@@ -59,6 +60,7 @@ export function createApp() {
         return callback(null, false);
       },
       credentials: true,
+      exposedHeaders: ["Content-Disposition"],
     }),
   );
 
@@ -118,6 +120,7 @@ export function createApp() {
   app.use("/api/v1/purchase-receipts", purchaseRouter);
   app.use("/api/v1/finance", financeRouter);
   app.use("/api/v1/invoices", financeRouter);
+  app.use("/api/v1/exports", exportRouter);
   app.use("/api/v1/payments", paymentRouter);
   app.use("/api/v1/reports", reportingRouter);
   app.use("/api/v1/dashboard", reportingRouter);
