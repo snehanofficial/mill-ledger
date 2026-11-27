@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
@@ -7,17 +9,14 @@ import { usePagination } from "@/hooks/use-pagination";
 import { formatINR } from "@/lib/formatters";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataPagination } from "@/components/ui/data-pagination";
+import {
+  DataTable,
+  DataTableColumnHeader,
+  type DataTableColumnMeta,
+} from "@/components/ui/data-table";
 import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { RefreshCwIcon, SearchIcon } from "lucide-react";
 
 interface CustomerReceivable {
@@ -73,6 +72,129 @@ export function ReceivablesPage() {
   const totalOutstanding =
     data?.totalOutstanding ??
     rows.reduce((s, r) => s + Number(r.netOutstanding || 0), 0);
+
+  const receivableColumns = useMemo<ColumnDef<CustomerReceivable, unknown>[]>(
+    () => [
+      {
+        accessorKey: "customerName",
+        enableHiding: false,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Customer" />
+        ),
+        cell: ({ row }) => (
+          <div className="min-w-[160px]">
+            <div className="font-medium">{row.original.customerName}</div>
+            <div className="text-xs text-muted-foreground">
+              {row.original.customerCode}
+            </div>
+          </div>
+        ),
+        meta: {
+          label: "Customer",
+          exportValue: (r) => `${r.customerName} (${r.customerCode})`,
+        } satisfies DataTableColumnMeta<CustomerReceivable>,
+      },
+      {
+        id: "totalInvoiced",
+        accessorFn: (row) => Number(row.totalInvoiced) || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Invoiced" align="right" />
+        ),
+        cell: ({ row }) => (
+          <span className="tabular-nums whitespace-nowrap">
+            {formatINR(row.original.totalInvoiced)}
+          </span>
+        ),
+        meta: {
+          label: "Invoiced",
+          align: "right",
+          exportValue: (r) => Number(r.totalInvoiced),
+        } satisfies DataTableColumnMeta<CustomerReceivable>,
+      },
+      {
+        id: "totalPaid",
+        accessorFn: (row) => Number(row.totalPaid) || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title="Collected"
+            align="right"
+          />
+        ),
+        cell: ({ row }) => (
+          <span className="tabular-nums whitespace-nowrap">
+            {formatINR(row.original.totalPaid)}
+          </span>
+        ),
+        meta: {
+          label: "Collected",
+          align: "right",
+          exportValue: (r) => Number(r.totalPaid),
+        } satisfies DataTableColumnMeta<CustomerReceivable>,
+      },
+      {
+        id: "netOutstanding",
+        accessorFn: (row) => Number(row.netOutstanding) || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title="Net outstanding"
+            align="right"
+          />
+        ),
+        cell: ({ row }) => (
+          <span className="font-semibold tabular-nums whitespace-nowrap">
+            {formatINR(row.original.netOutstanding)}
+          </span>
+        ),
+        meta: {
+          label: "Net outstanding",
+          align: "right",
+          exportValue: (r) => Number(r.netOutstanding),
+        } satisfies DataTableColumnMeta<CustomerReceivable>,
+      },
+      {
+        id: "unallocatedCredit",
+        accessorFn: (row) => Number(row.unallocatedCredit ?? 0),
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title="Unallocated credit"
+            align="right"
+          />
+        ),
+        cell: ({ row }) => (
+          <span className="tabular-nums text-muted-foreground whitespace-nowrap">
+            {formatINR(row.original.unallocatedCredit ?? 0)}
+          </span>
+        ),
+        meta: {
+          label: "Unallocated credit",
+          align: "right",
+          exportValue: (r) => Number(r.unallocatedCredit ?? 0),
+        } satisfies DataTableColumnMeta<CustomerReceivable>,
+      },
+      {
+        id: "actions",
+        enableSorting: false,
+        enableHiding: false,
+        header: () => <span>Ledger</span>,
+        cell: ({ row }) => (
+          <Link
+            to={`/receivables/${row.original.customerId}`}
+            className="text-xs font-medium text-primary hover:underline whitespace-nowrap"
+          >
+            Open ledger
+          </Link>
+        ),
+        meta: {
+          label: "Ledger",
+          align: "right",
+        } satisfies DataTableColumnMeta<CustomerReceivable>,
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4 sm:p-6 lg:p-8">
@@ -162,52 +284,14 @@ export function ReceivablesPage() {
         />
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead className="text-right">Invoiced</TableHead>
-                  <TableHead className="text-right">Collected</TableHead>
-                  <TableHead className="text-right">Net outstanding</TableHead>
-                  <TableHead className="text-right">Unallocated credit</TableHead>
-                  <TableHead className="text-right">Ledger</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((r) => (
-                  <TableRow key={r.customerId}>
-                    <TableCell>
-                      <div className="font-medium">{r.customerName}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {r.customerCode}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatINR(r.totalInvoiced)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatINR(r.totalPaid)}
-                    </TableCell>
-                    <TableCell className="text-right font-semibold tabular-nums">
-                      {formatINR(r.netOutstanding)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums text-muted-foreground">
-                      {formatINR(r.unallocatedCredit ?? 0)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Link
-                        to={`/receivables/${r.customerId}`}
-                        className="text-xs font-medium text-primary hover:underline"
-                      >
-                        Open ledger
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            tableId="receivables-summary"
+            data={filtered}
+            columns={receivableColumns}
+            getRowId={(r) => r.customerId}
+            ariaLabel="Customer balances"
+            csvFilename="customer-balances"
+          />
 
           <DataPagination
             pagination={data?.pagination}

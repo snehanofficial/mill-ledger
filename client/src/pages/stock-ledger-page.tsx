@@ -1,21 +1,20 @@
+import { useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { usePagination } from "@/hooks/use-pagination";
 import { formatINR, formatQuantity, formatDateTime } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
 import { DataPagination } from "@/components/ui/data-pagination";
+import {
+  DataTable,
+  DataTableColumnHeader,
+  type DataTableColumnMeta,
+} from "@/components/ui/data-table";
 import { ErrorState, EmptyState, SkeletonTable } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
 interface LedgerMovement {
   id: string;
@@ -92,6 +91,158 @@ export function StockLedgerPage() {
   const unit = item?.baseUom?.code ?? "units";
   const ledger = data?.ledger ?? [];
 
+  const ledgerColumns = useMemo<ColumnDef<LedgerMovement, unknown>[]>(
+    () => [
+      {
+        id: "postedAt",
+        accessorFn: (row) => new Date(row.postedAt).getTime() || 0,
+        enableHiding: false,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Posted at" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+            {formatDateTime(row.original.postedAt)}
+          </span>
+        ),
+        meta: {
+          label: "Posted at",
+          exportValue: (r) => formatDateTime(r.postedAt),
+        } satisfies DataTableColumnMeta<LedgerMovement>,
+      },
+      {
+        accessorKey: "movementType",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Type" />
+        ),
+        cell: ({ row }) => (
+          <Badge variant="outline" className="whitespace-nowrap">
+            {row.original.movementType.replaceAll("_", " ")}
+          </Badge>
+        ),
+        meta: {
+          label: "Type",
+          exportValue: (r) => r.movementType.replaceAll("_", " "),
+        } satisfies DataTableColumnMeta<LedgerMovement>,
+      },
+      {
+        accessorKey: "warehouseName",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Warehouse" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-xs whitespace-nowrap">
+            {row.original.warehouseName}
+          </span>
+        ),
+        meta: { label: "Warehouse" } satisfies DataTableColumnMeta<LedgerMovement>,
+      },
+      {
+        id: "quantity",
+        accessorFn: (row) => Number(row.quantity) || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title="Quantity"
+            align="right"
+          />
+        ),
+        cell: ({ row }) => {
+          const mov = row.original;
+          return (
+            <span
+              className={`font-medium tabular-nums whitespace-nowrap ${
+                mov.quantity >= 0
+                  ? "text-emerald-700 dark:text-emerald-400"
+                  : "text-destructive"
+              }`}
+            >
+              {mov.quantity >= 0 ? "+" : ""}
+              {formatQuantity(mov.quantity, { unit })}
+            </span>
+          );
+        },
+        meta: {
+          label: "Quantity",
+          align: "right",
+          exportValue: (r) => Number(r.quantity),
+        } satisfies DataTableColumnMeta<LedgerMovement>,
+      },
+      {
+        id: "unitCost",
+        accessorFn: (row) => Number(row.unitCost) || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title="Unit cost"
+            align="right"
+          />
+        ),
+        cell: ({ row }) => (
+          <span className="tabular-nums whitespace-nowrap">
+            {formatINR(row.original.unitCost)}
+          </span>
+        ),
+        meta: {
+          label: "Unit cost",
+          align: "right",
+          exportValue: (r) => Number(r.unitCost),
+        } satisfies DataTableColumnMeta<LedgerMovement>,
+      },
+      {
+        id: "runningBalance",
+        accessorFn: (row) => Number(row.runningBalance) || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title="Running balance"
+            align="right"
+          />
+        ),
+        cell: ({ row }) => (
+          <span className="font-semibold tabular-nums whitespace-nowrap">
+            {formatQuantity(row.original.runningBalance, { unit })}
+          </span>
+        ),
+        meta: {
+          label: "Running balance",
+          align: "right",
+          exportValue: (r) => Number(r.runningBalance),
+        } satisfies DataTableColumnMeta<LedgerMovement>,
+      },
+      {
+        id: "source",
+        accessorFn: (row) =>
+          row.referenceDocumentType || row.notes || "",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Source document" />
+        ),
+        cell: ({ row }) => {
+          const mov = row.original;
+          const href = getSourceDocHref(
+            mov.referenceDocumentType,
+            mov.referenceDocumentId,
+          );
+          return href ? (
+            <Link to={href} className="text-xs text-primary hover:underline whitespace-nowrap">
+              {mov.referenceDocumentType?.replaceAll("_", " ")}
+            </Link>
+          ) : (
+            <span className="text-xs text-muted-foreground">
+              {mov.notes || mov.referenceDocumentType || "—"}
+            </span>
+          );
+        },
+        meta: {
+          label: "Source document",
+          exportValue: (r) =>
+            r.referenceDocumentType?.replaceAll("_", " ") || r.notes || "",
+        } satisfies DataTableColumnMeta<LedgerMovement>,
+      },
+    ],
+    [unit],
+  );
+
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8 max-w-6xl">
       <RecordHeader
@@ -167,69 +318,14 @@ export function StockLedgerPage() {
         />
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Posted at</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Warehouse</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead className="text-right">Unit cost</TableHead>
-                  <TableHead className="text-right">Running balance</TableHead>
-                  <TableHead>Source document</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {ledger.map((mov) => {
-                  const href = getSourceDocHref(
-                    mov.referenceDocumentType,
-                    mov.referenceDocumentId,
-                  );
-                  return (
-                    <TableRow key={mov.id}>
-                      <TableCell className="text-xs text-muted-foreground tabular-nums">
-                        {formatDateTime(mov.postedAt)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {mov.movementType.replaceAll("_", " ")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs">{mov.warehouseName}</TableCell>
-                      <TableCell
-                        className={`text-right font-medium tabular-nums ${
-                          mov.quantity >= 0
-                            ? "text-emerald-700 dark:text-emerald-400"
-                            : "text-destructive"
-                        }`}
-                      >
-                        {mov.quantity >= 0 ? "+" : ""}
-                        {formatQuantity(mov.quantity, { unit })}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatINR(mov.unitCost)}
-                      </TableCell>
-                      <TableCell className="text-right font-semibold tabular-nums">
-                        {formatQuantity(mov.runningBalance, { unit })}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {href ? (
-                          <Link to={href} className="text-primary hover:underline">
-                            {mov.referenceDocumentType?.replaceAll("_", " ")}
-                          </Link>
-                        ) : (
-                          <span className="text-muted-foreground">
-                            {mov.notes || mov.referenceDocumentType || "—"}
-                          </span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            tableId="stock-ledger"
+            data={ledger}
+            columns={ledgerColumns}
+            getRowId={(r) => r.id}
+            ariaLabel="Item stock ledger"
+            csvFilename={`stock-ledger-${item?.sku || itemId || "item"}`}
+          />
 
           <DataPagination
             pagination={data?.pagination}

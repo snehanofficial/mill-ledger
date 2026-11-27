@@ -7,26 +7,18 @@ import { useWarehouses } from "@/hooks/use-warehouses";
 import { apiClient } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
-import { formatDateTime, formatINR, formatQuantity } from "@/lib/formatters";
+import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataPagination } from "@/components/ui/data-pagination";
+import { DataTable } from "@/components/ui/data-table";
 import {
   EmptyState,
   SkeletonTable,
   ErrorState,
 } from "@/components/ui/loading-error-empty";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
   BarChart2Icon,
   PlusCircleIcon,
@@ -40,9 +32,12 @@ import type {
 import { RecordProductionBatchDialog } from "@/components/production/record-batch-dialog";
 import {
   EditDraftRunDialog,
-  ProductionRunRow,
   ReverseRunDialog,
 } from "@/components/production/production-run-dialogs";
+import {
+  useProductionRunBulkActions,
+  useProductionRunColumns,
+} from "@/components/production/production-run-columns";
 
 const STATUS_FILTERS = [
   { value: "ALL", label: "All runs" },
@@ -139,6 +134,21 @@ export function ProductionHistoryPage() {
     (sum, r) => sum + Number(r.totalRunCost),
     0,
   );
+
+  const columns = useProductionRunColumns({
+    includeDateTime: true,
+    canRecordProduction,
+    activeWarehouseId: activeWarehouse?.id,
+    activeRecipeId: recipesData?.recipes?.[0]?.id,
+    onEditDraft: setEditingDraftRun,
+    onReverseRun: setSelectedRun,
+  });
+
+  const bulkActions = useProductionRunBulkActions({
+    canRecordProduction,
+    activeWarehouseId: activeWarehouse?.id,
+    activeRecipeId: recipesData?.recipes?.[0]?.id,
+  });
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -299,45 +309,16 @@ export function ProductionHistoryPage() {
             }
           />
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("Run number")}</TableHead>
-                  <TableHead>{t("Date / Time")}</TableHead>
-                  <TableHead>{t("Status")}</TableHead>
-                  <TableHead>{t("Product")}</TableHead>
-                  <TableHead className="text-right">{t("Good packets")}</TableHead>
-                  <TableHead className="text-right">
-                    <DomainTooltip term="YIELD_VARIANCE">
-                      {t("Yield variance")}
-                    </DomainTooltip>
-                  </TableHead>
-                  <TableHead className="text-right">{t("Materials cost")}</TableHead>
-                  <TableHead className="text-right">{t("Total cost")}</TableHead>
-                  <TableHead className="text-right">{t("Cost / packet")}</TableHead>
-                  <TableHead className="text-right">{t("Actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {runs.map((run) => (
-                  <ProductionRunRow
-                    key={run.id}
-                    run={run}
-                    canRecordProduction={canRecordProduction}
-                    activeWarehouseId={activeWarehouse?.id}
-                    activeRecipeId={recipesData?.recipes?.[0]?.id}
-                    onEditDraft={setEditingDraftRun}
-                    onReverseRun={setSelectedRun}
-                    extraColumns={
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDateTime(run.postedAt || run.createdAt)}
-                      </TableCell>
-                    }
-                  />
-                ))}
-              </TableBody>
-            </Table>
+          <div className="p-4">
+            <DataTable
+              tableId="production-history"
+              data={runs}
+              columns={columns}
+              getRowId={(r) => r.id}
+              ariaLabel="Production run history"
+              csvFilename="production-run-history"
+              bulkActions={bulkActions}
+            />
           </div>
         )}
       </div>

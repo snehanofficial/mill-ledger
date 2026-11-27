@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -8,18 +10,15 @@ import { usePagination } from "@/hooks/use-pagination";
 import { formatDateTime } from "@/lib/formatters";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataPagination } from "@/components/ui/data-pagination";
+import {
+  DataTable,
+  DataTableColumnHeader,
+  type DataTableColumnMeta,
+} from "@/components/ui/data-table";
 import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { RefreshCwIcon, SearchIcon, TruckIcon } from "lucide-react";
 
 interface Dispatch {
@@ -86,6 +85,103 @@ export function DispatchPage() {
 
   const dispatches = data?.dispatches ?? [];
   const filtered = dispatches;
+
+  const dispatchColumns = useMemo<ColumnDef<Dispatch, unknown>[]>(
+    () => [
+      {
+        accessorKey: "dispatchNumber",
+        enableHiding: false,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Dispatch #" />
+        ),
+        cell: ({ row }) => (
+          <Link
+            to={`/dispatch/${row.original.id}`}
+            className="font-medium text-primary hover:underline tabular-nums whitespace-nowrap"
+          >
+            {row.original.dispatchNumber}
+          </Link>
+        ),
+        meta: { label: "Dispatch #" } satisfies DataTableColumnMeta<Dispatch>,
+      },
+      {
+        id: "orderNumber",
+        accessorFn: (row) => row.salesOrder?.orderNumber ?? "",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Order #" />
+        ),
+        cell: ({ row }) =>
+          row.original.salesOrder ? (
+            <Link
+              to={`/orders/${row.original.salesOrder.id}`}
+              className="hover:underline tabular-nums whitespace-nowrap"
+            >
+              {row.original.salesOrder.orderNumber}
+            </Link>
+          ) : (
+            "—"
+          ),
+        meta: { label: "Order #" } satisfies DataTableColumnMeta<Dispatch>,
+      },
+      {
+        id: "customer",
+        accessorFn: (row) => row.salesOrder?.customer?.name ?? "",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Customer" />
+        ),
+        cell: ({ row }) => (
+          <span>{row.original.salesOrder?.customer?.name ?? "—"}</span>
+        ),
+        meta: { label: "Customer" } satisfies DataTableColumnMeta<Dispatch>,
+      },
+      {
+        id: "vehicleDriver",
+        accessorFn: (row) =>
+          `${row.vehicleNumber || ""} ${row.driverName || ""}`.trim(),
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Vehicle / Driver" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-xs text-muted-foreground">
+            {row.original.vehicleNumber || "—"}{" "}
+            {row.original.driverName ? `(${row.original.driverName})` : ""}
+          </span>
+        ),
+        meta: {
+          label: "Vehicle / Driver",
+        } satisfies DataTableColumnMeta<Dispatch>,
+      },
+      {
+        accessorKey: "status",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Status" />
+        ),
+        cell: ({ row }) => (
+          <Badge variant="outline" className="whitespace-nowrap">
+            {row.original.status}
+          </Badge>
+        ),
+        meta: { label: "Status" } satisfies DataTableColumnMeta<Dispatch>,
+      },
+      {
+        id: "dispatchedAt",
+        accessorFn: (row) => new Date(row.dispatchedAt).getTime() || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Dispatched at" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+            {formatDateTime(row.original.dispatchedAt)}
+          </span>
+        ),
+        meta: {
+          label: "Dispatched at",
+          exportValue: (r) => formatDateTime(r.dispatchedAt),
+        } satisfies DataTableColumnMeta<Dispatch>,
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4 sm:p-6 lg:p-8">
@@ -179,56 +275,14 @@ export function DispatchPage() {
         />
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Dispatch #</TableHead>
-                  <TableHead>Order #</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Vehicle / Driver</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Dispatched at</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((d) => (
-                  <TableRow key={d.id}>
-                    <TableCell className="font-medium tabular-nums">
-                      <Link
-                        to={`/dispatch/${d.id}`}
-                        className="text-primary hover:underline"
-                      >
-                        {d.dispatchNumber}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="tabular-nums">
-                      {d.salesOrder ? (
-                        <Link
-                          to={`/orders/${d.salesOrder.id}`}
-                          className="hover:underline"
-                        >
-                          {d.salesOrder.orderNumber}
-                        </Link>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
-                    <TableCell>{d.salesOrder?.customer?.name ?? "—"}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {d.vehicleNumber || "—"} {d.driverName ? `(${d.driverName})` : ""}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{d.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground tabular-nums">
-                      {formatDateTime(d.dispatchedAt)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            tableId="dispatches"
+            data={filtered}
+            columns={dispatchColumns}
+            getRowId={(r) => r.id}
+            ariaLabel="Dispatches"
+            csvFilename="dispatches"
+          />
 
           <DataPagination
             pagination={data?.pagination}

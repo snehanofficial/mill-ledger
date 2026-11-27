@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -11,19 +10,17 @@ import { usePagination } from "@/hooks/use-pagination";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import { DataPagination } from "@/components/ui/data-pagination";
+import { DataTable } from "@/components/ui/data-table";
 import {
   EmptyState,
   SkeletonTable,
   ErrorState,
 } from "@/components/ui/loading-error-empty";
+import type { ProductionRun as SharedProductionRun } from "@/components/production/production-types";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  useProductionRunBulkActions,
+  useProductionRunColumns,
+} from "@/components/production/production-run-columns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,7 +52,6 @@ import {
   IndianRupeeIcon,
   Trash2Icon,
   LayersIcon,
-  PencilIcon,
 } from "lucide-react";
 
 interface ProductionRunMaterial {
@@ -379,36 +375,6 @@ export function ProductionPage() {
     },
   });
 
-  const postDraftMutation = useMutation({
-    mutationFn: async (run: ProductionRun) => {
-      const res = await apiClient.post(`/production-runs/${run.id}/post`, {
-        warehouseId: activeWarehouse?.id || "",
-        recipeId: run.recipeId || activeRecipe?.id || "",
-        runNumber: run.runNumber,
-        batchCount: Number(run.batchCount) || 1,
-        actualGoodQty: Number(run.actualGoodQty) || Number(run.expectedOutputQty) || 200,
-        actualRejectedQty: Number(run.actualRejectedQty) || 0,
-        directLaborCost: Number(run.directLaborCost) || 0,
-        utilityCost: Number(run.utilityCost) || 0,
-        notes: run.notes || undefined,
-        consumedMaterials: run.materials.map((m) => ({
-          inventoryItemId: m.inventoryItemId,
-          actualQty: Number(m.actualQty) > 0 ? Number(m.actualQty) : Number(m.plannedQty),
-          damagedQty: Number(m.damagedQty) || 0,
-        })),
-      });
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["production-runs"] });
-      queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
-      toast.success("Draft run posted to stock ledger.");
-    },
-    onError: (err) => {
-      toast.error(extractErrorMessage(err, "Failed to post draft run"));
-    },
-  });
-
   const createRecipeMutation = useMutation({
     mutationFn: async () => {
       if (!newBomVariantId || !newBomName.trim() || !newBomOutputUomId) {
@@ -448,20 +414,6 @@ export function ProductionPage() {
     },
     onError: (err) => {
       toast.error(extractErrorMessage(err, "Failed to create BOM recipe"));
-    },
-  });
-
-  const deleteDraftMutation = useMutation({
-    mutationFn: async (runId: string) => {
-      const res = await apiClient.delete(`/production-runs/${runId}`);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["production-runs"] });
-      toast.success("Draft run deleted.");
-    },
-    onError: (err) => {
-      toast.error(extractErrorMessage(err, "Failed to delete draft"));
     },
   });
 
@@ -564,6 +516,29 @@ export function ProductionPage() {
   const cartonsUsedLive = cartonLine ? getMaterialInput(cartonLine).actualQty : 0;
   const cartonsHold = cartonsUsedLive * 20;
   const hasCartonShortage = Boolean(cartonLine) && cartonsHold < actualGoodQty;
+
+  const productionColumns = useProductionRunColumns({
+    includeDateTime: false,
+    canRecordProduction,
+    activeWarehouseId: activeWarehouse?.id,
+    activeRecipeId: recipesData?.recipes?.[0]?.id,
+    onEditDraft: (r) => {
+      setEditingDraftRun(r as unknown as ProductionRun);
+      setDraftEditGoodQty(
+        Number(r.actualGoodQty) || Number(r.expectedOutputQty) || 0,
+      );
+      setDraftEditLabor(Number(r.directLaborCost) || 0);
+      setDraftEditUtility(Number(r.utilityCost) || 0);
+      setDraftEditNotes(r.notes || "");
+    },
+    onReverseRun: (r) => setSelectedRun(r as unknown as ProductionRun),
+  });
+
+  const productionBulkActions = useProductionRunBulkActions({
+    canRecordProduction,
+    activeWarehouseId: activeWarehouse?.id,
+    activeRecipeId: recipesData?.recipes?.[0]?.id,
+  });
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -743,183 +718,32 @@ export function ProductionPage() {
               </Button>
             )}
           </div>
+        ) : filteredRuns.length === 0 && runs.length > 0 ? (
+          <EmptyState
+            title={t("No production batches match the search query.")}
+            description="Clear the search query to view all production batches."
+            className="min-h-32 py-6"
+            action={
+              <Button
+                variant="tertiary"
+                size="sm"
+                onClick={() => setSearchQuery("")}
+              >
+                Clear search
+              </Button>
+            }
+          />
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("Run number")}</TableHead>
-                  <TableHead>{t("Status")}</TableHead>
-                  <TableHead>{t("Product")}</TableHead>
-                  <TableHead className="text-right">{t("Good packets")}</TableHead>
-                  <TableHead className="text-right">
-                    <DomainTooltip term="YIELD_VARIANCE">
-                      {t("Yield variance")}
-                    </DomainTooltip>
-                  </TableHead>
-                  <TableHead className="text-right">{t("Materials cost")}</TableHead>
-                  <TableHead className="text-right">{t("Total cost")}</TableHead>
-                  <TableHead className="text-right">{t("Cost / packet")}</TableHead>
-                  <TableHead className="text-right">{t("Actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredRuns.length === 0 && runs.length > 0 && (
-                  <TableRow>
-                    <TableCell colSpan={9} className="p-0">
-                      <EmptyState
-                        title={t("No production batches match the search query.")}
-                        description="Clear the search query to view all production batches."
-                        className="min-h-32 py-6"
-                        action={
-                          <Button
-                            variant="tertiary"
-                            size="sm"
-                            onClick={() => setSearchQuery("")}
-                          >
-                            Clear search
-                          </Button>
-                        }
-                      />
-                    </TableCell>
-                  </TableRow>
-                )}
-                {filteredRuns.map((r) => {
-                  const yieldPct = Number(r.yieldVariancePct);
-                  const isYieldFlagged = r.isYieldFlagged;
-
-                  return (
-                    <TableRow key={r.id}>
-                      <TableCell className="font-mono font-medium">
-                        <Link
-                          to={`/production/runs/${r.id}`}
-                          className="text-primary hover:underline"
-                        >
-                          {r.runNumber}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            r.status === "POSTED"
-                              ? "success"
-                              : r.status === "REVERSED"
-                                ? "danger"
-                                : "outline"
-                          }
-                        >
-                          {r.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-foreground">
-                            {r.recipe.productVariant.name}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {r.recipe.name}
-                          </span>
-                          {r.packagingMismatch && (
-                            <span
-                              className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400"
-                              title={r.packagingWarning || "Packaging capacity mismatch"}
-                            >
-                              <AlertTriangleIcon className="h-3 w-3 shrink-0" />
-                              {r.packagingWarning || "Packaging mismatch"}
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">
-                        {formatQuantity(r.actualGoodQty)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <span
-                            className={
-                              isYieldFlagged
-                                ? "font-semibold text-amber-600 dark:text-amber-400"
-                                : "text-muted-foreground"
-                            }
-                          >
-                            {yieldPct > 0 ? `+${yieldPct}%` : `${yieldPct}%`}
-                          </span>
-                          {isYieldFlagged && (
-                            <AlertTriangleIcon className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {formatINR(r.directMaterialCost)}
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">
-                        {formatINR(r.totalRunCost)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono font-medium text-emerald-600 dark:text-emerald-400">
-                        {formatINR(r.costPerGoodUnit)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {r.status === "DRAFT" && canRecordProduction ? (
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              aria-label={`Edit draft ${r.runNumber}`}
-                              onClick={() => {
-                                setEditingDraftRun(r);
-                                setDraftEditGoodQty(
-                                  Number(r.actualGoodQty) || Number(r.expectedOutputQty) || 0,
-                                );
-                                setDraftEditLabor(Number(r.directLaborCost) || 0);
-                                setDraftEditUtility(Number(r.utilityCost) || 0);
-                                setDraftEditNotes(r.notes || "");
-                              }}
-                              className="h-7 px-2 text-xs"
-                            >
-                              <PencilIcon className="h-3 w-3 mr-1" />
-                              Edit
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => postDraftMutation.mutate(r)}
-                              disabled={postDraftMutation.isPending}
-                              className="h-7 px-2 text-xs text-emerald-600"
-                            >
-                              Post Draft
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteDraftMutation.mutate(r.id)}
-                              disabled={deleteDraftMutation.isPending}
-                              className="h-7 px-2 text-xs text-destructive"
-                              aria-label={`Delete draft ${r.runNumber}`}
-                            >
-                              <Trash2Icon className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        ) : r.status === "POSTED" ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedRun(r)}
-                            className="gap-1 text-xs text-destructive hover:bg-destructive/10"
-                          >
-                            <RotateCcwIcon className="h-3.5 w-3.5" />
-                            Reverse
-                          </Button>
-                        ) : r.status === "REVERSED" ? (
-                          <span className="text-xs text-muted-foreground italic">
-                            Reversed
-                          </span>
-                        ) : null}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+          <div className="p-4">
+            <DataTable
+              tableId="production-overview"
+              data={filteredRuns as unknown as SharedProductionRun[]}
+              columns={productionColumns}
+              getRowId={(r) => r.id}
+              ariaLabel="Production runs"
+              csvFilename="production-runs"
+              bulkActions={productionBulkActions}
+            />
           </div>
         )}
       </div>

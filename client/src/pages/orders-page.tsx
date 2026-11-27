@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useUrlState } from "@/hooks/use-url-state";
@@ -9,18 +11,15 @@ import { useSyncManager } from "@/offline/use-offline";
 import { formatINR, formatDateTime } from "@/lib/formatters";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataPagination } from "@/components/ui/data-pagination";
+import {
+  DataTable,
+  DataTableColumnHeader,
+  type DataTableColumnMeta,
+} from "@/components/ui/data-table";
 import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   AlertTriangleIcon,
   PlusCircleIcon,
@@ -121,6 +120,170 @@ export function OrdersPage() {
     (o) => o.status === "SUBMITTED" || o.status === "UNDER_REVIEW",
   ).length;
   const approvedCount = orders.filter((o) => o.status === "APPROVED").length;
+
+  const orderColumns = useMemo<ColumnDef<SalesOrder, unknown>[]>(() => {
+    const cols: ColumnDef<SalesOrder, unknown>[] = [
+      {
+        accessorKey: "orderNumber",
+        enableHiding: false,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Order #" />
+        ),
+        cell: ({ row }) => (
+          <Link
+            to={`/orders/${row.original.id}`}
+            className="font-medium text-primary hover:underline tabular-nums whitespace-nowrap"
+          >
+            {row.original.orderNumber}
+          </Link>
+        ),
+        meta: {
+          label: "Order #",
+          cellClassName: "whitespace-nowrap",
+        } satisfies DataTableColumnMeta<SalesOrder>,
+      },
+      {
+        id: "customer",
+        accessorFn: (row) => row.customer.name,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Customer" />
+        ),
+        cell: ({ row }) => (
+          <div className="min-w-[180px]">
+            <div className="font-medium">{row.original.customer.name}</div>
+            <div className="text-xs text-muted-foreground">
+              {row.original.customer.code} • {row.original.deliveryState}
+            </div>
+          </div>
+        ),
+        meta: {
+          label: "Customer",
+          exportValue: (r) => `${r.customer.name} (${r.customer.code})`,
+        } satisfies DataTableColumnMeta<SalesOrder>,
+      },
+    ];
+
+    if (!isSalesman) {
+      cols.push({
+        id: "salesman",
+        accessorFn: (row) => row.salesman.name,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Salesman" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground whitespace-nowrap">
+            {row.original.salesman.name}
+          </span>
+        ),
+        meta: {
+          label: "Salesman",
+          exportValue: (r) => r.salesman.name,
+        } satisfies DataTableColumnMeta<SalesOrder>,
+      });
+    }
+
+    cols.push(
+      {
+        accessorKey: "status",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Order status" />
+        ),
+        cell: ({ row }) => {
+          const order = row.original;
+          return (
+            <div className="flex items-center gap-1.5 whitespace-nowrap">
+              <Badge variant="outline">
+                {order.status.replaceAll("_", " ")}
+              </Badge>
+              {(order.totalShortage ?? 0) > 0 &&
+                (order.status === "SUBMITTED" ||
+                  order.status === "UNDER_REVIEW") && (
+                  <span
+                    className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400"
+                    title="Stock shortage"
+                  >
+                    <AlertTriangleIcon className="size-3.5" aria-hidden="true" />
+                    Shortage
+                  </span>
+                )}
+            </div>
+          );
+        },
+        meta: {
+          label: "Order status",
+          exportValue: (r) => r.status.replaceAll("_", " "),
+        } satisfies DataTableColumnMeta<SalesOrder>,
+      },
+      {
+        accessorKey: "fulfilmentStatus",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Fulfilment" />
+        ),
+        cell: ({ row }) => (
+          <Badge variant="outline" className="whitespace-nowrap">
+            {row.original.fulfilmentStatus.replaceAll("_", " ")}
+          </Badge>
+        ),
+        meta: {
+          label: "Fulfilment",
+          exportValue: (r) => r.fulfilmentStatus.replaceAll("_", " "),
+        } satisfies DataTableColumnMeta<SalesOrder>,
+      },
+      {
+        id: "totalAmount",
+        accessorFn: (row) => Number(row.totalAmount) || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Total" align="right" />
+        ),
+        cell: ({ row }) => (
+          <span className="font-medium tabular-nums whitespace-nowrap">
+            {formatINR(row.original.totalAmount)}
+          </span>
+        ),
+        meta: {
+          label: "Total",
+          align: "right",
+          exportValue: (r) => Number(r.totalAmount),
+        } satisfies DataTableColumnMeta<SalesOrder>,
+      },
+      {
+        id: "createdAt",
+        accessorFn: (row) => new Date(row.createdAt).getTime() || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Created" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+            {formatDateTime(row.original.createdAt)}
+          </span>
+        ),
+        meta: {
+          label: "Created",
+          exportValue: (r) => formatDateTime(r.createdAt),
+        } satisfies DataTableColumnMeta<SalesOrder>,
+      },
+      {
+        id: "actions",
+        enableSorting: false,
+        enableHiding: false,
+        header: () => <span>Next action</span>,
+        cell: ({ row }) => (
+          <Link
+            to={`/orders/${row.original.id}`}
+            className="text-xs font-medium text-primary hover:underline whitespace-nowrap"
+          >
+            {getNextActionLabel(row.original, user?.role)}
+          </Link>
+        ),
+        meta: {
+          label: "Next action",
+          align: "right",
+        } satisfies DataTableColumnMeta<SalesOrder>,
+      },
+    );
+
+    return cols;
+  }, [isSalesman, user?.role]);
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4 sm:p-6 lg:p-8">
@@ -283,83 +446,15 @@ export function OrdersPage() {
           </div>
 
           {/* Desktop / Tablet table */}
-          <div className="hidden sm:block overflow-x-auto rounded-lg border border-border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Order #</TableHead>
-                  <TableHead>Customer</TableHead>
-                  {!isSalesman && <TableHead>Salesman</TableHead>}
-                  <TableHead>Order status</TableHead>
-                  <TableHead>Fulfilment</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Next action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium tabular-nums">
-                      <Link
-                        to={`/orders/${order.id}`}
-                        className="text-primary hover:underline"
-                      >
-                        {order.orderNumber}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{order.customer.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {order.customer.code} • {order.deliveryState}
-                      </div>
-                    </TableCell>
-                    {!isSalesman && (
-                      <TableCell className="text-sm text-muted-foreground">
-                        {order.salesman.name}
-                      </TableCell>
-                    )}
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <Badge variant="outline">
-                          {order.status.replaceAll("_", " ")}
-                        </Badge>
-                        {(order.totalShortage ?? 0) > 0 &&
-                          (order.status === "SUBMITTED" ||
-                            order.status === "UNDER_REVIEW") && (
-                            <span
-                              className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400"
-                              title="Stock shortage"
-                            >
-                              <AlertTriangleIcon className="size-3.5" aria-hidden="true" />
-                              Shortage
-                            </span>
-                          )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {order.fulfilmentStatus.replaceAll("_", " ")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-medium tabular-nums">
-                      {formatINR(order.totalAmount)}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground tabular-nums">
-                      {formatDateTime(order.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Link
-                        to={`/orders/${order.id}`}
-                        className="text-xs font-medium text-primary hover:underline"
-                      >
-                        {getNextActionLabel(order, user?.role)}
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <div className="hidden sm:block">
+            <DataTable
+              tableId="sales-orders"
+              data={filteredOrders}
+              columns={orderColumns}
+              getRowId={(r) => r.id}
+              ariaLabel="Sales orders"
+              csvFilename="sales-orders"
+            />
           </div>
 
           <DataPagination

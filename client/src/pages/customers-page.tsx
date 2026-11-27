@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -8,18 +9,15 @@ import { usePagination } from "@/hooks/use-pagination";
 import { useLanguage } from "@/lib/i18n";
 import { DataPagination } from "@/components/ui/data-pagination";
 import {
+  DataTable,
+  DataTableColumnHeader,
+  type DataTableColumnMeta,
+} from "@/components/ui/data-table";
+import {
   EmptyState,
   SkeletonTable,
   ErrorState,
 } from "@/components/ui/loading-error-empty";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -379,52 +377,60 @@ export function CustomersPage() {
               ) : undefined
             }
           />
+        ) : filteredCustomers.length === 0 && customers.length > 0 ? (
+          <EmptyState
+            title={t("No customer accounts match the search query.")}
+            description="Clear the search query to view all customer accounts."
+            className="min-h-32 py-6"
+            action={
+              <Button
+                variant="tertiary"
+                size="sm"
+                onClick={() => setSearchQuery("")}
+              >
+                Clear search
+              </Button>
+            }
+          />
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[120px]">{t("Account Code")}</TableHead>
-                  <TableHead>{t("Customer Name")}</TableHead>
-                  <TableHead>{t("Place of Supply")}</TableHead>
-                  <TableHead>{t("Tax Regime")}</TableHead>
-                  <TableHead>{t("GSTIN")}</TableHead>
-                  <TableHead className="w-[100px] text-center">{t("Status")}</TableHead>
-                  <TableHead className="text-right">{t("Actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCustomers.length === 0 && customers.length > 0 && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="p-0">
-                      <EmptyState
-                        title={t("No customer accounts match the search query.")}
-                        description="Clear the search query to view all customer accounts."
-                        className="min-h-32 py-6"
-                        action={
-                          <Button
-                            variant="tertiary"
-                            size="sm"
-                            onClick={() => setSearchQuery("")}
-                          >
-                            Clear search
-                          </Button>
-                        }
+          <div className="p-4">
+            <DataTable
+              tableId="customers"
+              data={filteredCustomers}
+              getRowId={(r) => r.id}
+              ariaLabel="Customers"
+              csvFilename="customers"
+              columns={
+                [
+                  {
+                    accessorKey: "code",
+                    enableHiding: false,
+                    header: ({ column }) => (
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Account Code")}
                       />
-                    </TableCell>
-                  </TableRow>
-                )}
-                {filteredCustomers.map((c) => {
-                  const isIntraState =
-                    c.state?.trim().toLowerCase() === "tamil nadu";
-                  return (
-                    <TableRow key={c.id}>
-                      <TableCell className="font-mono text-xs font-semibold">
-                        {c.code}
-                      </TableCell>
-                      <TableCell className="font-medium text-sm">
-                        <div className="flex flex-col">
-                          <span>{c.name}</span>
+                    ),
+                    cell: ({ row }) => (
+                      <span className="font-mono text-xs font-semibold whitespace-nowrap">
+                        {row.original.code}
+                      </span>
+                    ),
+                    meta: { label: "Account Code" } satisfies DataTableColumnMeta<Customer>,
+                  },
+                  {
+                    accessorKey: "name",
+                    header: ({ column }) => (
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Customer Name")}
+                      />
+                    ),
+                    cell: ({ row }) => {
+                      const c = row.original;
+                      return (
+                        <div className="flex flex-col min-w-[160px]">
+                          <span className="font-medium text-sm">{c.name}</span>
                           {c.assignments && c.assignments.length > 0 && (
                             <span className="text-2xs text-muted-foreground">
                               Assigned:{" "}
@@ -432,61 +438,118 @@ export function CustomersPage() {
                             </span>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
-                          <MapPinIcon className="size-3 text-muted-foreground" />
-                          {c.state}
-                        </div>
-                      </TableCell>
-                      <TableCell>
+                      );
+                    },
+                    meta: { label: "Customer Name" } satisfies DataTableColumnMeta<Customer>,
+                  },
+                  {
+                    accessorKey: "state",
+                    header: ({ column }) => (
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Place of Supply")}
+                      />
+                    ),
+                    cell: ({ row }) => (
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
+                        <MapPinIcon className="size-3 text-muted-foreground" aria-hidden="true" />
+                        {row.original.state}
+                      </div>
+                    ),
+                    meta: { label: "Place of Supply" } satisfies DataTableColumnMeta<Customer>,
+                  },
+                  {
+                    id: "taxRegime",
+                    accessorFn: (row) =>
+                      row.state?.trim().toLowerCase() === "tamil nadu"
+                        ? "Intra-state (CGST + SGST)"
+                        : "Inter-state (IGST)",
+                    header: ({ column }) => (
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Tax Regime")}
+                      />
+                    ),
+                    cell: ({ row }) => {
+                      const isIntraState =
+                        row.original.state?.trim().toLowerCase() === "tamil nadu";
+                      return (
                         <Badge
                           variant={isIntraState ? "secondary" : "outline"}
-                          className="text-[10px]"
+                          className="text-[10px] whitespace-nowrap"
                         >
                           {isIntraState
                             ? "Intra-state (CGST + SGST)"
                             : "Inter-state (IGST)"}
                         </Badge>
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">
-                        {c.gstin ? (
-                          <div className="flex items-center gap-1.5">
-                            <span>{c.gstin}</span>
-                            {validateGstin(c.gstin).isValid ? (
-                              <Badge
-                                variant="success"
-                                className="text-[9px] px-1 py-0"
-                              >
-                                Valid
-                              </Badge>
-                            ) : (
-                              <Badge
-                                variant="danger"
-                                className="text-[9px] px-1 py-0"
-                              >
-                                Invalid
-                              </Badge>
-                            )}
-                          </div>
-                        ) : (
-                          "—"
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {c.isActive ? (
-                          <Badge variant="success" className="text-[10px] gap-1">
-                            <CheckCircle2Icon className="size-2.5" />
-                            Active
-                          </Badge>
-                        ) : (
-                          <Badge variant="neutral" className="text-[10px]">
-                            Archived
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                      );
+                    },
+                    meta: { label: "Tax Regime" } satisfies DataTableColumnMeta<Customer>,
+                  },
+                  {
+                    accessorKey: "gstin",
+                    header: ({ column }) => (
+                      <DataTableColumnHeader column={column} title={t("GSTIN")} />
+                    ),
+                    cell: ({ row }) => {
+                      const c = row.original;
+                      return c.gstin ? (
+                        <div className="flex items-center gap-1.5 font-mono text-xs whitespace-nowrap">
+                          <span>{c.gstin}</span>
+                          {validateGstin(c.gstin).isValid ? (
+                            <Badge variant="success" className="text-[9px] px-1 py-0">
+                              Valid
+                            </Badge>
+                          ) : (
+                            <Badge variant="danger" className="text-[9px] px-1 py-0">
+                              Invalid
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        "—"
+                      );
+                    },
+                    meta: {
+                      label: "GSTIN",
+                      exportValue: (r) => r.gstin || "",
+                    } satisfies DataTableColumnMeta<Customer>,
+                  },
+                  {
+                    id: "isActive",
+                    accessorFn: (row) => (row.isActive ? "Active" : "Archived"),
+                    header: ({ column }) => (
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Status")}
+                        align="center"
+                      />
+                    ),
+                    cell: ({ row }) =>
+                      row.original.isActive ? (
+                        <Badge variant="success" className="text-[10px] gap-1 whitespace-nowrap">
+                          <CheckCircle2Icon className="size-2.5" aria-hidden="true" />
+                          Active
+                        </Badge>
+                      ) : (
+                        <Badge variant="neutral" className="text-[10px] whitespace-nowrap">
+                          Archived
+                        </Badge>
+                      ),
+                    meta: {
+                      label: "Status",
+                      align: "center",
+                    } satisfies DataTableColumnMeta<Customer>,
+                  },
+                  {
+                    id: "actions",
+                    enableSorting: false,
+                    enableHiding: false,
+                    header: () => <span>{t("Actions")}</span>,
+                    cell: ({ row }) => {
+                      const c = row.original;
+                      return (
+                        <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                           <Button
                             variant="outline"
                             size="sm"
@@ -494,7 +557,7 @@ export function CustomersPage() {
                             className="h-7 px-2 text-xs gap-1"
                             aria-label={`View ${c.name}`}
                           >
-                            <EyeIcon className="size-3" />
+                            <EyeIcon className="size-3" aria-hidden="true" />
                             View
                           </Button>
                           {canManageCustomers && (
@@ -506,7 +569,7 @@ export function CustomersPage() {
                                 className="h-7 px-2 text-xs gap-1"
                                 aria-label={`Edit ${c.name}`}
                               >
-                                <PencilIcon className="size-3" />
+                                <PencilIcon className="size-3" aria-hidden="true" />
                                 Edit
                               </Button>
                               <Button
@@ -520,18 +583,22 @@ export function CustomersPage() {
                                     : `Restore ${c.name}`
                                 }
                               >
-                                <ArchiveIcon className="size-3" />
+                                <ArchiveIcon className="size-3" aria-hidden="true" />
                                 {c.isActive ? "Archive" : "Restore"}
                               </Button>
                             </>
                           )}
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                      );
+                    },
+                    meta: {
+                      label: "Actions",
+                      align: "right",
+                    } satisfies DataTableColumnMeta<Customer>,
+                  },
+                ] satisfies ColumnDef<Customer, unknown>[]
+              }
+            />
           </div>
         )}
       </div>

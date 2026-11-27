@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -10,6 +11,11 @@ import { usePagination } from "@/hooks/use-pagination";
 import { formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import { DataPagination } from "@/components/ui/data-pagination";
+import {
+  DataTable,
+  DataTableColumnHeader,
+  type DataTableColumnMeta,
+} from "@/components/ui/data-table";
 import {
   EmptyState,
   SkeletonTable,
@@ -813,160 +819,255 @@ export function StockPage() {
             </div>
 
             {/* Desktop Table View (md+ viewports) */}
-            <div className="hidden md:block overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[120px]">{t("SKU")}</TableHead>
-                    <TableHead>{t("Item Name")}</TableHead>
-                    <TableHead className="w-[140px]">{t("Category")}</TableHead>
-                    <TableHead className="text-right">{t("On Hand")}</TableHead>
-                    <TableHead className="text-right">{t("Reserved")}</TableHead>
-                    <TableHead className="text-right">{t("Available (ATP)")}</TableHead>
-                    <TableHead className="text-right">{t("Avg Unit Cost")}</TableHead>
-                    <TableHead className="text-right">{t("Total Value")}</TableHead>
-                    <TableHead className="w-[110px] text-center">
-                      {t("Ledger Status")}
-                    </TableHead>
-                    <TableHead className="text-right">{t("Actions")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredBalances.length === 0 && balances.length > 0 && (
-                    <TableRow>
-                      <TableCell colSpan={10} className="p-0">
-                        <EmptyState
-                          title={t("No items match the selected filters.")}
-                          description="Clear the search or category filter to view all stock items."
-                          className="min-h-32 py-6"
-                          action={
-                            <Button
-                              variant="tertiary"
-                              size="sm"
-                              onClick={() => {
-                                setSearchQuery("");
-                                setCategoryFilter("ALL");
-                              }}
-                            >
-                              Clear filters
-                            </Button>
-                          }
-                        />
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {filteredBalances.map((item) => {
-                    const totalValue = item.onHand * item.weightedAverageCost;
-                    const categoryConfig = CATEGORY_LABELS[item.category] || {
-                      label: item.category,
-                      variant: "secondary",
-                    };
-
-                    return (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-mono text-xs font-medium text-foreground">
+            <div className="hidden md:block p-4">
+              {filteredBalances.length === 0 && balances.length > 0 ? (
+                <EmptyState
+                  title={t("No items match the selected filters.")}
+                  description="Clear the search or category filter to view all stock items."
+                  className="min-h-32 py-6"
+                  action={
+                    <Button
+                      variant="tertiary"
+                      size="sm"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setCategoryFilter("ALL");
+                      }}
+                    >
+                      Clear filters
+                    </Button>
+                  }
+                />
+              ) : (
+                <DataTable
+                  tableId="stock-balances"
+                  data={filteredBalances}
+                  getRowId={(r) => r.id}
+                  ariaLabel="Stock balances"
+                  csvFilename="stock-balances"
+                  columns={
+                    [
+                      {
+                        accessorKey: "sku",
+                        enableHiding: false,
+                        header: ({ column }) => (
+                          <DataTableColumnHeader column={column} title={t("SKU")} />
+                        ),
+                        cell: ({ row }) => (
                           <Link
-                            to={`/stock/${item.id}/ledger`}
-                            className="text-primary hover:underline"
+                            to={`/stock/${row.original.id}/ledger`}
+                            className="font-mono text-xs font-medium text-primary hover:underline whitespace-nowrap"
                           >
-                            {item.sku}
+                            {row.original.sku}
                           </Link>
-                        </TableCell>
-                        <TableCell className="font-medium text-foreground">
+                        ),
+                        meta: { label: "SKU" } satisfies DataTableColumnMeta<InventoryBalance>,
+                      },
+                      {
+                        accessorKey: "name",
+                        header: ({ column }) => (
+                          <DataTableColumnHeader column={column} title={t("Item Name")} />
+                        ),
+                        cell: ({ row }) => (
                           <Link
-                            to={`/stock/${item.id}/ledger`}
-                            className="hover:underline"
+                            to={`/stock/${row.original.id}/ledger`}
+                            className="font-medium text-foreground hover:underline min-w-[160px] block"
                           >
-                            {item.name}
+                            {row.original.name}
                           </Link>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={categoryConfig.variant}
-                            className="text-xs"
-                          >
-                            {categoryConfig.label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {formatQuantity(item.onHand)}{" "}
-                          <span className="text-xs text-muted-foreground">
-                            {item.baseUom.symbol}
+                        ),
+                        meta: { label: "Item Name" } satisfies DataTableColumnMeta<InventoryBalance>,
+                      },
+                      {
+                        accessorKey: "category",
+                        header: ({ column }) => (
+                          <DataTableColumnHeader column={column} title={t("Category")} />
+                        ),
+                        cell: ({ row }) => {
+                          const categoryConfig = CATEGORY_LABELS[
+                            row.original.category as keyof typeof CATEGORY_LABELS
+                          ] || {
+                            label: row.original.category,
+                            variant: "secondary" as const,
+                          };
+                          return (
+                            <Badge variant={categoryConfig.variant} className="text-xs whitespace-nowrap">
+                              {categoryConfig.label}
+                            </Badge>
+                          );
+                        },
+                        meta: {
+                          label: "Category",
+                          exportValue: (r) =>
+                            CATEGORY_LABELS[r.category as keyof typeof CATEGORY_LABELS]?.label ||
+                            r.category,
+                        } satisfies DataTableColumnMeta<InventoryBalance>,
+                      },
+                      {
+                        id: "onHand",
+                        accessorFn: (row) => Number(row.onHand) || 0,
+                        header: ({ column }) => (
+                          <DataTableColumnHeader column={column} title={t("On Hand")} align="right" />
+                        ),
+                        cell: ({ row }) => (
+                          <span className="font-medium tabular-nums whitespace-nowrap">
+                            {formatQuantity(row.original.onHand)}{" "}
+                            <span className="text-xs text-muted-foreground">
+                              {row.original.baseUom.symbol}
+                            </span>
                           </span>
-                        </TableCell>
-                        <TableCell className="text-right font-mono text-xs text-amber-600 dark:text-amber-400">
-                          {formatQuantity(item.reserved)}
-                        </TableCell>
-                        <TableCell className="text-right font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                          {formatQuantity(item.available)}
-                        </TableCell>
-                        <TableCell className="text-right text-muted-foreground">
-                          {formatINR(item.weightedAverageCost, {
-                            maximumFractionDigits:
-                              item.weightedAverageCost % 1 === 0 ? 2 : 3,
-                          })}
-                        </TableCell>
-                        <TableCell className="text-right font-medium text-foreground">
-                          {formatINR(totalValue)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {item.reconciled ? (
+                        ),
+                        meta: {
+                          label: "On Hand",
+                          align: "right",
+                          exportValue: (r) => Number(r.onHand),
+                        } satisfies DataTableColumnMeta<InventoryBalance>,
+                      },
+                      {
+                        id: "reserved",
+                        accessorFn: (row) => Number(row.reserved) || 0,
+                        header: ({ column }) => (
+                          <DataTableColumnHeader column={column} title={t("Reserved")} align="right" />
+                        ),
+                        cell: ({ row }) => (
+                          <span className="font-mono text-xs text-amber-700 dark:text-amber-400 tabular-nums whitespace-nowrap">
+                            {formatQuantity(row.original.reserved)}
+                          </span>
+                        ),
+                        meta: {
+                          label: "Reserved",
+                          align: "right",
+                          exportValue: (r) => Number(r.reserved),
+                        } satisfies DataTableColumnMeta<InventoryBalance>,
+                      },
+                      {
+                        id: "available",
+                        accessorFn: (row) => Number(row.available) || 0,
+                        header: ({ column }) => (
+                          <DataTableColumnHeader column={column} title={t("Available (ATP)")} align="right" />
+                        ),
+                        cell: ({ row }) => (
+                          <span className="font-mono text-xs font-semibold text-emerald-700 dark:text-emerald-400 tabular-nums whitespace-nowrap">
+                            {formatQuantity(row.original.available)}
+                          </span>
+                        ),
+                        meta: {
+                          label: "Available (ATP)",
+                          align: "right",
+                          exportValue: (r) => Number(r.available),
+                        } satisfies DataTableColumnMeta<InventoryBalance>,
+                      },
+                      {
+                        id: "weightedAverageCost",
+                        accessorFn: (row) => Number(row.weightedAverageCost) || 0,
+                        header: ({ column }) => (
+                          <DataTableColumnHeader column={column} title={t("Avg Unit Cost")} align="right" />
+                        ),
+                        cell: ({ row }) => (
+                          <span className="text-muted-foreground tabular-nums whitespace-nowrap">
+                            {formatINR(row.original.weightedAverageCost, {
+                              maximumFractionDigits:
+                                row.original.weightedAverageCost % 1 === 0 ? 2 : 3,
+                            })}
+                          </span>
+                        ),
+                        meta: {
+                          label: "Avg Unit Cost",
+                          align: "right",
+                          exportValue: (r) => Number(r.weightedAverageCost),
+                        } satisfies DataTableColumnMeta<InventoryBalance>,
+                      },
+                      {
+                        id: "totalValue",
+                        accessorFn: (row) => Number(row.onHand) * Number(row.weightedAverageCost),
+                        header: ({ column }) => (
+                          <DataTableColumnHeader column={column} title={t("Total Value")} align="right" />
+                        ),
+                        cell: ({ row }) => (
+                          <span className="font-medium text-foreground tabular-nums whitespace-nowrap">
+                            {formatINR(row.original.onHand * row.original.weightedAverageCost)}
+                          </span>
+                        ),
+                        meta: {
+                          label: "Total Value",
+                          align: "right",
+                          exportValue: (r) => r.onHand * r.weightedAverageCost,
+                        } satisfies DataTableColumnMeta<InventoryBalance>,
+                      },
+                      {
+                        id: "reconciled",
+                        accessorFn: (row) => (row.reconciled ? "Balanced" : "Variance"),
+                        header: ({ column }) => (
+                          <DataTableColumnHeader column={column} title={t("Ledger Status")} align="center" />
+                        ),
+                        cell: ({ row }) =>
+                          row.original.reconciled ? (
                             <span
-                              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600"
+                              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 whitespace-nowrap"
                               title="Ledger sum equals on-hand balance"
                             >
-                              <CheckCircleIcon
-                                className="size-3.5"
-                                aria-hidden="true"
-                              />
+                              <CheckCircleIcon className="size-3.5" aria-hidden="true" />
                               Balanced
                             </span>
                           ) : (
                             <span
-                              className="inline-flex items-center gap-1 text-xs font-medium text-amber-600"
+                              className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 whitespace-nowrap"
                               title="Ledger variance detected"
                             >
-                              <AlertTriangleIcon
-                                className="size-3.5"
-                                aria-hidden="true"
-                              />
+                              <AlertTriangleIcon className="size-3.5" aria-hidden="true" />
                               Variance
                             </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="inline-flex items-center justify-end gap-1.5">
-                            {canManageInventory && (
+                          ),
+                        meta: {
+                          label: "Ledger Status",
+                          align: "center",
+                        } satisfies DataTableColumnMeta<InventoryBalance>,
+                      },
+                      {
+                        id: "actions",
+                        enableSorting: false,
+                        enableHiding: false,
+                        header: () => <span>{t("Actions")}</span>,
+                        cell: ({ row }) => {
+                          const item = row.original;
+                          return (
+                            <div className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap">
+                              {canManageInventory && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  aria-label={`Edit ${item.name}`}
+                                  onClick={() => {
+                                    setEditingItem(item);
+                                    setEditItemName(item.name);
+                                  }}
+                                  className="h-7 px-2.5 text-xs gap-1"
+                                >
+                                  <PencilIcon className="size-3" aria-hidden="true" />
+                                  Edit
+                                </Button>
+                              )}
                               <Button
                                 variant="outline"
                                 size="sm"
-                                aria-label={`Edit ${item.name}`}
-                                onClick={() => {
-                                  setEditingItem(item);
-                                  setEditItemName(item.name);
-                                }}
+                                onClick={() => setSelectedLedgerItem(item)}
                                 className="h-7 px-2.5 text-xs gap-1"
                               >
-                                <PencilIcon className="size-3" aria-hidden="true" />
-                                Edit
+                                <BookOpenIcon className="size-3" aria-hidden="true" />
+                                Ledger
                               </Button>
-                            )}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedLedgerItem(item)}
-                              className="h-7 px-2.5 text-xs gap-1"
-                            >
-                              <BookOpenIcon className="size-3" aria-hidden="true" />
-                              Ledger
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                            </div>
+                          );
+                        },
+                        meta: {
+                          label: "Actions",
+                          align: "right",
+                        } satisfies DataTableColumnMeta<InventoryBalance>,
+                      },
+                    ] satisfies ColumnDef<InventoryBalance, unknown>[]
+                  }
+                />
+              )}
             </div>
 
             <DataPagination

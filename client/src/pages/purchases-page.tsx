@@ -9,7 +9,13 @@ import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
 import { formatDate, formatINR, formatQuantity } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
+import type { ColumnDef } from "@tanstack/react-table";
 import { DataPagination } from "@/components/ui/data-pagination";
+import {
+  DataTable,
+  DataTableColumnHeader,
+  type DataTableColumnMeta,
+} from "@/components/ui/data-table";
 import {
   EmptyState,
   SkeletonTable,
@@ -395,123 +401,224 @@ export function PurchasesPage() {
               ) : undefined
             }
           />
+        ) : filteredReceipts.length === 0 && receipts.length > 0 ? (
+          <EmptyState
+            title={t("No purchase receipts match the search query.")}
+            description="Clear the search query to view all purchase receipts."
+            className="min-h-32 py-6"
+            action={
+              <Button
+                variant="tertiary"
+                size="sm"
+                onClick={() => setSearchQuery("")}
+              >
+                Clear search
+              </Button>
+            }
+          />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[140px]">{t("Receipt #")}</TableHead>
-                <TableHead>{t("Date")}</TableHead>
-                <TableHead>{t("Supplier")}</TableHead>
-                <TableHead>{t("Item")}</TableHead>
-                <TableHead className="text-right">{t("Quantity")}</TableHead>
-                <TableHead className="text-right">{t("Unit Rate")}</TableHead>
-                <TableHead className="text-right">{t("Total Amount")}</TableHead>
-                <TableHead className="w-[100px] text-center">{t("Status")}</TableHead>
-                <TableHead className="text-right">{t("Actions")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredReceipts.length === 0 && receipts.length > 0 && (
-                <TableRow>
-                  <TableCell colSpan={9} className="p-0">
-                    <EmptyState
-                      title={t("No purchase receipts match the search query.")}
-                      description="Clear the search query to view all purchase receipts."
-                      className="min-h-32 py-6"
-                      action={
-                        <Button
-                          variant="tertiary"
-                          size="sm"
-                          onClick={() => setSearchQuery("")}
-                        >
-                          Clear search
-                        </Button>
-                      }
-                    />
-                  </TableCell>
-                </TableRow>
-              )}
-              {filteredReceipts.map((rec) => {
-                const firstLine = rec.lines[0];
-                const totalAmount = rec.lines.reduce(
-                  (sum, l) => sum + Number(l.totalPrice),
-                  0,
-                );
-                return (
-                  <TableRow key={rec.id}>
-                    <TableCell className="font-mono text-xs font-semibold">
+          <div className="p-4">
+            <DataTable
+              tableId="purchase-receipts"
+              data={filteredReceipts}
+              getRowId={(r) => r.id}
+              ariaLabel="Purchase receipts"
+              csvFilename="purchase-receipts"
+              columns={
+                [
+                  {
+                    accessorKey: "receiptNumber",
+                    enableHiding: false,
+                    header: ({ column }) => (
+                      <DataTableColumnHeader column={column} title={t("Receipt #")} />
+                    ),
+                    cell: ({ row }) => (
                       <Link
-                        to={`/purchases/${rec.id}`}
-                        className="text-primary hover:underline"
+                        to={`/purchases/${row.original.id}`}
+                        className="font-mono text-xs font-semibold text-primary hover:underline whitespace-nowrap"
                       >
-                        {rec.receiptNumber}
+                        {row.original.receiptNumber}
                       </Link>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {formatDate(rec.postedAt)}
-                    </TableCell>
-                    <TableCell className="font-medium text-sm">
-                      {rec.supplier.name}
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      {firstLine?.inventoryItem.name || "Multiple items"}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-xs tabular-nums">
-                      {formatQuantity(firstLine?.quantity || 0)}{" "}
-                      {firstLine?.inventoryItem.baseUom?.symbol || "kg"}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-xs tabular-nums">
-                      {formatINR(firstLine?.unitPrice || 0)}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-xs font-semibold tabular-nums">
-                      {formatINR(totalAmount)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {rec.status === "REVERSED" ? (
-                        <Badge variant="danger" className="text-[10px] gap-1">
-                          <RotateCcwIcon className="size-2.5" />
+                    ),
+                    meta: { label: "Receipt #" } satisfies DataTableColumnMeta<PurchaseReceipt>,
+                  },
+                  {
+                    id: "postedAt",
+                    accessorFn: (row) => new Date(row.postedAt).getTime() || 0,
+                    header: ({ column }) => (
+                      <DataTableColumnHeader column={column} title={t("Date")} />
+                    ),
+                    cell: ({ row }) => (
+                      <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">
+                        {formatDate(row.original.postedAt)}
+                      </span>
+                    ),
+                    meta: {
+                      label: "Date",
+                      exportValue: (r) => formatDate(r.postedAt),
+                    } satisfies DataTableColumnMeta<PurchaseReceipt>,
+                  },
+                  {
+                    id: "supplier",
+                    accessorFn: (row) => row.supplier.name,
+                    header: ({ column }) => (
+                      <DataTableColumnHeader column={column} title={t("Supplier")} />
+                    ),
+                    cell: ({ row }) => (
+                      <span className="font-medium text-sm min-w-[140px] block">
+                        {row.original.supplier.name}
+                      </span>
+                    ),
+                    meta: { label: "Supplier" } satisfies DataTableColumnMeta<PurchaseReceipt>,
+                  },
+                  {
+                    id: "item",
+                    accessorFn: (row) =>
+                      row.lines[0]?.inventoryItem.name || "Multiple items",
+                    header: ({ column }) => (
+                      <DataTableColumnHeader column={column} title={t("Item")} />
+                    ),
+                    cell: ({ row }) => (
+                      <span className="text-xs">
+                        {row.original.lines[0]?.inventoryItem.name || "Multiple items"}
+                      </span>
+                    ),
+                    meta: { label: "Item" } satisfies DataTableColumnMeta<PurchaseReceipt>,
+                  },
+                  {
+                    id: "quantity",
+                    accessorFn: (row) => Number(row.lines[0]?.quantity || 0),
+                    header: ({ column }) => (
+                      <DataTableColumnHeader column={column} title={t("Quantity")} align="right" />
+                    ),
+                    cell: ({ row }) => {
+                      const firstLine = row.original.lines[0];
+                      return (
+                        <span className="font-mono text-xs tabular-nums whitespace-nowrap">
+                          {formatQuantity(firstLine?.quantity || 0)}{" "}
+                          {firstLine?.inventoryItem.baseUom?.symbol || "kg"}
+                        </span>
+                      );
+                    },
+                    meta: {
+                      label: "Quantity",
+                      align: "right",
+                      exportValue: (r) => Number(r.lines[0]?.quantity || 0),
+                    } satisfies DataTableColumnMeta<PurchaseReceipt>,
+                  },
+                  {
+                    id: "unitRate",
+                    accessorFn: (row) => Number(row.lines[0]?.unitPrice || 0),
+                    header: ({ column }) => (
+                      <DataTableColumnHeader column={column} title={t("Unit Rate")} align="right" />
+                    ),
+                    cell: ({ row }) => (
+                      <span className="font-mono text-xs tabular-nums whitespace-nowrap">
+                        {formatINR(row.original.lines[0]?.unitPrice || 0)}
+                      </span>
+                    ),
+                    meta: {
+                      label: "Unit Rate",
+                      align: "right",
+                      exportValue: (r) => Number(r.lines[0]?.unitPrice || 0),
+                    } satisfies DataTableColumnMeta<PurchaseReceipt>,
+                  },
+                  {
+                    id: "totalAmount",
+                    accessorFn: (row) =>
+                      row.lines.reduce((sum, l) => sum + Number(l.totalPrice), 0),
+                    header: ({ column }) => (
+                      <DataTableColumnHeader column={column} title={t("Total Amount")} align="right" />
+                    ),
+                    cell: ({ row }) => {
+                      const totalAmount = row.original.lines.reduce(
+                        (sum, l) => sum + Number(l.totalPrice),
+                        0,
+                      );
+                      return (
+                        <span className="font-mono text-xs font-semibold tabular-nums whitespace-nowrap">
+                          {formatINR(totalAmount)}
+                        </span>
+                      );
+                    },
+                    meta: {
+                      label: "Total Amount",
+                      align: "right",
+                      exportValue: (r) =>
+                        r.lines.reduce((sum, l) => sum + Number(l.totalPrice), 0),
+                    } satisfies DataTableColumnMeta<PurchaseReceipt>,
+                  },
+                  {
+                    accessorKey: "status",
+                    header: ({ column }) => (
+                      <DataTableColumnHeader column={column} title={t("Status")} align="center" />
+                    ),
+                    cell: ({ row }) =>
+                      row.original.status === "REVERSED" ? (
+                        <Badge variant="danger" className="text-[10px] gap-1 whitespace-nowrap">
+                          <RotateCcwIcon className="size-2.5" aria-hidden="true" />
                           Reversed
                         </Badge>
                       ) : (
-                        <Badge variant="success" className="text-[10px] gap-1">
-                          <CheckCircle2Icon className="size-2.5" />
+                        <Badge variant="success" className="text-[10px] gap-1 whitespace-nowrap">
+                          <CheckCircle2Icon className="size-2.5" aria-hidden="true" />
                           Posted
                         </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDetailReceipt(rec)}
-                          className="h-7 px-2 text-xs gap-1"
-                        >
-                          <EyeIcon className="size-3" />
-                          View
-                        </Button>
-                        {canManageAdminPurchase && rec.status !== "REVERSED" && (
+                      ),
+                    meta: {
+                      label: "Status",
+                      align: "center",
+                    } satisfies DataTableColumnMeta<PurchaseReceipt>,
+                  },
+                  {
+                    id: "actions",
+                    enableSorting: false,
+                    enableHiding: false,
+                    header: () => <span>{t("Actions")}</span>,
+                    cell: ({ row }) => {
+                      const rec = row.original;
+                      const totalAmount = rec.lines.reduce(
+                        (sum, l) => sum + Number(l.totalPrice),
+                        0,
+                      );
+                      return (
+                        <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              setDebitNoteTarget(rec);
-                              setDebitNoteReason("");
-                              setDebitNoteAmount(totalAmount);
-                            }}
+                            onClick={() => setDetailReceipt(rec)}
                             className="h-7 px-2 text-xs gap-1"
                           >
-                            <FileWarningIcon className="size-3" />
-                            Debit Note
+                            <EyeIcon className="size-3" aria-hidden="true" />
+                            View
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                          {canManageAdminPurchase && rec.status !== "REVERSED" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setDebitNoteTarget(rec);
+                                setDebitNoteReason("");
+                                setDebitNoteAmount(totalAmount);
+                              }}
+                              className="h-7 px-2 text-xs gap-1"
+                            >
+                              <FileWarningIcon className="size-3" aria-hidden="true" />
+                              Debit Note
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    },
+                    meta: {
+                      label: "Actions",
+                      align: "right",
+                    } satisfies DataTableColumnMeta<PurchaseReceipt>,
+                  },
+                ] satisfies ColumnDef<PurchaseReceipt, unknown>[]
+              }
+            />
+          </div>
         )}
       </div>
 

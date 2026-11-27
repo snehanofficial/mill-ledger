@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -8,18 +10,15 @@ import { usePagination } from "@/hooks/use-pagination";
 import { formatINR, formatDateTime } from "@/lib/formatters";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataPagination } from "@/components/ui/data-pagination";
+import {
+  DataTable,
+  DataTableColumnHeader,
+  type DataTableColumnMeta,
+} from "@/components/ui/data-table";
 import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { PlusCircleIcon, RefreshCwIcon, SearchIcon } from "lucide-react";
 
 interface SalesInvoice {
@@ -90,6 +89,157 @@ export function InvoicesPage() {
 
   const invoices = data?.invoices ?? [];
   const filtered = invoices;
+
+  const invoiceColumns = useMemo<ColumnDef<SalesInvoice, unknown>[]>(
+    () => [
+      {
+        accessorKey: "invoiceNumber",
+        enableHiding: false,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Invoice #" />
+        ),
+        cell: ({ row }) => (
+          <Link
+            to={`/invoices/${row.original.id}`}
+            className="font-medium text-primary hover:underline tabular-nums whitespace-nowrap"
+          >
+            {row.original.invoiceNumber}
+          </Link>
+        ),
+        meta: { label: "Invoice #" } satisfies DataTableColumnMeta<SalesInvoice>,
+      },
+      {
+        accessorKey: "customerNameSnapshot",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Customer" />
+        ),
+        cell: ({ row }) => (
+          <span className="font-medium min-w-[160px] block">
+            {row.original.customerNameSnapshot}
+          </span>
+        ),
+        meta: { label: "Customer" } satisfies DataTableColumnMeta<SalesInvoice>,
+      },
+      {
+        accessorKey: "deliveryStateSnapshot",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Place of supply" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            {row.original.deliveryStateSnapshot}
+          </span>
+        ),
+        meta: {
+          label: "Place of supply",
+        } satisfies DataTableColumnMeta<SalesInvoice>,
+      },
+      {
+        accessorKey: "status",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Status" />
+        ),
+        cell: ({ row }) => (
+          <Badge variant="outline" className="whitespace-nowrap">
+            {row.original.status.replaceAll("_", " ")}
+          </Badge>
+        ),
+        meta: {
+          label: "Status",
+          exportValue: (r) => r.status.replaceAll("_", " "),
+        } satisfies DataTableColumnMeta<SalesInvoice>,
+      },
+      {
+        id: "taxableAmount",
+        accessorFn: (row) => Number(row.taxableAmount) || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Taxable" align="right" />
+        ),
+        cell: ({ row }) => (
+          <span className="tabular-nums whitespace-nowrap">
+            {formatINR(row.original.taxableAmount)}
+          </span>
+        ),
+        meta: {
+          label: "Taxable",
+          align: "right",
+          exportValue: (r) => Number(r.taxableAmount),
+        } satisfies DataTableColumnMeta<SalesInvoice>,
+      },
+      {
+        id: "totalTaxAmount",
+        accessorFn: (row) => Number(row.totalTaxAmount) || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Tax" align="right" />
+        ),
+        cell: ({ row }) => (
+          <span className="tabular-nums whitespace-nowrap">
+            {formatINR(row.original.totalTaxAmount)}
+          </span>
+        ),
+        meta: {
+          label: "Tax",
+          align: "right",
+          exportValue: (r) => Number(r.totalTaxAmount),
+        } satisfies DataTableColumnMeta<SalesInvoice>,
+      },
+      {
+        id: "totalAmount",
+        accessorFn: (row) => Number(row.totalAmount) || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Total" align="right" />
+        ),
+        cell: ({ row }) => (
+          <span className="font-medium tabular-nums whitespace-nowrap">
+            {formatINR(row.original.totalAmount)}
+          </span>
+        ),
+        meta: {
+          label: "Total",
+          align: "right",
+          exportValue: (r) => Number(r.totalAmount),
+        } satisfies DataTableColumnMeta<SalesInvoice>,
+      },
+      {
+        id: "outstandingAmount",
+        accessorFn: (row) => Number(row.outstandingAmount) || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            column={column}
+            title="Outstanding"
+            align="right"
+          />
+        ),
+        cell: ({ row }) => (
+          <span className="font-medium tabular-nums whitespace-nowrap">
+            {formatINR(row.original.outstandingAmount)}
+          </span>
+        ),
+        meta: {
+          label: "Outstanding",
+          align: "right",
+          exportValue: (r) => Number(r.outstandingAmount),
+        } satisfies DataTableColumnMeta<SalesInvoice>,
+      },
+      {
+        id: "postedAt",
+        accessorFn: (row) => new Date(row.postedAt).getTime() || 0,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Posted" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+            {formatDateTime(row.original.postedAt)}
+          </span>
+        ),
+        meta: {
+          label: "Posted",
+          exportValue: (r) => formatDateTime(r.postedAt),
+        } satisfies DataTableColumnMeta<SalesInvoice>,
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4 sm:p-6 lg:p-8">
@@ -201,61 +351,14 @@ export function InvoicesPage() {
         />
       ) : (
         <>
-        <div className="overflow-x-auto rounded-lg border border-border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Invoice #</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Place of supply</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Taxable</TableHead>
-                <TableHead className="text-right">Tax</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-right">Outstanding</TableHead>
-                <TableHead>Posted</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((inv) => (
-                <TableRow key={inv.id}>
-                  <TableCell className="font-medium tabular-nums">
-                    <Link
-                      to={`/invoices/${inv.id}`}
-                      className="text-primary hover:underline"
-                    >
-                      {inv.invoiceNumber}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{inv.customerNameSnapshot}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {inv.deliveryStateSnapshot}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {inv.status.replaceAll("_", " ")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatINR(inv.taxableAmount)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatINR(inv.totalTaxAmount)}
-                  </TableCell>
-                  <TableCell className="text-right font-medium tabular-nums">
-                    {formatINR(inv.totalAmount)}
-                  </TableCell>
-                  <TableCell className="text-right font-medium tabular-nums">
-                    {formatINR(inv.outstandingAmount)}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground tabular-nums">
-                    {formatDateTime(inv.postedAt)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable
+          tableId="sales-invoices"
+          data={filtered}
+          columns={invoiceColumns}
+          getRowId={(r) => r.id}
+          ariaLabel="Sales invoices"
+          csvFilename="sales-invoices"
+        />
 
         <DataPagination
           pagination={data?.pagination}

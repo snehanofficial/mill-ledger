@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -8,18 +9,15 @@ import { usePagination } from "@/hooks/use-pagination";
 import { useLanguage } from "@/lib/i18n";
 import { DataPagination } from "@/components/ui/data-pagination";
 import {
+  DataTable,
+  DataTableColumnHeader,
+  type DataTableColumnMeta,
+} from "@/components/ui/data-table";
+import {
   EmptyState,
   SkeletonTable,
   ErrorState,
 } from "@/components/ui/loading-error-empty";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -386,130 +384,233 @@ export function SuppliersPage() {
             }
           />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("Vendor Code")}</TableHead>
-                <TableHead>{t("Legal / Trade Name")}</TableHead>
-                <TableHead>{t("State / Jurisdiction")}</TableHead>
-                <TableHead>{t("GSTIN Status")}</TableHead>
-                <TableHead>{t("Contact Info")}</TableHead>
-                <TableHead>{t("Status")}</TableHead>
-                <TableHead className="text-right">{t("Action")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSuppliers.map((s) => {
-                const gstinValidation = s.gstin ? validateGstin(s.gstin) : null;
-                return (
-                  <TableRow key={s.id}>
-                    <TableCell className="font-mono text-xs font-semibold text-foreground">
-                      {s.code}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium text-foreground">{s.name}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <MapPinIcon className="size-3.5 text-primary" />
-                        <span>{s.state}</span>
+          <div className="p-4">
+            <DataTable
+              tableId="suppliers"
+              data={filteredSuppliers}
+              getRowId={(r) => r.id}
+              ariaLabel="Suppliers"
+              csvFilename="suppliers"
+              bulkActions={
+                canManageSuppliers
+                  ? [
+                      {
+                        id: "archive-suppliers",
+                        label: "Archive selected",
+                        icon: ArchiveIcon,
+                        variant: "outline",
+                        hidden: (rows) => !rows.some((r) => r.isActive),
+                        onClick: async (rows, clearSelection) => {
+                          const active = rows.filter((r) => r.isActive);
+                          await Promise.allSettled(
+                            active.map((s) =>
+                              updateSupplierMutation.mutateAsync({
+                                id: s.id,
+                                payload: { isActive: false },
+                              }),
+                            ),
+                          );
+                          clearSelection();
+                        },
+                      },
+                    ]
+                  : []
+              }
+              columns={
+                [
+                  {
+                    accessorKey: "code",
+                    enableHiding: false,
+                    header: ({ column }) => (
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Vendor Code")}
+                      />
+                    ),
+                    cell: ({ row }) => (
+                      <span className="font-mono text-xs font-semibold text-foreground whitespace-nowrap">
+                        {row.original.code}
+                      </span>
+                    ),
+                    meta: { label: "Vendor Code" } satisfies DataTableColumnMeta<Supplier>,
+                  },
+                  {
+                    accessorKey: "name",
+                    header: ({ column }) => (
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Legal / Trade Name")}
+                      />
+                    ),
+                    cell: ({ row }) => (
+                      <div className="font-medium text-foreground min-w-[160px]">
+                        {row.original.name}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      {s.gstin ? (
-                        <div className="flex flex-col gap-0.5">
+                    ),
+                    meta: { label: "Legal / Trade Name" } satisfies DataTableColumnMeta<Supplier>,
+                  },
+                  {
+                    accessorKey: "state",
+                    header: ({ column }) => (
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("State / Jurisdiction")}
+                      />
+                    ),
+                    cell: ({ row }) => (
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
+                        <MapPinIcon className="size-3.5 text-primary" aria-hidden="true" />
+                        <span>{row.original.state}</span>
+                      </div>
+                    ),
+                    meta: { label: "State / Jurisdiction" } satisfies DataTableColumnMeta<Supplier>,
+                  },
+                  {
+                    accessorKey: "gstin",
+                    header: ({ column }) => (
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("GSTIN Status")}
+                      />
+                    ),
+                    cell: ({ row }) => {
+                      const s = row.original;
+                      const gstinValidation = s.gstin ? validateGstin(s.gstin) : null;
+                      return s.gstin ? (
+                        <div className="flex flex-col gap-0.5 whitespace-nowrap">
                           <span className="font-mono text-xs text-foreground font-medium">
                             {s.gstin}
                           </span>
                           {gstinValidation?.isValid ? (
-                            <span className="text-[10px] text-emerald-600 flex items-center gap-1">
-                              <CheckCircle2Icon className="size-2.5" />
+                            <span className="text-[10px] text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                              <CheckCircle2Icon className="size-2.5" aria-hidden="true" />
                               Valid GSTIN
                             </span>
                           ) : (
-                            <span className="text-[10px] text-amber-600 flex items-center gap-1">
+                            <span className="text-[10px] text-amber-700 dark:text-amber-400 flex items-center gap-1">
                               Unverified GSTIN
                             </span>
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground italic">
+                        <span className="text-xs text-muted-foreground italic whitespace-nowrap">
                           Unregistered Mandi Trader
                         </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-                        {s.phone && (
-                          <div className="flex items-center gap-1">
-                            <PhoneIcon className="size-3" />
-                            <span>{s.phone}</span>
-                          </div>
-                        )}
-                        {s.email && (
-                          <div className="flex items-center gap-1">
-                            <MailIcon className="size-3" />
-                            <span>{s.email}</span>
-                          </div>
-                        )}
-                        {!s.phone && !s.email && (
-                          <span className="italic">—</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
+                      );
+                    },
+                    meta: {
+                      label: "GSTIN Status",
+                      exportValue: (r) => r.gstin || "Unregistered",
+                    } satisfies DataTableColumnMeta<Supplier>,
+                  },
+                  {
+                    id: "contact",
+                    accessorFn: (row) => row.phone || row.email || "",
+                    header: ({ column }) => (
+                      <DataTableColumnHeader
+                        column={column}
+                        title={t("Contact Info")}
+                      />
+                    ),
+                    cell: ({ row }) => {
+                      const s = row.original;
+                      return (
+                        <div className="flex flex-col gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                          {s.phone && (
+                            <div className="flex items-center gap-1">
+                              <PhoneIcon className="size-3" aria-hidden="true" />
+                              <span>{s.phone}</span>
+                            </div>
+                          )}
+                          {s.email && (
+                            <div className="flex items-center gap-1">
+                              <MailIcon className="size-3" aria-hidden="true" />
+                              <span>{s.email}</span>
+                            </div>
+                          )}
+                          {!s.phone && !s.email && <span className="italic">—</span>}
+                        </div>
+                      );
+                    },
+                    meta: {
+                      label: "Contact Info",
+                      exportValue: (r) =>
+                        [r.phone, r.email].filter(Boolean).join(" / "),
+                    } satisfies DataTableColumnMeta<Supplier>,
+                  },
+                  {
+                    id: "isActive",
+                    accessorFn: (row) => (row.isActive ? "Active" : "Inactive"),
+                    header: ({ column }) => (
+                      <DataTableColumnHeader column={column} title={t("Status")} />
+                    ),
+                    cell: ({ row }) => (
                       <Badge
-                        variant={s.isActive ? "success" : "secondary"}
-                        className="text-xs"
+                        variant={row.original.isActive ? "success" : "secondary"}
+                        className="text-xs whitespace-nowrap"
                       >
-                        {s.isActive ? "Active" : "Inactive"}
+                        {row.original.isActive ? "Active" : "Inactive"}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setDetailSupplier(s)}
-                          className="h-8 min-h-[32px] px-2 gap-1 text-xs sm:h-7 sm:min-h-[28px]"
-                        >
-                          <EyeIcon className="size-3" />
-                          View
-                        </Button>
-                        {canManageSuppliers && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleStartEdit(s)}
-                              className="h-8 min-h-[32px] px-2.5 gap-1 text-xs sm:h-7 sm:min-h-[28px] sm:px-2"
-                            >
-                              <Edit2Icon className="size-3" />
-                              Edit
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                updateSupplierMutation.mutate({
-                                  id: s.id,
-                                  payload: { isActive: !s.isActive },
-                                })
-                              }
-                              className="h-8 min-h-[32px] px-2 gap-1 text-xs text-muted-foreground sm:h-7 sm:min-h-[28px]"
-                            >
-                              <ArchiveIcon className="size-3" />
-                              {s.isActive ? "Archive" : "Restore"}
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                    ),
+                    meta: { label: "Status" } satisfies DataTableColumnMeta<Supplier>,
+                  },
+                  {
+                    id: "actions",
+                    enableSorting: false,
+                    enableHiding: false,
+                    header: () => <span>{t("Action")}</span>,
+                    cell: ({ row }) => {
+                      const s = row.original;
+                      return (
+                        <div className="flex items-center justify-end gap-1 whitespace-nowrap">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDetailSupplier(s)}
+                            className="h-8 px-2 gap-1 text-xs"
+                          >
+                            <EyeIcon className="size-3" aria-hidden="true" />
+                            View
+                          </Button>
+                          {canManageSuppliers && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleStartEdit(s)}
+                                className="h-8 px-2 gap-1 text-xs"
+                              >
+                                <Edit2Icon className="size-3" aria-hidden="true" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  updateSupplierMutation.mutate({
+                                    id: s.id,
+                                    payload: { isActive: !s.isActive },
+                                  })
+                                }
+                                className="h-8 px-2 gap-1 text-xs text-muted-foreground"
+                              >
+                                <ArchiveIcon className="size-3" aria-hidden="true" />
+                                {s.isActive ? "Archive" : "Restore"}
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      );
+                    },
+                    meta: {
+                      label: "Action",
+                      align: "right",
+                    } satisfies DataTableColumnMeta<Supplier>,
+                  },
+                ] satisfies ColumnDef<Supplier, unknown>[]
+              }
+            />
+          </div>
         )}
       </div>
 

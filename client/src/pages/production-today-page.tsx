@@ -8,22 +8,15 @@ import { apiClient } from "@/lib/api-client";
 import { formatINR, formatQuantity, formatDate } from "@/lib/formatters";
 import { useLanguage } from "@/lib/i18n";
 import { PageHeader } from "@/components/ui/page-header";
+import { DataTable } from "@/components/ui/data-table";
 import {
   EmptyState,
   SkeletonTable,
   ErrorState,
 } from "@/components/ui/loading-error-empty";
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DomainTooltip } from "@/components/ui/domain-tooltip";
 import {
   AlertTriangleIcon,
   BoxesIcon,
@@ -42,9 +35,12 @@ import type {
 import { RecordProductionBatchDialog } from "@/components/production/record-batch-dialog";
 import {
   EditDraftRunDialog,
-  ProductionRunRow,
   ReverseRunDialog,
 } from "@/components/production/production-run-dialogs";
+import {
+  useProductionRunBulkActions,
+  useProductionRunColumns,
+} from "@/components/production/production-run-columns";
 
 function isSameLocalDay(iso: string | null | undefined, refDate: Date): boolean {
   if (!iso) return false;
@@ -205,6 +201,21 @@ export function ProductionTodayPage({
       };
     });
   }, [recipes, balances]);
+
+  const columns = useProductionRunColumns({
+    includeDateTime: false,
+    canRecordProduction,
+    activeWarehouseId: activeWarehouse?.id,
+    activeRecipeId: recipes[0]?.id,
+    onEditDraft: setEditingDraftRun,
+    onReverseRun: setSelectedRun,
+  });
+
+  const bulkActions = useProductionRunBulkActions({
+    canRecordProduction,
+    activeWarehouseId: activeWarehouse?.id,
+    activeRecipeId: recipes[0]?.id,
+  });
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -484,61 +495,32 @@ export function ProductionTodayPage({
               </div>
             }
           />
+        ) : filteredRuns.length === 0 ? (
+          <EmptyState
+            title="No matching runs today"
+            description="Clear the search query to see all of today's runs."
+            className="min-h-32 py-6"
+            action={
+              <Button
+                variant="tertiary"
+                size="sm"
+                onClick={() => setSearchQuery("")}
+              >
+                Clear search
+              </Button>
+            }
+          />
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("Run number")}</TableHead>
-                  <TableHead>{t("Status")}</TableHead>
-                  <TableHead>{t("Product")}</TableHead>
-                  <TableHead className="text-right">{t("Good packets")}</TableHead>
-                  <TableHead className="text-right">
-                    <DomainTooltip term="YIELD_VARIANCE">
-                      {t("Yield variance")}
-                    </DomainTooltip>
-                  </TableHead>
-                  <TableHead className="text-right">{t("Materials cost")}</TableHead>
-                  <TableHead className="text-right">{t("Total cost")}</TableHead>
-                  <TableHead className="text-right">{t("Cost / packet")}</TableHead>
-                  <TableHead className="text-right">{t("Actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredRuns.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="p-0">
-                      <EmptyState
-                        title="No matching runs today"
-                        description="Clear the search query to see all of today's runs."
-                        className="min-h-32 py-6"
-                        action={
-                          <Button
-                            variant="tertiary"
-                            size="sm"
-                            onClick={() => setSearchQuery("")}
-                          >
-                            Clear search
-                          </Button>
-                        }
-                      />
-                    </td>
-                  </tr>
-                ) : (
-                  filteredRuns.map((run) => (
-                    <ProductionRunRow
-                      key={run.id}
-                      run={run}
-                      canRecordProduction={canRecordProduction}
-                      activeWarehouseId={activeWarehouse?.id}
-                      activeRecipeId={recipes[0]?.id}
-                      onEditDraft={setEditingDraftRun}
-                      onReverseRun={setSelectedRun}
-                    />
-                  ))
-                )}
-              </TableBody>
-            </Table>
+          <div className="p-4">
+            <DataTable
+              tableId="production-today"
+              data={filteredRuns}
+              columns={columns}
+              getRowId={(r) => r.id}
+              ariaLabel="Today's production runs"
+              csvFilename="production-runs-today"
+              bulkActions={bulkActions}
+            />
           </div>
         )}
       </div>
