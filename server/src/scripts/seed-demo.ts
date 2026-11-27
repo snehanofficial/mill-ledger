@@ -240,7 +240,7 @@ export async function resetDemoData(): Promise<{ deleted: boolean }> {
       where: { email: { in: demoEmails }, organizationId: orgId },
     });
     await tx.organization.delete({ where: { id: orgId } });
-  });
+  }, { timeout: 60000, maxWait: 10000 });
 
   return { deleted: true };
 }

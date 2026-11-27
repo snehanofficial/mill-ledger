@@ -301,7 +301,7 @@ export class DispatchService {
           warehouse: true,
         },
       });
-    });
+    }, { timeout: 30000, maxWait: 10000 });
 
     if (result) {
       await auditService.log({

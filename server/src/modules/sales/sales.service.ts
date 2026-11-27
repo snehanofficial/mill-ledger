@@ -651,7 +651,7 @@ export class SalesService {
         };
 
         return result;
-      });
+      }, { timeout: 30000, maxWait: 10000 });
 
       await auditService.log({
         organizationId: user.organizationId ?? undefined,
@@ -983,7 +983,7 @@ export class SalesService {
       });
 
       return updatedOrder;
-    });
+    }, { timeout: 30000, maxWait: 10000 });
 
     await auditService.log({
       organizationId: adminUser.organizationId ?? undefined,

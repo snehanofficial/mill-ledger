@@ -331,7 +331,7 @@ export class InventoryService {
           },
         },
       });
-    });
+    }, { timeout: 30000, maxWait: 10000 });
 
     if (result) {
       await auditService.log({
@@ -1598,7 +1598,7 @@ export class InventoryService {
           lines: { include: { inventoryItem: true } },
         },
       });
-    });
+    }, { timeout: 30000, maxWait: 10000 });
 
     await auditService.log({
       organizationId: orgId,

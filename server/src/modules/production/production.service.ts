@@ -716,7 +716,7 @@ export class ProductionService {
         run: finalRun!,
         warnings,
       };
-    });
+    }, { timeout: 30000, maxWait: 10000 });
 
     if (result?.run) {
       await auditService.log({
