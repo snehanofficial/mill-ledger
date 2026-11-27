@@ -33,12 +33,18 @@ import {
 } from "@/components/ui/select";
 import {
   ArchiveIcon,
+  ChevronDownIcon,
   CopyIcon,
   LayersIcon,
   PlusCircleIcon,
   RefreshCwIcon,
   Trash2Icon,
 } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import type {
   BomRecipe,
   InventoryBalanceItem,
@@ -72,6 +78,16 @@ export function ProductionRecipesPage() {
     undefined,
   );
   const [showBatchDialog, setShowBatchDialog] = useState(false);
+  const [expandedRecipeIds, setExpandedRecipeIds] = useState<
+    Record<string, boolean>
+  >({});
+
+  const toggleRecipeExpanded = (recipeId: string) => {
+    setExpandedRecipeIds((prev) => ({
+      ...prev,
+      [recipeId]: !prev[recipeId],
+    }));
+  };
 
   const { data: warehousesData } = useWarehouses();
   const warehouses = warehousesData?.warehouses || [];
@@ -325,7 +341,10 @@ export function ProductionRecipesPage() {
                 <SelectTrigger id="new-bom-variant" className="h-9 text-xs">
                   <SelectValue placeholder="Select variant" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+                  searchable
+                  searchPlaceholder="Search product variants..."
+                >
                   {(productsData?.products ?? []).flatMap((p) =>
                     p.variants.map((v) => (
                       <SelectItem key={v.id} value={v.id}>
@@ -443,7 +462,10 @@ export function ProductionRecipesPage() {
                     <SelectTrigger className="h-9 text-xs">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent
+                      searchable
+                      searchPlaceholder="Search raw or packaging items..."
+                    >
                       {balances
                         .filter((b) => b.category !== "FINISHED_GOODS")
                         .map((b) => (
@@ -581,7 +603,7 @@ export function ProductionRecipesPage() {
                 Clear search
               </Button>
             ) : canManageBom ? (
-              <Button size="sm" onClick={openCreateForm}>
+              <Button variant="outline" size="sm" onClick={openCreateForm}>
                 New Recipe / BOM
               </Button>
             ) : undefined
@@ -599,45 +621,66 @@ export function ProductionRecipesPage() {
             const estCostPerUnit =
               expectedOut > 0 ? batchMaterialCost / expectedOut : 0;
 
+            const isExpanded = Boolean(expandedRecipeIds[recipe.id]);
+
             return (
-              <section
+              <Collapsible
                 key={recipe.id}
+                open={isExpanded}
+                onOpenChange={() => toggleRecipeExpanded(recipe.id)}
                 className="rounded-xl border bg-card shadow-xs overflow-hidden"
               >
-                <div className="flex flex-col gap-3 border-b bg-muted/20 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <LayersIcon
-                        className="h-4 w-4 text-muted-foreground"
+                <div className="flex flex-col gap-3 bg-muted/20 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex flex-1 items-start gap-2.5 text-left cursor-pointer rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <ChevronDownIcon
+                        className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-150 ${
+                          isExpanded ? "rotate-180" : ""
+                        }`}
                         aria-hidden="true"
                       />
-                      <h2 className="text-base font-semibold text-foreground">
-                        {recipe.name}
-                      </h2>
-                      {recipe.version !== undefined && (
-                        <Badge variant="outline" className="text-xs font-mono">
-                          v{recipe.version}
-                        </Badge>
-                      )}
-                      <Badge variant="success" className="text-xs">
-                        Active
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Output: <span className="font-medium text-foreground">{recipe.productVariant.name}</span>{" "}
-                      (<span className="font-mono">{recipe.productVariant.sku}</span>)
-                      {" · "}
-                      Expected yield: <span className="font-semibold text-foreground">{formatQuantity(expectedOut)}</span>{" "}
-                      {recipe.outputUom?.symbol || "pkts"} / batch
-                      {" · "}
-                      Est. material cost: <span className="font-semibold text-foreground">{formatINR(batchMaterialCost)}</span>{" "}
-                      ({formatINR(estCostPerUnit)}/pkt)
-                    </div>
-                  </div>
+                      <div className="flex flex-col gap-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <LayersIcon
+                            className="h-4 w-4 text-muted-foreground"
+                            aria-hidden="true"
+                          />
+                          <span className="text-base font-semibold text-foreground">
+                            {recipe.name}
+                          </span>
+                          {recipe.version !== undefined && (
+                            <Badge variant="outline" className="text-xs font-mono">
+                              v{recipe.version}
+                            </Badge>
+                          )}
+                          <Badge variant="success" className="text-xs">
+                            Active
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            · {recipe.items.length} materials
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Output: <span className="font-medium text-foreground">{recipe.productVariant.name}</span>{" "}
+                          (<span className="font-mono">{recipe.productVariant.sku}</span>)
+                          {" · "}
+                          Expected yield: <span className="font-semibold text-foreground">{formatQuantity(expectedOut)}</span>{" "}
+                          {recipe.outputUom?.symbol || "pkts"} / batch
+                          {" · "}
+                          Est. material cost: <span className="font-semibold text-foreground">{formatINR(batchMaterialCost)}</span>{" "}
+                          ({formatINR(estCostPerUnit)}/pkt)
+                        </div>
+                      </div>
+                    </button>
+                  </CollapsibleTrigger>
 
                   <div className="flex flex-wrap items-center gap-2">
                     {canRecordProduction && (
                       <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => {
                           setBatchRecipeId(recipe.id);
@@ -684,77 +727,79 @@ export function ProductionRecipesPage() {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Material / Item</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead className="text-right">
-                          Planned / Batch
-                        </TableHead>
-                        <TableHead className="text-right">Tolerance</TableHead>
-                        <TableHead className="text-right">
-                          Available Stock
-                        </TableHead>
-                        <TableHead className="text-right">
-                          Est. WAC Cost
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {recipe.items.map((item) => {
-                        const bal = balanceById.get(item.inventoryItemId);
-                        const unitSym =
-                          item.uom?.symbol || bal?.baseUom?.symbol || "";
-                        const planned = Number(item.plannedQty);
-                        const available = Number(bal?.available ?? 0);
-                        const isShort = available < planned;
-                        const lineCost =
-                          planned * Number(bal?.weightedAverageCost ?? 0);
+                <CollapsibleContent className="border-t">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Material / Item</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead className="text-right">
+                            Planned / Batch
+                          </TableHead>
+                          <TableHead className="text-right">Tolerance</TableHead>
+                          <TableHead className="text-right">
+                            Available Stock
+                          </TableHead>
+                          <TableHead className="text-right">
+                            Est. WAC Cost
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {recipe.items.map((item) => {
+                          const bal = balanceById.get(item.inventoryItemId);
+                          const unitSym =
+                            item.uom?.symbol || bal?.baseUom?.symbol || "";
+                          const planned = Number(item.plannedQty);
+                          const available = Number(bal?.available ?? 0);
+                          const isShort = available < planned;
+                          const lineCost =
+                            planned * Number(bal?.weightedAverageCost ?? 0);
 
-                        return (
-                          <TableRow key={item.id}>
-                            <TableCell>
-                              <div className="font-medium text-foreground">
-                                {item.inventoryItem.name}
-                              </div>
-                              <div className="text-xs font-mono text-muted-foreground">
-                                {item.inventoryItem.sku}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="text-xs">
-                                {item.itemType === "PACKAGING"
-                                  ? "Packaging"
-                                  : "Ingredient"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right font-mono tabular-nums">
-                              {formatQuantity(planned)} {unitSym}
-                            </TableCell>
-                            <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
-                              ±{Number(item.tolerancePct || 5)}%
-                            </TableCell>
-                            <TableCell
-                              className={`text-right font-mono tabular-nums ${
-                                isShort
-                                  ? "text-destructive font-semibold"
-                                  : "text-foreground"
-                              }`}
-                            >
-                              {formatQuantity(available)} {unitSym}
-                            </TableCell>
-                            <TableCell className="text-right font-mono tabular-nums">
-                              {formatINR(lineCost)}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-              </section>
+                          return (
+                            <TableRow key={item.id}>
+                              <TableCell>
+                                <div className="font-medium text-foreground">
+                                  {item.inventoryItem.name}
+                                </div>
+                                <div className="text-xs font-mono text-muted-foreground">
+                                  {item.inventoryItem.sku}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="text-xs">
+                                  {item.itemType === "PACKAGING"
+                                    ? "Packaging"
+                                    : "Ingredient"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right font-mono tabular-nums">
+                                {formatQuantity(planned)} {unitSym}
+                              </TableCell>
+                              <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                                ±{Number(item.tolerancePct || 5)}%
+                              </TableCell>
+                              <TableCell
+                                className={`text-right font-mono tabular-nums ${
+                                  isShort
+                                    ? "text-destructive font-semibold"
+                                    : "text-foreground"
+                                }`}
+                              >
+                                {formatQuantity(available)} {unitSym}
+                              </TableCell>
+                              <TableCell className="text-right font-mono tabular-nums">
+                                {formatINR(lineCost)}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             );
           })}
         </div>

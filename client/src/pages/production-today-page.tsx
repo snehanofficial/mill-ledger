@@ -466,6 +466,7 @@ export function ProductionTodayPage({
               <div className="flex flex-wrap items-center justify-center gap-2">
                 {canRecordProduction && (
                   <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => setShowNewBatchModal(true)}
                     className="gap-2"

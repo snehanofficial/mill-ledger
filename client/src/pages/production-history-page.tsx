@@ -287,6 +287,7 @@ export function ProductionHistoryPage() {
                 </Button>
               ) : canRecordProduction ? (
                 <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setShowNewBatchModal(true)}
                   className="gap-2"
