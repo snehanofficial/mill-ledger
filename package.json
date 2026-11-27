@@ -16,7 +16,10 @@
     "test": "vitest run --exclude '**/e2e/**'",
     "test:e2e": "playwright test",
     "benchmark": "pnpm --filter @mill-ledger/server benchmark",
-    "admin:bootstrap": "pnpm --filter @mill-ledger/server admin:bootstrap"
+    "admin:bootstrap": "pnpm --filter @mill-ledger/server admin:bootstrap",
+    "demo:seed": "pnpm --filter @mill-ledger/server demo:seed",
+    "demo:reset": "pnpm --filter @mill-ledger/server demo:reset",
+    "demo:verify": "pnpm --filter @mill-ledger/server demo:verify"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.0",

@@ -13,7 +13,10 @@
     "prisma:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "admin:bootstrap": "tsx src/scripts/bootstrap-admin.ts",
-    "benchmark": "tsx src/scripts/run-benchmark.ts"
+    "benchmark": "tsx src/scripts/run-benchmark.ts",
+    "demo:seed": "tsx src/scripts/seed-demo.ts",
+    "demo:reset": "tsx src/scripts/seed-demo.ts --reset --reset-only",
+    "demo:verify": "tsx src/scripts/seed-demo.ts --verify-only"
   },
   "dependencies": {
     "@mill-ledger/shared": "workspace:*",
