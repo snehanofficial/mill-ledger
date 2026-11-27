@@ -149,6 +149,11 @@ export const auth = betterAuth({
         type: "string",
         required: false,
       },
+      preferredLanguage: {
+        type: "string",
+        required: false,
+        defaultValue: "en-IN",
+      },
     },
   },
 });

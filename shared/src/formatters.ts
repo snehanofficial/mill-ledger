@@ -55,6 +55,16 @@ const DEFAULT_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
 const numberFormatCache = new Map<string, Intl.NumberFormat>();
 const dateFormatCache = new Map<string, Intl.DateTimeFormat>();
 
+function resolveFormattingLocale(
+  locale?: string,
+  lang?: "en" | "ta",
+): string {
+  if (lang === "ta" || locale === "ta" || locale === "ta-IN") {
+    return "ta-IN-u-nu-latn-ca-gregory";
+  }
+  return "en-IN-u-nu-latn-ca-gregory";
+}
+
 function getNumberFormatter(
   locale: string,
   options: Intl.NumberFormatOptions,
@@ -72,10 +82,14 @@ function getDateFormatter(
   locale: string,
   options: Intl.DateTimeFormatOptions,
 ): Intl.DateTimeFormat {
-  const key = `${locale}|${JSON.stringify(options)}`;
+  const withTz: Intl.DateTimeFormatOptions = {
+    timeZone: "Asia/Kolkata",
+    ...options,
+  };
+  const key = `${locale}|${JSON.stringify(withTz)}`;
   let formatter = dateFormatCache.get(key);
   if (!formatter) {
-    formatter = new Intl.DateTimeFormat(locale, options);
+    formatter = new Intl.DateTimeFormat(locale, withTz);
     dateFormatCache.set(key, formatter);
   }
   return formatter;
@@ -116,10 +130,7 @@ export function formatINR(
     return symbol ? fallback : "0.00";
   }
 
-  const resolvedLocale =
-    lang === "ta" || locale === "ta" || locale === "ta-IN"
-      ? "ta-IN"
-      : locale || "en-IN";
+  const resolvedLocale = resolveFormattingLocale(locale, lang);
 
   if (symbol) {
     return getNumberFormatter(resolvedLocale, {
@@ -175,10 +186,7 @@ export function formatQuantity(
     return unit ? `${fallback} ${unit}` : fallback;
   }
 
-  const resolvedLocale =
-    lang === "ta" || locale === "ta" || locale === "ta-IN"
-      ? "ta-IN"
-      : locale || "en-IN";
+  const resolvedLocale = resolveFormattingLocale(locale, lang);
 
   const formatted = getNumberFormatter(resolvedLocale, {
     minimumFractionDigits,
@@ -200,14 +208,10 @@ export function formatDate(
   const d = date instanceof Date ? date : new Date(date);
   if (Number.isNaN(d.getTime())) return "—";
 
-  const rawLocale =
-    options.locale ||
-    (options.lang === "ta" ? "ta-IN" : undefined) ||
-    localeParam;
-  const resolvedLocale =
-    rawLocale === "ta" || rawLocale === "ta-IN"
-      ? "ta-IN"
-      : rawLocale || "en-IN";
+  const resolvedLocale = resolveFormattingLocale(
+    options.locale ?? localeParam,
+    options.lang,
+  );
 
   const {
     locale: _l,
@@ -274,4 +278,53 @@ export function compareStrings(
   const resolvedLocale =
     locale === "ta" || locale === "ta-IN" ? "ta-IN" : locale || "en-IN";
   return strA.localeCompare(strB, resolvedLocale, options);
+}
+
+export interface FormatNumberOptions {
+  minimumFractionDigits?: number;
+  maximumFractionDigits?: number;
+  fallback?: string;
+  locale?: string;
+  lang?: "en" | "ta";
+}
+
+export function formatNumber(
+  value: number | string | { toString(): string } | null | undefined,
+  options: FormatNumberOptions = {},
+): string {
+  const {
+    minimumFractionDigits = 0,
+    maximumFractionDigits = 2,
+    fallback = "0",
+    locale,
+    lang,
+  } = options;
+  if (value === null || value === undefined) return fallback;
+  const num = Number(typeof value === "object" ? value.toString().trim() : String(value).trim());
+  if (Number.isNaN(num) || !Number.isFinite(num)) return fallback;
+  return getNumberFormatter(resolveFormattingLocale(locale, lang), {
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(num);
+}
+
+export function formatPercent(
+  value: number | string | { toString(): string } | null | undefined,
+  options: FormatNumberOptions = {},
+): string {
+  const {
+    minimumFractionDigits = 0,
+    maximumFractionDigits = 2,
+    fallback = "0%",
+    locale,
+    lang,
+  } = options;
+  if (value === null || value === undefined) return fallback;
+  const num = Number(typeof value === "object" ? value.toString().trim() : String(value).trim());
+  if (Number.isNaN(num) || !Number.isFinite(num)) return fallback;
+  return getNumberFormatter(resolveFormattingLocale(locale, lang), {
+    style: "percent",
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(num / 100);
 }

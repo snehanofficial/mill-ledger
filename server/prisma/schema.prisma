@@ -15,6 +15,7 @@ model User {
   role                String                       @default("SALESMAN")
   isActive            Boolean                      @default(true)
   organizationId      String?                      @map("organization_id")
+  preferredLanguage   String                       @default("en-IN") @map("preferred_language")
   createdAt           DateTime                     @default(now())
   updatedAt           DateTime                     @updatedAt
   organization        Organization?                @relation(fields: [organizationId], references: [id])

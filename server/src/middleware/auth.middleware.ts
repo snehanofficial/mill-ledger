@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import type { Action, Resource, Role, UserContext } from "@mill-ledger/shared";
+import { normalizeLocale } from "@mill-ledger/shared";
 import { auth } from "../lib/auth.js";
 import { AppError } from "./error.middleware.js";
 import { hasRbacPermission } from "../policies/rbac.js";
@@ -45,6 +46,10 @@ export async function requireAuth(
       isActive,
       organizationId,
       image: session.user.image,
+      preferredLanguage: normalizeLocale(
+        (session.user as { preferredLanguage?: string | null })
+          .preferredLanguage,
+      ),
     };
 
     next();
