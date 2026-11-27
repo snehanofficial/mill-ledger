@@ -33,7 +33,17 @@ import {
   DownloadIcon,
   AlertTriangleIcon,
   CheckCircle2Icon,
+  EyeIcon,
 } from "lucide-react";
+import {
+  AuditDetailSheet,
+  type AuditLogRecord,
+} from "@/components/reports/audit-detail-sheet";
+import {
+  getActionBadgeVariant,
+  humanizeEntity,
+  summarizeAuditDetails,
+} from "@/lib/audit-formatter";
 import type { Role } from "@mill-ledger/shared";
 
 interface ReportTabItem {
@@ -110,6 +120,8 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     : allowedTabs[0]?.id || "sales";
 
   const [exporting, setExporting] = useState(false);
+  const [selectedAuditLog, setSelectedAuditLog] =
+    useState<AuditLogRecord | null>(null);
   const [startDate, setStartDate] = useUrlState("startDate", "");
   const [endDate, setEndDate] = useUrlState("endDate", "");
   const [customerIdFilter, setCustomerIdFilter] = useUrlState("customerId", "ALL");
@@ -275,7 +287,7 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
     }
   })();
 
-  const filteredAuditLogs = (auditData?.logs || []).filter((log: any) => {
+  const filteredAuditLogs = (auditData?.logs || []).filter((log: AuditLogRecord) => {
     if (auditActionFilter !== "ALL" && log.action !== auditActionFilter) {
       return false;
     }
@@ -284,8 +296,15 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
       const matchEmail = (log.userEmail || "").toLowerCase().includes(q);
       const matchEntity = (log.entity || "").toLowerCase().includes(q);
       const matchAction = (log.action || "").toLowerCase().includes(q);
-      const matchDetails = (log.details || "").toLowerCase().includes(q);
-      return matchEmail || matchEntity || matchAction || matchDetails;
+      const detailsText =
+        typeof log.details === "string"
+          ? log.details
+          : log.details
+            ? JSON.stringify(log.details)
+            : "";
+      const matchDetails = detailsText.toLowerCase().includes(q);
+      const matchReason = (log.reason || "").toLowerCase().includes(q);
+      return matchEmail || matchEntity || matchAction || matchDetails || matchReason;
     }
     return true;
   });
@@ -1079,13 +1098,14 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                   <TableHead>Actor</TableHead>
                   <TableHead>Action</TableHead>
                   <TableHead>Entity</TableHead>
-                  <TableHead>Details</TableHead>
+                  <TableHead>Summary</TableHead>
+                  <TableHead className="text-right">Inspect</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredAuditLogs.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="p-0">
+                    <TableCell colSpan={6} className="p-0">
                       <EmptyState
                         title={
                           auditSearch || auditActionFilter !== "ALL"
@@ -1116,27 +1136,48 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredAuditLogs.map((log: any) => (
+                  filteredAuditLogs.map((log: AuditLogRecord) => (
                     <TableRow key={log.id}>
-                      <TableCell className="text-xs font-mono text-muted-foreground">
+                      <TableCell className="whitespace-nowrap text-xs font-mono text-muted-foreground">
                         {formatDateTime(log.timestamp)}
                       </TableCell>
-                      <TableCell className="text-xs font-medium">
+                      <TableCell className="text-xs font-medium text-foreground">
                         {log.userEmail || "System"}
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant="outline"
+                          variant={getActionBadgeVariant(log.action)}
                           className="font-mono text-[10px]"
                         >
                           {log.action}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs font-mono">
-                        {log.entity}
+                      <TableCell className="text-xs">
+                        <div className="font-medium text-foreground">
+                          {humanizeEntity(log.entity)}
+                        </div>
+                        {log.entityId ? (
+                          <div className="font-mono text-[11px] text-muted-foreground truncate max-w-36">
+                            {log.entityId}
+                          </div>
+                        ) : null}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground font-mono">
-                        {log.details || "-"}
+                      <TableCell className="max-w-md text-xs text-muted-foreground">
+                        <p className="line-clamp-2">
+                          {summarizeAuditDetails(log.details, log.reason)}
+                        </p>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          type="button"
+                          variant="tertiary"
+                          size="sm"
+                          aria-label={`Inspect audit event for ${humanizeEntity(log.entity)}`}
+                          onClick={() => setSelectedAuditLog(log)}
+                        >
+                          <EyeIcon className="size-3.5" aria-hidden="true" />
+                          Details
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -1144,6 +1185,15 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
               </TableBody>
             </Table>
           </div>
+          <AuditDetailSheet
+            log={selectedAuditLog}
+            open={Boolean(selectedAuditLog)}
+            onOpenChange={(nextOpen) => {
+              if (!nextOpen) {
+                setSelectedAuditLog(null);
+              }
+            }}
+          />
           <DataPagination
             pagination={auditData?.pagination}
             page={auditPage}
