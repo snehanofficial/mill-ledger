@@ -2,6 +2,17 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/(dashboard|orders|invoices|dispatch|payments|receivables|stock|purchases|suppliers|production|customers|products|reports|exports|settings|showcase|auth)(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -9,7 +20,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/app-shell.html"
+      "destination": "/index.html"
     }
   ]
 }

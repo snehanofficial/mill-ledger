@@ -48,8 +48,6 @@ async function main() {
   }
 
   const templateHtml = fs.readFileSync(templatePath, "utf-8");
-  // Preserve the un-prerendered noindex SPA shell for private/404 fallback routes
-  fs.writeFileSync(path.join(distDir, "app-shell.html"), templateHtml, "utf-8");
   const {
     PUBLIC_ROUTES,
     buildCanonicalUrl,

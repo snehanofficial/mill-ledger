@@ -184,12 +184,7 @@ export function createApp() {
           return res.sendFile(prerenderedFile);
         }
       }
-      const appShellPath = path.join(clientDistPath, "app-shell.html");
-      res.sendFile(
-        fs.existsSync(appShellPath)
-          ? appShellPath
-          : path.join(clientDistPath, "index.html"),
-      );
+      res.sendFile(path.join(clientDistPath, "index.html"));
     });
   } else {
     // RFC 9309: Standalone API server blocks all crawlers
