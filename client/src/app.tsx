@@ -68,175 +68,205 @@ const DemoPage = lazy(() =>
   })),
 );
 const LoginPage = lazy(() =>
-  import("@/pages/login-page").then((m) => ({ default: m.LoginPage })),
+  import("@/pages/auth/login-page").then((m) => ({ default: m.LoginPage })),
 );
 const DashboardPage = lazy(() =>
-  import("@/pages/dashboard-page").then((m) => ({ default: m.DashboardPage })),
+  import("@/pages/dashboard/dashboard-page").then((m) => ({
+    default: m.DashboardPage,
+  })),
 );
 const StockPage = lazy(() =>
-  import("@/pages/stock-page").then((m) => ({ default: m.StockPage })),
+  import("@/pages/stock/stock-page").then((m) => ({ default: m.StockPage })),
 );
 const ProductionTodayPage = lazy(() =>
-  import("@/pages/production-today-page").then((m) => ({
+  import("@/pages/production/production-today-page").then((m) => ({
     default: m.ProductionTodayPage,
   })),
 );
 const ProductionHistoryPage = lazy(() =>
-  import("@/pages/production-history-page").then((m) => ({
+  import("@/pages/production/production-history-page").then((m) => ({
     default: m.ProductionHistoryPage,
   })),
 );
 const ProductionRecipesPage = lazy(() =>
-  import("@/pages/production-recipes-page").then((m) => ({
+  import("@/pages/production/production-recipes-page").then((m) => ({
     default: m.ProductionRecipesPage,
   })),
 );
 const OrdersPage = lazy(() =>
-  import("@/pages/orders-page").then((m) => ({ default: m.OrdersPage })),
+  import("@/pages/orders/orders-page").then((m) => ({ default: m.OrdersPage })),
 );
 const OrderDetailPage = lazy(() =>
-  import("@/pages/order-detail-page").then((m) => ({
+  import("@/pages/orders/order-detail-page").then((m) => ({
     default: m.OrderDetailPage,
   })),
 );
 const InvoicesPage = lazy(() =>
-  import("@/pages/invoices-page").then((m) => ({ default: m.InvoicesPage })),
+  import("@/pages/invoices/invoices-page").then((m) => ({
+    default: m.InvoicesPage,
+  })),
 );
 const NewInvoicePage = lazy(() =>
-  import("@/pages/new-invoice-page").then((m) => ({
+  import("@/pages/invoices/new-invoice-page").then((m) => ({
     default: m.NewInvoicePage,
   })),
 );
 const InvoiceDetailPage = lazy(() =>
-  import("@/pages/invoice-detail-page").then((m) => ({
+  import("@/pages/invoices/invoice-detail-page").then((m) => ({
     default: m.InvoiceDetailPage,
   })),
 );
 const DispatchPage = lazy(() =>
-  import("@/pages/dispatch-page").then((m) => ({ default: m.DispatchPage })),
+  import("@/pages/dispatch/dispatch-page").then((m) => ({
+    default: m.DispatchPage,
+  })),
 );
 const NewDispatchPage = lazy(() =>
-  import("@/pages/new-dispatch-page").then((m) => ({
+  import("@/pages/dispatch/new-dispatch-page").then((m) => ({
     default: m.NewDispatchPage,
   })),
 );
 const DispatchDetailPage = lazy(() =>
-  import("@/pages/dispatch-detail-page").then((m) => ({
+  import("@/pages/dispatch/dispatch-detail-page").then((m) => ({
     default: m.DispatchDetailPage,
   })),
 );
 const PaymentsPage = lazy(() =>
-  import("@/pages/payments-page").then((m) => ({ default: m.PaymentsPage })),
+  import("@/pages/payments/payments-page").then((m) => ({
+    default: m.PaymentsPage,
+  })),
 );
 const NewPaymentPage = lazy(() =>
-  import("@/pages/new-payment-page").then((m) => ({
+  import("@/pages/payments/new-payment-page").then((m) => ({
     default: m.NewPaymentPage,
   })),
 );
 const PaymentDetailPage = lazy(() =>
-  import("@/pages/payment-detail-page").then((m) => ({
+  import("@/pages/payments/payment-detail-page").then((m) => ({
     default: m.PaymentDetailPage,
   })),
 );
 const ReceivablesPage = lazy(() =>
-  import("@/pages/receivables-page").then((m) => ({
+  import("@/pages/receivables/receivables-page").then((m) => ({
     default: m.ReceivablesPage,
   })),
 );
 const CustomerLedgerPage = lazy(() =>
-  import("@/pages/customer-ledger-page").then((m) => ({
+  import("@/pages/receivables/customer-ledger-page").then((m) => ({
     default: m.CustomerLedgerPage,
   })),
 );
 const StockLedgerPage = lazy(() =>
-  import("@/pages/stock-ledger-page").then((m) => ({
+  import("@/pages/stock/stock-ledger-page").then((m) => ({
     default: m.StockLedgerPage,
   })),
 );
 const NewPurchasePage = lazy(() =>
-  import("@/pages/new-purchase-page").then((m) => ({
+  import("@/pages/purchases/new-purchase-page").then((m) => ({
     default: m.NewPurchasePage,
   })),
 );
 const PurchaseDetailPage = lazy(() =>
-  import("@/pages/purchase-detail-page").then((m) => ({
+  import("@/pages/purchases/purchase-detail-page").then((m) => ({
     default: m.PurchaseDetailPage,
   })),
 );
 const ProductionRunDetailPage = lazy(() =>
-  import("@/pages/production-run-detail-page").then((m) => ({
+  import("@/pages/production/production-run-detail-page").then((m) => ({
     default: m.ProductionRunDetailPage,
   })),
 );
 const ReportsHomePage = lazy(() =>
-  import("@/pages/reports-home-page").then((m) => ({
+  import("@/pages/reports/reports-home-page").then((m) => ({
     default: m.ReportsHomePage,
   })),
 );
 const ReportsSalesPage = lazy(() =>
-  import("@/pages/reports-page").then((m) => ({ default: m.ReportsSalesPage })),
+  import("@/pages/reports/reports-page").then((m) => ({
+    default: m.ReportsSalesPage,
+  })),
 );
 const ReportsStockPage = lazy(() =>
-  import("@/pages/reports-page").then((m) => ({ default: m.ReportsStockPage })),
+  import("@/pages/reports/reports-page").then((m) => ({
+    default: m.ReportsStockPage,
+  })),
 );
 const ReportsProductionPage = lazy(() =>
-  import("@/pages/reports-page").then((m) => ({
+  import("@/pages/reports/reports-page").then((m) => ({
     default: m.ReportsProductionPage,
   })),
 );
 const ReportsReceivablesPage = lazy(() =>
-  import("@/pages/reports-page").then((m) => ({
+  import("@/pages/reports/reports-page").then((m) => ({
     default: m.ReportsReceivablesPage,
   })),
 );
 const ReportsGSTPage = lazy(() =>
-  import("@/pages/reports-page").then((m) => ({ default: m.ReportsGSTPage })),
+  import("@/pages/reports/reports-page").then((m) => ({
+    default: m.ReportsGSTPage,
+  })),
 );
 const ReportsAuditPage = lazy(() =>
-  import("@/pages/reports-page").then((m) => ({ default: m.ReportsAuditPage })),
+  import("@/pages/reports/reports-page").then((m) => ({
+    default: m.ReportsAuditPage,
+  })),
 );
 const NewOrderPage = lazy(() =>
-  import("@/pages/new-order-page").then((m) => ({ default: m.NewOrderPage })),
+  import("@/pages/orders/new-order-page").then((m) => ({
+    default: m.NewOrderPage,
+  })),
 );
 const PurchasesPage = lazy(() =>
-  import("@/pages/purchases-page").then((m) => ({ default: m.PurchasesPage })),
+  import("@/pages/purchases/purchases-page").then((m) => ({
+    default: m.PurchasesPage,
+  })),
 );
 const SuppliersPage = lazy(() =>
-  import("@/pages/suppliers-page").then((m) => ({ default: m.SuppliersPage })),
+  import("@/pages/suppliers/suppliers-page").then((m) => ({
+    default: m.SuppliersPage,
+  })),
 );
 const CustomersPage = lazy(() =>
-  import("@/pages/customers-page").then((m) => ({ default: m.CustomersPage })),
+  import("@/pages/customers/customers-page").then((m) => ({
+    default: m.CustomersPage,
+  })),
 );
 const CustomerDetailPage = lazy(() =>
-  import("@/pages/customer-detail-page").then((m) => ({
+  import("@/pages/customers/customer-detail-page").then((m) => ({
     default: m.CustomerDetailPage,
   })),
 );
 const ProductsPage = lazy(() =>
-  import("@/pages/products-page").then((m) => ({ default: m.ProductsPage })),
+  import("@/pages/products/products-page").then((m) => ({
+    default: m.ProductsPage,
+  })),
 );
 const ProductDetailPage = lazy(() =>
-  import("@/pages/product-detail-page").then((m) => ({
+  import("@/pages/products/product-detail-page").then((m) => ({
     default: m.ProductDetailPage,
   })),
 );
 const RecipeDetailPage = lazy(() =>
-  import("@/pages/recipe-detail-page").then((m) => ({
+  import("@/pages/production/recipe-detail-page").then((m) => ({
     default: m.RecipeDetailPage,
   })),
 );
 const ExportsPage = lazy(() =>
-  import("@/pages/exports-page").then((m) => ({ default: m.ExportsPage })),
+  import("@/pages/exports/exports-page").then((m) => ({
+    default: m.ExportsPage,
+  })),
 );
 const SettingsPage = lazy(() =>
-  import("@/pages/settings-page").then((m) => ({ default: m.SettingsPage })),
+  import("@/pages/settings/settings-page").then((m) => ({
+    default: m.SettingsPage,
+  })),
 );
 const NotFoundPage = lazy(() =>
-  import("@/pages/placeholder-pages").then((m) => ({
+  import("@/pages/errors/not-found-page").then((m) => ({
     default: m.NotFoundPage,
   })),
 );
-const ShowcasePage = lazy(() => import("@/pages/showcase-page"));
+const ShowcasePage = lazy(() => import("@/pages/dev/showcase-page"));
 import {
   dashboardHandle,
   ordersHandle,

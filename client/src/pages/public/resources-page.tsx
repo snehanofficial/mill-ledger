@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRightIcon } from "lucide-react";
-import { PublicLayout } from "./public-layout";
+import { PublicLayout } from "@/layouts/public-layout";
 
 const RESOURCE_GUIDES = [
   {

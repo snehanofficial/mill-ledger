@@ -11,11 +11,14 @@ The client package provides the web frontend for MillLedger. It delivers role sp
 | `src/main.tsx`                                 | Application entry point and CSS bundle imports                |
 | `src/app.tsx`                                  | Data router setup and route hierarchy                         |
 | `src/layouts/authenticated-layout.tsx`         | Authenticated shell wrapper with sidebar and top header       |
+| `src/layouts/public-layout.tsx`                | Public marketing shell wrapper with header, breadcrumbs, footer |
+| `src/components/public/`                       | Public header and footer navigation components                |
 | `src/components/shell/authenticated-shell.tsx` | Main responsive layout with desktop sidebar and mobile drawer |
 | `src/components/shell/nav-config.tsx`          | Role based navigation links and icons                         |
 | `src/hooks/use-current-user.ts`                | Current session user hook for shell and guards                |
-| `src/pages/showcase-page.tsx`                  | Design system showcase and component verification             |
-| `src/pages/placeholder-pages.tsx`              | Temporary placeholder screens for future domain features      |
+| `src/pages/<feature>/`                         | Feature-organized page modules (orders, invoices, stock, etc.) |
+| `src/pages/dev/showcase-page.tsx`              | Design system showcase and component verification             |
+| `src/pages/errors/not-found-page.tsx`          | 404 fallback page for unknown routes                          |
 | `src/lib/utils.ts`                             | Tailwind class merger helper                                  |
 
 ## Commands

@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { PublicLayout } from "./public-layout";
+import { PublicLayout } from "@/layouts/public-layout";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { captureAttributionOnce, trackPublicEvent } from "@/lib/analytics";
 import { BRAND_ENTITY } from "@/lib/public-routes";

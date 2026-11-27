@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { buttonVariants } from "@/components/ui/button";
-import { PublicLayout } from "./public-layout";
+import { PublicLayout } from "@/layouts/public-layout";
 
 const SECURITY_CONTROLS = [
   {

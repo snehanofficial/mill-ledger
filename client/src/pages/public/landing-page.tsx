@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { PublicLayout } from "./public-layout";
+import { PublicLayout } from "@/layouts/public-layout";
 import { useLanguage } from "@/lib/i18n";
 
 const ORDER_TO_AUDIT_STAGES = [

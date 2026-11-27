@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import type { Role } from "@mill-ledger/shared";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { ForbiddenPage } from "@/pages/forbidden-page";
+import { ForbiddenPage } from "@/pages/auth/forbidden-page";
 import { getDefaultRouteForRole } from "@/lib/role-routing";
 
 interface RoleGuardProps {

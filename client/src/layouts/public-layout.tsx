@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
-import { PublicHeader } from "./public-header";
-import { PublicFooter } from "./public-footer";
+import { PublicHeader } from "@/components/public/public-header";
+import { PublicFooter } from "@/components/public/public-footer";
 import { PublicBreadcrumbs, useSeoHead } from "@/components/seo/seo-head";
 import { getPublicRouteMeta } from "@/lib/public-routes";
 
