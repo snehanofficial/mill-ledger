@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-const DEMO_EMAIL = "demo.admin@millledger.example";
-const DEMO_PASSWORD = "DemoAdmin123!";
+const DEMO_EMAIL = "admin@millledger.local";
+const DEMO_PASSWORD = "AdminPassword123!";
 
 async function loginAsDemoAdmin(page: any) {
   await page.context().clearCookies();

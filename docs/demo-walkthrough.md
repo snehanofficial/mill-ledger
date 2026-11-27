@@ -1,16 +1,17 @@
 # MillLedger Demo Foods — Pitch Walkthrough & Presenter Script
 
-This walkthrough uses the isolated **MillLedger Demo Foods** (`DEMO-FOODS`) demonstration dataset.
+This walkthrough uses the **MillLedger Foods Pvt Ltd** (`MILL`) demonstration dataset.
 
-## Demo Login Credentials
+## Demo Login Credentials (Auto-Login Ready)
 
 | Role | Email | Password | Best Used For |
 |---|---|---|---|
-| Admin | `demo.admin@millledger.example` | `DemoAdmin123!` | Full walkthrough (recommended) |
-| Owner | `demo.owner@millledger.example` | `DemoOwner123!` | Executive dashboard & approvals |
-| Salesman | `demo.salesman@millledger.example` | `DemoSalesman123!` | Field order entry & assigned accounts |
-| Production | `demo.production@millledger.example` | `DemoProduction123!` | Recipes, BOMs & production runs |
-| Accountant | `demo.accountant@millledger.example` | `DemoAccountant123!` | GST invoices, payments & exports |
+| Admin | `admin@millledger.local` | `AdminPassword123!` | Full walkthrough (recommended) |
+| Owner | `owner@millledger.local` | `OwnerPassword123!` | Executive dashboard & approvals |
+| Salesman | `salesman@millledger.local` | `SalesmanPassword123!` | Field order entry & assigned accounts |
+| Production | `production@millledger.local` | `ProductionPassword123!` | Recipes, BOMs & production runs |
+| Operator | `operator@millledger.local` | `OperatorPassword123!` | Floor production runs |
+| Accountant | `accountant@millledger.local` | `AccountantPassword123!` | GST invoices, payments & exports |
 
 ---
 

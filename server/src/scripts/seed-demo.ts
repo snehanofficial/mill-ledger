@@ -17,8 +17,8 @@ import { paymentService } from "../modules/finance/payment.service.js";
 import { reportingService } from "../modules/reporting/reporting.service.js";
 import { timelineService } from "../modules/timeline/timeline.service.js";
 
-export const DEMO_ORG_CODE = "DEMO-FOODS";
-export const DEMO_ORG_NAME = "MillLedger Demo Foods";
+export const DEMO_ORG_CODE = "MILL";
+export const DEMO_ORG_NAME = "MillLedger Foods Pvt Ltd";
 
 interface DemoUserSeed {
   name: string;
@@ -29,33 +29,39 @@ interface DemoUserSeed {
 
 export const DEMO_USERS: DemoUserSeed[] = [
   {
-    name: "Ananya Krishnan (Demo Admin)",
-    email: "demo.admin@millledger.example",
-    password: "DemoAdmin123!",
+    name: "Factory Admin",
+    email: "admin@millledger.local",
+    password: "AdminPassword123!",
     role: "ADMIN",
   },
   {
-    name: "Vikramaditya Rao (Demo Owner)",
-    email: "demo.owner@millledger.example",
-    password: "DemoOwner123!",
+    name: "Mill Owner",
+    email: "owner@millledger.local",
+    password: "OwnerPassword123!",
     role: "OWNER",
   },
   {
-    name: "Karthik Subramanian (Demo Sales)",
-    email: "demo.salesman@millledger.example",
-    password: "DemoSalesman123!",
+    name: "Salesman Demo",
+    email: "salesman@millledger.local",
+    password: "SalesmanPassword123!",
     role: "SALESMAN",
   },
   {
-    name: "Meenakshi Sundaram (Demo Production)",
-    email: "demo.production@millledger.example",
-    password: "DemoProduction123!",
+    name: "Production Manager",
+    email: "production@millledger.local",
+    password: "ProductionPassword123!",
     role: "PRODUCTION",
   },
   {
-    name: "Raghavan Iyer (Demo Accounts)",
-    email: "demo.accountant@millledger.example",
-    password: "DemoAccountant123!",
+    name: "Floor Operator",
+    email: "operator@millledger.local",
+    password: "OperatorPassword123!",
+    role: "PRODUCTION",
+  },
+  {
+    name: "Auditor Accountant",
+    email: "accountant@millledger.local",
+    password: "AccountantPassword123!",
     role: "ACCOUNTANT",
   },
 ];
@@ -1410,7 +1416,7 @@ export async function verifyDemoData() {
     prisma.warehouseStockBalance.findMany({ where: { organizationId: orgId } }),
     prisma.auditLog.count({ where: { organizationId: orgId } }),
     prisma.user.findFirstOrThrow({
-      where: { email: "demo.admin@millledger.example" },
+      where: { email: "admin@millledger.local" },
     }),
   ]);
 
