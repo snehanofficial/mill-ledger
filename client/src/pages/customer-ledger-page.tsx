@@ -4,6 +4,7 @@ import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatINR, formatDateTime } from "@/lib/formatters";
 import { RecordHeader } from "@/components/ui/page-header";
+import { EntityLifecycleTimeline } from "@/components/timeline/entity-lifecycle-timeline";
 import { ErrorState, SkeletonTable } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -229,6 +230,12 @@ export function CustomerLedgerPage() {
           </Table>
         </div>
       </section>
+
+      <EntityLifecycleTimeline
+        entityType="customer"
+        entityId={customer.id}
+        description="Customer account updates, orders, invoices, and payment activity."
+      />
     </div>
   );
 }

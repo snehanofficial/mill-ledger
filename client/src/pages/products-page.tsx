@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
@@ -670,7 +671,12 @@ export function ProductsPage() {
                     <span className="font-mono text-xs font-semibold">
                       {prod.code}
                     </span>
-                    <span className="text-sm font-semibold">{prod.name}</span>
+                    <Link
+                      to={`/products/${prod.id}`}
+                      className="text-sm font-semibold text-primary hover:underline"
+                    >
+                      {prod.name}
+                    </Link>
                     <Badge variant="outline" className="font-mono text-2xs">
                       HSN {prod.hsnCode} | {Number(prod.taxRate)}% GST
                     </Badge>

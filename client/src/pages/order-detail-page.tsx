@@ -5,6 +5,7 @@ import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { formatINR, formatQuantity, formatDateTime } from "@/lib/formatters";
 import { RecordHeader, LifecycleSteps, type LifecycleStep } from "@/components/ui/page-header";
+import { EntityLifecycleTimeline } from "@/components/timeline/entity-lifecycle-timeline";
 import { ErrorState, SkeletonTable } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -783,6 +784,12 @@ export function OrderDetailPage() {
           </div>
         </section>
       </div>
+
+      <EntityLifecycleTimeline
+        entityType="order"
+        entityId={order.id}
+        description="Complete order story including edits, approvals, dispatches, generated invoices, and allocated payments."
+      />
 
       {/* Reject Dialog */}
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>

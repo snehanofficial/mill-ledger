@@ -55,6 +55,7 @@ export const ROUTE_PERMISSIONS: Record<string, Role[]> = {
   "/production/history": ["ADMIN", "PRODUCTION", "OWNER"],
   "/production/runs/:runId": ["ADMIN", "PRODUCTION", "OWNER"],
   "/production/recipes": ["ADMIN", "PRODUCTION", "OWNER"],
+  "/production/recipes/:recipeId": ["ADMIN", "PRODUCTION", "OWNER"],
   "/customers": ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
   "/customers/:customerId": ["ADMIN", "SALESMAN", "ACCOUNTANT", "OWNER"],
   "/products": ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"],

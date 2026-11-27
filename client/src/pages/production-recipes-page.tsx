@@ -678,6 +678,12 @@ export function ProductionRecipesPage() {
                   </CollapsibleTrigger>
 
                   <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      to={`/production/recipes/${recipe.id}`}
+                      className={buttonVariants({ variant: "outline", size: "sm" })}
+                    >
+                      Lifecycle & details
+                    </Link>
                     {canRecordProduction && (
                       <Button
                         variant="outline"

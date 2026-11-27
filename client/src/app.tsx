@@ -172,8 +172,23 @@ const SuppliersPage = lazy(() =>
 const CustomersPage = lazy(() =>
   import("@/pages/customers-page").then((m) => ({ default: m.CustomersPage })),
 );
+const CustomerDetailPage = lazy(() =>
+  import("@/pages/customer-detail-page").then((m) => ({
+    default: m.CustomerDetailPage,
+  })),
+);
 const ProductsPage = lazy(() =>
   import("@/pages/products-page").then((m) => ({ default: m.ProductsPage })),
+);
+const ProductDetailPage = lazy(() =>
+  import("@/pages/product-detail-page").then((m) => ({
+    default: m.ProductDetailPage,
+  })),
+);
+const RecipeDetailPage = lazy(() =>
+  import("@/pages/recipe-detail-page").then((m) => ({
+    default: m.RecipeDetailPage,
+  })),
 );
 const ExportsPage = lazy(() =>
   import("@/pages/exports-page").then((m) => ({ default: m.ExportsPage })),
@@ -213,8 +228,11 @@ import {
   productionHistoryHandle,
   productionRunDetailHandle,
   productionRecipesHandle,
+  productionRecipeDetailHandle,
   customersHandle,
+  customerDetailHandle,
   productsHandle,
+  productDetailHandle,
   reportsHomeHandle,
   reportsSalesHandle,
   reportsStockHandle,
@@ -606,29 +624,70 @@ const router = createBrowserRouter([
             ),
             handle: productionRecipesHandle,
           },
+          {
+            path: "recipes/:recipeId",
+            element: (
+              <RoleGuard
+                allowedRoles={ROUTE_PERMISSIONS["/production/recipes/:recipeId"]}
+              >
+                <RecipeDetailPage />
+              </RoleGuard>
+            ),
+            handle: productionRecipeDetailHandle,
+          },
         ],
       },
 
       // Customers
       {
         path: "customers",
-        element: (
-          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/customers"]}>
-            <CustomersPage />
-          </RoleGuard>
-        ),
         handle: customersHandle,
+        children: [
+          {
+            index: true,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/customers"]}>
+                <CustomersPage />
+              </RoleGuard>
+            ),
+            handle: customersHandle,
+          },
+          {
+            path: ":customerId",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/customers/:customerId"]}>
+                <CustomerDetailPage />
+              </RoleGuard>
+            ),
+            handle: customerDetailHandle,
+          },
+        ],
       },
 
       // Products & Price Lists
       {
         path: "products",
-        element: (
-          <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/products"]}>
-            <ProductsPage />
-          </RoleGuard>
-        ),
         handle: productsHandle,
+        children: [
+          {
+            index: true,
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/products"]}>
+                <ProductsPage />
+              </RoleGuard>
+            ),
+            handle: productsHandle,
+          },
+          {
+            path: ":productId",
+            element: (
+              <RoleGuard allowedRoles={ROUTE_PERMISSIONS["/products/:productId"]}>
+                <ProductDetailPage />
+              </RoleGuard>
+            ),
+            handle: productDetailHandle,
+          },
+        ],
       },
 
       // Reports
