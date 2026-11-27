@@ -5,56 +5,104 @@ import {
   normalizePaginationOptions,
 } from "../../utils/pagination.js";
 
+export interface AuditChangeInput {
+  field: string;
+  label?: string;
+  kind?: "added" | "removed" | "changed";
+  previousValue?: unknown;
+  newValue?: unknown;
+}
+
+export interface AuditRelatedEntityInput {
+  entityType: string;
+  entityId: string;
+  label?: string;
+  role?: string;
+}
+
 export interface LogAuditInput {
   organizationId?: string;
   userId?: string;
   userEmail?: string;
+  actorName?: string;
+  actorType?: "USER" | "SYSTEM" | "OFFLINE_SYNC";
+  source?: "API" | "OFFLINE_SYNC" | "SYSTEM" | "SEED";
   action: string;
+  eventType?: string;
   entity: string;
   entityId?: string;
+  summary?: string;
   details?: string | Record<string, unknown>;
+  changes?: AuditChangeInput[];
+  relatedEntities?: AuditRelatedEntityInput[];
   reason?: string;
   requestId?: string;
+  correlationId?: string;
   ipAddress?: string;
+  occurredAt?: Date;
 }
 
 export class AuditService {
-  private async resolveOrgId(orgIdOrCode?: string): Promise<string> {
+  private async resolveOrgId(
+    orgIdOrCode?: string,
+    db: Prisma.TransactionClient | typeof prisma = prisma,
+  ): Promise<string> {
     const target = orgIdOrCode || "MILL";
-    const org = await prisma.organization.findFirst({
+    const org = await db.organization.findFirst({
       where: {
         OR: [{ id: target }, { code: target }],
       },
+      select: { id: true },
     });
     return org ? org.id : target;
   }
 
   /**
-   * Log an audit event
+   * Log an audit event, optionally inside an existing Prisma transaction.
    */
-  async log(input: LogAuditInput) {
+  async log(input: LogAuditInput, tx?: Prisma.TransactionClient) {
+    const db = tx ?? prisma;
     try {
-      const organizationId = await this.resolveOrgId(input.organizationId);
+      const organizationId = await this.resolveOrgId(input.organizationId, db);
       const detailsStr =
-        typeof input.details === "object"
+        typeof input.details === "object" && input.details !== null
           ? JSON.stringify(input.details)
           : input.details;
 
-      return await prisma.auditLog.create({
+      const correlationId = input.correlationId ?? input.requestId;
+
+      return await db.auditLog.create({
         data: {
           organizationId,
           userId: input.userId,
           userEmail: input.userEmail,
+          actorName: input.actorName ?? (input.userEmail ? input.userEmail.split("@")[0] : undefined),
+          actorType: input.actorType ?? "USER",
+          source: input.source ?? "API",
           action: input.action,
+          eventType: input.eventType ?? `${input.entity.toUpperCase()}_${input.action.toUpperCase()}`,
           entity: input.entity,
           entityId: input.entityId,
+          summary: input.summary,
           details: detailsStr,
+          changes: input.changes
+            ? (input.changes as unknown as Prisma.InputJsonValue)
+            : undefined,
+          relatedEntities: input.relatedEntities
+            ? (input.relatedEntities as unknown as Prisma.InputJsonValue)
+            : undefined,
           reason: input.reason,
           requestId: input.requestId,
+          correlationId,
           ipAddress: input.ipAddress,
+          schemaVersion: 1,
+          occurredAt: input.occurredAt ?? new Date(),
         },
       });
     } catch (err) {
+      if (tx) {
+        throw err;
+      }
       console.error("Failed to write audit log:", err);
       return null;
     }

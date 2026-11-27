@@ -1025,22 +1025,35 @@ model PaymentAllocation {
 }
 
 model AuditLog {
-  id             String       @id @default(cuid())
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  userId         String?
-  userEmail      String?
-  action         String
-  entity         String
-  entityId       String?
-  details        String?
-  reason         String?
-  requestId      String?
-  ipAddress      String?
-  timestamp      DateTime     @default(now())
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId          String?
+  userEmail       String?
+  actorName       String?
+  actorType       String       @default("USER")
+  source          String       @default("API")
+  action          String
+  eventType       String?
+  entity          String
+  entityId        String?
+  summary         String?
+  details         String?
+  changes         Json?
+  relatedEntities Json?
+  reason          String?
+  requestId       String?
+  correlationId   String?
+  ipAddress       String?
+  schemaVersion   Int          @default(1)
+  occurredAt      DateTime     @default(now())
+  timestamp       DateTime     @default(now())
 
   @@index([organizationId, entity])
+  @@index([organizationId, entity, entityId, timestamp(sort: Desc)])
+  @@index([organizationId, entityId])
   @@index([organizationId, timestamp])
+  @@index([correlationId])
   @@map("audit_log")
 }
 
