@@ -256,9 +256,17 @@ salesRouter.get(
   async (req: AuthenticatedRequest, res, next) => {
     try {
       const orgId = getSessionOrgId(req);
+      const q = typeof req.query.q === "string" ? req.query.q : undefined;
+      const stock =
+        typeof req.query.stock === "string" ? req.query.stock : undefined;
       const { limit, offset } = parsePaginationQuery(req.query);
 
-      const result = await salesService.getProducts(orgId, { limit, offset });
+      const result = await salesService.getProducts(orgId, {
+        limit,
+        offset,
+        q,
+        stock,
+      });
       res.json({
         products: result.products,
         pagination: buildPaginationMeta(

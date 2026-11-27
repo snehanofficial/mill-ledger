@@ -1853,7 +1853,12 @@ export class SalesService {
    */
   async getProducts(
     organizationId: string,
-    options?: { limit?: number; offset?: number },
+    options?: {
+      limit?: number;
+      offset?: number;
+      q?: string;
+      stock?: string;
+    },
   ) {
     const org = await this.resolveOrgId(organizationId);
     const parsedLimit =
@@ -1868,47 +1873,142 @@ export class SalesService {
         : 0;
     const offset = Math.max(parsedOffset, 0);
 
+    const search = options?.q?.trim();
+    const stockFilter = options?.stock?.toUpperCase() ?? "ALL";
+    const hasStockFilter =
+      stockFilter === "IN_STOCK" ||
+      stockFilter === "OUT_OF_STOCK" ||
+      stockFilter === "LOW_STOCK";
+
     const where: Prisma.ProductVariantWhereInput = {
+      isActive: true,
       product: {
         organizationId: org,
         isActive: true,
       },
+      ...(search
+        ? {
+            OR: [
+              { sku: { contains: search, mode: "insensitive" } },
+              { name: { contains: search, mode: "insensitive" } },
+              { product: { name: { contains: search, mode: "insensitive" } } },
+              {
+                product: {
+                  hsnCode: { contains: search, mode: "insensitive" },
+                },
+              },
+            ],
+          }
+        : {}),
     };
 
-    const [variants, total] = await Promise.all([
-      prisma.productVariant.findMany({
-        where,
-        include: {
-          product: true,
-          uom: true,
-          inventoryItem: {
-            select: {
-              id: true,
-              sku: true,
-            },
+    const variantInclude = {
+      product: true,
+      uom: true,
+      inventoryItem: {
+        select: {
+          id: true,
+          sku: true,
+          currentStock: true,
+        },
+      },
+      priceLines: {
+        where: {
+          priceList: {
+            isDefault: true,
           },
-          priceLines: {
+        },
+      },
+    } satisfies Prisma.ProductVariantInclude;
+
+    const [allOrPagedVariants, dbTotal] = hasStockFilter
+      ? [
+          await prisma.productVariant.findMany({
+            where,
+            include: variantInclude,
+            orderBy: { sku: "asc" },
+          }),
+          0,
+        ]
+      : await Promise.all([
+          prisma.productVariant.findMany({
+            where,
+            include: variantInclude,
+            orderBy: { sku: "asc" },
+            take: limit,
+            skip: offset,
+          }),
+          prisma.productVariant.count({ where }),
+        ]);
+
+    if (allOrPagedVariants.length === 0) {
+      return { products: [], total: 0, limit, offset };
+    }
+
+    const inventoryItemIds = Array.from(
+      new Set(
+        allOrPagedVariants
+          .map((v) => v.inventoryItemId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    );
+
+    const now = new Date();
+    const reservationAggs =
+      inventoryItemIds.length > 0
+        ? await prisma.stockReservation.groupBy({
+            by: ["inventoryItemId"],
             where: {
-              priceList: {
-                isDefault: true,
-              },
+              inventoryItemId: { in: inventoryItemIds },
+              status: "ACTIVE",
+              OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
             },
-          },
-        },
-        orderBy: {
-          sku: "asc",
-        },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.productVariant.count({ where }),
-    ]);
+            _sum: {
+              reservedQuantity: true,
+              releasedQuantity: true,
+            },
+          })
+        : [];
+
+    const reservedMap = new Map<string, number>();
+    for (const r of reservationAggs) {
+      const reserved = Math.max(
+        0,
+        Number(r._sum.reservedQuantity ?? 0) -
+          Number(r._sum.releasedQuantity ?? 0),
+      );
+      reservedMap.set(r.inventoryItemId, reserved);
+    }
+
+    const getAvailableStock = (
+      variant: (typeof allOrPagedVariants)[number],
+    ): number => {
+      if (!variant.inventoryItem) return 0;
+      const onHand = Number(variant.inventoryItem.currentStock ?? 0);
+      const reserved = reservedMap.get(variant.inventoryItem.id) ?? 0;
+      return Math.max(0, onHand - reserved);
+    };
+
+    const filteredVariants = hasStockFilter
+      ? allOrPagedVariants.filter((v) => {
+          const available = getAvailableStock(v);
+          if (stockFilter === "IN_STOCK") return available > 0;
+          if (stockFilter === "OUT_OF_STOCK") return available <= 0;
+          if (stockFilter === "LOW_STOCK")
+            return available > 0 && available <= 50;
+          return true;
+        })
+      : allOrPagedVariants;
+
+    const total = hasStockFilter ? filteredVariants.length : dbTotal;
+    const variants = hasStockFilter
+      ? filteredVariants.slice(offset, offset + limit)
+      : filteredVariants;
 
     if (variants.length === 0) {
       return { products: [], total, limit, offset };
     }
 
-    const now = new Date();
     const hsnCodes = Array.from(
       new Set(
         variants
@@ -1956,6 +2056,7 @@ export class SalesService {
         uom: v.uom.code,
         finishedGoodsItemId: v.inventoryItemId,
         finishedGoodsSku: v.inventoryItem?.sku ?? null,
+        availableStock: getAvailableStock(v),
         defaultPrice,
         imageUrl: v.imageUrl || "/products/default.svg",
         thumbnailUrl: v.thumbnailUrl || "/products/default.svg",

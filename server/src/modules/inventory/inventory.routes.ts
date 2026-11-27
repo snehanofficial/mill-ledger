@@ -169,11 +169,13 @@ inventoryRouter.get(
           : undefined;
       const category =
         typeof req.query.category === "string" ? req.query.category : undefined;
+      const stock =
+        typeof req.query.stock === "string" ? req.query.stock : undefined;
       const q = typeof req.query.q === "string" ? req.query.q : undefined;
       const { limit, offset } = parsePaginationQuery(req.query);
       const result = await inventoryService.getInventoryBalancesPaginated(
         orgId,
-        { warehouseId, category, q, limit, offset },
+        { warehouseId, category, stock, q, limit, offset },
       );
       res.json(result);
     } catch (err) {

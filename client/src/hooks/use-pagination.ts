@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useUrlState } from "@/hooks/use-url-state";
+import { useSearchParams } from "react-router-dom";
 
 export interface UsePaginationOptions {
   defaultPageSize?: number;
@@ -23,19 +23,17 @@ export function usePagination(
   const pageKey = options.prefix ? `${options.prefix}Page` : "page";
   const limitKey = options.prefix ? `${options.prefix}Limit` : "limit";
 
-  const [rawPage, setRawPage] = useUrlState(pageKey, "1");
-  const [rawLimit, setRawLimit] = useUrlState(
-    limitKey,
-    String(defaultPageSize),
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const parsedLimit = Number.parseInt(rawLimit, 10);
+  const rawLimit = searchParams.get(limitKey);
+  const parsedLimit = rawLimit !== null ? Number.parseInt(rawLimit, 10) : NaN;
   const pageSize =
     Number.isFinite(parsedLimit) && parsedLimit >= 1 && parsedLimit <= 100
       ? parsedLimit
       : defaultPageSize;
 
-  const parsedPage = Number.parseInt(rawPage, 10);
+  const rawPage = searchParams.get(pageKey);
+  const parsedPage = rawPage !== null ? Number.parseInt(rawPage, 10) : NaN;
   const page = Number.isFinite(parsedPage) && parsedPage >= 1 ? parsedPage : 1;
 
   const offset = (page - 1) * pageSize;
@@ -43,23 +41,46 @@ export function usePagination(
   const setPage = useCallback(
     (nextPage: number) => {
       const clamped = Math.max(1, Math.floor(nextPage));
-      setRawPage(String(clamped));
+      if (clamped === page) return;
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (clamped === 1) {
+            next.delete(pageKey);
+          } else {
+            next.set(pageKey, String(clamped));
+          }
+          return next;
+        },
+        { replace: true },
+      );
     },
-    [setRawPage],
+    [page, pageKey, setSearchParams],
   );
 
   const setPageSize = useCallback(
     (nextSize: number) => {
       const clamped = Math.min(100, Math.max(1, Math.floor(nextSize)));
-      setRawLimit(String(clamped));
-      setRawPage("1");
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (clamped === defaultPageSize) {
+            next.delete(limitKey);
+          } else {
+            next.set(limitKey, String(clamped));
+          }
+          next.delete(pageKey);
+          return next;
+        },
+        { replace: true },
+      );
     },
-    [setRawLimit, setRawPage],
+    [defaultPageSize, limitKey, pageKey, setSearchParams],
   );
 
   const resetPage = useCallback(() => {
-    setRawPage("1");
-  }, [setRawPage]);
+    setPage(1);
+  }, [setPage]);
 
   return {
     page,

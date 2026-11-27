@@ -137,7 +137,7 @@ export function NewPurchasePage() {
               <SelectTrigger id="pr-supplier">
                 <SelectValue placeholder="Select supplier" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder="Search suppliers...">
                 {suppliers.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.name} ({s.code})
@@ -193,7 +193,7 @@ export function NewPurchasePage() {
               <SelectTrigger id="pr-item">
                 <SelectValue placeholder="Select item" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent searchable searchPlaceholder="Search materials...">
                 {rawItems.map((i) => (
                   <SelectItem key={i.id} value={i.id}>
                     {i.name} ({i.baseUom?.code ?? "unit"})

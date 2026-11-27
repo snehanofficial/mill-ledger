@@ -962,6 +962,38 @@ describe("M5: Sales orders, ABAC scoping, shortages, and atomic stock reservatio
     expect(murukkuProduct?.finishedGoodsSku).toBe("FG-MURUKKU-200G");
     expect(Number(murukkuProduct?.taxRate)).toBe(5);
 
+    // 1b. Search and stock filters on /api/v1/sales/products
+    const searchRes = await fetch(
+      `${baseUrl}/api/v1/sales/products?q=MURUKKU`,
+      { headers: { Cookie: salesman1Cookie } },
+    );
+    expect(searchRes.status).toBe(200);
+    const searchData = (await searchRes.json()) as {
+      products: Array<{ sku: string; availableStock?: number }>;
+    };
+    expect(searchData.products.some((p) => p.sku === "VAR-MURUKKU-200G")).toBe(true);
+    expect(typeof searchData.products[0]?.availableStock).toBe("number");
+
+    const inStockRes = await fetch(
+      `${baseUrl}/api/v1/sales/products?stock=IN_STOCK`,
+      { headers: { Cookie: salesman1Cookie } },
+    );
+    expect(inStockRes.status).toBe(200);
+    const inStockData = (await inStockRes.json()) as {
+      products: Array<{ availableStock: number }>;
+    };
+    expect(inStockData.products.every((p) => p.availableStock > 0)).toBe(true);
+
+    const outOfStockRes = await fetch(
+      `${baseUrl}/api/v1/sales/products?stock=OUT_OF_STOCK`,
+      { headers: { Cookie: salesman1Cookie } },
+    );
+    expect(outOfStockRes.status).toBe(200);
+    const outOfStockData = (await outOfStockRes.json()) as {
+      products: Array<{ availableStock: number }>;
+    };
+    expect(outOfStockData.products.every((p) => p.availableStock <= 0)).toBe(true);
+
     // 2. Salesman creates own DRAFT order (10 pkts -> ₹525.00), then edits lines to 20 pkts (₹1,050.00)
     const draftRes = await fetch(`${baseUrl}/api/v1/sales/orders`, {
       method: "POST",

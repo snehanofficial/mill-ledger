@@ -91,6 +91,7 @@ export function StockPage() {
     debounceMs: 250,
   });
   const [categoryFilter, setCategoryFilter] = useUrlState("category", "ALL");
+  const [stockFilter, setStockFilter] = useUrlState("stock", "ALL");
   const [selectedLedgerItem, setSelectedLedgerItem] =
     useState<InventoryBalance | null>(null);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
@@ -327,6 +328,7 @@ export function StockPage() {
       "inventory-balances",
       warehouseFilter,
       categoryFilter,
+      stockFilter,
       searchQuery.trim(),
       page,
       pageSize,
@@ -341,6 +343,9 @@ export function StockPage() {
       }
       if (categoryFilter !== "ALL") {
         params.set("category", categoryFilter);
+      }
+      if (stockFilter !== "ALL") {
+        params.set("stock", stockFilter);
       }
       if (searchQuery.trim()) {
         params.set("q", searchQuery.trim());
@@ -594,6 +599,26 @@ export function StockPage() {
                 <SelectItem value="RAW_MATERIAL">Raw Material</SelectItem>
                 <SelectItem value="FINISHED_GOODS">Finished Goods</SelectItem>
                 <SelectItem value="PACKAGING">Packaging</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={stockFilter}
+              onValueChange={(val) => {
+                setStockFilter(val);
+                resetPage();
+              }}
+            >
+              <SelectTrigger
+                className="h-9 w-auto min-w-36 px-3 py-1 text-xs font-medium"
+                aria-label="Filter items by stock status"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All stock</SelectItem>
+                <SelectItem value="IN_STOCK">In stock</SelectItem>
+                <SelectItem value="LOW_STOCK">Low stock (&le; 50)</SelectItem>
+                <SelectItem value="OUT_OF_STOCK">Out of stock</SelectItem>
               </SelectContent>
             </Select>
             <Badge variant="outline" className="gap-1.5 text-xs text-emerald-600">

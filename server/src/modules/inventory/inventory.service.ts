@@ -518,6 +518,7 @@ export class InventoryService {
     options?: {
       warehouseId?: string;
       category?: string;
+      stock?: string;
       q?: string;
       limit?: number;
       offset?: number;
@@ -544,11 +545,25 @@ export class InventoryService {
       ),
     };
 
+    const stockFilter = options?.stock?.toUpperCase() ?? "ALL";
+
     const filtered = allBalances.filter((item) => {
       if (
         options?.category &&
         options.category !== "ALL" &&
         item.category !== options.category
+      ) {
+        return false;
+      }
+      if (stockFilter === "IN_STOCK" && item.available <= 0) {
+        return false;
+      }
+      if (stockFilter === "OUT_OF_STOCK" && item.available > 0) {
+        return false;
+      }
+      if (
+        stockFilter === "LOW_STOCK" &&
+        (item.available <= 0 || item.available > 50)
       ) {
         return false;
       }

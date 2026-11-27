@@ -1,11 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   PackageIcon,
   FileTextIcon,
   LayersIcon,
+  SearchIcon,
+  XIcon,
 } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PublicHeader } from "./public-header";
@@ -123,6 +126,37 @@ const CATALOG_ITEMS: ProductSpec[] = [
 
 export function CatalogPage() {
   const { language } = useLanguage();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
+
+  const categories = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const item of CATALOG_ITEMS) {
+      if (!map.has(item.categoryEn)) {
+        map.set(item.categoryEn, language === "ta" ? item.categoryTa : item.categoryEn);
+      }
+    }
+    return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
+  }, [language]);
+
+  const filteredItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return CATALOG_ITEMS.filter((item) => {
+      if (selectedCategory !== "ALL" && item.categoryEn !== selectedCategory) {
+        return false;
+      }
+      if (!q) return true;
+      return (
+        item.sku.toLowerCase().includes(q) ||
+        item.hsn.toLowerCase().includes(q) ||
+        item.nameEn.toLowerCase().includes(q) ||
+        item.nameTa.toLowerCase().includes(q) ||
+        item.categoryEn.toLowerCase().includes(q) ||
+        item.categoryTa.toLowerCase().includes(q) ||
+        item.descriptionEn.toLowerCase().includes(q)
+      );
+    });
+  }, [searchQuery, selectedCategory]);
 
   useEffect(() => {
     document.title =
@@ -177,8 +211,89 @@ export function CatalogPage() {
         {/* Catalog Grid */}
         <section className="py-12 sm:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {CATALOG_ITEMS.map((item) => (
+            {/* Search & Category Filter */}
+            <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div
+                className="flex flex-wrap items-center gap-1.5"
+                role="group"
+                aria-label={language === "ta" ? "வகை வாரியாக வடிகட்டுக" : "Filter catalog by category"}
+              >
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={selectedCategory === "ALL" ? "primary" : "outline"}
+                  aria-pressed={selectedCategory === "ALL"}
+                  onClick={() => setSelectedCategory("ALL")}
+                  className="min-h-[44px] sm:min-h-[36px] text-xs cursor-pointer"
+                >
+                  {language === "ta" ? "அனைத்தும்" : "All"}
+                </Button>
+                {categories.map((cat) => (
+                  <Button
+                    key={cat.value}
+                    type="button"
+                    size="sm"
+                    variant={selectedCategory === cat.value ? "primary" : "outline"}
+                    aria-pressed={selectedCategory === cat.value}
+                    onClick={() => setSelectedCategory(cat.value)}
+                    className="min-h-[44px] sm:min-h-[36px] text-xs cursor-pointer"
+                  >
+                    {cat.label}
+                  </Button>
+                ))}
+              </div>
+
+              <div className="relative w-full lg:w-72">
+                <SearchIcon
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <Input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={language === "ta" ? "பெயர், SKU, HSN தேடுக..." : "Search name, SKU, or HSN..."}
+                  aria-label={language === "ta" ? "தயாரிப்புகளைத் தேடு" : "Search catalog products"}
+                  className="h-11 sm:h-9 pl-9 pr-9"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    aria-label={language === "ta" ? "தேடலை அழி" : "Clear search"}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex size-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <XIcon className="size-4" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {filteredItems.length === 0 ? (
+              <div className="rounded-xl border border-border bg-card p-8 text-center flex flex-col items-center gap-3">
+                <p className="text-sm font-semibold text-foreground">
+                  {language === "ta" ? "பொருந்தும் தயாரிப்புகள் இல்லை" : "No matching products"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {language === "ta"
+                    ? "தேடல் அல்லது வகை வடிகட்டியை மாற்றி முயற்சிக்கவும்."
+                    : "Try adjusting your search term or category filter."}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("ALL");
+                  }}
+                  className="min-h-[44px] cursor-pointer"
+                >
+                  {language === "ta" ? "வடிகட்டிகளை அழி" : "Clear filters"}
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {filteredItems.map((item) => (
                 <Card key={item.sku} className="flex flex-col border-border bg-card shadow-xs hover:border-primary/50 transition-colors">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -225,8 +340,9 @@ export function CatalogPage() {
                     </Link>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             {/* Wholesale Terms Banner */}
             <div className="mt-12 rounded-xl border border-border bg-card p-6 sm:p-8">

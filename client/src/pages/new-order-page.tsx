@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { usePagination } from "@/hooks/use-pagination";
+import { useUrlState } from "@/hooks/use-url-state";
 import { useSyncManager } from "@/offline/use-offline";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { formatINR } from "@/lib/formatters";
@@ -34,8 +35,17 @@ import {
   PlusIcon,
   MinusIcon,
   PackageIcon,
+  SearchIcon,
+  XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+
+type ProductStockFilter =
+  | "ALL"
+  | "IN_STOCK"
+  | "LOW_STOCK"
+  | "OUT_OF_STOCK"
+  | "IN_ORDER";
 
 interface ProductItem {
   id: string;
@@ -48,6 +58,7 @@ interface ProductItem {
   uom?: string;
   finishedGoodsItemId?: string | null;
   finishedGoodsSku?: string | null;
+  availableStock?: number;
   imageUrl?: string;
 }
 
@@ -92,7 +103,7 @@ export function NewOrderPage() {
   const syncManager = useSyncManager(user?.id);
   const { isOnline, queueOrder } = syncManager;
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const draftId = searchParams.get("draftId") ?? "";
   const prefillCustomerId = searchParams.get("customerId") ?? "";
 
@@ -100,9 +111,21 @@ export function NewOrderPage() {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [orderNotes, setOrderNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { page, pageSize, offset, setPage, setPageSize } = usePagination({
-    defaultPageSize: 12,
+  const [searchQuery, setSearchQuery] = useUrlState("q", "", {
+    debounceMs: 200,
   });
+  const rawStockParam = searchParams.get("stock");
+  const stockFilter: ProductStockFilter =
+    rawStockParam === "IN_STOCK" ||
+    rawStockParam === "LOW_STOCK" ||
+    rawStockParam === "OUT_OF_STOCK" ||
+    rawStockParam === "IN_ORDER"
+      ? rawStockParam
+      : "ALL";
+  const { page, pageSize, offset, setPage, setPageSize, resetPage } =
+    usePagination({
+      defaultPageSize: 12,
+    });
 
   // Load existing draft if ?draftId= is provided
   type DraftOrderPayload = {
@@ -155,6 +178,9 @@ export function NewOrderPage() {
     },
   });
 
+  const serverStockFilter = stockFilter === "IN_ORDER" ? "ALL" : stockFilter;
+  const trimmedSearch = searchQuery.trim();
+
   // Fetch paginated products
   const {
     data: productsData,
@@ -164,11 +190,21 @@ export function NewOrderPage() {
     isFetching: isProductsFetching,
     refetch: refetchProducts,
   } = useQuery<ProductsResponse>({
-    queryKey: ["sales-products", page, pageSize],
+    queryKey: ["sales-products", page, pageSize, trimmedSearch, serverStockFilter],
     queryFn: async () => {
       const offset = (page - 1) * pageSize;
+      const params = new URLSearchParams({
+        limit: String(pageSize),
+        offset: String(offset),
+      });
+      if (trimmedSearch) {
+        params.set("q", trimmedSearch);
+      }
+      if (serverStockFilter !== "ALL") {
+        params.set("stock", serverStockFilter);
+      }
       const res = await apiClient.get<ProductsResponse>(
-        `/sales/products?limit=${pageSize}&offset=${offset}`,
+        `/sales/products?${params.toString()}`,
       );
       return res.data;
     },
@@ -211,7 +247,7 @@ export function NewOrderPage() {
         (product.finishedGoodsSku && b.sku === product.finishedGoodsSku) ||
         b.sku === product.sku,
     );
-    return match?.available ?? 0;
+    return match?.available ?? product.availableStock ?? 0;
   };
 
   const updateQuantity = (product: ProductItem, qty: number) => {
@@ -273,6 +309,60 @@ export function NewOrderPage() {
   const totalTax = orderLines.reduce((acc, l) => acc + l.tax, 0);
   const grandTotal = totalTaxable + totalTax;
   const anyShortage = orderLines.some((l) => l.shortage > 0);
+
+  const normalizedSearch = trimmedSearch.toLowerCase();
+  const displayedProducts =
+    stockFilter === "IN_ORDER"
+      ? orderLines
+          .map((l) => l.product)
+          .filter((p) => {
+            if (!normalizedSearch) return true;
+            return (
+              p.name.toLowerCase().includes(normalizedSearch) ||
+              p.sku.toLowerCase().includes(normalizedSearch) ||
+              (p.productName?.toLowerCase().includes(normalizedSearch) ?? false) ||
+              (p.hsnCode?.toLowerCase().includes(normalizedSearch) ?? false)
+            );
+          })
+      : productsList;
+
+  const displayTotal =
+    stockFilter === "IN_ORDER" ? displayedProducts.length : totalProducts;
+  const displayRangeStart =
+    displayTotal === 0 ? 0 : stockFilter === "IN_ORDER" ? 1 : rangeStart;
+  const displayRangeEnd =
+    stockFilter === "IN_ORDER" ? displayTotal : rangeEnd;
+  const hasActiveFilters = Boolean(trimmedSearch) || stockFilter !== "ALL";
+
+  const handleStockFilterChange = (nextStock: ProductStockFilter) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (nextStock === "ALL") {
+          next.delete("stock");
+        } else {
+          next.set("stock", nextStock);
+        }
+        next.delete("page");
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
+  const clearProductFilters = () => {
+    setSearchQuery("");
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("q");
+        next.delete("stock");
+        next.delete("page");
+        return next;
+      },
+      { replace: true },
+    );
+  };
 
   // Submit or save draft order mutation
   const createOrderMutation = useMutation({
@@ -492,21 +582,83 @@ export function NewOrderPage() {
             <div>
               <h2 id="catalog-heading" className="text-lg font-bold text-foreground flex items-center gap-2">
                 <PackageIcon className="size-5 text-primary" aria-hidden="true" />
-                Product Catalog ({totalProducts} {totalProducts === 1 ? "item" : "items"})
+                Product Catalog ({displayTotal} {displayTotal === 1 ? "item" : "items"})
               </h2>
               <p className="text-xs text-muted-foreground">
                 Touch <strong>+</strong> or <strong>−</strong> steppers to adjust batch packet quantity
               </p>
             </div>
-            {totalProducts > 0 && (
+            {displayTotal > 0 && (
               <div className="text-xs text-muted-foreground" aria-live="polite">
-                Showing {rangeStart}–{rangeEnd} of {totalProducts}
+                Showing {displayRangeStart}-{displayRangeEnd} of {displayTotal}
                 {isProductsFetching && !isProductsLoading ? " (Updating...)" : ""}
               </div>
             )}
           </div>
 
-          {isProductsLoading ? (
+          {/* Product Search & Stock Filters */}
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div
+              className="flex flex-wrap items-center gap-1.5"
+              role="group"
+              aria-label="Filter products by stock"
+            >
+              {(
+                [
+                  { value: "ALL", label: "All" },
+                  { value: "IN_STOCK", label: "In stock" },
+                  { value: "LOW_STOCK", label: "Low stock" },
+                  { value: "OUT_OF_STOCK", label: "Out of stock" },
+                  { value: "IN_ORDER", label: `In order (${orderLines.length})` },
+                ] as const
+              ).map((f) => (
+                <Button
+                  key={f.value}
+                  type="button"
+                  variant={stockFilter === f.value ? "primary" : "outline"}
+                  size="sm"
+                  aria-pressed={stockFilter === f.value}
+                  onClick={() => handleStockFilterChange(f.value)}
+                  className="min-h-[44px] sm:min-h-[36px] text-xs cursor-pointer"
+                >
+                  {f.label}
+                </Button>
+              ))}
+            </div>
+
+            <div className="relative w-full lg:w-80">
+              <SearchIcon
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <Input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  resetPage();
+                }}
+                placeholder="Search by name, SKU, or HSN..."
+                aria-label="Search products"
+                className="h-11 sm:h-9 pl-9 pr-9"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    resetPage();
+                  }}
+                  aria-label="Clear product search"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex size-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <XIcon className="size-4" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {isProductsLoading && stockFilter !== "IN_ORDER" ? (
             <div
               role="status"
               aria-live="polite"
@@ -514,7 +666,7 @@ export function NewOrderPage() {
             >
               Loading product catalog...
             </div>
-          ) : isProductsError ? (
+          ) : isProductsError && stockFilter !== "IN_ORDER" ? (
             <div
               role="alert"
               className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
@@ -538,31 +690,52 @@ export function NewOrderPage() {
                 Retry
               </Button>
             </div>
-          ) : productsList.length === 0 ? (
+          ) : displayedProducts.length === 0 ? (
             <div className="rounded-xl border border-border bg-card p-8 text-center flex flex-col items-center gap-3">
               <p className="text-sm font-semibold text-foreground">
-                No products found on this page
+                {stockFilter === "IN_ORDER" && orderLines.length === 0
+                  ? "No products in your order yet"
+                  : hasActiveFilters
+                    ? "No matching products"
+                    : "No products found on this page"}
               </p>
               <p className="text-xs text-muted-foreground">
-                {page > 1
-                  ? "Return to the first page to view available products."
-                  : "No active sellable product variants are configured for this organization."}
+                {stockFilter === "IN_ORDER" && orderLines.length === 0
+                  ? "Use the + steppers on products in the catalog to add quantities."
+                  : hasActiveFilters
+                    ? "No products match your current search or stock filter."
+                    : page > 1
+                      ? "Return to the first page to view available products."
+                      : "No active sellable product variants are configured for this organization."}
               </p>
-              {page > 1 && (
+              {hasActiveFilters ? (
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setPage(1)}
+                  onClick={clearProductFilters}
                   className="min-h-[44px] cursor-pointer"
                 >
-                  Go to Page 1
+                  {stockFilter === "IN_ORDER" && orderLines.length === 0 && !trimmedSearch
+                    ? "Show all products"
+                    : "Clear filters"}
                 </Button>
+              ) : (
+                page > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setPage(1)}
+                    className="min-h-[44px] cursor-pointer"
+                  >
+                    Go to Page 1
+                  </Button>
+                )
               )}
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
-                {productsList.map((product) => {
+                {displayedProducts.map((product) => {
                   const qty = quantities[product.id] ?? quantities[product.sku] ?? 0;
                   const unitPrice = Number(product.defaultPrice ?? 0);
                   const taxRate = Number(product.taxRate ?? 0) / 100;
@@ -725,25 +898,27 @@ export function NewOrderPage() {
             })}
               </div>
 
-              <DataPagination
-                pagination={
-                  productsData?.pagination ?? {
-                    limit: pageSize,
-                    offset,
-                    count: productsList.length,
-                    total: totalProducts,
-                    page,
-                    totalPages,
+              {stockFilter !== "IN_ORDER" && (
+                <DataPagination
+                  pagination={
+                    productsData?.pagination ?? {
+                      limit: pageSize,
+                      offset,
+                      count: productsList.length,
+                      total: totalProducts,
+                      page,
+                      totalPages,
+                    }
                   }
-                }
-                page={page}
-                pageSize={pageSize}
-                onPageChange={setPage}
-                onPageSizeChange={setPageSize}
-                pageSizeOptions={[12, 24, 48, 96]}
-                isFetching={isProductsFetching}
-                itemLabel="products"
-              />
+                  page={page}
+                  pageSize={pageSize}
+                  onPageChange={setPage}
+                  onPageSizeChange={setPageSize}
+                  pageSizeOptions={[12, 24, 48, 96]}
+                  isFetching={isProductsFetching}
+                  itemLabel="products"
+                />
+              )}
             </>
           )}
         </section>
