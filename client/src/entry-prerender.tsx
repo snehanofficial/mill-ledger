@@ -32,38 +32,42 @@ export function renderPublicRoute(pathname: string): string {
     },
   });
 
-  return renderToString(
-    <LanguageProvider>
-      <QueryClientProvider client={queryClient}>
-        <StaticRouter location={pathname}>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/features" element={<FeaturesPage />} />
-            <Route path="/workflows" element={<WorkflowsPage />} />
-            <Route
-              path="/spreadsheet-alternative"
-              element={<SpreadsheetAlternativePage />}
-            />
-            <Route path="/resources" element={<ResourcesPage />} />
-            <Route
-              path="/resources/indian-gst-invoicing-for-food-mills"
-              element={<ResourceArticlePage articleId="gst-invoicing" />}
-            />
-            <Route
-              path="/resources/moving-weighted-average-stock-ledger"
-              element={<ResourceArticlePage articleId="stock-ledger" />}
-            />
-            <Route
-              path="/resources/offline-salesman-order-capture"
-              element={<ResourceArticlePage articleId="offline-orders" />}
-            />
-            <Route path="/security" element={<SecurityPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/demo" element={<DemoPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-          </Routes>
-        </StaticRouter>
-      </QueryClientProvider>
-    </LanguageProvider>,
-  );
+  try {
+    return renderToString(
+      <LanguageProvider>
+        <QueryClientProvider client={queryClient}>
+          <StaticRouter location={pathname}>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/features" element={<FeaturesPage />} />
+              <Route path="/workflows" element={<WorkflowsPage />} />
+              <Route
+                path="/spreadsheet-alternative"
+                element={<SpreadsheetAlternativePage />}
+              />
+              <Route path="/resources" element={<ResourcesPage />} />
+              <Route
+                path="/resources/indian-gst-invoicing-for-food-mills"
+                element={<ResourceArticlePage articleId="gst-invoicing" />}
+              />
+              <Route
+                path="/resources/moving-weighted-average-stock-ledger"
+                element={<ResourceArticlePage articleId="stock-ledger" />}
+              />
+              <Route
+                path="/resources/offline-salesman-order-capture"
+                element={<ResourceArticlePage articleId="offline-orders" />}
+              />
+              <Route path="/security" element={<SecurityPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/demo" element={<DemoPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+            </Routes>
+          </StaticRouter>
+        </QueryClientProvider>
+      </LanguageProvider>,
+    );
+  } finally {
+    queryClient.clear();
+  }
 }
