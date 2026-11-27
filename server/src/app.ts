@@ -184,7 +184,12 @@ export function createApp() {
           return res.sendFile(prerenderedFile);
         }
       }
-      res.sendFile(path.join(clientDistPath, "index.html"));
+      const appShellPath = path.join(clientDistPath, "app-shell.html");
+      res.sendFile(
+        fs.existsSync(appShellPath)
+          ? appShellPath
+          : path.join(clientDistPath, "index.html"),
+      );
     });
   } else {
     // RFC 9309: Standalone API server blocks all crawlers
