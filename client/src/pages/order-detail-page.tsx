@@ -156,7 +156,7 @@ export function OrderDetailPage() {
     isError,
     error,
     refetch,
-  } = useQuery<{ order: OrderDetail }>({
+  } = useQuery<OrderDetail | { order: OrderDetail }>({
     queryKey: ["sales-order", orderId],
     queryFn: async () => {
       const res = await apiClient.get(`/sales/orders/${orderId}`);
@@ -165,7 +165,8 @@ export function OrderDetailPage() {
     enabled: Boolean(orderId),
   });
 
-  const order = orderData?.order;
+  const order =
+    orderData && "order" in orderData ? orderData.order : orderData;
 
   const { data: balancesData } = useQuery<{ balances: StockBalance[] }>({
     queryKey: ["inventory-balances"],

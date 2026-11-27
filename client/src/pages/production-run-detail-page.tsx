@@ -81,9 +81,9 @@ export function ProductionRunDetailPage() {
   const [reverseOpen, setReverseOpen] = useState(false);
   const [reverseReason, setReverseReason] = useState("");
 
-  const { data, isLoading, isError, error, refetch } = useQuery<{
-    run: RunDetail;
-  }>({
+  const { data, isLoading, isError, error, refetch } = useQuery<
+    RunDetail | { run: RunDetail }
+  >({
     queryKey: ["production-run", runId],
     queryFn: async () => {
       const res = await apiClient.get(`/production-runs/${runId}`);
@@ -92,7 +92,7 @@ export function ProductionRunDetailPage() {
     enabled: Boolean(runId),
   });
 
-  const run = data?.run;
+  const run = data && "run" in data ? data.run : data;
 
   const reverseMutation = useMutation({
     mutationFn: async () => {
