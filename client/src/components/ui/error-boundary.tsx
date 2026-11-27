@@ -1,6 +1,7 @@
 import { Component, type ReactNode, type ErrorInfo } from "react";
 import { AlertTriangle, RefreshCw, RotateCcw } from "lucide-react";
 import { Button } from "./button";
+import { i18n } from "@/i18n";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -70,13 +71,12 @@ export class ErrorBoundary extends Component<
             <div className="flex items-center gap-3 text-amber-600 dark:text-amber-500">
               <AlertTriangle className="h-6 w-6 shrink-0" aria-hidden="true" />
               <h1 className="text-lg font-semibold tracking-tight">
-                Application Error
+                {i18n.t("errors:boundary.title")}
               </h1>
             </div>
 
             <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">
-              An unexpected error prevented this view from rendering. Your
-              recorded data remains safe.
+              {i18n.t("errors:boundary.description")}
             </p>
 
             {this.state.error?.message && (
@@ -92,12 +92,12 @@ export class ErrorBoundary extends Component<
                 onClick={this.handleReset}
                 className="gap-2"
               >
-                <RotateCcw className="h-4 w-4" />
-                Try again
+                <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                {i18n.t("errors:boundary.tryAgain")}
               </Button>
               <Button size="sm" onClick={this.handleReload} className="gap-2">
-                <RefreshCw className="h-4 w-4" />
-                Reload application
+                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                {i18n.t("errors:boundary.reload")}
               </Button>
             </div>
           </div>

@@ -1,0 +1,37 @@
+{
+  "title": "Operational & financial reports",
+  "subtitle": "Statutory GST registers, stock valuation, production costing, and audit trail",
+  "salesRegister": "Sales Register",
+  "stockValuation": "Stock & Valuation",
+  "productionCosting": "Production & Costing",
+  "receivablesAgeing": "Receivables Ageing",
+  "gstOutward": "GST Outward Summary",
+  "auditTrail": "Audit Trail",
+  "exportsTitle": "Data Exports",
+  "exportsSubtitle": "Download formatted PDF, Excel (.xlsx), and UTF-8 CSV reports for accounting and statutory filing",
+  "homeTitle": "Reporting home",
+  "homeDesc": "Reconcile posted sales, GST, inventory valuation, production costing, receivables, and audit logs.",
+  "groups": {
+    "salesGst": "Sales & Statutory GST",
+    "inventoryProd": "Inventory & Production",
+    "collectionsAudit": "Collections, Receivables & Audit"
+  },
+  "cards": {
+    "salesRegisterTitle": "Sales register & analysis",
+    "salesRegisterDesc": "Posted sales invoices, customer-wise sales, and product-wise sales.",
+    "gstSummaryTitle": "GST outward summary",
+    "gstSummaryDesc": "Taxable value, CGST, SGST, and IGST breakdown by rate and place of supply.",
+    "invoiceRecordsTitle": "Invoice records",
+    "invoiceRecordsDesc": "Immutable posted tax invoices and credit notes.",
+    "stockValTitle": "Stock valuation & ledger",
+    "stockValDesc": "Closing balances, weighted-average cost, and full movement ledger.",
+    "prodCostingTitle": "Production & costing",
+    "prodCostingDesc": "Yield variance, material consumption variance, and cost per good packet.",
+    "receivablesTitle": "Receivables & ageing",
+    "receivablesDesc": "Customer-wise net outstanding and ageing buckets.",
+    "auditTrailTitle": "Audit trail",
+    "auditTrailDesc": "Append-only operational and financial audit events.",
+    "exportsTitle": "Exports",
+    "exportsDesc": "Download CSV, XLSX, and PDF report bundles."
+  }
+}

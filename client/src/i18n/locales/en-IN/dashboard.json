@@ -1,0 +1,18 @@
+{
+  "title": "Overview",
+  "subtitle": "Executive operational overview and real time reconciled business metrics",
+  "totalRevenue": "Total revenue",
+  "receivablesOutstanding": "Receivables outstanding",
+  "stockValuation": "Stock valuation",
+  "productionOutput": "Production output",
+  "collections": "Collections",
+  "activeBatches": "Active batches",
+  "ledgerBalanced": "Ledger balanced",
+  "discrepancyFlagged": "Discrepancy flagged",
+  "pendingOrders": "Pending orders",
+  "recentInvoices": "Recent Invoices",
+  "activeProductionBatches": "Active Production Batches",
+  "revenueTrend": "Revenue & collections trend",
+  "noInvoices": "No invoices posted yet",
+  "noBatches": "No active production batches"
+}

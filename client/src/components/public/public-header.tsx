@@ -1,31 +1,26 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { MenuIcon, XIcon } from "lucide-react";
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { useLanguage } from "@/lib/i18n";
+import { LanguageSelector } from "@/components/ui/language-selector";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { getDefaultRouteForRole } from "@/lib/role-routing";
 import { getPrefetchProps } from "@/lib/route-prefetch";
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { language, setLanguage } = useLanguage();
+  const { t } = useTranslation(["public", "common"]);
   const { user } = useCurrentUser();
   const location = useLocation();
 
   const navLinks = [
-    { href: "/", label: language === "ta" ? "முகப்பு" : "Home" },
-    { href: "/features", label: language === "ta" ? "வசதிகள்" : "Features" },
-    {
-      href: "/workflows",
-      label: language === "ta" ? "செயல்முறைகள்" : "Workflows",
-    },
-    {
-      href: "/resources",
-      label: language === "ta" ? "வழிகாட்டிகள்" : "Resources",
-    },
-    { href: "/contact", label: language === "ta" ? "தொடர்பு" : "Contact" },
+    { href: "/", label: t("public:nav.home") },
+    { href: "/features", label: t("public:nav.features") },
+    { href: "/workflows", label: t("public:nav.workflows") },
+    { href: "/resources", label: t("public:nav.resources") },
+    { href: "/contact", label: t("public:nav.contact") },
   ];
 
   return (
@@ -34,27 +29,28 @@ export function PublicHeader() {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-md focus:outline-none"
       >
-        {language === "ta"
-          ? "முதன்மை பகுதிக்குச் செல்லவும்"
-          : "Skip to main content"}
+        {t("common:shell.skipToMain")}
       </a>
 
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2.5 min-h-[44px]">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <Link
+          to="/"
+          className="flex items-center gap-2.5 min-h-[44px] shrink-0"
+        >
           <BrandLogo size="nav" />
           <div className="flex flex-col">
             <span className="font-bold tracking-tight text-foreground text-sm sm:text-base">
-              MillLedger
+              {t("common:appName")}
             </span>
             <span className="text-[11px] text-muted-foreground">
-              {language === "ta" ? "உணவு ஆலை ERP" : "Food Mill ERP"}
+              {t("common:appTagline")}
             </span>
           </div>
         </Link>
 
         <nav
-          className="hidden md:flex items-center gap-6"
-          aria-label="Main navigation"
+          className="hidden md:flex items-center gap-4 lg:gap-6 min-w-0"
+          aria-label={t("public:nav.mainNavAria")}
         >
           {navLinks.map((link) => {
             const isActive =
@@ -66,7 +62,7 @@ export function PublicHeader() {
                 key={link.href}
                 to={link.href}
                 aria-current={isActive ? "page" : undefined}
-                className={`inline-flex min-h-[44px] items-center text-sm font-medium transition-colors hover:text-primary ${
+                className={`inline-flex min-h-[44px] items-center whitespace-nowrap text-sm font-medium transition-colors hover:text-primary ${
                   isActive
                     ? "text-primary border-b-2 border-primary"
                     : "text-muted-foreground"
@@ -79,33 +75,19 @@ export function PublicHeader() {
           })}
         </nav>
 
-        <div className="hidden md:flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLanguage(language === "en" ? "ta" : "en")}
-            aria-label={
-              language === "en"
-                ? "Switch language to Tamil"
-                : "Switch language to English"
-            }
-            className="min-h-[44px] px-3 text-xs font-semibold cursor-pointer"
-          >
-            <span lang={language === "en" ? "ta" : "en"}>
-              {language === "en" ? "தமிழ்" : "EN"}
-            </span>
-          </Button>
+        <div className="hidden md:flex items-center gap-2 lg:gap-3 shrink-0">
+          <LanguageSelector />
 
           <Link
             to="/demo"
             className={buttonVariants({
               variant: "outline",
               size: "sm",
-              className: "min-h-[44px] px-4",
+              className: "min-h-[44px] px-3 lg:px-4 whitespace-nowrap",
             })}
             {...getPrefetchProps("/demo")}
           >
-            {language === "ta" ? "டெமோ கோருக" : "Request Demo"}
+            {t("public:nav.requestDemo")}
           </Link>
 
           {user ? (
@@ -114,10 +96,10 @@ export function PublicHeader() {
               className={buttonVariants({
                 variant: "primary",
                 size: "sm",
-                className: "min-h-[44px] px-4",
+                className: "min-h-[44px] px-3 lg:px-4 whitespace-nowrap",
               })}
             >
-              {language === "ta" ? "பணிமனைக்குச் செல்" : "Open Workspace"}
+              {t("public:nav.openWorkspace")}
             </Link>
           ) : (
             <Link
@@ -125,38 +107,28 @@ export function PublicHeader() {
               className={buttonVariants({
                 variant: "primary",
                 size: "sm",
-                className: "min-h-[44px] px-4",
+                className: "min-h-[44px] px-3 lg:px-4 whitespace-nowrap",
               })}
               {...getPrefetchProps("/auth/login")}
             >
-              {language === "ta" ? "பணியாளர் உள்நுழைவு" : "Staff ERP Login"}
+              {t("public:nav.staffLogin")}
             </Link>
           )}
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLanguage(language === "en" ? "ta" : "en")}
-            aria-label={
-              language === "en"
-                ? "Switch language to Tamil"
-                : "Switch language to English"
-            }
-            className="min-h-[44px] min-w-[44px] px-2.5 text-xs font-semibold cursor-pointer"
-          >
-            <span lang={language === "en" ? "ta" : "en"}>
-              {language === "en" ? "தமிழ்" : "EN"}
-            </span>
-          </Button>
+          <LanguageSelector />
 
           <Button
             variant="outline"
             size="sm"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-expanded={mobileMenuOpen}
-            aria-label="Toggle navigation menu"
+            aria-label={
+              mobileMenuOpen
+                ? t("public:nav.closeMenu")
+                : t("public:nav.openMenu")
+            }
             className="min-h-[44px] min-w-[44px] p-2 cursor-pointer"
           >
             {mobileMenuOpen ? (
@@ -170,7 +142,10 @@ export function PublicHeader() {
 
       {mobileMenuOpen && (
         <div className="border-b border-border bg-background px-4 pt-2 pb-4 md:hidden">
-          <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
+          <nav
+            className="flex flex-col gap-1"
+            aria-label={t("public:nav.mainNavAria")}
+          >
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -190,7 +165,7 @@ export function PublicHeader() {
                   className: "min-h-[44px] w-full",
                 })}
               >
-                {language === "ta" ? "டெமோ கோருக" : "Request Demo"}
+                {t("public:nav.requestDemo")}
               </Link>
               {user ? (
                 <Link
@@ -201,7 +176,7 @@ export function PublicHeader() {
                     className: "min-h-[44px] w-full",
                   })}
                 >
-                  {language === "ta" ? "பணிமனைக்குச் செல்" : "Open Workspace"}
+                  {t("public:nav.openWorkspace")}
                 </Link>
               ) : (
                 <Link
@@ -212,7 +187,7 @@ export function PublicHeader() {
                     className: "min-h-[44px] w-full",
                   })}
                 >
-                  {language === "ta" ? "பணியாளர் உள்நுழைவு" : "Staff ERP Login"}
+                  {t("public:nav.staffLogin")}
                 </Link>
               )}
             </div>

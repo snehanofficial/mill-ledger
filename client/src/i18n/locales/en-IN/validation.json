@@ -1,0 +1,14 @@
+{
+  "required": "{{field}} is required",
+  "minLength": "{{field}} must be at least {{min}} characters",
+  "maxLength": "{{field}} must be at most {{max}} characters",
+  "invalidEmail": "Please enter a valid email address",
+  "invalidPhone": "Please enter a valid 10-digit phone number",
+  "invalidGstin": "Please enter a valid 15-character GSTIN",
+  "positiveNumber": "{{field}} must be greater than zero",
+  "nonNegativeNumber": "{{field}} cannot be negative",
+  "integerOnly": "{{field}} must be a whole number",
+  "selectOption": "Please select a valid {{field}}",
+  "atLeastOneLine": "Add at least one line item before submitting",
+  "amountExceedsOutstanding": "Allocated amount cannot exceed invoice outstanding balance"
+}

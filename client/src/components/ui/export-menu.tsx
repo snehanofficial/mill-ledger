@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   DownloadIcon,
   RefreshCwIcon,
@@ -17,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { downloadExportFromApi } from "@/lib/export-download";
+import { useLanguage } from "@/lib/i18n";
 
 export interface ExportMenuProps {
   entity: string;
@@ -28,12 +30,16 @@ export interface ExportMenuProps {
 
 export function ExportMenu({
   entity,
-  label = "Export",
+  label,
   queryParams,
   formats = ["pdf", "xlsx", "csv"],
   size = "sm",
 }: ExportMenuProps) {
+  const { t } = useTranslation("common");
+  const { locale } = useLanguage();
   const [isExporting, setIsExporting] = useState(false);
+
+  const resolvedLabel = label ?? t("exportMenu.export");
 
   const handleExport = async (format: "pdf" | "xlsx" | "csv") => {
     if (isExporting) return;
@@ -41,6 +47,7 @@ export function ExportMenu({
     try {
       const qs = new URLSearchParams();
       qs.set("format", format);
+      qs.set("lang", locale);
       if (queryParams) {
         for (const [k, v] of Object.entries(queryParams)) {
           if (v !== undefined && v !== "" && v !== "ALL") {
@@ -53,9 +60,11 @@ export function ExportMenu({
         extension: format,
         fallbackModule: entity,
       });
-      toast.success(`Downloaded ${filename}`);
+      toast.success(t("exportMenu.downloaded", { filename }));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Export failed");
+      toast.error(
+        err instanceof Error ? err.message : t("exportMenu.exportFailed"),
+      );
     } finally {
       setIsExporting(false);
     }
@@ -75,12 +84,12 @@ export function ExportMenu({
           ) : (
             <DownloadIcon className="size-4" aria-hidden="true" />
           )}
-          <span>{isExporting ? "Exporting..." : label}</span>
+          <span>{isExporting ? t("exportMenu.exporting") : resolvedLabel}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-60">
+      <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="text-xs text-muted-foreground">
-          Choose Export Format
+          {t("exportMenu.chooseFormat")}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {formats.includes("pdf") && (
@@ -89,13 +98,15 @@ export function ExportMenu({
             className="cursor-pointer gap-2"
           >
             <FileTextIcon
-              className="size-4 text-muted-foreground"
+              className="size-4 text-muted-foreground shrink-0"
               aria-hidden="true"
             />
-            <div className="flex flex-col">
-              <span className="text-sm font-medium">PDF Document</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-medium">
+                {t("exportMenu.pdfTitle")}
+              </span>
               <span className="text-[11px] text-muted-foreground">
-                Formatted, printable document
+                {t("exportMenu.pdfDesc")}
               </span>
             </div>
           </DropdownMenuItem>
@@ -106,15 +117,15 @@ export function ExportMenu({
             className="cursor-pointer gap-2"
           >
             <FileSpreadsheetIcon
-              className="size-4 text-muted-foreground"
+              className="size-4 text-muted-foreground shrink-0"
               aria-hidden="true"
             />
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
               <span className="text-sm font-medium">
-                Excel Workbook (.xlsx)
+                {t("exportMenu.excelTitle")}
               </span>
               <span className="text-[11px] text-muted-foreground">
-                Formatted, filterable workbook
+                {t("exportMenu.excelDesc")}
               </span>
             </div>
           </DropdownMenuItem>
@@ -125,13 +136,15 @@ export function ExportMenu({
             className="cursor-pointer gap-2"
           >
             <TableIcon
-              className="size-4 text-muted-foreground"
+              className="size-4 text-muted-foreground shrink-0"
               aria-hidden="true"
             />
-            <div className="flex flex-col">
-              <span className="text-sm font-medium">CSV Data</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-medium">
+                {t("exportMenu.csvTitle")}
+              </span>
               <span className="text-[11px] text-muted-foreground">
-                Structured data export
+                {t("exportMenu.csvDesc")}
               </span>
             </div>
           </DropdownMenuItem>

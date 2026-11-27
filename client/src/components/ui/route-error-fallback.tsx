@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   isRouteErrorResponse,
   useLocation,
@@ -30,6 +31,7 @@ interface RouteErrorFallbackProps {
 export function RouteErrorFallback({
   homePath = "/dashboard",
 }: RouteErrorFallbackProps) {
+  const { t } = useTranslation(["errors", "common"]);
   const error = useRouteError();
   const location = useLocation();
   const navigate = useNavigate();
@@ -51,24 +53,20 @@ export function RouteErrorFallback({
   const isRouteResponse = isRouteErrorResponse(error);
   const statusCode = isRouteResponse ? error.status : undefined;
 
-  let title = "This view hit an unexpected snag";
-  let description =
-    "Something prevented this page from rendering. Your saved records and any queued offline orders remain safe.";
+  let title = t("errors:routeFallback.unexpectedTitle");
+  let description = t("errors:routeFallback.unexpectedDesc");
   let technicalMessage = "";
 
   if (isRouteResponse) {
     if (error.status === 404) {
-      title = "Page not found";
-      description =
-        "The screen you requested does not exist or may have been moved.";
+      title = t("errors:routeFallback.notFoundTitle");
+      description = t("errors:routeFallback.notFoundDesc");
     } else if (error.status === 403) {
-      title = "Access restricted";
-      description =
-        "Your current role does not have permission to view this page.";
+      title = t("errors:routeFallback.forbiddenTitle");
+      description = t("errors:routeFallback.forbiddenDesc");
     } else if (error.status >= 500) {
-      title = "Server error";
-      description =
-        "The server could not complete this request right now. Please try again in a moment.";
+      title = t("errors:routeFallback.serverTitle");
+      description = t("errors:routeFallback.serverDesc");
     }
     technicalMessage =
       typeof error.data === "string"
@@ -101,7 +99,9 @@ export function RouteErrorFallback({
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {statusCode ? `Error ${statusCode}` : "Application Error"}
+              {statusCode
+                ? t("errors:routeFallback.httpError", { status: statusCode })
+                : t("errors:routeFallback.applicationError")}
             </span>
             <h1 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
               {title}
@@ -118,7 +118,7 @@ export function RouteErrorFallback({
         <div className="mt-6 flex flex-wrap items-center gap-2.5">
           <Button onClick={handleRetry} className="gap-2">
             <RotateCcw className="size-4" aria-hidden="true" />
-            Try again
+            {t("common:states.retryAction")}
           </Button>
           <Button
             variant="outline"
@@ -126,7 +126,7 @@ export function RouteErrorFallback({
             className="gap-2"
           >
             <Home className="size-4" aria-hidden="true" />
-            Go to workspace
+            {t("errors:boundary.goHome")}
           </Button>
           <Button
             variant="ghost"
@@ -134,7 +134,7 @@ export function RouteErrorFallback({
             className="gap-2 text-muted-foreground"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
-            Back
+            {t("common:actions.back")}
           </Button>
         </div>
 
@@ -147,7 +147,7 @@ export function RouteErrorFallback({
               aria-expanded={showDetails}
               className="flex w-full items-center justify-between text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              <span>Technical details</span>
+              <span>{t("errors:routeFallback.technicalDetails")}</span>
               {showDetails ? (
                 <ChevronUp className="size-4" aria-hidden="true" />
               ) : (

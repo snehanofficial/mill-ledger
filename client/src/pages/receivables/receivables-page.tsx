@@ -1,13 +1,14 @@
 import { useMemo } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
 import { assertCollectionResponse } from "@/lib/api-contracts";
 import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
-import { formatINR } from "@/lib/formatters";
+import { useFormatters } from "@/hooks/use-formatters";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataPagination } from "@/components/ui/data-pagination";
 import {
@@ -42,6 +43,8 @@ interface CustomerReceivable {
 }
 
 export function ReceivablesPage() {
+  const { t } = useTranslation(["finance", "common"]);
+  const { formatINR } = useFormatters();
   const [searchQuery, setSearchQuery] = useUrlState("q", "", {
     debounceMs: 200,
   });
@@ -96,7 +99,10 @@ export function ReceivablesPage() {
         accessorKey: "customerName",
         enableHiding: false,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Customer" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.customer")}
+          />
         ),
         cell: ({ row }) => (
           <div className="min-w-[160px]">
@@ -107,7 +113,7 @@ export function ReceivablesPage() {
           </div>
         ),
         meta: {
-          label: "Customer",
+          label: t("common:terms.customer"),
           exportValue: (r) => `${r.customerName} (${r.customerCode})`,
         } satisfies DataTableColumnMeta<CustomerReceivable>,
       },
@@ -117,7 +123,7 @@ export function ReceivablesPage() {
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title="Invoiced"
+            title={t("finance:receivables.invoiced")}
             align="right"
           />
         ),
@@ -127,7 +133,7 @@ export function ReceivablesPage() {
           </span>
         ),
         meta: {
-          label: "Invoiced",
+          label: t("finance:receivables.invoiced"),
           align: "right",
           exportValue: (r) => Number(r.totalInvoiced),
         } satisfies DataTableColumnMeta<CustomerReceivable>,
@@ -138,7 +144,7 @@ export function ReceivablesPage() {
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title="Collected"
+            title={t("finance:receivables.collected")}
             align="right"
           />
         ),
@@ -148,7 +154,7 @@ export function ReceivablesPage() {
           </span>
         ),
         meta: {
-          label: "Collected",
+          label: t("finance:receivables.collected"),
           align: "right",
           exportValue: (r) => Number(r.totalPaid),
         } satisfies DataTableColumnMeta<CustomerReceivable>,
@@ -159,7 +165,7 @@ export function ReceivablesPage() {
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title="Net outstanding"
+            title={t("finance:receivables.netOutstanding")}
             align="right"
           />
         ),
@@ -169,7 +175,7 @@ export function ReceivablesPage() {
           </span>
         ),
         meta: {
-          label: "Net outstanding",
+          label: t("finance:receivables.netOutstanding"),
           align: "right",
           exportValue: (r) => Number(r.netOutstanding),
         } satisfies DataTableColumnMeta<CustomerReceivable>,
@@ -180,7 +186,7 @@ export function ReceivablesPage() {
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            title="Unallocated credit"
+            title={t("finance:receivables.unallocatedCredit")}
             align="right"
           />
         ),
@@ -190,7 +196,7 @@ export function ReceivablesPage() {
           </span>
         ),
         meta: {
-          label: "Unallocated credit",
+          label: t("finance:receivables.unallocatedCredit"),
           align: "right",
           exportValue: (r) => Number(r.unallocatedCredit ?? 0),
         } satisfies DataTableColumnMeta<CustomerReceivable>,
@@ -199,29 +205,29 @@ export function ReceivablesPage() {
         id: "actions",
         enableSorting: false,
         enableHiding: false,
-        header: () => <span>Ledger</span>,
+        header: () => <span>{t("finance:receivables.ledgerCol")}</span>,
         cell: ({ row }) => (
           <Link
             to={`/receivables/${row.original.customerId}`}
             className="text-xs font-medium text-primary hover:underline whitespace-nowrap"
           >
-            Open ledger
+            {t("finance:receivables.openLedger")}
           </Link>
         ),
         meta: {
-          label: "Ledger",
+          label: t("finance:receivables.ledgerCol"),
           align: "right",
         } satisfies DataTableColumnMeta<CustomerReceivable>,
       },
     ],
-    [],
+    [t, formatINR],
   );
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4 sm:p-6 lg:p-8">
       <PageHeader
-        title="Customer balances"
-        description="Derived customer receivables, open invoice ageing, and unallocated advances."
+        title={t("finance:receivables.title")}
+        description={t("finance:receivables.subtitle")}
         secondaryActions={
           <Button
             variant="outline"
@@ -234,13 +240,13 @@ export function ReceivablesPage() {
               className={`size-4 ${isFetching ? "animate-spin" : ""}`}
               aria-hidden="true"
             />
-            Refresh
+            {t("common:actions.refresh")}
           </Button>
         }
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant={onlyDue === "ALL" ? "primary" : "outline"}
             size="sm"
@@ -250,7 +256,7 @@ export function ReceivablesPage() {
             }}
             className="h-8 text-xs"
           >
-            All customers
+            {t("finance:receivables.allCustomers")}
           </Button>
           <Button
             variant={onlyDue === "DUE" ? "primary" : "outline"}
@@ -261,10 +267,10 @@ export function ReceivablesPage() {
             }}
             className="h-8 text-xs"
           >
-            With balance due
+            {t("finance:receivables.withBalanceDue")}
           </Button>
           <span className="ml-2 text-xs text-muted-foreground">
-            Total due:{" "}
+            {t("finance:receivables.totalDue")}{" "}
             <strong className="text-foreground tabular-nums">
               {formatINR(totalOutstanding)}
             </strong>
@@ -283,8 +289,8 @@ export function ReceivablesPage() {
               setSearchQuery(e.target.value);
               resetPage();
             }}
-            placeholder="Search customer..."
-            aria-label="Search customer balances"
+            placeholder={t("finance:receivables.searchPlaceholder")}
+            aria-label={t("finance:receivables.searchPlaceholder")}
             className="h-9 pl-8"
           />
         </div>
@@ -294,14 +300,14 @@ export function ReceivablesPage() {
         <SkeletonTable rows={6} columns={6} />
       ) : isError ? (
         <ErrorState
-          title="Unable to load customer balances"
+          title={t("finance:receivables.failedToLoad")}
           description={extractErrorMessage(error)}
           onRetry={() => refetch()}
         />
       ) : filtered.length === 0 ? (
         <EmptyState
-          title="No matching customer balances"
-          description="Customer balances are derived automatically from posted invoices, credit notes, and payments."
+          title={t("finance:receivables.noMatches")}
+          description={t("finance:receivables.noMatchesDesc")}
         />
       ) : (
         <>
@@ -310,7 +316,7 @@ export function ReceivablesPage() {
             data={filtered}
             columns={receivableColumns}
             getRowId={(r) => r.customerId}
-            ariaLabel="Customer balances"
+            ariaLabel={t("finance:receivables.title")}
             csvFilename="customer-balances"
           />
 
@@ -321,7 +327,7 @@ export function ReceivablesPage() {
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
             isFetching={isFetching}
-            itemLabel="customers"
+            itemLabel={t("finance:receivables.itemLabel")}
           />
         </>
       )}

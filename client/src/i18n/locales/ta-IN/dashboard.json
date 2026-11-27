@@ -1,0 +1,18 @@
+{
+  "title": "முகப்பு",
+  "subtitle": "ஆலை செயல்பாட்டு மேலோட்டம் மற்றும் நேரடி வணிக அளவீடுகள்",
+  "totalRevenue": "மொத்த வருவாய்",
+  "receivablesOutstanding": "நிலுவையில் உள்ள தொகை",
+  "stockValuation": "சரக்கு மதிப்பு",
+  "productionOutput": "உற்பத்தி வெளியீடு",
+  "collections": "வசூலிப்பு",
+  "activeBatches": "செயலில் உள்ள தொகுதிகள்",
+  "ledgerBalanced": "பேரேடு சமநிலையில் உள்ளது",
+  "discrepancyFlagged": "முரண்பாடு கண்டறியப்பட்டது",
+  "pendingOrders": "நிலுவையில் உள்ள ஆணைகள்",
+  "recentInvoices": "சமீபத்திய விலைப்பட்டியல்கள்",
+  "activeProductionBatches": "செயல்பாட்டில் உள்ள உற்பத்தி தொகுதிகள்",
+  "revenueTrend": "வருவாய் மற்றும் வசூலிப்பு போக்கு",
+  "noInvoices": "விலைப்பட்டியல் எதுவும் பதிவாகவில்லை",
+  "noBatches": "செயலில் உள்ள உற்பத்தி தொகுதிகள் இல்லை"
+}

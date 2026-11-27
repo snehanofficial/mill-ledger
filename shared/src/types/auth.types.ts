@@ -1,3 +1,5 @@
+import type { SupportedLocale } from "../i18n/locales.js";
+
 export type Role = "ADMIN" | "SALESMAN" | "PRODUCTION" | "ACCOUNTANT" | "OWNER";
 
 export type Action =
@@ -27,4 +29,5 @@ export interface UserContext {
   isActive: boolean;
   organizationId?: string;
   image?: string | null;
+  preferredLanguage?: SupportedLocale;
 }

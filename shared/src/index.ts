@@ -3,3 +3,4 @@ export * from "./schemas/index.js";
 export * from "./types/index.js";
 export * from "./formatters.js";
 export * from "./export/index.js";
+export * from "./i18n/locales.js";

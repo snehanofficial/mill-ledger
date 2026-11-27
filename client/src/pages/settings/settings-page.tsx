@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "@/components/ui/language-selector";
 import {
   keepPreviousData,
   useQuery,
@@ -73,6 +75,7 @@ interface UserRecord {
 }
 
 export function SettingsPage() {
+  const { t } = useTranslation(["settings", "common"]);
   const queryClient = useQueryClient();
   const { user: currentUser } = useCurrentUser();
   const { isMotionPaused, toggleMotion } = useMotion();
@@ -437,15 +440,14 @@ export function SettingsPage() {
         <div className="min-w-0 flex-1 flex flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-page-title text-foreground">
-              Mill Settings & Administration
+              {t("settings:title")}
             </h1>
             <Badge variant="outline" className="text-xs">
-              System Admin
+              {t("common:roles.ADMIN")}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground max-w-[60ch]">
-            Configure enterprise parameters, manage staff access roles, and
-            maintain statutory GST settings.
+            {t("settings:subtitle")}
           </p>
         </div>
 
@@ -475,7 +477,7 @@ export function SettingsPage() {
           }`}
         >
           <Building2Icon className="size-4" aria-hidden="true" />
-          Mill & Statutory GST
+          {t("settings:tabs.mill")}
         </button>
         <button
           type="button"
@@ -489,7 +491,7 @@ export function SettingsPage() {
           }`}
         >
           <WarehouseIcon className="size-4" aria-hidden="true" />
-          Facilities & Warehouses
+          {t("settings:tabs.warehouses")}
         </button>
         <button
           type="button"
@@ -503,7 +505,7 @@ export function SettingsPage() {
           }`}
         >
           <UsersIcon className="size-4" aria-hidden="true" />
-          User & Role Management
+          {t("settings:tabs.users")}
         </button>
         <button
           type="button"
@@ -517,7 +519,7 @@ export function SettingsPage() {
           }`}
         >
           <LockIcon className="size-4" aria-hidden="true" />
-          Data Protection (DPDP 2023)
+          {t("settings:tabs.dpdp")}
         </button>
       </div>
 
@@ -977,9 +979,31 @@ export function SettingsPage() {
         </div>
       )}
 
-      {/* TAB 3: DPDP Act 2023 Compliance */}
+      {/* TAB 3: DPDP Act 2023 Compliance & Language Preferences */}
       {activeTab === "dpdp" && (
         <div className="flex flex-col gap-6">
+          <div className="rounded-xl border border-border/80 bg-card shadow-xs">
+            <div className="border-b border-border/60 px-5 py-4 sm:px-6">
+              <h2 className="text-base font-bold text-foreground">
+                {t("settings:preferences.title")}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {t("settings:preferences.description")}
+              </p>
+            </div>
+            <div className="flex flex-col gap-4 px-5 py-4 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-0.5 min-w-0">
+                <div className="text-sm font-medium text-foreground">
+                  {t("settings:preferences.languageLabel")}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("settings:preferences.languageHelp")}
+                </p>
+              </div>
+              <LanguageSelector variant="segmented" className="shrink-0" />
+            </div>
+          </div>
+
           <div className="rounded-xl border border-border/80 bg-card shadow-xs">
             <div className="border-b border-border/60 px-5 py-4 sm:px-6">
               <h2 className="text-base font-bold text-foreground flex items-center gap-2">

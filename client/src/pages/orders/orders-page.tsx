@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
@@ -9,7 +10,8 @@ import { useUrlState } from "@/hooks/use-url-state";
 import { usePagination } from "@/hooks/use-pagination";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useSyncManager } from "@/offline/use-offline";
-import { formatINR, formatDateTime } from "@/lib/formatters";
+import { useFormatters } from "@/hooks/use-formatters";
+import { getStatusLabel } from "@/lib/enum-labels";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataPagination } from "@/components/ui/data-pagination";
 import {
@@ -55,36 +57,40 @@ interface SalesOrder {
   invoices?: Array<{ id: string; invoiceNumber: string }>;
 }
 
-const STATUS_FILTERS = [
-  { value: "ALL", label: "All" },
-  { value: "SUBMITTED", label: "Needs review" },
-  { value: "APPROVED", label: "Approved" },
-  { value: "DRAFT", label: "Drafts" },
-  { value: "REJECTED", label: "Rejected" },
-] as const;
+type OrderNextActionKey =
+  | "orders:reviewOrder"
+  | "orders:createInvoice"
+  | "orders:prepareDispatch"
+  | "orders:continueDraft"
+  | "orders:viewDetail";
 
-function getNextActionLabel(order: SalesOrder, role?: string): string {
+function getNextActionKey(
+  order: SalesOrder,
+  role?: string,
+): OrderNextActionKey {
   if (role === "ADMIN") {
     if (order.status === "SUBMITTED" || order.status === "UNDER_REVIEW") {
-      return "Review order";
+      return "orders:reviewOrder";
     }
     if (
       order.status === "APPROVED" &&
       (!order.invoices || order.invoices.length === 0)
     ) {
-      return "Create invoice";
+      return "orders:createInvoice";
     }
     if (order.status === "APPROVED" && order.fulfilmentStatus !== "FULFILLED") {
-      return "Prepare dispatch";
+      return "orders:prepareDispatch";
     }
   }
   if (role === "SALESMAN" && order.status === "DRAFT") {
-    return "Continue draft";
+    return "orders:continueDraft";
   }
-  return "View detail";
+  return "orders:viewDetail";
 }
 
 export function OrdersPage() {
+  const { t } = useTranslation(["orders", "common"]);
+  const { formatINR, formatDateTime } = useFormatters();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const isSalesman = user?.role === "SALESMAN";
@@ -145,7 +151,10 @@ export function OrdersPage() {
         accessorKey: "orderNumber",
         enableHiding: false,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Order #" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.orderNumber")}
+          />
         ),
         cell: ({ row }) => (
           <Link
@@ -156,7 +165,7 @@ export function OrdersPage() {
           </Link>
         ),
         meta: {
-          label: "Order #",
+          label: t("common:terms.orderNumber"),
           cellClassName: "whitespace-nowrap",
         } satisfies DataTableColumnMeta<SalesOrder>,
       },
@@ -164,7 +173,10 @@ export function OrdersPage() {
         id: "customer",
         accessorFn: (row) => row.customer.name,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Customer" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.customer")}
+          />
         ),
         cell: ({ row }) => (
           <div className="min-w-[180px]">
@@ -175,7 +187,7 @@ export function OrdersPage() {
           </div>
         ),
         meta: {
-          label: "Customer",
+          label: t("common:terms.customer"),
           exportValue: (r) => `${r.customer.name} (${r.customer.code})`,
         } satisfies DataTableColumnMeta<SalesOrder>,
       },
@@ -186,7 +198,10 @@ export function OrdersPage() {
         id: "salesman",
         accessorFn: (row) => row.salesman.name,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Salesman" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.salesman")}
+          />
         ),
         cell: ({ row }) => (
           <span className="text-sm text-muted-foreground whitespace-nowrap">
@@ -194,7 +209,7 @@ export function OrdersPage() {
           </span>
         ),
         meta: {
-          label: "Salesman",
+          label: t("common:terms.salesman"),
           exportValue: (r) => r.salesman.name,
         } satisfies DataTableColumnMeta<SalesOrder>,
       });
@@ -204,50 +219,54 @@ export function OrdersPage() {
       {
         accessorKey: "status",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Order status" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.status")}
+          />
         ),
         cell: ({ row }) => {
           const order = row.original;
           return (
             <div className="flex items-center gap-1.5 whitespace-nowrap">
-              <Badge variant="outline">
-                {order.status.replaceAll("_", " ")}
-              </Badge>
+              <Badge variant="outline">{getStatusLabel(order.status)}</Badge>
               {(order.totalShortage ?? 0) > 0 &&
                 (order.status === "SUBMITTED" ||
                   order.status === "UNDER_REVIEW") && (
                   <span
                     className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400"
-                    title="Stock shortage"
+                    title={t("common:terms.shortage")}
                   >
                     <AlertTriangleIcon
                       className="size-3.5"
                       aria-hidden="true"
                     />
-                    Shortage
+                    {t("common:terms.shortage")}
                   </span>
                 )}
             </div>
           );
         },
         meta: {
-          label: "Order status",
-          exportValue: (r) => r.status.replaceAll("_", " "),
+          label: t("common:terms.status"),
+          exportValue: (r) => getStatusLabel(r.status),
         } satisfies DataTableColumnMeta<SalesOrder>,
       },
       {
         accessorKey: "fulfilmentStatus",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Fulfilment" />
+          <DataTableColumnHeader
+            column={column}
+            title={t("common:terms.status")}
+          />
         ),
         cell: ({ row }) => (
           <Badge variant="outline" className="whitespace-nowrap">
-            {row.original.fulfilmentStatus.replaceAll("_", " ")}
+            {getStatusLabel(row.original.fulfilmentStatus)}
           </Badge>
         ),
         meta: {
-          label: "Fulfilment",
-          exportValue: (r) => r.fulfilmentStatus.replaceAll("_", " "),
+          label: t("common:terms.status"),
+          exportValue: (r) => getStatusLabel(r.fulfilmentStatus),
         } satisfies DataTableColumnMeta<SalesOrder>,
       },
       {
@@ -271,7 +290,7 @@ export function OrdersPage() {
         id: "createdAt",
         accessorFn: (row) => new Date(row.createdAt).getTime() || 0,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Created" />
+          <DataTableColumnHeader column={column} title={t("orders:created")} />
         ),
         cell: ({ row }) => (
           <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
@@ -279,7 +298,7 @@ export function OrdersPage() {
           </span>
         ),
         meta: {
-          label: "Created",
+          label: t("orders:created"),
           exportValue: (r) => formatDateTime(r.createdAt),
         } satisfies DataTableColumnMeta<SalesOrder>,
       },
@@ -287,41 +306,49 @@ export function OrdersPage() {
         id: "actions",
         enableSorting: false,
         enableHiding: false,
-        header: () => <span>Next action</span>,
+        header: () => <span>{t("orders:nextAction")}</span>,
         cell: ({ row }) => (
           <Link
             to={`/orders/${row.original.id}`}
             className="text-xs font-medium text-primary hover:underline whitespace-nowrap"
           >
-            {getNextActionLabel(row.original, user?.role)}
+            {t(getNextActionKey(row.original, user?.role))}
           </Link>
         ),
         meta: {
-          label: "Next action",
+          label: t("orders:nextAction"),
           align: "right",
         } satisfies DataTableColumnMeta<SalesOrder>,
       },
     );
 
     return cols;
-  }, [isSalesman, user?.role]);
+  }, [isSalesman, user?.role, t, formatINR, formatDateTime]);
+
+  const statusFilters = [
+    { value: "ALL", label: t("common:actions.all") },
+    { value: "SUBMITTED", label: t("orders:needsReview") },
+    { value: "APPROVED", label: t("common:status.approved") },
+    { value: "DRAFT", label: t("orders:drafts") },
+    { value: "REJECTED", label: t("common:status.rejected") },
+  ] as const;
 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4 sm:p-6 lg:p-8">
       <PageHeader
         title={
           isSalesman
-            ? "My work & orders"
+            ? t("orders:myWorkTitle")
             : isAdmin
-              ? "Order inbox"
-              : "Sales orders"
+              ? t("orders:orderInboxTitle")
+              : t("orders:title")
         }
         description={
           isSalesman
-            ? "Create orders for your assigned customers and track factory approval and dispatch."
+            ? t("orders:salesmanDesc")
             : isAdmin
-              ? "Review submitted orders, verify available-to-promise stock, and approve or reject."
-              : "Read-only register of wholesale sales orders."
+              ? t("orders:adminDesc")
+              : t("orders:readonlyDesc")
         }
         primaryAction={
           canCreateOrder ? (
@@ -331,7 +358,7 @@ export function OrdersPage() {
               className="gap-1.5"
             >
               <PlusCircleIcon className="size-4" aria-hidden="true" />
-              New order
+              {t("orders:newOrder")}
             </Button>
           ) : null
         }
@@ -349,7 +376,7 @@ export function OrdersPage() {
                 className={`size-4 ${isFetching ? "animate-spin" : ""}`}
                 aria-hidden="true"
               />
-              Refresh
+              {t("common:actions.refresh")}
             </Button>
           </div>
         }
@@ -358,28 +385,29 @@ export function OrdersPage() {
       {/* Compact Operational Context Strip */}
       <div className="flex flex-wrap items-center gap-3 text-xs">
         <span className="rounded-md border border-border bg-card px-2.5 py-1.5">
-          Drafts: <strong className="tabular-nums">{draftOrders.length}</strong>
+          {t("orders:drafts")}:{" "}
+          <strong className="tabular-nums">{draftOrders.length}</strong>
         </span>
         <span className="rounded-md border border-border bg-card px-2.5 py-1.5">
-          Awaiting review:{" "}
+          {t("orders:awaitingReviewCount")}{" "}
           <strong className="tabular-nums">{submittedCount}</strong>
         </span>
         <span className="rounded-md border border-border bg-card px-2.5 py-1.5">
-          Approved: <strong className="tabular-nums">{approvedCount}</strong>
+          {t("orders:approvedCount")}{" "}
+          <strong className="tabular-nums">{approvedCount}</strong>
         </span>
         {isSalesman && draftOrders.length > 0 && (
           <Link
             to={`/orders/new?draftId=${draftOrders[0].id}`}
             className="rounded-md border border-primary/40 bg-primary/5 px-2.5 py-1.5 font-medium text-primary hover:bg-primary/10"
           >
-            Continue draft ({draftOrders[0].orderNumber})
+            {t("orders:continueDraft")} ({draftOrders[0].orderNumber})
           </Link>
         )}
         {(pendingCount > 0 || conflictCount > 0) && (
           <span className="rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-            Device outbox: {pendingCount} pending
-            {conflictCount > 0 ? `, ${conflictCount} conflict` : ""} (use header
-            Sync indicator)
+            {t("common:outbox.title")}: {pendingCount}
+            {conflictCount > 0 ? `, ${conflictCount}` : ""}
           </span>
         )}
       </div>
@@ -389,9 +417,9 @@ export function OrdersPage() {
         <div
           className="flex flex-wrap items-center gap-1.5"
           role="group"
-          aria-label="Filter by order status"
+          aria-label={t("common:actions.filter")}
         >
-          {STATUS_FILTERS.map((f) => (
+          {statusFilters.map((f) => (
             <Button
               key={f.value}
               variant={statusFilter === f.value ? "primary" : "outline"}
@@ -418,8 +446,8 @@ export function OrdersPage() {
               setSearchQuery(e.target.value);
               resetPage();
             }}
-            placeholder="Search order # or customer..."
-            aria-label="Search orders"
+            placeholder={t("orders:searchPlaceholder")}
+            aria-label={t("orders:searchPlaceholder")}
             className="h-9 pl-8"
           />
         </div>
@@ -429,22 +457,22 @@ export function OrdersPage() {
         <SkeletonTable rows={6} columns={5} />
       ) : isError ? (
         <ErrorState
-          title="Failed to load orders"
+          title={t("orders:failedToLoad")}
           description={extractErrorMessage(error)}
           onRetry={() => refetch()}
         />
       ) : filteredOrders.length === 0 ? (
         <EmptyState
-          title="No matching orders"
+          title={t("orders:noMatchingOrders")}
           description={
             orders.length === 0
-              ? "No sales orders have been recorded yet."
-              : "Adjust your status filter or search query to see orders."
+              ? t("orders:noOrdersYetDesc")
+              : t("orders:adjustFiltersDesc")
           }
           action={
             canCreateOrder && orders.length === 0 ? (
               <Button variant="primary" onClick={() => navigate("/orders/new")}>
-                Create first order
+                {t("orders:createFirstOrder")}
               </Button>
             ) : undefined
           }
@@ -464,14 +492,14 @@ export function OrdersPage() {
                     {order.orderNumber}
                   </span>
                   <Badge variant="outline">
-                    {order.status.replaceAll("_", " ")}
+                    {getStatusLabel(order.status)}
                   </Badge>
                 </div>
                 <div className="text-sm text-foreground">
                   {order.customer.name}
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{order.fulfilmentStatus.replaceAll("_", " ")}</span>
+                  <span>{getStatusLabel(order.fulfilmentStatus)}</span>
                   <span className="font-semibold text-foreground tabular-nums">
                     {formatINR(order.totalAmount)}
                   </span>
@@ -487,7 +515,7 @@ export function OrdersPage() {
               data={filteredOrders}
               columns={orderColumns}
               getRowId={(r) => r.id}
-              ariaLabel="Sales orders"
+              ariaLabel={t("orders:title")}
               csvFilename="sales-orders"
             />
           </div>
@@ -499,7 +527,7 @@ export function OrdersPage() {
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
             isFetching={isFetching}
-            itemLabel="orders"
+            itemLabel={t("orders:itemLabel")}
           />
         </>
       )}

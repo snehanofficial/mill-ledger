@@ -1,0 +1,12 @@
+{
+  "title": "Customers",
+  "subtitle": "Customer directory, GSTIN details, salesman assignments, and credit terms",
+  "addCustomer": "Add Customer",
+  "editCustomer": "Edit Customer",
+  "customerDetails": "Customer Details",
+  "searchPlaceholder": "Search customers by name, code, or city...",
+  "noCustomers": "No customers found",
+  "assignedSalesman": "Assigned Salesman",
+  "unassigned": "Unassigned",
+  "totalReceivables": "Total Receivables"
+}

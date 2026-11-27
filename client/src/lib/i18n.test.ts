@@ -151,9 +151,9 @@ describe("i18n Translation Dictionary", () => {
 
     it("updates document.documentElement.lang when saving user language", () => {
       saveUserLanguage("ta", "user-tamil");
-      expect(document.documentElement.lang).toBe("ta");
+      expect(document.documentElement.lang).toBe("ta-IN");
       saveUserLanguage("en", "user-english");
-      expect(document.documentElement.lang).toBe("en");
+      expect(document.documentElement.lang).toBe("en-IN");
     });
   });
 });

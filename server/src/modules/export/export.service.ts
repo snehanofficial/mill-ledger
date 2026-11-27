@@ -1,5 +1,5 @@
 import { prisma } from "../../db/client.js";
-import type { UserContext } from "@mill-ledger/shared";
+import type { SupportedLocale, UserContext } from "@mill-ledger/shared";
 import { AppError } from "../../middleware/error.middleware.js";
 import { auditService } from "../reporting/audit.service.js";
 import type {
@@ -28,6 +28,7 @@ export interface EntityExportFilters {
   startDate?: Date;
   endDate?: Date;
   ids?: string[];
+  locale?: SupportedLocale;
   user: UserContext;
 }
 
@@ -54,7 +55,7 @@ export class ExportService {
     totalsRow?: Record<string, unknown>,
   ): Promise<Buffer | string> {
     if (format === "csv") {
-      return renderTabularCsv(columns, rows);
+      return renderTabularCsv(columns, rows, meta.locale);
     }
     if (format === "xlsx") {
       return await renderExcelWorkbook(meta, [

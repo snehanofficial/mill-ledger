@@ -1,0 +1,40 @@
+{
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "workflows": "Workflows",
+    "resources": "Resources",
+    "contact": "Contact",
+    "about": "About",
+    "security": "Security",
+    "requestDemo": "Request Demo",
+    "openWorkspace": "Open Workspace",
+    "staffLogin": "Staff ERP Login",
+    "mainNavAria": "Main navigation",
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close navigation menu"
+  },
+  "landing": {
+    "eyebrow": "Built for Tamil Nadu & Indian Food Manufacturing",
+    "heroTitle": "Order-to-Audit ERP for Small Food Manufacturing Mills",
+    "heroDesc": "Replace fragmented spreadsheets with an atomic stock ledger, BOM yield variance tracking, offline salesman order capture, and Indian GST invoicing.",
+    "viewWorkflows": "View Live Workflows"
+  },
+  "footer": {
+    "tagline": "Order-to-audit ERP and shop floor ledger software for small food manufacturing mills in India.",
+    "contactLabel": "Contact:",
+    "product": "Product & Evaluation",
+    "erpFeatures": "ERP Features",
+    "orderToAudit": "Order-to-Audit Workflows",
+    "spreadsheetAlt": "Spreadsheet Alternative",
+    "securityRbac": "Security & RBAC",
+    "resourcesHeading": "Resources & Access",
+    "millGuides": "Mill Accounting Guides",
+    "aboutMillLedger": "About MillLedger",
+    "requestDemo": "Request Product Demo",
+    "contactTeam": "Contact Team",
+    "staffLogin": "Staff ERP Login",
+    "copyright": "© {{year}} MillLedger. Order-to-Audit ERP for Food Manufacturing Mills.",
+    "bilingualNote": "English & தமிழ் (Tamil) bilingual operations"
+  }
+}

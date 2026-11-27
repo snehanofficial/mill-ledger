@@ -1,0 +1,8 @@
+{
+  "title": "Suppliers",
+  "subtitle": "Mandi vendors, raw material suppliers, GSTIN records, and purchase history",
+  "addSupplier": "Add Supplier",
+  "editSupplier": "Edit Supplier",
+  "searchPlaceholder": "Search suppliers by name, code, or city...",
+  "noSuppliers": "No suppliers found"
+}

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { BACKEND_URL } from "./env";
 import { ApiContractError } from "./api-contracts";
+import { i18n } from "@/i18n";
 
 export const apiClient = axios.create({
   baseURL: `${BACKEND_URL}/api/v1`,
@@ -30,24 +31,40 @@ apiClient.interceptors.response.use(
  * Extracts a human-readable error message from API errors across Axios response
  * structures or standard Error instances.
  */
-export function extractErrorMessage(
-  error: unknown,
-  fallback = "An unexpected error occurred",
-): string {
+export function extractErrorMessage(error: unknown, fallback?: string): string {
+  const defaultFallback = fallback || i18n.t("errors:generic");
   if (error instanceof ApiContractError) {
     return error.message;
   }
-  if (!error || typeof error !== "object") return fallback;
+  if (!error || typeof error !== "object") return defaultFallback;
   const e = error as {
     code?: unknown;
-    response?: { status?: number; data?: { message?: unknown } };
+    response?: {
+      status?: number;
+      data?: { code?: unknown; message?: unknown };
+    };
     message?: unknown;
   };
   if (e.code === "ECONNABORTED") {
-    return "The request timed out. Please check your connection and try again.";
+    return i18n.t("errors:timeout");
   }
   if (e.response?.status === 429) {
-    return "Too many requests. Please wait a moment before trying again.";
+    return i18n.t("errors:rateLimited");
+  }
+  if (e.response?.status === 401) {
+    return i18n.t("errors:unauthorized");
+  }
+  if (e.response?.status === 403) {
+    return i18n.t("errors:forbidden");
+  }
+  const serverCode =
+    typeof e.response?.data?.code === "string"
+      ? e.response.data.code.trim().toUpperCase()
+      : undefined;
+  if (serverCode && i18n.exists(`errors:codes.${serverCode}`)) {
+    return (i18n.t as unknown as (key: string) => string)(
+      `errors:codes.${serverCode}`,
+    );
   }
   if (
     typeof e.response?.data?.message === "string" &&
@@ -56,12 +73,12 @@ export function extractErrorMessage(
     return e.response.data.message;
   }
   if (!e.response && e.message === "Network Error") {
-    return "Unable to reach the server. Check your internet connection and try again.";
+    return i18n.t("errors:network");
   }
   if (typeof e.message === "string" && e.message.trim().length > 0) {
     return e.message;
   }
-  return fallback;
+  return defaultFallback;
 }
 
 /**

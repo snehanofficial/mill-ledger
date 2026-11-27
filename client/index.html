@@ -10,9 +10,14 @@
           var userKey = activeUser ? "mill_ledger_lang_" + activeUser : null;
           var lang =
             (userKey && localStorage.getItem(userKey)) ||
+            localStorage.getItem("mill_ledger_locale") ||
             localStorage.getItem("mill_ledger_lang");
-          if (lang === "ta" || lang === "en") {
-            document.documentElement.lang = lang;
+          if (lang === "ta" || lang === "ta-IN") {
+            document.documentElement.lang = "ta-IN";
+          } else if (lang === "en" || lang === "en-IN") {
+            document.documentElement.lang = "en-IN";
+          } else {
+            document.documentElement.lang = "en-IN";
           }
         } catch (_) {}
       })();

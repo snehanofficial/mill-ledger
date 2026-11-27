@@ -62,8 +62,10 @@ import {
   XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { useLanguage } from "@/lib/i18n";
+import { LanguageSelector } from "@/components/ui/language-selector";
 import { useNotifications } from "@/lib/notifications-store";
 import { getPrefetchProps, prefetchIdleRoutes } from "@/lib/route-prefetch";
 import { useTheme } from "@/hooks/use-theme";
@@ -157,6 +159,7 @@ export interface ShellUser {
   organizationId?: string;
   avatar?: string;
   initials: string;
+  preferredLanguage?: import("@mill-ledger/shared").SupportedLocale;
 }
 
 interface ShellProps {
@@ -189,6 +192,7 @@ function SyncIndicator({
   onClick?: () => void;
   pendingCount?: number;
 }) {
+  const { t } = useTranslation("common");
   const configs: Record<
     SyncState,
     { icon: ReactNode; label: string; color: string }
@@ -200,12 +204,12 @@ function SyncIndicator({
           aria-hidden
         />
       ),
-      label: "Live",
+      label: t("status.live"),
       color: "text-muted-foreground",
     },
     offline: {
       icon: <WifiOffIcon className="size-3.5 text-amber-500" aria-hidden />,
-      label: "Offline",
+      label: t("status.offline"),
       color: "text-amber-600",
     },
     syncing: {
@@ -215,26 +219,26 @@ function SyncIndicator({
           aria-hidden
         />
       ),
-      label: "Syncing",
+      label: t("status.syncing"),
       color: "text-muted-foreground",
     },
     synced: {
       icon: (
         <CheckCircleIcon className="size-3.5 text-emerald-500" aria-hidden />
       ),
-      label: "Synced",
+      label: t("status.synced"),
       color: "text-emerald-600",
     },
     error: {
       icon: (
         <AlertCircleIcon className="size-3.5 text-destructive" aria-hidden />
       ),
-      label: "Sync error",
+      label: t("status.syncError"),
       color: "text-destructive",
     },
     conflict: {
       icon: <AlertCircleIcon className="size-3.5 text-amber-500" aria-hidden />,
-      label: "Conflict",
+      label: t("status.conflict"),
       color: "text-amber-600",
     },
   };
@@ -246,7 +250,7 @@ function SyncIndicator({
       onClick={onClick}
       role="status"
       aria-live="polite"
-      aria-label={`Sync state: ${config.label}`}
+      aria-label={t("shell.syncState", { state: config.label })}
       className={cn(
         "flex items-center gap-1.5 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity focus:outline-hidden",
         config.color,
@@ -1040,7 +1044,7 @@ function StickyHeader({
 }: StickyHeaderProps) {
   const navigate = useNavigate();
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
-  const { language, setLanguage, t } = useLanguage();
+  const { t } = useLanguage();
   const { resolvedTheme, toggleTheme } = useTheme();
   const { isMotionPaused, toggleMotion } = useMotion();
 
@@ -1077,22 +1081,8 @@ function StickyHeader({
 
       {/* Right-side tools: language, sync, search, notifications, account menu */}
       <div className="flex shrink-0 items-center gap-2">
-        {/* Language switch toggle (WCAG 2.2 SC 3.1.2 Level AA / F-060) */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setLanguage(language === "en" ? "ta" : "en")}
-          aria-label={
-            language === "en"
-              ? "தமிழ் - Switch language to Tamil"
-              : "EN - Switch language to English"
-          }
-          className="h-8 px-2 text-xs font-semibold cursor-pointer text-muted-foreground hover:text-foreground"
-        >
-          <span lang={language === "en" ? "ta" : "en"}>
-            {language === "en" ? "தமிழ்" : "EN"}
-          </span>
-        </Button>
+        {/* Language selector (WCAG 2.2 SC 3.1.2 Level AA / F-060) */}
+        <LanguageSelector />
 
         {/* Theme switch toggle (F-050) */}
         <Button
@@ -1458,7 +1448,7 @@ export function AuthenticatedShell({
   const [outboxOpen, setOutboxOpen] = useState(false);
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const { language } = useLanguage();
+  const { t: tCommon } = useTranslation("common");
   const {
     notifications,
     unreadCount,
@@ -1555,9 +1545,7 @@ export function AuthenticatedShell({
             "focus:shadow-lg focus:outline-none",
           )}
         >
-          {language === "ta"
-            ? "முதன்மை பகுதிக்குச் செல்லவும்"
-            : "Skip to main content"}
+          {tCommon("shell.skipToMain")}
         </a>
 
         {/* Desktop & mobile sidebar */}

@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/react";
-import type { Role } from "@mill-ledger/shared";
+import type { Role, SupportedLocale } from "@mill-ledger/shared";
 import { apiClient } from "./api-client";
 import { BACKEND_URL } from "./env";
 
@@ -16,6 +16,7 @@ export interface AuthUser {
   image?: string | null;
   isActive?: boolean;
   organizationId?: string;
+  preferredLanguage?: SupportedLocale;
 }
 
 export interface SessionResponse {

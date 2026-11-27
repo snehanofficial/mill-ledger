@@ -29,6 +29,7 @@ export function mapAuthUserToShellUser(user: AuthUser): ShellUser {
     organizationId: user.organizationId,
     initials: getInitials(user.name || user.email),
     avatar: user.image || undefined,
+    preferredLanguage: user.preferredLanguage,
   };
 }
 

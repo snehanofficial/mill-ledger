@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { buildExportFilename, type Resource } from "@mill-ledger/shared";
+import {
+  buildExportFilename,
+  normalizeLocale,
+  type Resource,
+} from "@mill-ledger/shared";
 import {
   authorize,
   getSessionOrgId,
@@ -59,6 +63,12 @@ exportRouter.get(
             .filter(Boolean)
         : undefined;
 
+      const locale = normalizeLocale(
+        typeof req.query.lang === "string"
+          ? req.query.lang
+          : req.user?.preferredLanguage,
+      );
+
       const orgId = getSessionOrgId(req);
       const { content, orgName } = await exportService.exportEntity(
         entity,
@@ -81,6 +91,7 @@ exportRouter.get(
               ? new Date(req.query.endDate)
               : undefined,
           ids,
+          locale,
           user: req.user!,
         },
       );

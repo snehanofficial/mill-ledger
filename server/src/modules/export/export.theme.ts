@@ -39,16 +39,28 @@ export const EXPORT_THEME = {
 const DEJAVU_REGULAR = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
 const DEJAVU_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf";
 const DEJAVU_MONO = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf";
+const TAMIL_REGULAR =
+  "/usr/share/fonts/truetype/noto/NotoSansTamil-Regular.ttf";
+const TAMIL_BOLD = "/usr/share/fonts/truetype/noto/NotoSansTamil-Bold.ttf";
 
 export interface PdfFontSet {
   regular: string;
   bold: string;
   mono: string;
+  tamilRegular?: string;
+  tamilBold?: string;
   supportsRupeeGlyph: boolean;
+  supportsTamil: boolean;
 }
 
 export function registerPdfFonts(doc: PDFKit.PDFDocument): PdfFontSet {
   const hasDejaVu = fs.existsSync(DEJAVU_REGULAR) && fs.existsSync(DEJAVU_BOLD);
+  const hasTamil = fs.existsSync(TAMIL_REGULAR) && fs.existsSync(TAMIL_BOLD);
+
+  if (hasTamil) {
+    doc.registerFont("MillTamil", TAMIL_REGULAR);
+    doc.registerFont("MillTamil-Bold", TAMIL_BOLD);
+  }
 
   if (hasDejaVu) {
     doc.registerFont("MillSans", DEJAVU_REGULAR);
@@ -60,7 +72,10 @@ export function registerPdfFonts(doc: PDFKit.PDFDocument): PdfFontSet {
       regular: "MillSans",
       bold: "MillSans-Bold",
       mono: fs.existsSync(DEJAVU_MONO) ? "MillMono" : "MillSans",
+      tamilRegular: hasTamil ? "MillTamil" : undefined,
+      tamilBold: hasTamil ? "MillTamil-Bold" : undefined,
       supportsRupeeGlyph: true,
+      supportsTamil: hasTamil,
     };
   }
 
@@ -68,7 +83,10 @@ export function registerPdfFonts(doc: PDFKit.PDFDocument): PdfFontSet {
     regular: "Helvetica",
     bold: "Helvetica-Bold",
     mono: "Courier",
+    tamilRegular: hasTamil ? "MillTamil" : undefined,
+    tamilBold: hasTamil ? "MillTamil-Bold" : undefined,
     supportsRupeeGlyph: false,
+    supportsTamil: hasTamil,
   };
 }
 

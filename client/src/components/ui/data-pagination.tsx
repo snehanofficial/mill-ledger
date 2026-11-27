@@ -1,4 +1,5 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { cn } from "@/lib/utils";
 import {
@@ -63,14 +64,16 @@ export function DataPagination({
   onPageSizeChange,
   isFetching = false,
   pageSizeOptions = [10, 20, 50, 100],
-  itemLabel = "records",
+  itemLabel,
   className,
 }: DataPaginationProps) {
+  const { t } = useTranslation("common");
   const total = pagination?.total ?? 0;
   if (total <= 0) {
     return null;
   }
 
+  const resolvedItemLabel = itemLabel ?? t("pagination.records");
   const effectiveLimit = pagination?.limit ?? pageSize;
   const totalPages = Math.max(
     1,
@@ -90,19 +93,17 @@ export function DataPagination({
     >
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         <span className="tabular-nums">
-          Showing{" "}
-          <span className="font-semibold text-foreground">{rangeStart}</span>
-          {"–"}
-          <span className="font-semibold text-foreground">
-            {rangeEnd}
-          </span> of{" "}
-          <span className="font-semibold text-foreground">{total}</span>{" "}
-          {itemLabel}
+          {t("pagination.showing", {
+            from: rangeStart,
+            to: rangeEnd,
+            total,
+            itemLabel: resolvedItemLabel,
+          })}
         </span>
 
         {onPageSizeChange && (
           <div className="flex items-center gap-2">
-            <span id="rows-per-page-label">Rows per page</span>
+            <span id="rows-per-page-label">{t("pagination.rowsPerPage")}</span>
             <Select
               value={String(pageSize)}
               onValueChange={(val) => onPageSizeChange(Number(val))}
@@ -141,7 +142,9 @@ export function DataPagination({
                 )}
               >
                 <ChevronLeftIcon className="size-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Previous</span>
+                <span className="hidden sm:inline">
+                  {t("pagination.previous")}
+                </span>
               </button>
             </PaginationItem>
 
@@ -185,7 +188,7 @@ export function DataPagination({
                   "gap-1 border-control bg-background px-3 text-foreground hover:bg-accent",
                 )}
               >
-                <span className="hidden sm:inline">Next</span>
+                <span className="hidden sm:inline">{t("pagination.next")}</span>
                 <ChevronRightIcon className="size-4" aria-hidden="true" />
               </button>
             </PaginationItem>

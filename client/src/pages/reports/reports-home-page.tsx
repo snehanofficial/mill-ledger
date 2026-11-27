@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/ui/page-header";
 import {
   BarChart2Icon,
@@ -11,86 +12,81 @@ import {
   WalletIcon,
 } from "lucide-react";
 
-const REPORT_GROUPS = [
-  {
-    title: "Sales & Statutory GST",
-    items: [
-      {
-        title: "Sales register & analysis",
-        description:
-          "Posted sales invoices, customer-wise sales, and product-wise sales.",
-        href: "/reports/sales",
-        icon: BarChart2Icon,
-      },
-      {
-        title: "GST outward summary",
-        description:
-          "Taxable value, CGST, SGST, and IGST breakdown by rate and place of supply.",
-        href: "/reports/gst",
-        icon: FileTextIcon,
-      },
-      {
-        title: "Invoice records",
-        description: "Immutable posted tax invoices and credit notes.",
-        href: "/invoices",
-        icon: ReceiptIcon,
-      },
-    ],
-  },
-  {
-    title: "Inventory & Production",
-    items: [
-      {
-        title: "Stock valuation & ledger",
-        description:
-          "Closing balances, weighted-average cost, and full movement ledger.",
-        href: "/reports/stock",
-        icon: BoxIcon,
-      },
-      {
-        title: "Production & costing",
-        description:
-          "Yield variance, material consumption variance, and cost per good packet.",
-        href: "/reports/production",
-        icon: FactoryIcon,
-      },
-    ],
-  },
-  {
-    title: "Collections, Receivables & Audit",
-    items: [
-      {
-        title: "Receivables & ageing",
-        description: "Customer-wise net outstanding and ageing buckets.",
-        href: "/reports/receivables",
-        icon: WalletIcon,
-      },
-      {
-        title: "Audit trail",
-        description: "Append-only operational and financial audit events.",
-        href: "/reports/audit",
-        icon: ShieldCheckIcon,
-      },
-      {
-        title: "Exports",
-        description: "Download CSV, XLSX, and PDF report bundles.",
-        href: "/exports",
-        icon: SendIcon,
-      },
-    ],
-  },
-];
-
 export function ReportsHomePage() {
+  const { t } = useTranslation("reports");
+
+  const reportGroups = [
+    {
+      title: t("groups.salesGst"),
+      items: [
+        {
+          title: t("cards.salesRegisterTitle"),
+          description: t("cards.salesRegisterDesc"),
+          href: "/reports/sales",
+          icon: BarChart2Icon,
+        },
+        {
+          title: t("cards.gstSummaryTitle"),
+          description: t("cards.gstSummaryDesc"),
+          href: "/reports/gst",
+          icon: FileTextIcon,
+        },
+        {
+          title: t("cards.invoiceRecordsTitle"),
+          description: t("cards.invoiceRecordsDesc"),
+          href: "/invoices",
+          icon: ReceiptIcon,
+        },
+      ],
+    },
+    {
+      title: t("groups.inventoryProd"),
+      items: [
+        {
+          title: t("cards.stockValTitle"),
+          description: t("cards.stockValDesc"),
+          href: "/reports/stock",
+          icon: BoxIcon,
+        },
+        {
+          title: t("cards.prodCostingTitle"),
+          description: t("cards.prodCostingDesc"),
+          href: "/reports/production",
+          icon: FactoryIcon,
+        },
+      ],
+    },
+    {
+      title: t("groups.collectionsAudit"),
+      items: [
+        {
+          title: t("cards.receivablesTitle"),
+          description: t("cards.receivablesDesc"),
+          href: "/reports/receivables",
+          icon: WalletIcon,
+        },
+        {
+          title: t("cards.auditTrailTitle"),
+          description: t("cards.auditTrailDesc"),
+          href: "/reports/audit",
+          icon: ShieldCheckIcon,
+        },
+        {
+          title: t("cards.exportsTitle"),
+          description: t("cards.exportsDesc"),
+          href: "/exports",
+          icon: SendIcon,
+        },
+      ],
+    },
+  ];
+
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8 max-w-6xl">
-      <PageHeader
-        title="Reporting home"
-        description="Reconcile posted sales, GST, inventory valuation, production costing, receivables, and audit logs."
-      />
+      <PageHeader title={t("homeTitle")} description={t("homeDesc")} />
 
       <div className="space-y-6">
-        {REPORT_GROUPS.map((group) => (
+        {reportGroups.map((group) => (
           <section key={group.title} className="space-y-3">
             <h2 className="text-sm font-semibold text-muted-foreground">
               {group.title}
