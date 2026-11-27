@@ -19,6 +19,7 @@ import { reportingRouter } from "./modules/reporting/reporting.routes.js";
 import { mastersRouter } from "./modules/masters/masters.routes.js";
 import { timelineRouter } from "./modules/timeline/timeline.routes.js";
 import { exportRouter } from "./modules/export/export.routes.js";
+import { publicRouter } from "./modules/public/public.routes.js";
 import { errorHandler, sendErrorResponse } from "./middleware/error.middleware.js";
 import { isAllowedOrigin } from "./lib/origins.js";
 import { requestIdMiddleware } from "./middleware/request-id.middleware.js";
@@ -45,9 +46,30 @@ export function createApp() {
   app.use(requestLogger);
 
   app.use(helmet());
-  // REQ-062 & Owner Decision 2: Prevent search engine indexing of authenticated ERP APIs and endpoints
-  app.use((_req, res, next) => {
-    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+  const PUBLIC_HTML_PATHS = new Set([
+    "/",
+    "/features",
+    "/workflows",
+    "/spreadsheet-alternative",
+    "/resources",
+    "/resources/indian-gst-invoicing-for-food-mills",
+    "/resources/moving-weighted-average-stock-ledger",
+    "/resources/offline-salesman-order-capture",
+    "/security",
+    "/about",
+    "/contact",
+    "/demo",
+    "/robots.txt",
+    "/sitemap.xml",
+  ]);
+
+  // REQ-062 & Owner Decision 2: Prevent search engine indexing of authenticated ERP APIs and private routes
+  app.use((req, res, next) => {
+    const cleanPath = req.path === "/" ? "/" : req.path.replace(/\/+$/, "");
+    const isPublicAsset = /\.(css|js|svg|png|ico|woff2|webmanifest)$/i.test(cleanPath);
+    if (!PUBLIC_HTML_PATHS.has(cleanPath) && !isPublicAsset) {
+      res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    }
     next();
   });
   app.use(
@@ -126,15 +148,10 @@ export function createApp() {
   app.use("/api/v1/dashboard", reportingRouter);
   app.use("/api/v1/masters", mastersRouter);
   app.use("/api/v1/timeline", timelineRouter);
+  app.use("/api/v1/public", publicRouter);
 
   // Backward compatibility alias for health check
   app.use("/api/health", healthRouter);
-
-  // RFC 9309: Standard robots.txt response for backend API server
-  app.get("/robots.txt", (_req, res) => {
-    res.type("text/plain");
-    res.send("User-agent: *\nDisallow: /\n");
-  });
 
   // Serve static frontend assets and SPA fallback in production/container (F-099)
   const clientDistPath = [
@@ -143,15 +160,33 @@ export function createApp() {
   ].find((p) => fs.existsSync(p));
 
   if (clientDistPath) {
-    app.use(express.static(clientDistPath));
+    app.use(express.static(clientDistPath, { extensions: ["html"] }));
     app.use((req, res, next) => {
       if (req.method !== "GET") {
         return next();
       }
-      if (req.path.startsWith("/api") || req.path === "/ready" || req.path === "/robots.txt") {
+      if (req.path.startsWith("/api") || req.path === "/ready") {
         return next();
       }
-      res.sendFile(path.join(clientDistPath, "index.html"));
+      const cleanPath = req.path.replace(/^\/+|\/+$/g, "");
+      if (cleanPath) {
+        const prerenderedFile = path.join(clientDistPath, cleanPath, "index.html");
+        if (fs.existsSync(prerenderedFile)) {
+          return res.sendFile(prerenderedFile);
+        }
+      }
+      const appShellPath = path.join(clientDistPath, "app-shell.html");
+      res.sendFile(
+        fs.existsSync(appShellPath)
+          ? appShellPath
+          : path.join(clientDistPath, "index.html"),
+      );
+    });
+  } else {
+    // RFC 9309: Standalone API server blocks all crawlers
+    app.get("/robots.txt", (_req, res) => {
+      res.type("text/plain");
+      res.send("User-agent: *\nDisallow: /\n");
     });
   }
 

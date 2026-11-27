@@ -22,14 +22,49 @@ const LandingPage = lazy(() =>
     default: m.LandingPage,
   })),
 );
-const CatalogPage = lazy(() =>
-  import("@/pages/public/catalog-page").then((m) => ({
-    default: m.CatalogPage,
+const FeaturesPage = lazy(() =>
+  import("@/pages/public/features-page").then((m) => ({
+    default: m.FeaturesPage,
+  })),
+);
+const WorkflowsPage = lazy(() =>
+  import("@/pages/public/workflows-page").then((m) => ({
+    default: m.WorkflowsPage,
+  })),
+);
+const SpreadsheetAlternativePage = lazy(() =>
+  import("@/pages/public/spreadsheet-alternative-page").then((m) => ({
+    default: m.SpreadsheetAlternativePage,
+  })),
+);
+const ResourcesPage = lazy(() =>
+  import("@/pages/public/resources-page").then((m) => ({
+    default: m.ResourcesPage,
+  })),
+);
+const ResourceArticlePage = lazy(() =>
+  import("@/pages/public/resource-article-page").then((m) => ({
+    default: m.ResourceArticlePage,
+  })),
+);
+const SecurityPage = lazy(() =>
+  import("@/pages/public/security-page").then((m) => ({
+    default: m.SecurityPage,
+  })),
+);
+const AboutPage = lazy(() =>
+  import("@/pages/public/about-page").then((m) => ({
+    default: m.AboutPage,
   })),
 );
 const ContactPage = lazy(() =>
   import("@/pages/public/contact-page").then((m) => ({
     default: m.ContactPage,
+  })),
+);
+const DemoPage = lazy(() =>
+  import("@/pages/public/contact-page").then((m) => ({
+    default: m.DemoPage,
   })),
 );
 const LoginPage = lazy(() =>
@@ -285,11 +320,92 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/catalog",
+    path: "/features",
     errorElement: <RouteErrorFallback homePath="/" />,
     element: (
       <Suspense fallback={<PageFallback />}>
-        <CatalogPage />
+        <FeaturesPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/workflows",
+    errorElement: <RouteErrorFallback homePath="/" />,
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <WorkflowsPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/spreadsheet-alternative",
+    errorElement: <RouteErrorFallback homePath="/" />,
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <SpreadsheetAlternativePage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/resources",
+    errorElement: <RouteErrorFallback homePath="/" />,
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <ResourcesPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/resources/indian-gst-invoicing-for-food-mills",
+    errorElement: <RouteErrorFallback homePath="/" />,
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <ResourceArticlePage articleId="gst-invoicing" />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/resources/moving-weighted-average-stock-ledger",
+    errorElement: <RouteErrorFallback homePath="/" />,
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <ResourceArticlePage articleId="stock-ledger" />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/resources/offline-salesman-order-capture",
+    errorElement: <RouteErrorFallback homePath="/" />,
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <ResourceArticlePage articleId="offline-orders" />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/security",
+    errorElement: <RouteErrorFallback homePath="/" />,
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <SecurityPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/about",
+    errorElement: <RouteErrorFallback homePath="/" />,
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <AboutPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/demo",
+    errorElement: <RouteErrorFallback homePath="/" />,
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <DemoPage />
       </Suspense>
     ),
   },
@@ -301,6 +417,10 @@ const router = createBrowserRouter([
         <ContactPage />
       </Suspense>
     ),
+  },
+  {
+    path: "/catalog",
+    element: <Navigate to="/features" replace />,
   },
   {
     path: "/auth/login",

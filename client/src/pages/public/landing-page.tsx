@@ -1,317 +1,314 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
-  ShieldCheckIcon,
-  FactoryIcon,
-  PackageCheckIcon,
-  ScaleIcon,
   ArrowRightIcon,
-  CheckCircle2Icon,
-  TruckIcon,
-  AwardIcon,
+  CheckIcon,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { PublicHeader } from "./public-header";
-import { PublicFooter } from "./public-footer";
+import { PublicLayout } from "./public-layout";
 import { useLanguage } from "@/lib/i18n";
+
+const ORDER_TO_AUDIT_STAGES = [
+  {
+    stage: "01",
+    title: "Purchase Receipts & Weighted Average Cost",
+    detail:
+      "Record raw material and packaging receipts against suppliers. Moving weighted average cost recalculates atomically on every receipt, and mistaken receipts are reversed rather than overwritten.",
+  },
+  {
+    stage: "02",
+    title: "BOM Production Runs & Variance Flags",
+    detail:
+      "Execute versioned Bill of Materials recipes with actual ingredient consumption, good output, damaged packets, labour, and utility costs. Yield and ingredient variances are flagged automatically.",
+  },
+  {
+    stage: "03",
+    title: "Offline Field Salesman Order Capture",
+    detail:
+      "Field salesmen select assigned customers and price-list rates on mobile phones. Orders queue in IndexedDB when offline and sync idempotently to prevent duplicate orders.",
+  },
+  {
+    stage: "04",
+    title: "Admin Review & Strict ATP Stock Reservation",
+    detail:
+      "Office admins verify Available-to-Promise (ATP) stock, adjust approved quantities or prices with mandatory audit reasons, and reserve inventory so two salesmen cannot double-sell the same batch.",
+  },
+  {
+    stage: "05",
+    title: "GST Tax Invoicing & Physical Dispatch",
+    detail:
+      "Generate financial-year numbered GST tax invoices with HSN snapshots and intra-state CGST/SGST or inter-state IGST splits. Physical stock deducts on dispatch, with PDF and return support.",
+  },
+  {
+    stage: "06",
+    title: "FIFO Payment Allocation & Audit Reports",
+    detail:
+      "Allocate customer payments FIFO or manually, handle cheque bounces cleanly, and export 9 operational and GST registers to CSV, XLSX, or PDF with an immutable audit timeline.",
+  },
+];
+
+const WORKSPACE_ROLES = [
+  {
+    role: "Owner",
+    device: "Desktop & Tablet",
+    focus:
+      "Monitors revenue, receivables, stock valuation, production output, unit margin, and variance alerts with drill-down to source documents.",
+  },
+  {
+    role: "Admin / Accounts",
+    device: "Desktop",
+    focus:
+      "Reviews pending orders, enforces ATP stock reservations, posts GST invoices and dispatches, allocates payments, and manages masters and users.",
+  },
+  {
+    role: "Production Supervisor",
+    device: "Factory Tablet (EN / தமிழ்)",
+    focus:
+      "Records BOM production drafts, actual material usage, damaged packets, and direct run costs with bilingual English and Tamil navigation.",
+  },
+  {
+    role: "Field Salesman",
+    device: "Mobile Phone (320px+)",
+    focus:
+      "Captures customer orders in weak-connectivity areas using an offline IndexedDB outbox with clear local, syncing, synced, and conflict states.",
+  },
+  {
+    role: "Accountant / Auditor",
+    device: "Desktop (Read-Only)",
+    focus:
+      "Reconciles sales registers, GST outward summaries, stock valuations, receivables ageing, and audit logs without write access to operational records.",
+  },
+];
 
 export function LandingPage() {
   const { language } = useLanguage();
 
-  useEffect(() => {
-    document.title =
-      language === "ta"
-        ? "மில்லெட்ஜர் | நவீன தானிய அரைவை மற்றும் உணவு பதப்படுத்தும் ஆலை"
-        : "MillLedger | Modern Grain Milling & Food Processing Unit";
-
-    // Set robots to index, follow for public marketing surfaces (Owner Decision 2 / F-092)
-    let meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
-    const created = !meta;
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.name = "robots";
-      document.head.appendChild(meta);
-    }
-    const prevContent = meta.content;
-    meta.content = "index, follow";
-
-    return () => {
-      if (created) {
-        meta?.remove();
-      } else if (prevContent) {
-        meta!.content = prevContent;
-      }
-    };
-  }, [language]);
-
-  const capabilities = [
-    {
-      icon: FactoryIcon,
-      title: language === "ta" ? "100 TPD சார்டெக்ஸ் அரைவை" : "100 TPD Sortex Milling",
-      desc:
-        language === "ta"
-          ? "புஹ்லர் ஆப்டிகல் கலர் சார்ட்டர்கள் மூலம் 99.8% தூய்மையான தானியப் பிரிப்பு மற்றும் தூய்மைப்படுத்தல்."
-          : "Buhler optical color sorters ensuring 99.8% purity, foreign matter extraction, and uniform grain sizing.",
-    },
-    {
-      icon: ScaleIcon,
-      title: language === "ta" ? "மண்டி எடைமேடை & ஈரப்பத சோதனை" : "Mandi Weighbridge & Testing",
-      desc:
-        language === "ta"
-          ? "டிஜிட்டல் எடைமேடை (60 டன்) மற்றும் உடனடி ஈரப்பத ஆய்வுடன் கூடிய நேரடி விவசாயி கொள்முதல்."
-          : "Automated 60-tonne digital weighbridge with instant moisture analysis for direct farmer procurement.",
-    },
-    {
-      icon: PackageCheckIcon,
-      title: language === "ta" ? "தானியங்கி சுகாதார பேக்கேஜிங்" : "Hygienic Packaging Unit",
-      desc:
-        language === "ta"
-          ? "FSSAI அங்கீகாரம் பெற்ற உணவுத் தரம் கொண்ட பேக்கிங்: 200கி நைலான் பாக்கெட்டுகள் முதல் 50கிலோ மொத்த பைகள் வரை."
-          : "Food-grade nitrogen-flushed form-fill-seal packaging from 200g retail pouches to 50kg bulk HDPE bags.",
-    },
-    {
-      icon: TruckIcon,
-      title: language === "ta" ? "அதிவேக விநியோகம் & ஜி.எஸ்.டி" : "Fast Dispatch & E-Waybill",
-      desc:
-        language === "ta"
-          ? "தானியங்கி ஜி.எஸ்.டி விலைப்பட்டியல், இ-வே பில் மற்றும் நம்பகமான சரக்கு வாகன ஒருங்கிணைப்பு."
-          : "Automated GST tax invoicing with real-time e-waybill generation and streamlined gate-pass logistics.",
-    },
-  ];
-
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <PublicHeader />
-
-      <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
-        {/* Hero Section */}
-        <section className="relative border-b border-border bg-card/60 py-16 sm:py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col items-center text-center">
-              <Badge variant="outline" className="mb-4 gap-1.5 px-3 py-1 text-xs">
-                <ShieldCheckIcon className="size-3.5 text-primary" aria-hidden="true" />
-                <span>
-                  {language === "ta"
-                    ? "FSSAI & AGMARK சான்றிதழ் பெற்ற உணவு ஆலை"
-                    : "FSSAI & AGMARK Certified Food Manufacturer"}
-                </span>
-              </Badge>
-
-              <h1 className="max-w-4xl text-3xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-foreground">
-                {language === "ta" ? (
-                  <>
-                    நவீன தானிய அரைவை மற்றும் <span className="text-primary">மொத்த உணவு உற்பத்தி</span>
-                  </>
-                ) : (
-                  <>
-                    Precision Grain Milling & <span className="text-primary">B2B Food Manufacturing</span>
-                  </>
-                )}
+    <PublicLayout showBreadcrumbs={false}>
+      {/* Hero: Direct entity clarity and primary conversion actions */}
+      <section className="border-b border-border bg-card py-14 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
+            <div className="lg:col-span-7 space-y-6">
+              <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {language === "ta"
+                  ? "சிறிய உணவு ஆலைகளுக்கான ஆர்டர்-டு-ஆடிட் ERP மற்றும் சரக்கு கணக்கு"
+                  : "Order-to-Audit ERP and Shop Floor Ledger for Small Food Manufacturing Mills"}
               </h1>
 
-              <p className="mt-6 max-w-2xl text-base sm:text-lg text-muted-foreground leading-relaxed">
+              <p className="max-w-2xl text-base text-muted-foreground leading-relaxed sm:text-lg">
                 {language === "ta"
-                  ? "மதுரை தொழில்துறை பகுதியில் இயங்கும் மில்லெட்ஜர், நவீன சார்டெக்ஸ் தொழில்நுட்பம் மூலம் பொன்னி புழுங்கல் அரிசி, முறுக்கு மற்றும் அரிசி மாவு மொத்த விநியோகத்தை உறுதி செய்கிறது."
-                  : "Operating in Madurai's industrial corridor, MillLedger combines Buhler optical sortexing with hygienic manufacturing to supply premium rice, rice flour, and packaged murukku across South India."}
+                  ? "கொள்முதல், BOM உற்பத்தி, ஆஃப்லைன் விற்பனையாளர் ஆர்டர்கள், இருப்பு முன்பதிவு, GST பில்லிங் மற்றும் தணிக்கை அறிக்கைகளை ஒரே அமைப்பில் இணைக்கும் மென்பொருள்."
+                  : "MillLedger replaces disconnected spreadsheets with a single transactional system covering raw material purchases, BOM production costing, offline field sales orders, stock reservations, Indian GST invoicing, and FIFO payment tracking."}
               </p>
 
-              {/* CTAs */}
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Link
-                  to="/catalog"
-                  className={buttonVariants({ variant: "primary", size: "lg", className: "gap-2" })}
+                  to="/demo"
+                  className={buttonVariants({
+                    variant: "primary",
+                    size: "lg",
+                    className: "min-h-[44px] gap-2 px-6",
+                  })}
                 >
-                  <span>{language === "ta" ? "தயாரிப்பு பட்டியல் பார்க்க" : "Explore Product Catalog"}</span>
+                  <span>
+                    {language === "ta" ? "நேரடி டெமோ கோருக" : "Request a Live Demo"}
+                  </span>
                   <ArrowRightIcon className="size-4" aria-hidden="true" />
                 </Link>
                 <Link
-                  to="/contact"
-                  className={buttonVariants({ variant: "outline", size: "lg" })}
+                  to="/features"
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "lg",
+                    className: "min-h-[44px] px-6",
+                  })}
                 >
-                  {language === "ta" ? "மண்டி கொள்முதல் & தொடர்பு" : "Mandi Gate & Contact"}
+                  {language === "ta" ? "ERP வசதிகளைப் பார்க்க" : "Explore ERP Features"}
                 </Link>
               </div>
-
-              {/* Badges strip */}
-              <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2Icon className="size-4 text-emerald-600" aria-hidden="true" />
-                  <span>FSSAI Central Lic: 12423001000456</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2Icon className="size-4 text-emerald-600" aria-hidden="true" />
-                  <span>ISO 22000:2018 Standards</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2Icon className="size-4 text-emerald-600" aria-hidden="true" />
-                  <span>GST Registered Supplier</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2Icon className="size-4 text-emerald-600" aria-hidden="true" />
-                  <span>Direct Mandi Weighbridge</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Capabilities Section */}
-        <section className="py-16 sm:py-20 bg-background">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                {language === "ta" ? "ஆலை செயல்பாட்டு சிறப்பம்சங்கள்" : "Milling Capabilities & Standards"}
-              </h2>
-              <p className="mt-3 max-w-xl mx-auto text-sm text-muted-foreground">
-                {language === "ta"
-                  ? "தானிய வரவு முதல் இறுதி பேக்கேஜிங் வரை முழுமையான தரம் மற்றும் துல்லியம்."
-                  : "From raw paddy intake to nitrogen-flushed retail dispatch, every batch adheres to strict QA specifications."}
-              </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {capabilities.map((cap) => {
-                const IconComponent = cap.icon;
-                return (
-                  <Card key={cap.title} className="border-border shadow-xs hover:border-primary/40 transition-colors">
-                    <CardHeader className="pb-2">
-                      <div className="flex size-10 items-center justify-center rounded-control bg-primary/10 text-primary mb-2">
-                        <IconComponent className="size-5" aria-hidden="true" />
-                      </div>
-                      <CardTitle className="text-base font-semibold text-foreground">
-                        {cap.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {cap.desc}
-                      </p>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* Featured Products Teaser */}
-        <section className="py-16 bg-muted/20 border-y border-border">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-              <div>
-                <Badge variant="outline" className="mb-2 text-xs">
-                  {language === "ta" ? "மொத்த விற்பனை" : "Wholesale Supply"}
-                </Badge>
-                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                  {language === "ta" ? "முக்கிய தயாரிப்பு வரிசைகள்" : "Core Production Lines"}
+            {/* Structured factual summary table instead of decorative hero mockup */}
+            <div className="lg:col-span-5">
+              <div className="rounded-xl border border-border bg-background p-6">
+                <h2 className="text-sm font-semibold text-foreground mb-4">
+                  What MillLedger Controls
                 </h2>
+                <dl className="space-y-3 text-xs sm:text-sm">
+                  <div className="flex justify-between gap-4 border-b border-border pb-2.5">
+                    <dt className="text-muted-foreground">Inventory Ledger</dt>
+                    <dd className="font-medium text-foreground text-right">
+                      Movement-based, Moving Weighted Average
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4 border-b border-border pb-2.5">
+                    <dt className="text-muted-foreground">Production Costing</dt>
+                    <dd className="font-medium text-foreground text-right">
+                      Versioned BOM, Yield &amp; Oil/Material Variance
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4 border-b border-border pb-2.5">
+                    <dt className="text-muted-foreground">Field Sales Sync</dt>
+                    <dd className="font-medium text-foreground text-right">
+                      Offline IndexedDB Outbox + Idempotent Replay
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4 border-b border-border pb-2.5">
+                    <dt className="text-muted-foreground">Tax &amp; Billing</dt>
+                    <dd className="font-medium text-foreground text-right">
+                      CGST / SGST / IGST, Credit &amp; Debit Notes
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Access &amp; Languages</dt>
+                    <dd className="font-medium text-foreground text-right">
+                      5 RBAC/ABAC Roles, English &amp; Tamil UI
+                    </dd>
+                  </div>
+                </dl>
               </div>
-              <Link
-                to="/catalog"
-                className={buttonVariants({ variant: "outline", size: "sm", className: "gap-1 self-start md:self-auto" })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Six-stage Order-to-Audit flow (mirrors actual domain architecture) */}
+      <section className="py-16 bg-background">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl mb-10">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              One Connected Flow from Raw Material Intake to Audit
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
+              Every quantity, unit cost, tax amount, and stock balance traces back to a posted source document in PostgreSQL.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {ORDER_TO_AUDIT_STAGES.map((item) => (
+              <div
+                key={item.stage}
+                className="rounded-xl border border-border bg-card p-6 flex flex-col gap-2"
               >
-                <span>{language === "ta" ? "முழு பட்டியல்" : "View Full Catalog"}</span>
-                <ArrowRightIcon className="size-3.5" aria-hidden="true" />
+                <span className="font-mono text-xs font-semibold text-primary">
+                  Stage {item.stage}
+                </span>
+                <h3 className="text-base font-semibold text-foreground">
+                  {item.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  {item.detail}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8">
+            <Link
+              to="/workflows"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline underline-offset-4"
+            >
+              <span>Inspect the complete order-to-audit workflow</span>
+              <ArrowRightIcon className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Role-based workspaces table */}
+      <section className="border-y border-border bg-muted/30 py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl mb-8">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              Built for Five Distinct Mill Roles
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground">
+              Permissions are enforced on the server through Role-Based and Attribute-Based Access Control (RBAC/ABAC), not merely hidden in the interface.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-border bg-card">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-border bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-5 py-3.5 font-semibold">Role</th>
+                  <th className="px-5 py-3.5 font-semibold">Primary Device</th>
+                  <th className="px-5 py-3.5 font-semibold">Operational Scope</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border text-xs sm:text-sm">
+                {WORKSPACE_ROLES.map((row) => (
+                  <tr key={row.role}>
+                    <td className="px-5 py-4 font-semibold text-foreground whitespace-nowrap">
+                      {row.role}
+                    </td>
+                    <td className="px-5 py-4 text-muted-foreground whitespace-nowrap">
+                      {row.device}
+                    </td>
+                    <td className="px-5 py-4 text-muted-foreground leading-relaxed">
+                      {row.focus}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* Spreadsheet replacement & verification CTA */}
+      <section className="py-16 bg-background">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 rounded-xl border border-border bg-card p-8 lg:grid-cols-12 lg:items-center">
+            <div className="lg:col-span-8 space-y-3">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                Moving Off Spreadsheets and Manual Stock Registers?
+              </h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                See how MillLedger prevents double-selling with ATP reservations, preserves immutable posted invoices with credit notes, and tracks multi-UOM conversions across kg, g, litres, packets, and cartons.
+              </p>
+              <ul className="grid grid-cols-1 gap-2 pt-2 text-xs sm:grid-cols-2 text-foreground">
+                <li className="flex items-center gap-2">
+                  <CheckIcon className="size-4 text-primary shrink-0" aria-hidden="true" />
+                  <span>No direct stock overwrites</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon className="size-4 text-primary shrink-0" aria-hidden="true" />
+                  <span>Exact decimal arithmetic (paise precision)</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon className="size-4 text-primary shrink-0" aria-hidden="true" />
+                  <span>CSV, XLSX, and PDF register exports</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon className="size-4 text-primary shrink-0" aria-hidden="true" />
+                  <span>360-degree entity lifecycle audit timeline</span>
+                </li>
+              </ul>
+            </div>
+            <div className="lg:col-span-4 flex flex-col gap-3">
+              <Link
+                to="/spreadsheet-alternative"
+                className={buttonVariants({
+                  variant: "outline",
+                  className: "min-h-[44px] w-full",
+                })}
+              >
+                Compare Spreadsheets vs. MillLedger
+              </Link>
+              <Link
+                to="/demo"
+                className={buttonVariants({
+                  variant: "primary",
+                  className: "min-h-[44px] w-full",
+                })}
+              >
+                Schedule a Walkthrough
               </Link>
             </div>
-
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              <Card className="border-border bg-card">
-                <CardHeader>
-                  <Badge variant="outline" className="w-fit text-[11px] mb-1">SKU: MRK-200G</Badge>
-                  <CardTitle className="text-lg">
-                    {language === "ta" ? "பாரம்பரிய அரிசி முறுக்கு (200கி)" : "Classic Rice Murukku (200g)"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-xs text-muted-foreground">
-                  <p>
-                    {language === "ta"
-                      ? "சுத்தமான அரிசி மாவு மற்றும் கடலை எண்ணெயில் தயாரிக்கப்பட்ட மொறுமொறுப்பான சிற்றுண்டி. 50 பாக்கெட்டுகள் / அட்டைப்பெட்டி."
-                      : "Made from premium rice flour and refined groundnut oil. 50 packets per master carton with moisture-tight nitrogen barrier."}
-                  </p>
-                  <div className="pt-2 text-foreground font-medium">
-                    {language === "ta" ? "பேக்கிங்: 50 பாக் / அட்டைப்பெட்டி" : "Packaging: 50 pkts / Master Carton"}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border bg-card">
-                <CardHeader>
-                  <Badge variant="outline" className="w-fit text-[11px] mb-1">SKU: FLR-1KG</Badge>
-                  <CardTitle className="text-lg">
-                    {language === "ta" ? "வறுத்த அரிசி மாவு (1கிலோ & 25கிலோ)" : "Sortex Rice Flour (1kg & 25kg)"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-xs text-muted-foreground">
-                  <p>
-                    {language === "ta"
-                      ? "100-மெஷ் நுண்ணிய தூய்மையான அரிசி மாவு. உணவகங்கள் மற்றும் திண்பண்ட தயாரிப்பாளர்களுக்கு ஏற்றது."
-                      : "Super-fine 100-mesh flour milled from sortex-cleaned broken rice. Ideal for snack manufacturing and commercial bakeries."}
-                  </p>
-                  <div className="pt-2 text-foreground font-medium">
-                    {language === "ta" ? "பேக்கிங்: 25கிலோ பி.பி பை" : "Packaging: 25kg PP Bulk Bags"}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border bg-card">
-                <CardHeader>
-                  <Badge variant="outline" className="w-fit text-[11px] mb-1">SKU: OIL-15L</Badge>
-                  <CardTitle className="text-lg">
-                    {language === "ta" ? "சுத்திகரிக்கப்பட்ட கடலை எண்ணெய் (15லி)" : "Refined Groundnut Oil (15L)"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-xs text-muted-foreground">
-                  <p>
-                    {language === "ta"
-                      ? "உணவுத் தரம் கொண்ட 15லி தகர டப்பாக்களில் பாதுகாப்பான உணவு பதப்படுத்தும் பயன்பாடு."
-                      : "High-smoke-point culinary oil packed in certified 15-litre food-grade tins for commercial kitchens and mills."}
-                  </p>
-                  <div className="pt-2 text-foreground font-medium">
-                    {language === "ta" ? "பேக்கிங்: 15 லிட்டர் டின்" : "Packaging: 15L Food-grade Tin"}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </div>
-        </section>
-
-        {/* Farmer / Mandi Callout */}
-        <section className="py-16 bg-background">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-8 sm:p-12">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                <div className="space-y-3">
-                  <Badge variant="outline" className="text-xs bg-background">
-                    <AwardIcon className="size-3.5 mr-1 text-primary" aria-hidden="true" />
-                    <span>{language === "ta" ? "விவசாயிகள் மண்டி வாயில்" : "Farmer & Mandi Intake"}</span>
-                  </Badge>
-                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                    {language === "ta"
-                      ? "நேரடி நெல் கொள்முதல் & எடைமேடை சேவை"
-                      : "Direct Grain Procurement & Weighbridge"}
-                  </h2>
-                  <p className="max-w-2xl text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                    {language === "ta"
-                      ? "விவசாயிகள் மற்றும் வர்த்தகர்களிடமிருந்து நியாயமான மண்டி விலையில் நேரடி நெல் கொள்முதல். உடனடி டிஜிட்டல் ரசீது மற்றும் வங்கி பரிவர்த்தனை."
-                      : "Direct procurement of raw paddy and commodities at transparent mandi rates. Immediate digital weigh slips and prompt statutory bank payments."}
-                  </p>
-                </div>
-                <Link
-                  to="/contact"
-                  className={buttonVariants({ variant: "primary", size: "lg", className: "shrink-0" })}
-                >
-                  {language === "ta" ? "மண்டி தொடர்பு விவரங்கள்" : "Mandi Gate Timings"}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <PublicFooter />
-    </div>
+        </div>
+      </section>
+    </PublicLayout>
   );
 }
