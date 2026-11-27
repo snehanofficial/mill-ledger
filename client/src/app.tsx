@@ -992,14 +992,24 @@ const queryClient = new QueryClient({
 import { LanguageProvider } from "@/lib/i18n";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 
+function AppWithUserLanguage() {
+  const { user } = useCurrentUser();
+  return (
+    <LanguageProvider
+      userId={user?.id}
+      preferredLanguage={user?.preferredLanguage}
+    >
+      <RouterProvider router={router} />
+    </LanguageProvider>
+  );
+}
+
 function App() {
   return (
     <ErrorBoundary>
-      <LanguageProvider>
-        <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
-        </QueryClientProvider>
-      </LanguageProvider>
+      <QueryClientProvider client={queryClient}>
+        <AppWithUserLanguage />
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }

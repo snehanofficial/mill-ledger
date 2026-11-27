@@ -1,0 +1,12 @@
+{
+  "title": "Purchase receipts",
+  "procurement": "Procurement & Mandi Intake",
+  "liveLedger": "Live Ledger",
+  "subtitle": "Raw material receipts, supplier invoicing, and weighted average cost updates",
+  "description": "Mandi raw material receipts, supplier invoicing, and automated weighted-average cost updating.",
+  "recordReceipt": "Record Purchase Receipt",
+  "ledgerHeader": "Purchase Receipts Ledger",
+  "newPurchase": "New Purchase Receipt",
+  "purchaseDetail": "Purchase Receipt Details",
+  "searchPlaceholder": "Search purchase receipts..."
+}

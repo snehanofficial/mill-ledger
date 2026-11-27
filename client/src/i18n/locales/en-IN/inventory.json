@@ -1,0 +1,18 @@
+{
+  "title": "Inventory & stock ledger",
+  "subtitle": "Real-time stock on hand, reservations, weighted average cost, and movements",
+  "refreshBalances": "Refresh Balances",
+  "totalItems": "Total Items",
+  "rawMaterials": "Raw Materials",
+  "packaging": "Packaging",
+  "finishedGoods": "Finished Goods",
+  "valuedTotal": "Valued Stock Total",
+  "movementHistory": "Stock movement history",
+  "stockLedger": "Stock Ledger",
+  "productsTitle": "Products & SKUs",
+  "productsSubtitle": "Packaged finished goods, variants, pricing, and HSN classification",
+  "receiveStock": "Receive Stock",
+  "adjustStock": "Adjust Stock",
+  "transferStock": "Transfer Stock",
+  "searchItems": "Search items by SKU or name..."
+}

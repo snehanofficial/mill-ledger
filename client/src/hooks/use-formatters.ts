@@ -2,6 +2,8 @@ import { useLanguage } from "@/lib/i18n";
 import {
   formatINR as baseFormatINR,
   formatQuantity as baseFormatQuantity,
+  formatNumber as baseFormatNumber,
+  formatPercent as baseFormatPercent,
   formatDate as baseFormatDate,
   formatDateShort as baseFormatDateShort,
   formatDateTime as baseFormatDateTime,
@@ -9,6 +11,7 @@ import {
   compareStrings as baseCompareStrings,
   type FormatINROptions,
   type FormatQuantityOptions,
+  type FormatNumberOptions,
   type FormatDateOptions,
 } from "@mill-ledger/shared";
 
@@ -33,6 +36,14 @@ export function useFormatters() {
       amount: Parameters<typeof baseFormatQuantity>[0],
       options?: FormatQuantityOptions,
     ) => baseFormatQuantity(amount, { locale, ...options }),
+    formatNumber: (
+      value: Parameters<typeof baseFormatNumber>[0],
+      options?: FormatNumberOptions,
+    ) => baseFormatNumber(value, { locale, ...options }),
+    formatPercent: (
+      value: Parameters<typeof baseFormatPercent>[0],
+      options?: FormatNumberOptions,
+    ) => baseFormatPercent(value, { locale, ...options }),
     formatDate: (
       date: Parameters<typeof baseFormatDate>[0],
       options?: FormatDateOptions,

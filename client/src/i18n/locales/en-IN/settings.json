@@ -1,0 +1,18 @@
+{
+  "title": "Settings",
+  "subtitle": "Mill organization, facilities, warehouses, users, GST rates, and personal preferences",
+  "tabs": {
+    "mill": "Mill & GST",
+    "warehouses": "Facilities & Warehouses",
+    "users": "Users & Roles",
+    "dpdp": "Data & Accessibility"
+  },
+  "preferences": {
+    "title": "Display & Language Preferences",
+    "description": "Choose your preferred interface language and motion settings. Your language preference is saved to your user profile.",
+    "languageLabel": "Interface Language",
+    "languageHelp": "Switches all menus, labels, formats, and exports between English and Tamil.",
+    "motionLabel": "Reduced Motion",
+    "motionHelp": "Pause decorative animations and transitions across the workspace."
+  }
+}
