@@ -86,7 +86,6 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarProvider,
-  SidebarRail,
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
@@ -1575,7 +1574,6 @@ export function AuthenticatedShell({
               onOpenHelp={handleOpenHelp}
             />
           </SidebarFooter>
-          <SidebarRail />
         </Sidebar>
 
         <SidebarInset className="min-w-0">

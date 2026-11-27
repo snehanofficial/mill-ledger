@@ -281,7 +281,7 @@ export function Sidebar({
       data-variant={variant}
       data-collapsible={state === "collapsed" ? collapsible : ""}
       className={cn(
-        "group hidden md:flex h-svh flex-col bg-sidebar border-r border-sidebar-border",
+        "group relative hidden md:flex h-svh flex-col bg-sidebar border-r border-sidebar-border",
         "shrink-0",
         state === "expanded" ? "overflow-visible" : "overflow-hidden",
         variant === "floating" &&
