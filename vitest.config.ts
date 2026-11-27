@@ -8,6 +8,23 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./client/src"),
+      "@mill-ledger/shared/contracts": path.resolve(
+        __dirname,
+        "./shared/src/contracts/index.ts",
+      ),
+      "@mill-ledger/shared/schemas": path.resolve(
+        __dirname,
+        "./shared/src/schemas/index.ts",
+      ),
+      "@mill-ledger/shared/types": path.resolve(
+        __dirname,
+        "./shared/src/types/index.ts",
+      ),
+      "@mill-ledger/shared/formatters": path.resolve(
+        __dirname,
+        "./shared/src/formatters.ts",
+      ),
+      "@mill-ledger/shared": path.resolve(__dirname, "./shared/src/index.ts"),
     },
   },
   test: {

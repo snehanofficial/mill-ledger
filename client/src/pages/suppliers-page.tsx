@@ -97,7 +97,9 @@ export function SuppliersPage() {
   }>({
     queryKey: ["inventory-suppliers"],
     queryFn: async () => {
-      const res = await apiClient.get("/inventory/suppliers?organizationId=MILL");
+      const res = await apiClient.get(
+        "/inventory/suppliers?includeInactive=true",
+      );
       return res.data;
     },
   });
@@ -560,7 +562,7 @@ export function SuppliersPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <Label
                     htmlFor="supplier-new-state"
@@ -595,7 +597,7 @@ export function SuppliersPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <Label
                     htmlFor="supplier-new-email"
@@ -715,7 +717,7 @@ export function SuppliersPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <Label
                     htmlFor="supplier-edit-state"
@@ -749,7 +751,7 @@ export function SuppliersPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <Label
                     htmlFor="supplier-edit-email"

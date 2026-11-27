@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { XIcon } from "lucide-react";
 
@@ -19,17 +20,34 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onOpenAutoFocus,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
 }) {
+  const contentRef = React.useRef<HTMLDivElement>(null);
+
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/55 overscroll-contain data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=open]:duration-(--ml-motion-overlay-enter) data-[state=open]:ease-enter data-[state=closed]:duration-(--ml-motion-overlay-exit) data-[state=closed]:ease-exit" />
       <DialogPrimitive.Content
+        ref={contentRef}
+        tabIndex={-1}
         data-slot="dialog-content"
+        onOpenAutoFocus={(e) => {
+          onOpenAutoFocus?.(e);
+          if (e.defaultPrevented) return;
+          if (
+            typeof window !== "undefined" &&
+            typeof window.matchMedia === "function" &&
+            window.matchMedia("(pointer: coarse)").matches
+          ) {
+            e.preventDefault();
+            contentRef.current?.focus({ preventScroll: true });
+          }
+        }}
         className={cn(
-          "fixed inset-0 m-auto z-50 h-fit max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg origin-center gap-4 rounded-xl border border-border bg-card p-6 shadow-2xl overscroll-contain overflow-y-auto",
+          "fixed inset-0 m-auto z-50 h-fit max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2rem)] w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] max-w-lg origin-center gap-4 rounded-xl border border-border bg-card p-4 sm:p-6 shadow-2xl overscroll-contain overflow-y-auto outline-none",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",

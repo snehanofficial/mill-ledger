@@ -464,28 +464,6 @@ export function LoginPage() {
         {/* Semantic Footer Landmark with Navigational Links */}
         <footer className="pt-2 text-center text-xs text-muted-foreground">
           <p lang="en">© {CURRENT_YEAR} MillLedger ERP. All rights reserved.</p>
-          <div className="mt-2 flex justify-center gap-4">
-            <a
-              href="/auth/login"
-              className="hover:text-foreground hover:underline"
-            >
-              {language === "ta" ? "உதவி மையம்" : "Support"}
-            </a>
-            <span aria-hidden="true">•</span>
-            <a
-              href="/auth/login"
-              className="hover:text-foreground hover:underline"
-            >
-              {language === "ta" ? "தனியுரிமை கொள்கை" : "Privacy Policy"}
-            </a>
-            <span aria-hidden="true">•</span>
-            <a
-              href="/auth/login"
-              className="hover:text-foreground hover:underline"
-            >
-              {language === "ta" ? "விதிமுறைகள்" : "Terms"}
-            </a>
-          </div>
         </footer>
       </div>
     </main>

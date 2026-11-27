@@ -58,7 +58,7 @@ describe("F-011: Financial Year Timezone Invariance (IST / Asia/Kolkata)", () =>
   });
 
   it("deterministically classifies April 1 morning in sub-processes running under TZ=UTC and TZ=America/New_York", () => {
-    const scriptPath = path.resolve(__dirname, "../../../audit/scripts/test-tz.ts");
+    const scriptPath = path.resolve(__dirname, "./helpers/test-tz.ts");
     const timezones = ["UTC", "America/New_York", "Europe/London", "Asia/Tokyo"];
 
     for (const tz of timezones) {

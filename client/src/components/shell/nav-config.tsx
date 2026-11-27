@@ -1,26 +1,27 @@
 /**
- * Shell navigation configuration for MillLedger.
- * Groups navigation items by role-visible section.
- * Icons are purposeful: each maps to a real operational domain.
- *
- * Active links and breadcrumbs are derived from route config (see shell.tsx),
- * not hardcoded here.
+ * Role-aware shell navigation configuration for MillLedger.
+ * Organised around each role's actual work queues and journeys
+ * per docs/02-experience/MILLLEDGER_USER_JOURNEY_UX_BLUEPRINT.md.
  */
 
 import {
   ArchiveIcon,
   BarChart2Icon,
+  BookOpenIcon,
   BoxIcon,
   ClipboardListIcon,
   CreditCardIcon,
   FileTextIcon,
   HomeIcon,
   PackageIcon,
+  PlusCircleIcon,
   ReceiptIcon,
   SendIcon,
   SettingsIcon,
+  ShieldCheckIcon,
   TruckIcon,
   UsersIcon,
+  WalletIcon,
 } from "lucide-react";
 import type { Role } from "@mill-ledger/shared";
 
@@ -49,14 +50,234 @@ export interface NavSection {
 
 /**
  * Returns the navigation sections visible to `role`.
- * The shell filters by role; the server enforces authorization.
+ * Each role sees only the destinations relevant to its operational scope.
  */
 export function getNavSections(role: UserRole): NavSection[] {
-  const all: NavSection[] = [
+  if (role === "SALESMAN") {
+    return [
+      {
+        label: "Field Sales",
+        items: [
+          {
+            label: "My work",
+            href: "/orders",
+            icon: <HomeIcon className="size-4" aria-hidden />,
+            roles: ["SALESMAN"],
+          },
+          {
+            label: "New order",
+            href: "/orders/new",
+            icon: <PlusCircleIcon className="size-4" aria-hidden />,
+            roles: ["SALESMAN"],
+          },
+          {
+            label: "My customers",
+            href: "/customers",
+            icon: <UsersIcon className="size-4" aria-hidden />,
+            roles: ["SALESMAN"],
+          },
+        ],
+      },
+      {
+        label: "Reference",
+        items: [
+          {
+            label: "Product catalogue",
+            href: "/products",
+            icon: <PackageIcon className="size-4" aria-hidden />,
+            roles: ["SALESMAN"],
+          },
+          {
+            label: "My sales summary",
+            href: "/reports/sales",
+            icon: <BarChart2Icon className="size-4" aria-hidden />,
+            roles: ["SALESMAN"],
+          },
+        ],
+      },
+    ];
+  }
+
+  if (role === "PRODUCTION") {
+    return [
+      {
+        label: "Production Floor",
+        items: [
+          {
+            label: "Today's runs",
+            href: "/production/today",
+            icon: <HomeIcon className="size-4" aria-hidden />,
+            roles: ["PRODUCTION"],
+          },
+          {
+            label: "New production run",
+            href: "/production/new",
+            icon: <PlusCircleIcon className="size-4" aria-hidden />,
+            roles: ["PRODUCTION"],
+          },
+          {
+            label: "Run history",
+            href: "/production/history",
+            icon: <ClipboardListIcon className="size-4" aria-hidden />,
+            roles: ["PRODUCTION"],
+          },
+        ],
+      },
+      {
+        label: "Materials & Stock",
+        items: [
+          {
+            label: "Stock availability",
+            href: "/stock",
+            icon: <BoxIcon className="size-4" aria-hidden />,
+            roles: ["PRODUCTION"],
+          },
+          {
+            label: "Receive materials",
+            href: "/purchases",
+            icon: <PackageIcon className="size-4" aria-hidden />,
+            roles: ["PRODUCTION"],
+          },
+          {
+            label: "Suppliers",
+            href: "/suppliers",
+            icon: <TruckIcon className="size-4" aria-hidden />,
+            roles: ["PRODUCTION"],
+          },
+        ],
+      },
+      {
+        label: "Reference & Reports",
+        items: [
+          {
+            label: "Recipes & BOMs",
+            href: "/production/recipes",
+            icon: <BookOpenIcon className="size-4" aria-hidden />,
+            roles: ["PRODUCTION"],
+          },
+          {
+            label: "Products",
+            href: "/products",
+            icon: <ArchiveIcon className="size-4" aria-hidden />,
+            roles: ["PRODUCTION"],
+          },
+          {
+            label: "Production reports",
+            href: "/reports/production",
+            icon: <BarChart2Icon className="size-4" aria-hidden />,
+            roles: ["PRODUCTION"],
+          },
+        ],
+      },
+    ];
+  }
+
+  if (role === "ACCOUNTANT") {
+    return [
+      {
+        label: "Reporting & Audit",
+        items: [
+          {
+            label: "Reporting home",
+            href: "/reports",
+            icon: <HomeIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+          {
+            label: "Sales register",
+            href: "/reports/sales",
+            icon: <BarChart2Icon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+          {
+            label: "GST outward summary",
+            href: "/reports/gst",
+            icon: <FileTextIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+          {
+            label: "Stock & valuation",
+            href: "/reports/stock",
+            icon: <BoxIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+          {
+            label: "Production & costing",
+            href: "/reports/production",
+            icon: <ArchiveIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+          {
+            label: "Receivables ageing",
+            href: "/reports/receivables",
+            icon: <WalletIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+          {
+            label: "Audit trail",
+            href: "/reports/audit",
+            icon: <ShieldCheckIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+          {
+            label: "Exports",
+            href: "/exports",
+            icon: <SendIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+        ],
+      },
+      {
+        label: "Source Registers (Read-Only)",
+        items: [
+          {
+            label: "Invoice records",
+            href: "/invoices",
+            icon: <ReceiptIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+          {
+            label: "Orders",
+            href: "/orders",
+            icon: <ClipboardListIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+          {
+            label: "Payments",
+            href: "/payments",
+            icon: <CreditCardIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+          {
+            label: "Customer balances",
+            href: "/receivables",
+            icon: <WalletIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+          {
+            label: "Purchase register",
+            href: "/purchases",
+            icon: <PackageIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+          {
+            label: "Stock ledger",
+            href: "/stock",
+            icon: <BoxIcon className="size-4" aria-hidden />,
+            roles: ["ACCOUNTANT"],
+          },
+        ],
+      },
+    ];
+  }
+
+  // ADMIN and OWNER
+  const isAdmin = role === "ADMIN";
+  const sections: NavSection[] = [
     {
       items: [
         {
-          label: "Overview",
+          label: isAdmin ? "Work queue" : "Business overview",
           href: "/dashboard",
           icon: <HomeIcon className="size-4" aria-hidden />,
           roles: ["ADMIN", "OWNER"],
@@ -64,145 +285,147 @@ export function getNavSections(role: UserRole): NavSection[] {
       ],
     },
     {
-      label: "Operations",
+      label: "Sales & Fulfilment",
       items: [
         {
-          label: "Orders",
+          label: isAdmin ? "Order inbox" : "Orders",
+          href: "/orders",
           icon: <ClipboardListIcon className="size-4" aria-hidden />,
-          roles: ["SALESMAN", "ADMIN", "OWNER", "ACCOUNTANT"],
-          items: [
-            {
-              label: "All orders",
-              href: "/orders",
-              icon: <ClipboardListIcon className="size-3.5" aria-hidden />,
-            },
-            {
-              label: "New order",
-              href: "/orders/new",
-              icon: <FileTextIcon className="size-3.5" aria-hidden />,
-            },
-          ],
+          roles: ["ADMIN", "OWNER"],
         },
         {
           label: "Invoices",
-          icon: <ReceiptIcon className="size-4" aria-hidden />,
-          roles: ["ADMIN", "ACCOUNTANT", "OWNER"],
           href: "/invoices",
+          icon: <ReceiptIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
         },
         {
-          label: "Dispatch",
+          label: isAdmin ? "Ready to dispatch" : "Dispatch",
+          href: "/dispatch",
           icon: <TruckIcon className="size-4" aria-hidden />,
           roles: ["ADMIN", "OWNER"],
-          href: "/dispatch",
-        },
-        {
-          label: "Payments",
-          icon: <CreditCardIcon className="size-4" aria-hidden />,
-          roles: ["ADMIN", "ACCOUNTANT", "OWNER"],
-          href: "/payments",
         },
       ],
     },
     {
-      label: "Inventory",
+      label: "Materials & Stock",
       items: [
         {
-          label: "Stock",
-          icon: <BoxIcon className="size-4" aria-hidden />,
-          roles: ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
-          href: "/stock",
+          label: "Purchase receipts",
+          href: "/purchases",
+          icon: <PackageIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
         },
         {
-          label: "Purchases",
-          icon: <PackageIcon className="size-4" aria-hidden />,
-          roles: ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
-          href: "/purchases",
+          label: "Stock",
+          href: "/stock",
+          icon: <BoxIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
         },
         {
           label: "Suppliers",
-          icon: <TruckIcon className="size-4" aria-hidden />,
-          roles: ["ADMIN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
           href: "/suppliers",
+          icon: <TruckIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
         },
+      ],
+    },
+    {
+      label: "Production",
+      items: [
         {
-          label: "Products",
-          icon: <PackageIcon className="size-4" aria-hidden />,
-          roles: ["ADMIN", "SALESMAN", "PRODUCTION", "ACCOUNTANT", "OWNER"],
-          href: "/products",
-        },
-        {
-          label: "Production",
+          label: "Today's runs",
+          href: "/production/today",
           icon: <ArchiveIcon className="size-4" aria-hidden />,
-          roles: ["PRODUCTION", "ADMIN", "OWNER"],
-          items: [
-            {
-              label: "Today's runs",
-              href: "/production/today",
-              icon: <ArchiveIcon className="size-3.5" aria-hidden />,
-            },
-            {
-              label: "New run",
-              href: "/production/new",
-              icon: <FileTextIcon className="size-3.5" aria-hidden />,
-            },
-            {
-              label: "Run history",
-              href: "/production/history",
-              icon: <ClipboardListIcon className="size-3.5" aria-hidden />,
-            },
-          ],
+          roles: ["ADMIN", "OWNER"],
+        },
+        {
+          label: "Run history",
+          href: "/production/history",
+          icon: <ClipboardListIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
+        },
+        {
+          label: "Recipes & BOMs",
+          href: "/production/recipes",
+          icon: <BookOpenIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
         },
       ],
     },
     {
-      label: "Customers",
+      label: "Finance",
       items: [
         {
-          label: "Customers",
-          icon: <UsersIcon className="size-4" aria-hidden />,
-          roles: ["ADMIN", "SALESMAN", "OWNER", "ACCOUNTANT"],
-          href: "/customers",
+          label: "Payments",
+          href: "/payments",
+          icon: <CreditCardIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
+        },
+        {
+          label: "Customer balances",
+          href: "/receivables",
+          icon: <WalletIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
         },
       ],
     },
     {
-      label: "Reporting",
+      label: "Reports & Audit",
       items: [
+        {
+          label: "Reporting home",
+          href: "/reports",
+          icon: <BarChart2Icon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
+        },
         {
           label: "Reports",
-          icon: <BarChart2Icon className="size-4" aria-hidden />,
-          roles: ["ADMIN", "ACCOUNTANT", "OWNER", "SALESMAN", "PRODUCTION"],
+          icon: <FileTextIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
           items: [
             { label: "Sales", href: "/reports/sales" },
+            { label: "GST outward", href: "/reports/gst" },
             { label: "Stock", href: "/reports/stock" },
             { label: "Production", href: "/reports/production" },
             { label: "Receivables", href: "/reports/receivables" },
-            { label: "GST", href: "/reports/gst" },
-            { label: "Audit log", href: "/reports/audit" },
+            { label: "Audit trail", href: "/reports/audit" },
           ],
         },
         {
           label: "Exports",
-          icon: <SendIcon className="size-4" aria-hidden />,
-          roles: ["ADMIN", "ACCOUNTANT", "OWNER"],
           href: "/exports",
+          icon: <SendIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
         },
       ],
     },
     {
-      label: "Settings",
+      label: "Masters & Settings",
       items: [
         {
+          label: "Customers",
+          href: "/customers",
+          icon: <UsersIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
+        },
+        {
+          label: "Products & prices",
+          href: "/products",
+          icon: <PackageIcon className="size-4" aria-hidden />,
+          roles: ["ADMIN", "OWNER"],
+        },
+        {
           label: "Settings",
+          href: "/settings",
           icon: <SettingsIcon className="size-4" aria-hidden />,
           roles: ["ADMIN", "OWNER"],
-          href: "/settings",
         },
       ],
     },
   ];
 
-  return all
+  return sections
     .map((section) => ({
       ...section,
       items: section.items.filter((item) => item.roles.includes(role)),

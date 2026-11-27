@@ -23,7 +23,7 @@ function DrawerContent({
       <DrawerPrimitive.Content
         data-slot="drawer-content"
         className={cn(
-          "fixed inset-x-0 bottom-0 z-50 mt-24 flex max-h-[85vh] flex-col rounded-t-panel border border-border bg-surface p-5 shadow-modal",
+          "fixed inset-x-0 bottom-0 z-50 mt-24 flex max-h-[85dvh] flex-col overflow-y-auto overscroll-contain rounded-t-panel border border-border bg-surface p-4 sm:p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-modal",
           className,
         )}
         {...props}

@@ -22,6 +22,10 @@ export default defineConfig({
       url: "http://127.0.0.1:4173",
       reuseExistingServer: !process.env.CI,
       timeout: 30000,
+      env: {
+        VITE_BACKEND_URL: "http://127.0.0.1:4000",
+        VITE_APP_URL: "http://127.0.0.1:4173",
+      },
     },
   ],
 });

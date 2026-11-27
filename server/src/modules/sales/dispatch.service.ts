@@ -10,6 +10,11 @@ import { AppError } from "../../middleware/error.middleware.js";
 import { sequenceService } from "../finance/sequence.service.js";
 import type { UserContext } from "@mill-ledger/shared";
 import { auditService } from "../reporting/audit.service.js";
+import {
+  adjustWarehouseOnHand,
+  adjustWarehouseReserved,
+  requireActiveOrgWarehouse,
+} from "../inventory/warehouse-balance.helper.js";
 
 export interface CreateDispatchLineInput {
   salesOrderLineId: string;
@@ -84,7 +89,15 @@ export class DispatchService {
         );
       }
 
-      const warehouseId = input.warehouseId || order.warehouseId;
+      const warehouseId = input.warehouseId
+        ? (
+            await requireActiveOrgWarehouse(
+              tx,
+              order.organizationId,
+              input.warehouseId,
+            )
+          ).id
+        : order.warehouseId;
       const dispatchNumber = await sequenceService.getNextDispatchNumber(
         tx,
         order.organizationId,
@@ -189,6 +202,19 @@ export class DispatchService {
                 : ReservationStatus.ACTIVE,
             },
           });
+
+          const releaseDelta = Math.min(
+            qtyToDispatch,
+            Math.max(0, Number(activeRes.reservedQuantity) - releasedSoFar),
+          );
+          if (releaseDelta > 0) {
+            await adjustWarehouseReserved(tx, {
+              organizationId: order.organizationId,
+              warehouseId: activeRes.warehouseId,
+              inventoryItemId,
+              delta: -releaseDelta,
+            });
+          }
         }
 
         // Decrement physical on-hand stock
@@ -199,6 +225,13 @@ export class DispatchService {
               decrement: qtyToDispatch,
             },
           },
+        });
+
+        await adjustWarehouseOnHand(tx, {
+          organizationId: order.organizationId,
+          warehouseId,
+          inventoryItemId,
+          delta: -qtyToDispatch,
         });
 
         // Append-only stock movement for physical dispatch deduction
@@ -314,7 +347,12 @@ export class DispatchService {
    * List dispatches for an organization (with optional ABAC user-scoping per OD-03)
    */
   async getDispatches(organizationId: string, user?: UserContext) {
-    const where: Prisma.DispatchWhereInput = { organizationId };
+    const org = await prisma.organization.findFirst({
+      where: { OR: [{ id: organizationId }, { code: organizationId }] },
+      select: { id: true },
+    });
+    const resolvedOrgId = org ? org.id : organizationId;
+    const where: Prisma.DispatchWhereInput = { organizationId: resolvedOrgId };
 
     // ABAC rule per OD-03: Salesman sees only dispatches for orders they submitted
     if (user?.role === "SALESMAN") {
@@ -417,9 +455,21 @@ export class DispatchService {
             400,
           );
         }
-        if (retLine.quantity > Number(dispLine.quantity)) {
+        const priorReturns = await tx.stockMovement.aggregate({
+          where: {
+            referenceDocumentType: "SALES_RETURN",
+            referenceDocumentId: dispatch.id,
+            inventoryItemId: retLine.inventoryItemId,
+            movementType: MovementType.RETURN,
+          },
+          _sum: { quantity: true },
+        });
+        const alreadyReturned = Number(priorReturns._sum.quantity ?? 0);
+        const remainingReturnable = Number(dispLine.quantity) - alreadyReturned;
+
+        if (retLine.quantity > remainingReturnable) {
           throw new AppError(
-            `Return quantity (${retLine.quantity}) cannot exceed dispatched quantity (${Number(dispLine.quantity)})`,
+            `Return quantity (${retLine.quantity}) cannot exceed remaining returnable quantity (${remainingReturnable})`,
             400,
           );
         }
@@ -454,17 +504,29 @@ export class DispatchService {
         });
         movements.push(mv);
 
+        await adjustWarehouseOnHand(tx, {
+          organizationId: dispatch.organizationId,
+          warehouseId: dispatch.warehouseId,
+          inventoryItemId: retLine.inventoryItemId,
+          delta: retLine.quantity,
+        });
+
         await tx.inventoryItem.update({
           where: { id: retLine.inventoryItemId },
           data: { currentStock: nextStock },
         });
       }
 
-      return { dispatchId: dispatch.id, dispatchNumber: dispatch.dispatchNumber, movements };
+      return {
+        dispatchId: dispatch.id,
+        dispatchNumber: dispatch.dispatchNumber,
+        organizationId: dispatch.organizationId,
+        movements,
+      };
     });
 
     await auditService.log({
-      organizationId: "MILL",
+      organizationId: result.organizationId,
       userId: user?.id,
       userEmail: user?.email,
       action: "SALES_RETURN",

@@ -151,6 +151,23 @@ export class SequenceService {
     );
     return `REC-${year}-${seq.toString().padStart(4, "0")}`;
   }
+
+  /**
+   * Format stock transfer number: TRF-{YYYY}-{XXXX}
+   */
+  async getNextTransferNumber(
+    tx: Prisma.TransactionClient,
+    organizationId: string,
+    year: string = new Date().getFullYear().toString(),
+  ): Promise<string> {
+    const seq = await this.getNextSequence(
+      tx,
+      organizationId,
+      "STOCK_TRANSFER",
+      year,
+    );
+    return `TRF-${year}-${seq.toString().padStart(4, "0")}`;
+  }
 }
 
 export const sequenceService = new SequenceService();

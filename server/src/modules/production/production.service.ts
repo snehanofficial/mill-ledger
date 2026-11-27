@@ -9,6 +9,10 @@ import {
 import { AppError } from "../../middleware/error.middleware.js";
 import type { UserContext } from "@mill-ledger/shared";
 import { auditService } from "../reporting/audit.service.js";
+import {
+  adjustWarehouseOnHand,
+  requireActiveOrgWarehouse,
+} from "../inventory/warehouse-balance.helper.js";
 
 export interface ConsumedMaterialInput {
   inventoryItemId: string;
@@ -65,15 +69,12 @@ export class ProductionService {
     organizationId: string,
     client: Prisma.TransactionClient | typeof prisma = prisma,
   ): Promise<string> {
-    const warehouse = await client.warehouse.findFirst({
-      where: {
-        OR: [
-          { id: warehouseIdOrCode },
-          { code: warehouseIdOrCode, facility: { organizationId } },
-        ],
-      },
-    });
-    return warehouse ? warehouse.id : warehouseIdOrCode;
+    const warehouse = await requireActiveOrgWarehouse(
+      client as Prisma.TransactionClient,
+      organizationId,
+      warehouseIdOrCode,
+    );
+    return warehouse.id;
   }
 
   /**
@@ -637,6 +638,13 @@ export class ProductionService {
             notes: `Consumed in run ${runNumber}${line.damagedQty > 0 ? ` (${line.damagedQty} damaged)` : ""}`,
           },
         });
+
+        await adjustWarehouseOnHand(tx, {
+          organizationId: resolvedOrgId,
+          warehouseId,
+          inventoryItemId: line.inventoryItemId,
+          delta: -line.actualQty,
+        });
       }
 
       // Finished goods stock update & movement
@@ -678,6 +686,13 @@ export class ProductionService {
           referenceDocumentId: runId,
           notes: `Finished good output from run ${runNumber}`,
         },
+      });
+
+      await adjustWarehouseOnHand(tx, {
+        organizationId: resolvedOrgId,
+        warehouseId,
+        inventoryItemId: finishedItem.id,
+        delta: actualGoodQty,
       });
 
       const finalRun = await tx.productionRun.findUnique({
@@ -812,6 +827,13 @@ export class ProductionService {
             notes: `Restored from reversal of run ${run.runNumber}: ${input.reason}`,
           },
         });
+
+        await adjustWarehouseOnHand(tx, {
+          organizationId: run.organizationId,
+          warehouseId: run.warehouseId,
+          inventoryItemId: mat.inventoryItemId,
+          delta: actualQty,
+        });
       }
 
       // 2. Deduct finished goods output
@@ -836,6 +858,13 @@ export class ProductionService {
           referenceDocumentId: run.id,
           notes: `Reversed finished output from run ${run.runNumber}: ${input.reason}`,
         },
+      });
+
+      await adjustWarehouseOnHand(tx, {
+        organizationId: run.organizationId,
+        warehouseId: run.warehouseId,
+        inventoryItemId: finishedItem.id,
+        delta: -actualGoodQty,
       });
 
       // 3. Mark run as REVERSED

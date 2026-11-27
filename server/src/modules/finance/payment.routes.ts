@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   authorize,
+  getSessionOrgId,
   requireAuth,
   type AuthenticatedRequest,
 } from "../../middleware/auth.middleware.js";
@@ -17,7 +18,7 @@ paymentRouter.get(
   authorize("payment", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const customerId = req.query.customerId as string | undefined;
       const limit =
         req.query.limit !== undefined ? Number(req.query.limit) : undefined;
@@ -54,7 +55,7 @@ paymentRouter.get(
   authorize("payment", "read"),
   async (req: AuthenticatedRequest, res, next) => {
     try {
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const summary = await paymentService.getReceivablesSummary(orgId);
       res.json({ receivables: summary });
     } catch (err) {
@@ -76,7 +77,7 @@ paymentRouter.get(
       if (!customerId) {
         throw new AppError("Customer ID is required", 400);
       }
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const ledger = await paymentService.getCustomerLedger(orgId, customerId);
       res.json(ledger);
     } catch (err) {
@@ -118,7 +119,7 @@ paymentRouter.post(
         throw parsed.error;
       }
 
-      const orgId = (req.query.organizationId as string) || "MILL";
+      const orgId = getSessionOrgId(req);
       const payment = await paymentService.recordPayment(
         {
           ...parsed.data,

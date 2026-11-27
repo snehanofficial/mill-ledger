@@ -91,8 +91,8 @@ export class PaymentService {
         }> = [];
         let unallocated = paymentAmount;
 
-        // 4. Handle allocations
-        if (input.allocations && input.allocations.length > 0) {
+        // 4. Handle allocations (undefined = auto FIFO; [] = explicit unallocated advance)
+        if (input.allocations !== undefined) {
           let totalAllocated = new Prisma.Decimal(0);
           for (const a of input.allocations) {
             totalAllocated = totalAllocated.plus(

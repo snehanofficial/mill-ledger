@@ -40,6 +40,7 @@ describe("F-016: Dynamic Packaging Capacity Mismatch Warning and Database Persis
 
     const testWarehouse = await prisma.warehouse.create({
       data: {
+        organizationId: testOrgId,
         facilityId: testFacilityId,
         code: `WH-PKG-${runId}`,
         name: `Warehouse PKG ${runId}`,

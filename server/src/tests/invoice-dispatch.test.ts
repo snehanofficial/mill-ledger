@@ -64,6 +64,22 @@ describe("M6: Invoice generation, physical dispatch, reservation release, and cr
       where: { id: finishedGoodsItem.id },
       data: { currentStock: 238 },
     });
+    await prisma.warehouseStockBalance.upsert({
+      where: {
+        warehouseId_inventoryItemId: {
+          warehouseId: warehouse.id,
+          inventoryItemId: finishedGoodsItem.id,
+        },
+      },
+      update: { onHand: 238 },
+      create: {
+        organizationId: org.id,
+        warehouseId: warehouse.id,
+        inventoryItemId: finishedGoodsItem.id,
+        onHand: 238,
+        reserved: 0,
+      },
+    });
     await prisma.stockMovement.create({
       data: {
         inventoryItemId: finishedGoodsItem.id,
@@ -691,6 +707,21 @@ describe("M6: Invoice generation, physical dispatch, reservation release, and cr
     expect(Number(afterItem.currentStock)).toBe(
       Number(beforeItem.currentStock) + 5,
     );
+
+    // Cumulative over-return must be rejected
+    const overRetRes = await fetch(`${baseUrl}/api/v1/sales/returns`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: adminCookie,
+      },
+      body: JSON.stringify({
+        dispatchId: dispatch.id,
+        reason: "Attempt to return more than remaining dispatched quantity",
+        lines: [{ inventoryItemId: line.inventoryItemId, quantity: Number(line.quantity) }],
+      }),
+    });
+    expect(overRetRes.status).toBe(400);
   });
 
   it("lists posted invoices when queried by organization code (MILL) or default", async () => {
@@ -700,7 +731,7 @@ describe("M6: Invoice generation, physical dispatch, reservation release, and cr
     );
 
     const byCodeRes = await fetch(
-      `${baseUrl}/api/v1/finance/invoices?organizationId=MILL&limit=50&offset=0`,
+      `${baseUrl}/api/v1/finance/invoices?limit=50&offset=0`,
       {
         headers: { Cookie: adminCookie },
       },

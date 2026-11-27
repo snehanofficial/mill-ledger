@@ -1,5 +1,5 @@
-import { useState, useId } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useId, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   useQuery,
   useMutation,
@@ -46,6 +46,8 @@ interface ProductItem {
   taxRate: number;
   hsnCode?: string;
   uom?: string;
+  finishedGoodsItemId?: string | null;
+  finishedGoodsSku?: string | null;
   imageUrl?: string;
 }
 
@@ -65,9 +67,11 @@ interface CustomerItem {
   name: string;
   state: string;
   gstin?: string;
+  isActive?: boolean;
 }
 
 interface StockBalance {
+  id?: string;
   sku: string;
   available: number;
   onHand: number;
@@ -88,26 +92,58 @@ export function NewOrderPage() {
   const syncManager = useSyncManager(user?.id);
   const { isOnline, queueOrder } = syncManager;
 
-  const [selectedCustomerId, setSelectedCustomerId] = useState("CUST-RET-A");
-  const [quantities, setQuantities] = useState<Record<string, number>>({
-    "VAR-MURUKKU-200G": 150,
-  });
-  const [orderNotes, setOrderNotes] = useState("Wholesale store delivery");
+  const [searchParams] = useSearchParams();
+  const draftId = searchParams.get("draftId") ?? "";
+  const prefillCustomerId = searchParams.get("customerId") ?? "";
+
+  const [selectedCustomerId, setSelectedCustomerId] = useState(prefillCustomerId);
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [orderNotes, setOrderNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 12;
-  const [productCache, setProductCache] = useState<Record<string, ProductItem>>({
-    "VAR-MURUKKU-200G": {
-      id: "VAR-MURUKKU-200G",
-      sku: "VAR-MURUKKU-200G",
-      name: "Murukku 200 g",
-      productName: "Murukku Standard Pack",
-      defaultPrice: 50.0,
-      taxRate: 5.0,
-      uom: "PKT",
-      imageUrl: "/products/murukku.svg",
+
+  // Load existing draft if ?draftId= is provided
+  type DraftOrderPayload = {
+    id: string;
+    status: string;
+    customerId: string;
+    notes: string | null;
+    lines: Array<{
+      productVariantId: string;
+      quotedQuantity: number;
+      productVariant: ProductItem;
+    }>;
+  };
+  const { data: draftData } = useQuery<
+    DraftOrderPayload | { order: DraftOrderPayload }
+  >({
+    queryKey: ["sales-order", draftId],
+    queryFn: async () => {
+      const res = await apiClient.get(`/sales/orders/${draftId}`);
+      return res.data;
     },
+    enabled: Boolean(draftId),
   });
+
+  useEffect(() => {
+    const draft =
+      draftData && "order" in draftData ? draftData.order : draftData;
+    if (!draft || draft.status !== "DRAFT") return;
+    setSelectedCustomerId(draft.customerId);
+    setOrderNotes(draft.notes ?? "");
+    const nextQty: Record<string, number> = {};
+    const nextCache: Record<string, ProductItem> = {};
+    for (const line of draft.lines) {
+      nextQty[line.productVariantId] = Number(line.quotedQuantity);
+      if (line.productVariant) {
+        nextCache[line.productVariantId] = line.productVariant;
+      }
+    }
+    setQuantities(nextQty);
+    setProductCache((prev) => ({ ...prev, ...nextCache }));
+  }, [draftData]);
+  const [productCache, setProductCache] = useState<Record<string, ProductItem>>({});
 
   // Fetch customers
   const { data: customersData } = useQuery<{ customers: CustomerItem[] }>({
@@ -131,7 +167,7 @@ export function NewOrderPage() {
     queryFn: async () => {
       const offset = (page - 1) * pageSize;
       const res = await apiClient.get<ProductsResponse>(
-        `/sales/products?organizationId=MILL&limit=${pageSize}&offset=${offset}`,
+        `/sales/products?limit=${pageSize}&offset=${offset}`,
       );
       return res.data;
     },
@@ -142,27 +178,14 @@ export function NewOrderPage() {
   const { data: stockData } = useQuery<{ balances: StockBalance[] }>({
     queryKey: ["inventory-balances"],
     queryFn: async () => {
-      const res = await apiClient.get(
-        "/inventory/balances?organizationId=MILL",
-      );
+      const res = await apiClient.get("/inventory/balances");
       return res.data;
     },
   });
 
-  const customersList: CustomerItem[] = customersData?.customers || [
-    {
-      id: "CUST-RET-A",
-      code: "CUST-RET-A",
-      name: "Retailer A",
-      state: "Tamil Nadu",
-    },
-    {
-      id: "CUST-DIST-B",
-      code: "CUST-DIST-B",
-      name: "Distributor B",
-      state: "Karnataka",
-    },
-  ];
+  const customersList: CustomerItem[] = (customersData?.customers ?? []).filter(
+    (c) => c.isActive !== false,
+  );
 
   const productsList: ProductItem[] = productsData?.products ?? [];
   const totalProducts = productsData?.pagination?.total ?? productsList.length;
@@ -184,13 +207,19 @@ export function NewOrderPage() {
   const activeCustomer =
     customersList.find(
       (c) => c.id === selectedCustomerId || c.code === selectedCustomerId,
-    ) || customersList[0];
+    ) ?? null;
 
-  const customerState = activeCustomer?.state || "Tamil Nadu";
+  const customerState = activeCustomer?.state || "";
   const isIntraState = customerState.trim().toLowerCase() === "tamil nadu";
 
-  const getProductStock = (sku: string) => {
-    return balances.find((b) => b.sku === sku)?.available ?? 0;
+  const getProductStock = (product: ProductItem) => {
+    const match = balances.find(
+      (b) =>
+        (product.finishedGoodsItemId && b.id === product.finishedGoodsItemId) ||
+        (product.finishedGoodsSku && b.sku === product.finishedGoodsSku) ||
+        b.sku === product.sku,
+    );
+    return match?.available ?? 0;
   };
 
   const updateQuantity = (product: ProductItem, qty: number) => {
@@ -200,10 +229,13 @@ export function NewOrderPage() {
       [product.id]: product,
       [product.sku]: product,
     }));
-    setQuantities((prev) => ({
-      ...prev,
-      [product.id]: validQty,
-    }));
+    setQuantities((prev) => {
+      const next = { ...prev, [product.id]: validQty };
+      if (product.sku && product.sku !== product.id) {
+        delete next[product.sku];
+      }
+      return next;
+    });
   };
 
   const handleStep = (product: ProductItem, delta: number) => {
@@ -211,20 +243,23 @@ export function NewOrderPage() {
     updateQuantity(product, current + delta);
   };
 
-  // Order summary calculations across all paginated selections
+  // Order summary calculations across all paginated selections (deduped by product.id)
+  const seenProductIds = new Set<string>();
   const orderLines = Object.entries(quantities)
     .filter(([, qty]) => qty > 0)
     .map(([key, qty]) => {
       const product =
         productsList.find((p) => p.id === key || p.sku === key) ??
         productCache[key];
-      if (!product) return null;
-      const unitPrice = Number(product.defaultPrice || 50.0);
+      if (!product || seenProductIds.has(product.id)) return null;
+      if (key === product.sku && quantities[product.id] !== undefined) return null;
+      seenProductIds.add(product.id);
+      const unitPrice = Number(product.defaultPrice ?? 0);
       const taxable = qty * unitPrice;
-      const taxRate = Number(product.taxRate || 5.0) / 100;
+      const taxRate = Number(product.taxRate ?? 0) / 100;
       const tax = taxable * taxRate;
       const total = taxable + tax;
-      const stock = getProductStock(product.sku);
+      const stock = getProductStock(product);
       const shortage = Math.max(0, qty - stock);
 
       return {
@@ -247,38 +282,54 @@ export function NewOrderPage() {
   const grandTotal = totalTaxable + totalTax;
   const anyShortage = orderLines.some((l) => l.shortage > 0);
 
-  // Submit order mutation
+  // Submit or save draft order mutation
   const createOrderMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (submitAsDraft: boolean) => {
       if (!activeCustomer) {
         throw new Error("Please select a customer before placing an order.");
       }
       const payload = {
-        organizationId: "MILL",
         customerId: activeCustomer.id,
         orderNumber: generateOrderNumber(),
         notes: orderNotes,
+        status: submitAsDraft ? "DRAFT" : "SUBMITTED",
         lines: orderLines.map((l) => ({
           productVariantId: l.product.id,
           quantity: l.quantity,
           unitPrice: l.unitPrice,
         })),
       };
+      if (draftId) {
+        const res = await apiClient.put(`/sales/orders/${draftId}`, {
+          notes: orderNotes,
+          status: submitAsDraft ? "DRAFT" : "SUBMITTED",
+          lines: payload.lines,
+        });
+        return res.data;
+      }
       const res = await apiClient.post("/sales/orders", payload);
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (resData, submitAsDraft) => {
       queryClient.invalidateQueries({ queryKey: ["sales-orders"] });
       queryClient.invalidateQueries({ queryKey: ["inventory-balances"] });
-      toast.success("Sales order placed successfully!");
-      navigate("/orders");
+      if (draftId) {
+        queryClient.invalidateQueries({ queryKey: ["sales-order", draftId] });
+      }
+      const orderId = resData?.order?.id ?? resData?.id ?? draftId;
+      toast.success(
+        submitAsDraft
+          ? "Order draft saved."
+          : "Sales order submitted successfully!",
+      );
+      navigate(orderId ? `/orders/${orderId}` : "/orders");
     },
     onError: (err: unknown) => {
-      toast.error(`Order failed: ${extractErrorMessage(err, "Failed to place order")}`);
+      toast.error(`Order failed: ${extractErrorMessage(err, "Failed to save order")}`);
     },
   });
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (submitAsDraft = false) => {
     if (!activeCustomer) {
       toast.error("Please select a customer before placing an order.");
       return;
@@ -289,6 +340,9 @@ export function NewOrderPage() {
     }
 
     if (!isOnline) {
+      if (submitAsDraft) {
+        toast.info("Offline mode: saving to device outbox for automatic sync when online.");
+      }
       // Offline queueing in Dexie outbox
       try {
         await queueOrder(
@@ -319,14 +373,14 @@ export function NewOrderPage() {
 
     setIsSubmitting(true);
     try {
-      await createOrderMutation.mutateAsync();
+      await createOrderMutation.mutateAsync(submitAsDraft);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex flex-1 flex-col pb-32">
+    <div className="flex flex-1 flex-col pb-28 sm:pb-24 md:pb-0">
       {/* Top Navigation & Breadcrumb */}
       <div className="border-b bg-card/60 backdrop-blur px-4 py-3 sm:px-6">
         <div className="flex items-center justify-between">
@@ -366,7 +420,7 @@ export function NewOrderPage() {
         </div>
       </div>
 
-      <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full flex flex-col gap-6">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full flex-1 flex flex-col gap-6">
         {/* Page Header */}
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -404,11 +458,17 @@ export function NewOrderPage() {
                 </SelectContent>
               </Select>
               <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                <span>Place of Supply: <strong>{customerState}</strong></span>
-                <span>•</span>
-                <span className="text-primary font-medium">
-                  {isIntraState ? "Intra-state (CGST 2.5% + SGST 2.5%)" : "Inter-state (IGST 5.0%)"}
-                </span>
+                {activeCustomer ? (
+                  <>
+                    <span>Place of Supply: <strong>{customerState}</strong></span>
+                    <span>•</span>
+                    <span className="text-primary font-medium">
+                      {isIntraState ? "Intra-state (CGST 2.5% + SGST 2.5%)" : "Inter-state (IGST 5.0%)"}
+                    </span>
+                  </>
+                ) : (
+                  <span>Select a customer to determine place of supply and GST regime</span>
+                )}
               </div>
             </div>
 
@@ -512,8 +572,9 @@ export function NewOrderPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
                 {productsList.map((product) => {
                   const qty = quantities[product.id] ?? quantities[product.sku] ?? 0;
-                  const unitPrice = Number(product.defaultPrice || 50.0);
-                  const availableStock = getProductStock(product.sku);
+                  const unitPrice = Number(product.defaultPrice ?? 0);
+                  const taxRate = Number(product.taxRate ?? 0) / 100;
+                  const availableStock = getProductStock(product);
                   const isShort = qty > availableStock;
                   const hasOrder = qty > 0;
 
@@ -526,16 +587,20 @@ export function NewOrderPage() {
                           : "border-border"
                       }`}
                     >
-                      <div className="flex flex-col gap-3">
+                      <div className="flex-1 flex flex-col gap-3">
                         {/* Visual Product Thumbnail with semantic img element */}
                         <div className="relative aspect-video w-full rounded-lg bg-muted/40 border border-border/60 overflow-hidden flex items-center justify-center p-2">
-                          <img
-                            src={product.imageUrl || "/products/murukku.svg"}
-                            alt={`${product.name} packaging pouch`}
-                            width={112}
-                            height={112}
-                            className="h-28 w-28 object-contain transition-transform duration-(--ml-motion-fast) ease-enter group-hover:scale-105 drop-shadow-xs"
-                          />
+                          {product.imageUrl ? (
+                            <img
+                              src={product.imageUrl}
+                              alt={`${product.name} packaging pouch`}
+                              width={112}
+                              height={112}
+                              className="h-28 w-28 object-contain transition-transform duration-(--ml-motion-fast) ease-enter group-hover:scale-105 drop-shadow-xs"
+                            />
+                          ) : (
+                            <PackageIcon className="size-10 text-muted-foreground/50" aria-hidden="true" />
+                          )}
                       <div className="absolute top-2 right-2">
                         {availableStock > 0 ? (
                           <Badge
@@ -553,25 +618,27 @@ export function NewOrderPage() {
                     </div>
 
                     {/* Product Metadata */}
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-[11px] font-semibold text-muted-foreground tracking-wider uppercase">
+                        <span className="font-mono text-[11px] font-semibold text-muted-foreground tracking-wider uppercase truncate">
                           {product.sku}
                         </span>
-                        <span className="text-[11px] text-muted-foreground">
-                          HSN: {product.hsnCode || "21069099"}
+                        <span className="text-[11px] text-muted-foreground shrink-0">
+                          {product.hsnCode ? `HSN: ${product.hsnCode}` : "HSN: —"}
                         </span>
                       </div>
-                      <h3 className="text-base font-bold text-foreground mt-0.5">
+                      <h3 className="text-base font-bold text-foreground mt-0.5 line-clamp-2">
                         {product.name}
                       </h3>
-                      <p className="text-xs text-muted-foreground">
-                        {product.productName || "Standard Retail Milling Pack"} ({product.uom || "PKT"})
+                      <p className="text-xs text-muted-foreground line-clamp-1">
+                        {[product.productName, product.uom ? `(${product.uom})` : null]
+                          .filter(Boolean)
+                          .join(" ") || "—"}
                       </p>
                     </div>
 
                     {/* Pricing */}
-                    <div className="flex items-baseline justify-between pt-1 border-t border-border/50">
+                    <div className="mt-auto flex items-baseline justify-between pt-2 border-t border-border/50">
                       <div>
                         <span className="text-xs text-muted-foreground">Standard wholesale:</span>
                         <div className="text-lg font-extrabold text-foreground font-mono">
@@ -588,21 +655,8 @@ export function NewOrderPage() {
                     </div>
                   </div>
 
-                  {/* Quantity Stepper & Shortage Notice */}
+                  {/* Quantity Stepper, Line Total & Reserved Shortage Slot */}
                   <div className="mt-4 pt-3 border-t border-border flex flex-col gap-2">
-                    {isShort && (
-                      <div
-                        role="status"
-                        aria-live="polite"
-                        className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md p-2"
-                      >
-                        <AlertTriangleIcon className="size-3.5 shrink-0" aria-hidden="true" />
-                        <span>
-                          Shortage: {qty - availableStock} pkts exceeds stock
-                        </span>
-                      </div>
-                    )}
-
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-xs font-semibold text-muted-foreground">
                         Quantity:
@@ -644,14 +698,35 @@ export function NewOrderPage() {
                       </div>
                     </div>
 
-                    {qty > 0 && (
-                      <div className="flex items-center justify-between text-xs pt-1 text-muted-foreground">
-                        <span>Line Total:</span>
-                        <span className="font-mono font-bold text-foreground">
-                          {formatINR(qty * unitPrice * 1.05)} (incl. GST)
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between text-xs min-h-[20px] text-muted-foreground">
+                      <span>Line Total:</span>
+                      <span
+                        className={
+                          qty > 0
+                            ? "font-mono font-bold text-foreground"
+                            : "font-mono text-muted-foreground/70"
+                        }
+                      >
+                        {qty > 0
+                          ? `${formatINR(qty * unitPrice * (1 + taxRate))} (incl. GST)`
+                          : "—"}
+                      </span>
+                    </div>
+
+                    <div className="min-h-[34px] flex items-center">
+                      {isShort && (
+                        <div
+                          role="status"
+                          aria-live="polite"
+                          className="w-full flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md px-2 py-1.5"
+                        >
+                          <AlertTriangleIcon className="size-3.5 shrink-0" aria-hidden="true" />
+                          <span className="truncate">
+                            Shortage: {qty - availableStock} pkts exceeds stock
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </article>
               );
@@ -714,26 +789,26 @@ export function NewOrderPage() {
         </section>
       </div>
 
-      {/* Sticky Bottom Summary Checkout Bar */}
-      <footer className="fixed bottom-0 left-0 right-0 z-30 border-t bg-card/95 backdrop-blur-md px-4 py-3 sm:px-8 shadow-xl">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-start">
-            <div className="flex items-center gap-3">
-              <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <ShoppingCartIcon className="size-5" />
+      {/* Sticky / Docked Bottom Summary Checkout Bar */}
+      <footer className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 md:sticky md:bottom-0 border-t bg-card/95 backdrop-blur-md px-3 py-2 sm:px-6 sm:py-3 shadow-xl">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+          <div className="flex items-center justify-between gap-3 sm:justify-start min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="hidden sm:flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <ShoppingCartIcon className="size-5" aria-hidden="true" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-foreground">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="text-sm font-bold text-foreground whitespace-nowrap">
                     {totalItemCount} {totalItemCount === 1 ? "Packet" : "Packets"}
                   </span>
                   {anyShortage && (
-                    <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-700 border-amber-500/20">
+                    <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20">
                       Shortage flagged
                     </Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
                   <span>Subtotal: {formatINR(totalTaxable)}</span>
                   <span>•</span>
                   <span>GST: {formatINR(totalTax)}</span>
@@ -741,15 +816,17 @@ export function NewOrderPage() {
               </div>
             </div>
 
-            <div className="sm:hidden text-right">
-              <span className="text-[10px] text-muted-foreground uppercase font-semibold">Total</span>
-              <div className="text-base font-extrabold text-foreground font-mono">
+            <div className="sm:hidden text-right shrink-0">
+              <span className="text-sm font-extrabold text-foreground font-mono">
                 {formatINR(grandTotal)}
-              </div>
+              </span>
+              <span className="block text-[10px] text-muted-foreground leading-tight">
+                incl. GST
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-4 shrink-0">
             <div className="hidden sm:flex flex-col items-end">
               <span className="text-xs text-muted-foreground">Grand Total (incl. GST)</span>
               <span className="text-xl font-extrabold text-foreground font-mono">
@@ -757,20 +834,32 @@ export function NewOrderPage() {
               </span>
             </div>
 
+            {isOnline && (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleSubmit(true)}
+                disabled={totalItemCount === 0 || isSubmitting || createOrderMutation.isPending}
+                className="min-h-[44px] h-11 sm:h-12 px-4 text-sm font-medium cursor-pointer"
+              >
+                Save draft
+              </Button>
+            )}
+
             <Button
               size="lg"
-              onClick={handleSubmit}
+              onClick={() => handleSubmit(false)}
               disabled={totalItemCount === 0 || isSubmitting || createOrderMutation.isPending}
-              className="w-full sm:w-auto h-12 min-w-[170px] px-6 text-sm font-bold gap-2 shadow-md cursor-pointer"
+              className="w-full sm:w-auto min-h-[44px] h-11 sm:h-12 sm:min-w-[170px] px-4 sm:px-6 text-sm font-bold gap-2 shadow-md cursor-pointer"
             >
               {isSubmitting || createOrderMutation.isPending ? (
                 <>
-                  <RefreshCwIcon className="size-4 animate-spin" />
+                  <RefreshCwIcon className="size-4 animate-spin" aria-hidden="true" />
                   <span>Submitting...</span>
                 </>
               ) : (
                 <>
-                  <CheckCircle2Icon className="size-4" />
+                  <CheckCircle2Icon className="size-4" aria-hidden="true" />
                   <span>{isOnline ? "Place Sales Order" : "Queue Offline Order"}</span>
                 </>
               )}

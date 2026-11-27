@@ -180,8 +180,12 @@ export async function seedBenchmarkMasters() {
         code: "WH-1",
       },
     },
-    update: {},
+    update: {
+      organizationId: org.id,
+      isActive: true,
+    },
     create: {
+      organizationId: org.id,
       facilityId: facility.id,
       code: "WH-1",
       name: "Central Factory Warehouse",
@@ -436,6 +440,25 @@ export async function seedBenchmarkMasters() {
           referenceDocumentType: "OPENING",
           referenceDocumentId: "INIT-BENCHMARK",
           notes: `Opening stock initialized from benchmark for ${cfg.name}`,
+        },
+      });
+    }
+
+    if (cfg.openingQty > 0) {
+      await prisma.warehouseStockBalance.upsert({
+        where: {
+          warehouseId_inventoryItemId: {
+            warehouseId: warehouse.id,
+            inventoryItemId: item.id,
+          },
+        },
+        update: {},
+        create: {
+          organizationId: org.id,
+          warehouseId: warehouse.id,
+          inventoryItemId: item.id,
+          onHand: cfg.openingQty,
+          reserved: 0,
         },
       });
     }

@@ -36,11 +36,14 @@ export function useIsOnline(): boolean {
   return useSyncExternalStore(subscribeOnline, getOnlineSnapshot, () => true);
 }
 
-export function useOfflineCustomers(organizationId = "MILL") {
+export function useOfflineCustomers(organizationId?: string) {
   return useLiveQuery(
     async () => {
+      if (!organizationId) {
+        return await offlineDb.customers.toArray();
+      }
       return await offlineDb.customers
-        .filter((c) => !organizationId || c.organizationId === organizationId)
+        .filter((c) => c.organizationId === organizationId)
         .toArray();
     },
     [organizationId],
@@ -48,12 +51,17 @@ export function useOfflineCustomers(organizationId = "MILL") {
   );
 }
 
-export function useOfflineProducts() {
+export function useOfflineProducts(organizationId?: string) {
   return useLiveQuery(
     async () => {
-      return await offlineDb.products.toArray();
+      if (!organizationId) {
+        return await offlineDb.products.toArray();
+      }
+      return await offlineDb.products
+        .filter((p) => !p.organizationId || p.organizationId === organizationId)
+        .toArray();
     },
-    [],
+    [organizationId],
     [] as CachedProduct[],
   );
 }

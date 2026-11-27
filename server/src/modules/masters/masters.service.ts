@@ -427,6 +427,333 @@ export class MastersService {
     });
     return updated;
   }
+
+  // ─── Facilities & Warehouses ────────────────────────────────────────
+
+  async getFacilities(organizationId: string, includeInactive = false) {
+    const orgId = await this.resolveOrgId(organizationId);
+    return prisma.facility.findMany({
+      where: {
+        organizationId: orgId,
+        ...(includeInactive ? {} : { isActive: true }),
+      },
+      include: {
+        _count: {
+          select: { warehouses: true },
+        },
+      },
+      orderBy: [{ isActive: "desc" }, { code: "asc" }],
+    });
+  }
+
+  async getFacilityById(id: string, organizationId: string) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const facility = await prisma.facility.findFirst({
+      where: { id, organizationId: orgId },
+      include: {
+        warehouses: {
+          orderBy: { code: "asc" },
+        },
+      },
+    });
+    if (!facility) {
+      throw new AppError(`Facility ${id} not found`, 404);
+    }
+    return facility;
+  }
+
+  async createFacility(
+    organizationId: string,
+    input: { code: string; name: string; state?: string },
+    user: UserContext,
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const code = input.code.trim().toUpperCase();
+    const existing = await prisma.facility.findUnique({
+      where: { organizationId_code: { organizationId: orgId, code } },
+    });
+    if (existing) {
+      throw new AppError(`Facility with code ${code} already exists`, 409);
+    }
+
+    const facility = await prisma.facility.create({
+      data: {
+        organizationId: orgId,
+        code,
+        name: input.name.trim(),
+        state: (input.state || "Tamil Nadu").trim(),
+        isActive: true,
+      },
+    });
+
+    await auditService.log({
+      organizationId: orgId,
+      userId: user.id,
+      userEmail: user.email,
+      action: "CREATE",
+      entity: "Facility",
+      entityId: facility.id,
+      details: { code: facility.code, name: facility.name, state: facility.state },
+    });
+
+    return facility;
+  }
+
+  async updateFacility(
+    id: string,
+    organizationId: string,
+    input: { name?: string; state?: string; isActive?: boolean },
+    user: UserContext,
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const facility = await prisma.facility.findFirst({
+      where: { id, organizationId: orgId },
+      include: { warehouses: true },
+    });
+    if (!facility) {
+      throw new AppError(`Facility ${id} not found`, 404);
+    }
+
+    if (input.isActive === false && facility.isActive) {
+      const hasActiveWarehouses = facility.warehouses.some((w) => w.isActive);
+      if (hasActiveWarehouses) {
+        throw new AppError(
+          "Cannot deactivate facility with active warehouses; deactivate its warehouses first",
+          409,
+        );
+      }
+    }
+
+    const updated = await prisma.facility.update({
+      where: { id: facility.id },
+      data: {
+        name: input.name !== undefined ? input.name.trim() : undefined,
+        state: input.state !== undefined ? input.state.trim() : undefined,
+        isActive: input.isActive,
+      },
+    });
+
+    await auditService.log({
+      organizationId: orgId,
+      userId: user.id,
+      userEmail: user.email,
+      action: "UPDATE",
+      entity: "Facility",
+      entityId: updated.id,
+      details: {
+        name: updated.name,
+        state: updated.state,
+        isActive: updated.isActive,
+      },
+    });
+
+    return updated;
+  }
+
+  async getWarehouses(
+    organizationId: string,
+    options?: { facilityId?: string; includeInactive?: boolean },
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    return prisma.warehouse.findMany({
+      where: {
+        organizationId: orgId,
+        ...(options?.facilityId ? { facilityId: options.facilityId } : {}),
+        ...(options?.includeInactive ? {} : { isActive: true }),
+      },
+      include: {
+        facility: {
+          select: { id: true, code: true, name: true, state: true, isActive: true },
+        },
+      },
+      orderBy: [{ isActive: "desc" }, { code: "asc" }],
+    });
+  }
+
+  async getWarehouseById(id: string, organizationId: string) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const warehouse = await prisma.warehouse.findFirst({
+      where: { id, organizationId: orgId },
+      include: {
+        facility: true,
+        warehouseStockBalances: {
+          include: {
+            inventoryItem: {
+              include: { baseUom: true },
+            },
+          },
+          orderBy: { inventoryItem: { name: "asc" } },
+        },
+      },
+    });
+    if (!warehouse) {
+      throw new AppError(`Warehouse ${id} not found`, 404);
+    }
+    return warehouse;
+  }
+
+  async createWarehouse(
+    organizationId: string,
+    input: { facilityId: string; code: string; name: string },
+    user: UserContext,
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const facility = await prisma.facility.findFirst({
+      where: { id: input.facilityId, organizationId: orgId },
+    });
+    if (!facility) {
+      throw new AppError(`Facility ${input.facilityId} not found`, 404);
+    }
+    if (!facility.isActive) {
+      throw new AppError(
+        "Cannot create warehouse under an inactive facility",
+        400,
+      );
+    }
+
+    const code = input.code.trim().toUpperCase();
+    const existing = await prisma.warehouse.findUnique({
+      where: { organizationId_code: { organizationId: orgId, code } },
+    });
+    if (existing) {
+      throw new AppError(`Warehouse with code ${code} already exists`, 409);
+    }
+
+    const warehouse = await prisma.warehouse.create({
+      data: {
+        organizationId: orgId,
+        facilityId: facility.id,
+        code,
+        name: input.name.trim(),
+        isActive: true,
+      },
+      include: {
+        facility: {
+          select: { id: true, code: true, name: true, state: true, isActive: true },
+        },
+      },
+    });
+
+    await auditService.log({
+      organizationId: orgId,
+      userId: user.id,
+      userEmail: user.email,
+      action: "CREATE",
+      entity: "Warehouse",
+      entityId: warehouse.id,
+      details: {
+        code: warehouse.code,
+        name: warehouse.name,
+        facilityId: warehouse.facilityId,
+      },
+    });
+
+    return warehouse;
+  }
+
+  async updateWarehouse(
+    id: string,
+    organizationId: string,
+    input: { facilityId?: string; name?: string; isActive?: boolean },
+    user: UserContext,
+  ) {
+    const orgId = await this.resolveOrgId(organizationId);
+    const warehouse = await prisma.warehouse.findFirst({
+      where: { id, organizationId: orgId },
+    });
+    if (!warehouse) {
+      throw new AppError(`Warehouse ${id} not found`, 404);
+    }
+
+    if (input.facilityId && input.facilityId !== warehouse.facilityId) {
+      const targetFacility = await prisma.facility.findFirst({
+        where: { id: input.facilityId, organizationId: orgId },
+      });
+      if (!targetFacility || !targetFacility.isActive) {
+        throw new AppError("Target facility not found or inactive", 400);
+      }
+    }
+
+    if (input.isActive === false && warehouse.isActive) {
+      const [nonZeroBalance, activeReservation, openOrder, draftRun] =
+        await Promise.all([
+          prisma.warehouseStockBalance.findFirst({
+            where: {
+              warehouseId: warehouse.id,
+              OR: [{ onHand: { not: 0 } }, { reserved: { gt: 0 } }],
+            },
+          }),
+          prisma.stockReservation.findFirst({
+            where: { warehouseId: warehouse.id, status: "ACTIVE" },
+          }),
+          prisma.salesOrder.findFirst({
+            where: {
+              warehouseId: warehouse.id,
+              status: { in: ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED"] },
+              fulfilmentStatus: { not: "FULFILLED" },
+            },
+          }),
+          prisma.productionRun.findFirst({
+            where: { warehouseId: warehouse.id, status: "DRAFT" },
+          }),
+        ]);
+
+      if (nonZeroBalance) {
+        throw new AppError(
+          "Cannot deactivate warehouse with non-zero stock or reserved inventory; transfer or adjust stock first",
+          409,
+        );
+      }
+      if (activeReservation) {
+        throw new AppError(
+          "Cannot deactivate warehouse with active stock reservations",
+          409,
+        );
+      }
+      if (openOrder) {
+        throw new AppError(
+          "Cannot deactivate warehouse with open unfulfilled sales orders",
+          409,
+        );
+      }
+      if (draftRun) {
+        throw new AppError(
+          "Cannot deactivate warehouse with draft production runs",
+          409,
+        );
+      }
+    }
+
+    const updated = await prisma.warehouse.update({
+      where: { id: warehouse.id },
+      data: {
+        facilityId: input.facilityId,
+        name: input.name !== undefined ? input.name.trim() : undefined,
+        isActive: input.isActive,
+      },
+      include: {
+        facility: {
+          select: { id: true, code: true, name: true, state: true, isActive: true },
+        },
+      },
+    });
+
+    await auditService.log({
+      organizationId: orgId,
+      userId: user.id,
+      userEmail: user.email,
+      action: "UPDATE",
+      entity: "Warehouse",
+      entityId: updated.id,
+      details: {
+        name: updated.name,
+        facilityId: updated.facilityId,
+        isActive: updated.isActive,
+      },
+    });
+
+    return updated;
+  }
 }
 
 export const mastersService = new MastersService();

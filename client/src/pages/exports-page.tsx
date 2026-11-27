@@ -185,7 +185,6 @@ export function ExportsPage() {
           format: selectedFormat,
           startDate,
           endDate,
-          organizationId: "MILL",
         },
         {
           responseType: "blob",
@@ -264,9 +263,9 @@ export function ExportsPage() {
         </CardHeader>
 
         <CardContent className="flex flex-col gap-5 px-5 py-4 sm:px-6 sm:pb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Dataset Selector */}
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
               <Label
                 htmlFor={datasetSelectId}
                 className="mb-1.5 flex items-center gap-1.5 text-label text-muted-foreground"
@@ -298,7 +297,7 @@ export function ExportsPage() {
             </div>
 
             {/* Date Range Selector */}
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
               <Label
                 htmlFor={dateRangeSelectId}
                 className="mb-1.5 flex items-center gap-1.5 text-label text-muted-foreground"
@@ -332,7 +331,7 @@ export function ExportsPage() {
             </div>
 
             {/* Format Selector */}
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
               <Label
                 htmlFor={formatSelectId}
                 className="mb-1.5 flex items-center gap-1.5 text-label text-muted-foreground"
