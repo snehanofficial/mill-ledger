@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CheckIcon, CopyIcon, MinusIcon, PlusIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -179,16 +179,13 @@ export function AuditDetailSheet({
   open,
   onOpenChange,
 }: AuditDetailSheetProps) {
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    setCopied(false);
-  }, [log?.id, open]);
+  const [copiedLogId, setCopiedLogId] = useState<string | null>(null);
 
   if (!log) {
     return null;
   }
 
+  const copied = open && copiedLogId === log.id;
   const parsed = parseAuditDetails(log.details);
   const diffs =
     parsed.kind === "structured" ? extractAuditDiff(parsed.data) : null;
@@ -197,10 +194,12 @@ export function AuditDetailSheet({
   const handleCopyJson = async () => {
     try {
       await navigator.clipboard.writeText(rawJson);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      setCopiedLogId(log.id);
+      window.setTimeout(() => {
+        setCopiedLogId((current) => (current === log.id ? null : current));
+      }, 2000);
     } catch {
-      setCopied(false);
+      setCopiedLogId(null);
     }
   };
 
