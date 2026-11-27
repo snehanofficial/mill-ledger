@@ -160,23 +160,41 @@ export function DataTableColumnHeader<TData, TValue>({
       type="button"
       onClick={() => column.toggleSorting(sorted === "asc")}
       className={cn(
-        "group inline-flex items-center gap-1.5 rounded-small px-1.5 py-1 -mx-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer",
-        align === "right" && "flex-row-reverse",
+        "group flex h-10 w-full items-center gap-1.5 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:bg-accent/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring cursor-pointer",
+        align === "right" && "justify-end",
         align === "center" && "justify-center",
         sorted && "text-foreground",
         className,
       )}
     >
-      <span>{title}</span>
-      {sorted === "asc" ? (
-        <ArrowUpIcon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
-      ) : sorted === "desc" ? (
-        <ArrowDownIcon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+      {align === "right" ? (
+        <>
+          {sorted === "asc" ? (
+            <ArrowUpIcon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+          ) : sorted === "desc" ? (
+            <ArrowDownIcon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+          ) : (
+            <ArrowUpDownIcon
+              className="size-3.5 shrink-0 opacity-40 transition-opacity group-hover:opacity-100"
+              aria-hidden="true"
+            />
+          )}
+          <span>{title}</span>
+        </>
       ) : (
-        <ArrowUpDownIcon
-          className="size-3.5 shrink-0 opacity-40 transition-opacity group-hover:opacity-100"
-          aria-hidden="true"
-        />
+        <>
+          <span>{title}</span>
+          {sorted === "asc" ? (
+            <ArrowUpIcon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+          ) : sorted === "desc" ? (
+            <ArrowDownIcon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+          ) : (
+            <ArrowUpDownIcon
+              className="size-3.5 shrink-0 opacity-40 transition-opacity group-hover:opacity-100"
+              aria-hidden="true"
+            />
+          )}
+        </>
       )}
     </button>
   );
@@ -483,6 +501,7 @@ export function DataTable<TData>({
                     key={header.id}
                     aria-sort={ariaSort}
                     className={cn(
+                      header.column.getCanSort() && "p-0",
                       meta?.align === "right" && "text-right",
                       meta?.align === "center" && "text-center",
                       meta?.headerClassName,
