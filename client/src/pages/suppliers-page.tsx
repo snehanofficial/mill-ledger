@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ExportMenu } from "@/components/ui/export-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -231,6 +232,7 @@ export function SuppliersPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <ExportMenu entity="suppliers" />
           {canManageSuppliers && (
             <Button
               size="sm"

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { downloadCsvFromTable } from "@/lib/export-download";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -98,33 +99,6 @@ function readStoredVisibility(
     // Ignore malformed localStorage entries
   }
   return fallback;
-}
-
-function escapeCsvCell(value: unknown): string {
-  if (value === null || value === undefined) return "";
-  const str = String(value);
-  if (/[",\n\r]/.test(str)) {
-    return `"${str.replaceAll('"', '""')}"`;
-  }
-  return str;
-}
-
-function downloadCsv(filename: string, headers: string[], rows: string[][]): void {
-  const lines = [
-    headers.map(escapeCsvCell).join(","),
-    ...rows.map((r) => r.map(escapeCsvCell).join(",")),
-  ];
-  const blob = new Blob([lines.join("\r\n")], {
-    type: "text/csv;charset=utf-8;",
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename.endsWith(".csv") ? filename : `${filename}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
 }
 
 export function DataTableColumnHeader<TData, TValue>({
@@ -326,14 +300,14 @@ export function DataTable<TData>({
       exportCols.map((col) => {
         const meta = col.columnDef.meta as DataTableColumnMeta<TData> | undefined;
         if (meta?.exportValue) {
-          return String(meta.exportValue(row.original) ?? "");
+          return meta.exportValue(row.original) ?? "";
         }
         const val = row.getValue(col.id);
-        return val === null || val === undefined ? "" : String(val);
+        return val === null || val === undefined ? "" : val;
       }),
     );
 
-    downloadCsv(csvFilename || tableId, headers, csvRows);
+    downloadCsvFromTable(csvFilename || tableId, headers, csvRows);
   }, [csvFilename, selectedRows.length, table, tableId]);
 
   const showToolbar =

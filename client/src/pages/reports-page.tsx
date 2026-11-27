@@ -2,6 +2,8 @@ import { useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { PaginationMeta } from "@mill-ledger/shared";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { downloadExportFromApi } from "@/lib/export-download";
+import { toast } from "sonner";
 import {
   assertCollectionResponse,
   assertEntityResponse,
@@ -350,27 +352,17 @@ export function ReportsPage({ defaultTab = "sales" }: { defaultTab?: string }) {
   });
 
   const handleExport = async (format: "csv" | "xlsx" | "pdf") => {
+    if (exporting) return;
     try {
       setExporting(true);
-      const res = await apiClient.get(
-        `/reports/${effectiveTab}/export?format=${format}&${filterQs}`,
-        {
-          responseType: "blob",
-        },
-      );
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute(
-        "download",
-        `${effectiveTab}-report-${new Date().toISOString().slice(0, 10)}.${format}`,
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      const filename = await downloadExportFromApi({
+        url: `/reports/${effectiveTab}/export?format=${format}&${filterQs}`,
+        extension: format,
+        fallbackModule: `${effectiveTab}-Report`,
+      });
+      toast.success(`Downloaded ${filename}`);
     } catch (err) {
-      console.error("Export failed", err);
+      toast.error(err instanceof Error ? err.message : "Export failed");
     } finally {
       setExporting(false);
     }

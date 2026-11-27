@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { downloadExportFromApi } from "@/lib/export-download";
 import {
   assertCollectionResponse,
   assertEntityResponse,
@@ -39,7 +40,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AlertTriangleIcon, Link2Icon } from "lucide-react";
+import { AlertTriangleIcon, DownloadIcon, Link2Icon } from "lucide-react";
 import { toast } from "sonner";
 
 interface PaymentDetail {
@@ -221,17 +222,40 @@ export function PaymentDetailPage() {
           ) : null
         }
         secondaryActions={
-          isAdmin && payment.status !== "BOUNCED" ? (
+          <div className="flex flex-wrap items-center gap-2">
             <Button
-              variant="destructive"
+              variant="outline"
               size="sm"
-              onClick={() => setBounceOpen(true)}
+              onClick={async () => {
+                try {
+                  const filename = await downloadExportFromApi({
+                    url: `/exports/payments/${payment.id}/pdf`,
+                    extension: "pdf",
+                    fallbackModule: "",
+                    fallbackIdentifier: payment.paymentNumber,
+                  });
+                  toast.success(`Downloaded ${filename}`);
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Failed to download receipt");
+                }
+              }}
               className="gap-1.5"
             >
-              <AlertTriangleIcon className="size-4" aria-hidden="true" />
-              Mark bounced
+              <DownloadIcon className="size-4" aria-hidden="true" />
+              Receipt PDF
             </Button>
-          ) : null
+            {isAdmin && payment.status !== "BOUNCED" && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setBounceOpen(true)}
+                className="gap-1.5"
+              >
+                <AlertTriangleIcon className="size-4" aria-hidden="true" />
+                Mark bounced
+              </Button>
+            )}
+          </div>
         }
       />
 

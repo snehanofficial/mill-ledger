@@ -1,5 +1,5 @@
 import { useState, useId } from "react";
-import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { downloadExportFromApi } from "@/lib/export-download";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -160,6 +160,7 @@ export function ExportsPage() {
     DATASETS.find((d) => d.reportType === selectedReportType) || DATASETS[0];
 
   const handleDownload = async () => {
+    if (isExporting) return;
     setIsExporting(true);
     try {
       const now = new Date();
@@ -178,44 +179,24 @@ export function ExportsPage() {
         endDate = now.toISOString();
       }
 
-      const response = await apiClient.post(
-        "/reports/export",
-        {
+      const filename = await downloadExportFromApi({
+        url: "/reports/export",
+        method: "post",
+        data: {
           reportType: selectedReportType,
           format: selectedFormat,
           startDate,
           endDate,
         },
-        {
-          responseType: "blob",
-        },
-      );
+        extension: selectedFormat,
+        fallbackModule: `${selectedReportType}-Report`,
+      });
 
-      // Trigger browser file download
-      const mimeType =
-        selectedFormat === "csv"
-          ? "text/csv;charset=utf-8;"
-          : selectedFormat === "xlsx"
-            ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            : selectedFormat === "pdf"
-              ? "application/pdf"
-              : "application/json";
-      const blob = new Blob([response.data], { type: mimeType });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      const dateStr = now.toISOString().slice(0, 10);
-      link.setAttribute("download", `${selectedReportType}-report-${dateStr}.${selectedFormat}`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast.success(
-        `${activeDataset.name} exported successfully (${selectedFormat.toUpperCase()})`,
-      );
+      toast.success(`${activeDataset.name} exported (${filename})`);
     } catch (err: unknown) {
-      toast.error(`Export failed: ${extractErrorMessage(err, "Export generation failed")}`);
+      toast.error(
+        `Export failed: ${err instanceof Error ? err.message : "Export generation failed"}`,
+      );
     } finally {
       setIsExporting(false);
     }
@@ -318,7 +299,7 @@ export function ExportsPage() {
                 <SelectContent>
                   <SelectItem value="all">All Historical Records</SelectItem>
                   <SelectItem value="month">Current Month to Date</SelectItem>
-                  <SelectItem value="year">Current Financial Year (2025-26)</SelectItem>
+                  <SelectItem value="year">Current Financial Year (Apr - Mar)</SelectItem>
                 </SelectContent>
               </Select>
               <span className="mt-1.5 text-xs text-muted-foreground">
@@ -362,7 +343,7 @@ export function ExportsPage() {
                   : selectedFormat === "xlsx"
                     ? "Formatted Microsoft Excel workbook (.xlsx)"
                     : selectedFormat === "pdf"
-                      ? "Printable landscape PDF report"
+                      ? "Formatted A4 PDF report"
                       : "Structured array of typed schema objects"}
               </span>
             </div>

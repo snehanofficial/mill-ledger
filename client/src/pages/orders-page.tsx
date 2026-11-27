@@ -20,6 +20,7 @@ import {
 import { EmptyState, SkeletonTable, ErrorState } from "@/components/ui/loading-error-empty";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ExportMenu } from "@/components/ui/export-menu";
 import { Input } from "@/components/ui/input";
 import {
   AlertTriangleIcon,
@@ -316,19 +317,22 @@ export function OrdersPage() {
           ) : null
         }
         secondaryActions={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="gap-1.5"
-          >
-            <RefreshCwIcon
-              className={`size-4 ${isFetching ? "animate-spin" : ""}`}
-              aria-hidden="true"
-            />
-            Refresh
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <ExportMenu entity="orders" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="gap-1.5"
+            >
+              <RefreshCwIcon
+                className={`size-4 ${isFetching ? "animate-spin" : ""}`}
+                aria-hidden="true"
+              />
+              Refresh
+            </Button>
+          </div>
         }
       />
 

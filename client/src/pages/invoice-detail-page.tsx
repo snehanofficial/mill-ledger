@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { downloadExportFromApi } from "@/lib/export-download";
 import { assertEntityResponse } from "@/lib/api-contracts";
 import { BACKEND_URL } from "@/lib/env";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -141,18 +142,15 @@ export function InvoiceDetailPage() {
   const handleDownloadPdf = async () => {
     if (!invoice) return;
     try {
-      const response = await apiClient.get(`/finance/invoices/${invoice.id}/pdf`, {
-        responseType: "blob",
+      const filename = await downloadExportFromApi({
+        url: `/finance/invoices/${invoice.id}/pdf`,
+        extension: "pdf",
+        fallbackModule: "",
+        fallbackIdentifier: invoice.invoiceNumber,
       });
-      const blob = new Blob([response.data], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${invoice.invoiceNumber}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      toast.success(`Downloaded ${filename}`);
     } catch (err) {
-      toast.error(extractErrorMessage(err, "Failed to download PDF."));
+      toast.error(err instanceof Error ? err.message : "Failed to download PDF.");
     }
   };
 

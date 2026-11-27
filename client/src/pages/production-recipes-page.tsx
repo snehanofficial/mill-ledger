@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { ExportMenu } from "@/components/ui/export-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -274,6 +275,7 @@ export function ProductionRecipesPage() {
         description="Standard ingredients, packaging, expected batch yield, and live WAC cost estimates. Cloning creates a new version without mutating historical runs."
         secondaryActions={
           <>
+            <ExportMenu entity="recipes" />
             <Button
               variant="outline"
               size="sm"

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, extractErrorMessage } from "@/lib/api-client";
+import { downloadExportFromApi } from "@/lib/export-download";
 import {
   assertCollectionResponse,
   assertEntityResponse,
@@ -35,6 +36,7 @@ import {
 import {
   AlertTriangleIcon,
   CheckCircle2Icon,
+  DownloadIcon,
   FileTextIcon,
   PencilIcon,
   TruckIcon,
@@ -434,16 +436,40 @@ export function OrderDetailPage() {
         }
         primaryAction={primaryAction}
         secondaryActions={
-          canPrepareDispatch && canCreateInvoice ? (
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
-              onClick={() => navigate(`/dispatch/new?orderId=${order.id}`)}
+              size="sm"
+              onClick={async () => {
+                try {
+                  const filename = await downloadExportFromApi({
+                    url: `/exports/orders/${order.id}/pdf`,
+                    extension: "pdf",
+                    fallbackModule: "",
+                    fallbackIdentifier: order.orderNumber,
+                  });
+                  toast.success(`Downloaded ${filename}`);
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Failed to download PDF");
+                }
+              }}
               className="gap-1.5"
             >
-              <TruckIcon className="size-4" aria-hidden="true" />
-              Prepare dispatch
+              <DownloadIcon className="size-4" aria-hidden="true" />
+              Download PDF
             </Button>
-          ) : null
+            {canPrepareDispatch && canCreateInvoice && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/dispatch/new?orderId=${order.id}`)}
+                className="gap-1.5"
+              >
+                <TruckIcon className="size-4" aria-hidden="true" />
+                Prepare dispatch
+              </Button>
+            )}
+          </div>
         }
       />
 
